@@ -296,23 +296,10 @@
 
     <div class="or-div" id="orDiv"><span>या मैन्युअल भरें</span></div>
 
-    <div class="field">
-      <div class="field-top"><label id="cityLabel">शहर</label></div>
-      <input type="text" id="userCity" placeholder="जैसे: Delhi, Eluru..." autocomplete="off" oninput="validateStep4()" list="cList"/>
-      <datalist id="cList">
-        <option value="Delhi"><option value="Mumbai"><option value="Hyderabad">
-        <option value="Bangalore"><option value="Chennai"><option value="Kolkata">
-        <option value="Pune"><option value="Ahmedabad"><option value="Visakhapatnam">
-        <option value="Vijayawada"><option value="Eluru"><option value="Guntur">
-        <option value="Surat"><option value="Jaipur"><option value="Lucknow">
-        <option value="Kanpur"><option value="Nagpur"><option value="Indore">
-        <option value="Bhopal"><option value="Patna"><option value="Kochi">
-      </datalist>
-    </div>
-
+    <!-- STATE FIRST -->
     <div class="field">
       <div class="field-top"><label id="stateLabel">राज्य</label></div>
-      <select id="userState" onchange="validateStep4()">
+      <select id="userState" onchange="onStateChange()">
         <option value="" id="stateOpt">चुनें</option>
         <option value="AP">Andhra Pradesh</option>
         <option value="TS">Telangana</option>
@@ -331,6 +318,14 @@
         <option value="BR">Bihar</option>
         <option value="OD">Odisha</option>
         <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <!-- CITY FILTERED BY STATE -->
+    <div class="field" id="cityWrap" style="opacity:0.35;pointer-events:none;">
+      <div class="field-top"><label id="cityLabel">शहर</label></div>
+      <select id="userCity" onchange="validateStep4()">
+        <option value="" id="cityOpt">पहले राज्य चुनें</option>
       </select>
     </div>
 
@@ -556,20 +551,95 @@
             document.getElementById('userState').value = sm[state] || 'Other';
             user.city = city; user.state = sm[state] || 'Other';
 
+            // Set state dropdown and trigger city filter
+            document.getElementById('userState').value = sm[state] || 'Other';
+            onStateChange();
+
+            // Set city in filtered dropdown
+            setTimeout(() => {
+              const citySelect = document.getElementById('userCity');
+              for (let opt of citySelect.options) {
+                if (opt.value === city) { opt.selected = true; break; }
+              }
+              validateStep4();
+            }, 100);
+
             const lf = document.getElementById('locFound');
             document.getElementById('locTxt').textContent = (lang==='hi'?'मिला: ':'Found: ') + city + (state?', '+state:'');
             lf.classList.add('show');
             document.getElementById('gpsBtn').style.display='none';
             document.getElementById('orDiv').style.display='none';
-            validateStep4();
           }).catch(resetGPS);
       }, resetGPS
     );
   }
   function resetGPS() { document.getElementById('gpsTxt').textContent = T[lang].gpsTxt; }
+  // ── Cities by state ──
+  const citiesMap = {
+    AP: ['Visakhapatnam','Vijayawada','Guntur','Nellore','Kurnool','Rajahmundry','Eluru','Kakinada','Tirupati','Anantapur','Kadapa','Ongole','Srikakulam','Vizianagaram','Bhimavaram','Nandyal','Chittoor','Proddatur'],
+    TS: ['Hyderabad','Warangal','Nizamabad','Khammam','Karimnagar','Ramagundam','Mahbubnagar','Nalgonda','Adilabad','Suryapet','Miryalaguda','Siddipet'],
+    MH: ['Mumbai','Pune','Nagpur','Nashik','Aurangabad','Solapur','Amravati','Kolhapur','Nanded','Sangli','Jalgaon','Akola','Latur','Thane'],
+    DL: ['New Delhi','Delhi','Dwarka','Rohini','Noida','Gurgaon','Faridabad'],
+    KA: ['Bangalore','Mysore','Hubli','Dharwad','Mangalore','Belgaum','Gulbarga','Davangere','Shimoga','Tumkur','Bijapur','Raichur'],
+    TN: ['Chennai','Coimbatore','Madurai','Trichy','Salem','Tirunelveli','Vellore','Erode','Tirupur','Dindigul','Tanjore','Kanchipuram'],
+    GJ: ['Ahmedabad','Surat','Vadodara','Rajkot','Bhavnagar','Jamnagar','Gandhinagar','Junagadh','Anand','Nadiad','Morbi'],
+    RJ: ['Jaipur','Jodhpur','Udaipur','Kota','Bikaner','Ajmer','Alwar','Bharatpur','Sikar','Pali'],
+    UP: ['Lucknow','Kanpur','Agra','Varanasi','Allahabad','Meerut','Ghaziabad','Noida','Bareilly','Aligarh','Moradabad','Gorakhpur','Mathura'],
+    MP: ['Bhopal','Indore','Gwalior','Jabalpur','Ujjain','Sagar','Ratlam','Satna','Dewas','Rewa'],
+    WB: ['Kolkata','Howrah','Durgapur','Asansol','Siliguri','Bardhaman','Malda','Baharampur'],
+    KL: ['Thiruvananthapuram','Kochi','Kozhikode','Thrissur','Kollam','Palakkad','Alappuzha','Kannur','Kasaragod'],
+    PB: ['Ludhiana','Amritsar','Jalandhar','Patiala','Bathinda','Mohali','Hoshiarpur','Gurdaspur'],
+    HR: ['Faridabad','Gurgaon','Panipat','Ambala','Yamunanagar','Rohtak','Hisar','Karnal','Sonipat'],
+    BR: ['Patna','Gaya','Bhagalpur','Muzaffarpur','Darbhanga','Arrah','Bihar Sharif','Purnia'],
+    OD: ['Bhubaneswar','Cuttack','Rourkela','Berhampur','Sambalpur','Puri','Brahmapur'],
+    Other: ['Other City'],
+  };
+
+  function onStateChange() {
+    const state = document.getElementById('userState').value;
+    const cityWrap = document.getElementById('cityWrap');
+    const citySelect = document.getElementById('userCity');
+    const cityOpt = document.getElementById('cityOpt');
+
+    // Reset city
+    citySelect.innerHTML = '';
+
+    if (!state) {
+      const opt = document.createElement('option');
+      opt.value = ''; opt.textContent = 'पहले राज्य चुनें';
+      opt.id = 'cityOpt';
+      citySelect.appendChild(opt);
+      cityWrap.style.opacity = '0.35';
+      cityWrap.style.pointerEvents = 'none';
+      document.getElementById('btn4').disabled = true;
+      return;
+    }
+
+    // Add default option
+    const defOpt = document.createElement('option');
+    defOpt.value = '';
+    defOpt.textContent = lang === 'hi' ? 'शहर चुनें' : 'Select city';
+    citySelect.appendChild(defOpt);
+
+    // Add cities for this state
+    const cities = citiesMap[state] || [];
+    cities.forEach(city => {
+      const opt = document.createElement('option');
+      opt.value = city; opt.textContent = city;
+      citySelect.appendChild(opt);
+    });
+
+    // Enable city dropdown
+    cityWrap.style.opacity = '1';
+    cityWrap.style.pointerEvents = 'auto';
+    document.getElementById('btn4').disabled = true;
+    citySelect.onchange = validateStep4;
+  }
+
   function validateStep4() {
-    const ok = document.getElementById('userCity').value.trim().length>=2 && document.getElementById('userState').value;
-    document.getElementById('btn4').disabled = !ok;
+    const city  = document.getElementById('userCity').value;
+    const state = document.getElementById('userState').value;
+    document.getElementById('btn4').disabled = !(city && state);
   }
 
   // ── Welcome screen ──
