@@ -301,6 +301,34 @@
   .ab-time strong{display:block;font-size:13px;font-weight:700;color:var(--deep-gold);}
   .ab-time span{font-size:8px;color:rgba(26,10,0,0.30);}
 
+  /* ── KUNDLI TEASER ── */
+  .kundli-teaser{
+    background:linear-gradient(135deg,#1A0800,#2C1208);
+    border-radius:14px;padding:14px 16px;
+    display:flex;align-items:center;justify-content:space-between;
+    border:1px solid rgba(212,168,67,0.22);
+    cursor:pointer;margin-bottom:10px;
+    position:relative;overflow:hidden;
+    transition:all 0.2s;
+    animation:cin 0.4s ease 0.3s both;
+  }
+  .kundli-teaser::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(212,168,67,0.5),transparent);}
+  .kundli-teaser::after{content:'';position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,0.08) 0%,transparent 70%);}
+  .kundli-teaser:active{transform:scale(0.98);}
+  .kt-left{display:flex;align-items:center;gap:12px;}
+  .kt-lock{font-size:24px;flex-shrink:0;opacity:0.8;}
+  .kt-title{font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:#fff;margin-bottom:3px;}
+  .kt-sub{font-size:10px;color:rgba(255,255,255,0.38);}
+  .kt-badge{
+    background:linear-gradient(135deg,rgba(212,168,67,0.18),rgba(255,107,26,0.12));
+    border:1px solid rgba(212,168,67,0.30);
+    border-radius:20px;padding:4px 10px;
+    font-size:10px;font-weight:600;color:var(--gold);
+    white-space:nowrap;flex-shrink:0;
+    animation:badgePulse 2.5s ease-in-out infinite;
+  }
+  @keyframes badgePulse{0%,100%{opacity:0.7;}50%{opacity:1;box-shadow:0 0 10px rgba(212,168,67,0.25);}}
+
   /* ── JAPA SCREEN ── */
   .japa-screen{background:#0D0500;flex-direction:column;}
   .japa-nav{flex-shrink:0;padding:44px 18px 14px;display:flex;align-items:center;justify-content:space-between;}
@@ -552,6 +580,20 @@
           <div class="ab-txt"><strong id="abTitle">अभिजित मुहूर्त</strong><span id="abDesc">सबसे शुभ — नए काम शुरू करें</span></div>
           <div class="ab-time"><strong>11:48–12:36</strong><span id="abSub">दोपहर</span></div>
         </div>
+
+        <!-- ── KUNDLI TEASER ── -->
+        <div class="psec" id="kundliSec">🔮 जन्म कुंडली</div>
+        <div class="kundli-teaser" id="kundliCard" onclick="kundliTap()">
+          <div class="kt-left">
+            <div class="kt-lock">🔒</div>
+            <div class="kt-body">
+              <div class="kt-title" id="ktTitle">जन्म कुंडली देखें</div>
+              <div class="kt-sub" id="ktSub">आपकी व्यक्तिगत कुंडली • ग्रह • दशा</div>
+            </div>
+          </div>
+          <div class="kt-badge" id="ktBadge">जल्द आ रहा है</div>
+        </div>
+
       </div>
     </div>
 
@@ -791,6 +833,12 @@ function personalise() {
   document.getElementById('jdSub').textContent      = isHi ? today.deity_hi+' की कृपा आप पर सदा बनी रहे 🌸' : 'May '+today.deity_en+"'s blessings always be with you 🌸";
   document.getElementById('jdBtn').textContent      = isHi ? 'पुनः जप करें' : 'Jap Again';
 
+  // Kundli teaser
+  document.getElementById('kundliSec').textContent = isHi ? '🔮 जन्म कुंडली' : '🔮 Birth Chart';
+  document.getElementById('ktTitle').textContent   = isHi ? 'जन्म कुंडली देखें' : 'View Birth Chart';
+  document.getElementById('ktSub').textContent     = isHi ? 'आपकी व्यक्तिगत कुंडली • ग्रह • दशा' : 'Your personal kundli • Planets • Dasha';
+  document.getElementById('ktBadge').textContent   = isHi ? 'जल्द आ रहा है' : 'Coming Soon';
+
   // Tab bar
   document.getElementById('tl1').textContent = isHi ? 'होम' : 'Home';
   document.getElementById('tl2').textContent = isHi ? 'सुनें' : 'Listen';
@@ -886,6 +934,25 @@ function resetJap(){
 const style=document.createElement('style');
 style.textContent='@keyframes ripple{to{transform:scale(4.5);opacity:0;}}';
 document.head.appendChild(style);
+
+// ── Kundli tap — track interest ──
+function kundliTap() {
+  // Track how many people tap this — analytics later
+  const taps = parseInt(localStorage.getItem('kundli_interest') || '0') + 1;
+  localStorage.setItem('kundli_interest', taps);
+
+  // Show coming soon message
+  const badge = document.getElementById('ktBadge');
+  const orig = badge.textContent;
+  badge.textContent = isHi ? '🙏 जल्द आएगा!' : '🙏 Coming soon!';
+  badge.style.background = 'linear-gradient(135deg,rgba(255,107,26,0.25),rgba(212,168,67,0.15))';
+  badge.style.borderColor = 'rgba(255,107,26,0.4)';
+  badge.style.color = '#FF6B1A';
+  setTimeout(() => {
+    badge.textContent = orig;
+    badge.style = '';
+  }, 2000);
+}
 
 // ── Hide top area for non-home tabs ──
 document.getElementById('topArea').style.display='block';
