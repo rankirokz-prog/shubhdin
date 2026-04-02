@@ -59,16 +59,16 @@
   /* Language buttons */
   .lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
   .lang-btn{
-    height:60px;border-radius:14px;border:2px solid rgba(212,168,67,0.22);
+    height:70px;border-radius:14px;border:2px solid rgba(212,168,67,0.22);
     background:#fff;cursor:pointer;font-family:'Poppins',sans-serif;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-    transition:all 0.2s;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    transition:all 0.2s;padding:8px 4px;overflow:hidden;
   }
   .lang-btn:active{transform:scale(0.97);}
   .lang-btn.selected{background:linear-gradient(135deg,rgba(255,107,26,0.08),rgba(212,168,67,0.06));border-color:var(--gold);border-width:2.5px;}
-  .lb-icon{font-size:20px;}
-  .lb-name{font-size:14px;font-weight:600;color:var(--dark);}
-  .lb-sub{font-size:9px;color:rgba(26,10,0,0.38);}
+  .lb-icon{font-size:18px;line-height:1;flex-shrink:0;}
+  .lb-name{font-size:13px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;}
+  .lb-sub{font-size:9px;color:rgba(26,10,0,0.38);white-space:nowrap;width:100%;text-align:center;}
   .lang-btn.selected .lb-name{color:var(--deep-gold);}
 
   /* Input */
@@ -183,7 +183,7 @@
       <div class="vi"><span class="vi-icon">🪔</span><div class="vi-text" id="v3">108 जप साधना</div></div>
     </div>
 
-    <div class="trust-line" id="trustLine">बिल्कुल <strong>मुफ़्त</strong> • कोई <strong>विज्ञापन नहीं</strong> • आपका डेटा सुरक्षित</div>
+    <div class="trust-line" id="trustLine">🙏 उपयोग करने के लिए मुफ़्त • आपका डेटा सुरक्षित है</div>
 
     <button class="btn-cta" onclick="goStep(1)"><span id="cta0">यात्रा शुरू करें</span> ✨</button>
   </div>
@@ -378,7 +378,7 @@
       hookTitle:'आपका दैनिक आध्यात्मिक साथी',
       hookSub:'10 सेकंड में अपना पंचांग, राशिफल और साधना — सब कुछ आपकी भाषा में',
       v1:'दैनिक पंचांग', v2:'राशि मार्गदर्शन', v3:'108 जप साधना',
-      trust:'बिल्कुल <strong>मुफ़्त</strong> • कोई <strong>विज्ञापन नहीं</strong> • आपका डेटा सुरक्षित',
+      trust:'🙏 उपयोग करने के लिए मुफ़्त • आपका डेटा सुरक्षित है',
       cta0:'यात्रा शुरू करें',
       s1title:'अपना अनुभव अपनी भाषा में शुरू करें', s1desc:'पूरा ऐप आपकी चुनी हुई भाषा में होगा',
       cta1:'आगे बढ़ें', back1:'← वापस जाएं',
@@ -403,7 +403,7 @@
       hookTitle:'Your Daily Spiritual Companion',
       hookSub:'Get your personalized panchang, rashi guidance & sadhana in 10 seconds',
       v1:'Daily Panchang', v2:'Rashi Guidance', v3:'108 Jap Sadhana',
-      trust:'Completely <strong>free</strong> • <strong>No ads</strong> • Your data is safe',
+      trust:'🙏 Free to use • Your data is always safe',
       cta0:'Begin My Journey',
       s1title:'Start your experience in your language', s1desc:'Your entire app will be in the chosen language',
       cta1:'Continue', back1:'← Go back',
