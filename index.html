@@ -20,17 +20,69 @@
   .pt{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);opacity:0;animation:ptUp linear infinite;}
   @keyframes ptUp{0%{opacity:0;transform:translateY(0) scale(0);}20%{opacity:0.4;transform:translateY(-20px) scale(1);}100%{opacity:0;transform:translateY(-140px) scale(0.3);}}
 
-  /* Card */
-  .card{width:100%;max-width:400px;background:rgba(255,248,237,0.97);border-radius:28px;padding:28px 24px 24px;position:relative;z-index:10;box-shadow:0 24px 64px rgba(0,0,0,0.45);animation:cardIn 0.7s cubic-bezier(0.34,1.4,0.64,1) forwards;}
-  @keyframes cardIn{from{opacity:0;transform:translateY(32px) scale(0.94);}to{opacity:1;transform:translateY(0) scale(1);}}
+  /* ── LANGUAGE SCREEN — fullscreen, dark, minimal ── */
+  .lang-screen{
+    width:100%;max-width:400px;
+    text-align:center;
+    position:relative;z-index:10;
+    animation:fadeIn 0.6s ease forwards;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
-  /* Progress bar */
+  .lang-screen.hide{animation:fadeOut 0.4s ease forwards;}
+  @keyframes fadeOut{from{opacity:1;transform:scale(1);}to{opacity:0;transform:scale(0.95);}}
+
+  .lang-om{
+    font-family:'Tiro Devanagari Hindi',serif;font-size:52px;color:var(--gold);
+    display:block;line-height:1;margin-bottom:16px;
+    animation:omGlow 3s ease-in-out infinite;
+  }
+  @keyframes omGlow{0%,100%{text-shadow:0 0 20px rgba(212,168,67,0.3);}50%{text-shadow:0 0 40px rgba(212,168,67,0.6);}}
+
+  .lang-question{font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:6px;font-weight:400;}
+  .lang-sub{font-size:12px;color:rgba(212,168,67,0.5);margin-bottom:32px;letter-spacing:0.5px;}
+
+  /* Big language buttons */
+  .lang-options{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0;}
+  .lang-opt{
+    padding:24px 16px;border-radius:20px;
+    border:1.5px solid rgba(255,255,255,0.12);
+    background:rgba(255,255,255,0.07);
+    cursor:pointer;transition:all 0.2s;
+    backdrop-filter:blur(10px);
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .lang-opt:hover{background:rgba(255,255,255,0.12);border-color:rgba(212,168,67,0.4);}
+  .lang-opt:active{transform:scale(0.96);}
+  .lang-opt.selecting{
+    background:rgba(212,168,67,0.15);
+    border-color:var(--gold);
+    animation:selectPulse 0.3s ease;
+  }
+  @keyframes selectPulse{0%{transform:scale(1);}50%{transform:scale(0.97);}100%{transform:scale(1);}}
+  .lo-flag{font-size:36px;line-height:1;}
+  .lo-name{font-size:18px;font-weight:600;color:#fff;}
+  .lo-sub{font-size:11px;color:rgba(255,255,255,0.45);}
+
+  /* ── CARD — for all other steps ── */
+  .card{
+    width:100%;max-width:400px;
+    background:rgba(255,248,237,0.97);
+    border-radius:28px;padding:28px 24px 24px;
+    position:relative;z-index:10;
+    box-shadow:0 24px 64px rgba(0,0,0,0.45);
+    display:none;
+  }
+  .card.show{display:block;animation:cardIn 0.6s cubic-bezier(0.34,1.4,0.64,1) forwards;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(0.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+  /* Progress */
   .progress-bar{height:3px;background:rgba(26,10,0,0.08);border-radius:2px;margin-bottom:6px;overflow:hidden;}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:2px;transition:width 0.5s ease;}
-  .step-counter{font-size:11px;font-weight:600;color:rgba(26,10,0,0.30);letter-spacing:1px;text-transform:uppercase;text-align:center;margin-bottom:22px;}
+  .step-counter{font-size:11px;font-weight:600;color:rgba(26,10,0,0.28);letter-spacing:1px;text-transform:uppercase;text-align:center;margin-bottom:22px;}
   .step-counter span{color:var(--saffron);font-weight:700;}
 
-  /* Steps */
+  /* Steps inside card */
   .step{display:none;}
   .step.active{display:block;animation:stepIn 0.35s ease forwards;}
   @keyframes stepIn{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:translateX(0);}}
@@ -41,41 +93,27 @@
   .sh-title{font-size:18px;font-weight:600;color:var(--dark);margin-bottom:5px;line-height:1.3;}
   .sh-desc{font-size:12px;color:rgba(26,10,0,0.42);line-height:1.5;}
 
-  /* Hook screen */
-  .hook-om{font-family:'Tiro Devanagari Hindi',serif;font-size:60px;color:var(--gold);display:block;text-align:center;line-height:1;margin-bottom:14px;animation:omGlow 3s ease-in-out infinite;}
-  @keyframes omGlow{0%,100%{text-shadow:0 0 20px rgba(212,168,67,0.3);}50%{text-shadow:0 0 40px rgba(212,168,67,0.6);}}
+  /* Hook screen inside card */
+  .hook-om{
+    font-family:'Tiro Devanagari Hindi',serif;font-size:56px;color:var(--gold);
+    display:block;text-align:center;line-height:1;margin-bottom:12px;
+    animation:omGlow 3s ease-in-out infinite;
+  }
+  .hook-title{font-size:21px;font-weight:700;color:var(--dark);text-align:center;margin-bottom:8px;line-height:1.3;}
+  .hook-sub{font-size:12px;color:rgba(26,10,0,0.50);text-align:center;margin-bottom:16px;line-height:1.6;}
 
-  .hook-title{font-size:22px;font-weight:700;color:var(--dark);text-align:center;margin-bottom:8px;line-height:1.3;}
-  .hook-subtitle{font-size:13px;color:rgba(26,10,0,0.52);text-align:center;margin-bottom:18px;line-height:1.6;}
-
-  .value-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px;}
-  .vi{background:#fff;border-radius:12px;padding:12px 8px;text-align:center;border:1px solid rgba(212,168,67,0.14);}
-  .vi-icon{font-size:20px;display:block;margin-bottom:5px;}
+  .value-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+  .vi{background:#fff;border-radius:12px;padding:12px 6px;text-align:center;border:1px solid rgba(212,168,67,0.14);}
+  .vi-icon{font-size:20px;display:block;margin-bottom:4px;}
   .vi-text{font-size:10px;color:rgba(26,10,0,0.55);line-height:1.3;font-weight:500;}
 
-  .trust-line{font-size:11px;color:rgba(26,10,0,0.35);text-align:center;margin-bottom:16px;}
-  .trust-line strong{color:var(--sage);}
-
-  /* Language buttons */
-  .lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-  .lang-btn{
-    height:70px;border-radius:14px;border:2px solid rgba(212,168,67,0.22);
-    background:#fff;cursor:pointer;font-family:'Poppins',sans-serif;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-    transition:all 0.2s;padding:8px 4px;overflow:hidden;
-  }
-  .lang-btn:active{transform:scale(0.97);}
-  .lang-btn.selected{background:linear-gradient(135deg,rgba(255,107,26,0.08),rgba(212,168,67,0.06));border-color:var(--gold);border-width:2.5px;}
-  .lb-icon{font-size:18px;line-height:1;flex-shrink:0;}
-  .lb-name{font-size:13px;font-weight:600;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;}
-  .lb-sub{font-size:9px;color:rgba(26,10,0,0.38);white-space:nowrap;width:100%;text-align:center;}
-  .lang-btn.selected .lb-name{color:var(--deep-gold);}
+  .trust-line{font-size:11px;color:rgba(26,10,0,0.35);text-align:center;margin-bottom:14px;}
 
   /* Input */
   .field{margin-bottom:14px;}
   .field-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
   .field label{font-size:11px;font-weight:600;color:rgba(26,10,0,0.40);text-transform:uppercase;letter-spacing:1px;}
-  .field-optional{font-size:10px;color:rgba(26,10,0,0.28);font-style:italic;}
+  .field-opt{font-size:10px;color:rgba(26,10,0,0.28);font-style:italic;}
   .field input,.field select{
     width:100%;height:50px;border-radius:13px;
     border:1.5px solid rgba(212,168,67,0.22);
@@ -88,34 +126,25 @@
   .field-hint{font-size:10px;color:rgba(26,10,0,0.30);margin-top:5px;padding-left:2px;}
 
   /* Name greeting */
-  .name-greet{background:rgba(74,124,89,0.09);border:1px solid rgba(74,124,89,0.18);border-radius:11px;padding:9px 13px;margin-bottom:12px;display:none;animation:fadeIn 0.4s ease;}
-  .name-greet.show{display:block;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
+  .name-greet{background:rgba(74,124,89,0.09);border:1px solid rgba(74,124,89,0.18);border-radius:11px;padding:9px 13px;margin-bottom:12px;display:none;}
+  .name-greet.show{display:block;animation:fadeIn 0.3s ease;}
   .ng-text{font-size:13px;color:var(--sage);font-weight:500;}
 
-  /* Location button */
-  .location-btn{
-    width:100%;height:50px;border-radius:13px;border:1.5px solid rgba(212,168,67,0.28);
-    background:linear-gradient(135deg,rgba(212,168,67,0.06),rgba(255,107,26,0.04));
+  /* Location */
+  .loc-btn{
+    width:100%;height:50px;border-radius:13px;
+    border:1.5px solid rgba(212,168,67,0.28);
+    background:linear-gradient(135deg,rgba(212,168,67,0.07),rgba(255,107,26,0.04));
     font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;
     color:var(--deep-gold);cursor:pointer;
     display:flex;align-items:center;justify-content:center;gap:8px;
     margin-bottom:10px;transition:all 0.2s;
   }
-  .location-btn:active{background:rgba(212,168,67,0.12);}
-  .location-detected{
-    background:rgba(74,124,89,0.08);border:1px solid rgba(74,124,89,0.20);
-    border-radius:11px;padding:9px 13px;margin-bottom:10px;
-    display:none;font-size:12px;color:var(--sage);font-weight:500;
-  }
-  .location-detected.show{display:flex;align-items:center;gap:8px;}
-  .or-divider{text-align:center;font-size:11px;color:rgba(26,10,0,0.28);margin:8px 0;position:relative;}
-  .or-divider::before,.or-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:rgba(26,10,0,0.08);}
-  .or-divider::before{left:0;} .or-divider::after{right:0;}
-
-  /* Skip link */
-  .skip-link{display:block;text-align:center;font-size:11px;color:rgba(26,10,0,0.32);cursor:pointer;margin-top:8px;background:none;border:none;font-family:'Poppins',sans-serif;width:100%;padding:4px;}
-  .skip-link:hover{color:rgba(26,10,0,0.5);}
+  .loc-btn:active{background:rgba(212,168,67,0.12);}
+  .loc-found{background:rgba(74,124,89,0.08);border:1px solid rgba(74,124,89,0.20);border-radius:11px;padding:9px 13px;margin-bottom:10px;display:none;font-size:12px;color:var(--sage);font-weight:500;}
+  .loc-found.show{display:flex;align-items:center;gap:8px;}
+  .or-div{text-align:center;font-size:11px;color:rgba(26,10,0,0.25);margin:8px 0;display:flex;align-items:center;gap:8px;}
+  .or-div::before,.or-div::after{content:'';flex:1;height:1px;background:rgba(26,10,0,0.08);}
 
   /* CTA */
   .btn-cta{
@@ -126,30 +155,22 @@
     box-shadow:0 8px 24px rgba(255,107,26,0.28);transition:all 0.2s;
   }
   .btn-cta:active{transform:scale(0.97);}
-  .btn-cta:disabled{opacity:0.40;cursor:not-allowed;transform:none;}
+  .btn-cta:disabled{opacity:0.38;cursor:not-allowed;transform:none;}
   .btn-back{display:block;text-align:center;margin-top:10px;font-size:12px;color:rgba(26,10,0,0.32);cursor:pointer;background:none;border:none;font-family:'Poppins',sans-serif;width:100%;padding:4px;}
+  .skip-link{display:block;text-align:center;font-size:11px;color:rgba(26,10,0,0.30);cursor:pointer;margin-top:8px;background:none;border:none;font-family:'Poppins',sans-serif;width:100%;padding:4px;}
 
   /* Welcome */
   .welcome{text-align:center;}
-  .w-om{font-family:'Tiro Devanagari Hindi',serif;font-size:50px;color:var(--gold);display:block;margin-bottom:10px;animation:omGlow 2s ease-in-out infinite;}
-  .w-title{font-size:20px;font-weight:700;color:var(--dark);margin-bottom:5px;}
+  .w-om{font-family:'Tiro Devanagari Hindi',serif;font-size:48px;color:var(--gold);display:block;margin-bottom:10px;animation:omGlow 2s ease-in-out infinite;}
+  .w-title{font-size:19px;font-weight:700;color:var(--dark);margin-bottom:5px;}
   .w-sub{font-size:12px;color:rgba(26,10,0,0.42);line-height:1.6;margin-bottom:16px;}
-
-  /* Rashi card — prominent */
-  .rashi-card{background:linear-gradient(135deg,#1A0800,#3D1A05);border-radius:18px;padding:16px 18px;margin-bottom:14px;text-align:left;border:1px solid rgba(212,168,67,0.25);}
-  .rc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-  .rc-icon{font-size:32px;flex-shrink:0;}
+  .rashi-card{background:linear-gradient(135deg,#1A0800,#3D1A05);border-radius:16px;padding:14px 16px;margin-bottom:14px;text-align:left;}
+  .rc-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .rc-icon{font-size:28px;flex-shrink:0;}
   .rc-label{font-size:9px;color:rgba(212,168,67,0.48);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
-  .rc-name{font-family:'Tiro Devanagari Hindi',serif;font-size:20px;color:var(--gold);}
-  .rc-sub{font-size:10px;color:rgba(255,255,255,0.40);margin-top:2px;}
-
-  /* Today's insight — the WOW moment */
-  .today-insight{
-    background:rgba(212,168,67,0.09);border:1px solid rgba(212,168,67,0.20);
-    border-radius:11px;padding:10px 13px;
-    display:flex;align-items:flex-start;gap:8px;
-  }
-  .ti-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+  .rc-name{font-family:'Tiro Devanagari Hindi',serif;font-size:17px;color:var(--gold);}
+  .rc-sub{font-size:10px;color:rgba(255,255,255,0.38);margin-top:2px;}
+  .today-insight{background:rgba(212,168,67,0.09);border:1px solid rgba(212,168,67,0.20);border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;}
   .ti-label{font-size:9px;color:var(--deep-gold);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:3px;}
   .ti-text{font-size:12px;color:var(--dark);line-height:1.5;}
   .ti-text strong{color:var(--saffron);}
@@ -158,63 +179,59 @@
 <body>
 
 <!-- Particles -->
-<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;">
-  <div class="pt" style="left:8%;bottom:18%;animation-duration:4s;animation-delay:0s;"></div>
-  <div class="pt" style="left:22%;bottom:28%;animation-duration:5.2s;animation-delay:1.1s;"></div>
-  <div class="pt" style="left:55%;bottom:22%;animation-duration:4.6s;animation-delay:0.4s;"></div>
-  <div class="pt" style="left:76%;bottom:18%;animation-duration:5.8s;animation-delay:1.6s;"></div>
-  <div class="pt" style="left:90%;bottom:26%;animation-duration:4.2s;animation-delay:0.8s;"></div>
+<div class="pt" style="left:8%;bottom:18%;animation-duration:4s;animation-delay:0s;"></div>
+<div class="pt" style="left:22%;bottom:28%;animation-duration:5.2s;animation-delay:1.1s;"></div>
+<div class="pt" style="left:55%;bottom:22%;animation-duration:4.6s;animation-delay:0.4s;"></div>
+<div class="pt" style="left:76%;bottom:18%;animation-duration:5.8s;animation-delay:1.6s;"></div>
+<div class="pt" style="left:90%;bottom:26%;animation-duration:4.2s;animation-delay:0.8s;"></div>
+
+<!-- ══════════════════════════════
+     STEP 0 — LANGUAGE (fullscreen dark, auto-proceed)
+══════════════════════════════ -->
+<div class="lang-screen" id="langScreen">
+  <span class="lang-om">ॐ</span>
+  <div class="lang-question">Choose your language</div>
+  <div class="lang-sub">अपनी भाषा चुनें</div>
+
+  <div class="lang-options">
+    <div class="lang-opt" id="optHi" onclick="selectLanguage('hi')">
+      <span class="lo-flag">🇮🇳</span>
+      <span class="lo-name">हिंदी</span>
+      <span class="lo-sub">Hindi</span>
+    </div>
+    <div class="lang-opt" id="optEn" onclick="selectLanguage('en')">
+      <span class="lo-flag">🌐</span>
+      <span class="lo-name">English</span>
+      <span class="lo-sub">अंग्रेज़ी</span>
+    </div>
+  </div>
 </div>
 
-<div class="card">
+<!-- ══════════════════════════════
+     CARD — steps 1 to 5
+══════════════════════════════ -->
+<div class="card" id="mainCard">
 
-  <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:15%"></div></div>
-  <div class="step-counter" id="stepCounter">&nbsp;</div>
+  <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+  <div class="step-counter" id="stepCtr">&nbsp;</div>
 
-  <!-- ══ STEP 0 — HOOK ══ -->
-  <div class="step active" id="step0">
+  <!-- ── STEP 1: HOOK (in chosen language) ── -->
+  <div class="step active" id="step1">
     <span class="hook-om">ॐ</span>
     <div class="hook-title" id="hookTitle">आपका दैनिक आध्यात्मिक साथी</div>
-    <div class="hook-subtitle" id="hookSub">10 सेकंड में अपना पंचांग, राशिफल और साधना — सब कुछ आपकी भाषा में</div>
+    <div class="hook-sub" id="hookSub">10 सेकंड में — पंचांग, राशिफल और साधना सब आपकी भाषा में</div>
 
     <div class="value-grid">
-      <div class="vi"><span class="vi-icon">🔊</span><div class="vi-text" id="v1">दैनिक पंचांग आपकी भाषा में</div></div>
-      <div class="vi"><span class="vi-icon">🌼</span><div class="vi-text" id="v2">व्यक्तिगत राशि मार्गदर्शन</div></div>
+      <div class="vi"><span class="vi-icon">🔊</span><div class="vi-text" id="v1">दैनिक पंचांग</div></div>
+      <div class="vi"><span class="vi-icon">🌼</span><div class="vi-text" id="v2">राशि मार्गदर्शन</div></div>
       <div class="vi"><span class="vi-icon">🪔</span><div class="vi-text" id="v3">108 जप साधना</div></div>
     </div>
 
-    <div class="trust-line" id="trustLine">🙏 उपयोग करने के लिए मुफ़्त • आपका डेटा सुरक्षित है</div>
-
-    <button class="btn-cta" onclick="goStep(1)"><span id="cta0">यात्रा शुरू करें</span> ✨</button>
+    <div class="trust-line" id="trustLine">🙏 उपयोग के लिए मुफ़्त • आपका डेटा सुरक्षित</div>
+    <button class="btn-cta" onclick="goStep(2)"><span id="cta1">यात्रा शुरू करें</span> ✨</button>
   </div>
 
-  <!-- ══ STEP 1 — LANGUAGE (auto-selected Hindi) ══ -->
-  <div class="step" id="step1">
-    <div class="sh">
-      <span class="sh-icon">🗣️</span>
-      <div class="sh-title" id="s1title">अपना अनुभव अपनी भाषा में शुरू करें</div>
-      <div class="sh-desc" id="s1desc">पूरा ऐप आपकी चुनी हुई भाषा में होगा</div>
-    </div>
-
-    <div class="lang-grid">
-      <div class="lang-btn selected" id="langHi" onclick="selectLang('hi')">
-        <span class="lb-icon">🇮🇳</span>
-        <span class="lb-name">हिंदी</span>
-        <span class="lb-sub">Hindi</span>
-      </div>
-      <div class="lang-btn" id="langEn" onclick="selectLang('en')">
-        <span class="lb-icon">🌐</span>
-        <span class="lb-name">English</span>
-        <span class="lb-sub">अंग्रेज़ी</span>
-      </div>
-    </div>
-
-    <!-- CTA always active — Hindi pre-selected -->
-    <button class="btn-cta" id="btn1" onclick="goStep(2)"><span id="cta1">आगे बढ़ें</span> →</button>
-    <button class="btn-back" onclick="goStep(0)" id="back1">← वापस जाएं</button>
-  </div>
-
-  <!-- ══ STEP 2 — NAME ONLY (fast win) ══ -->
+  <!-- ── STEP 2: NAME ── -->
   <div class="step" id="step2">
     <div class="sh">
       <span class="sh-icon">🙏</span>
@@ -222,53 +239,49 @@
       <div class="sh-desc" id="s2desc">हम आपको हर सुबह नाम से बुलाएंगे</div>
     </div>
 
-    <!-- Greeting appears on typing -->
-    <div class="name-greet" id="nameGreet">
-      <div class="ng-text" id="ngText">🙏 नमस्कार!</div>
-    </div>
+    <div class="name-greet" id="nameGreet"><div class="ng-text" id="ngText">🙏 नमस्कार!</div></div>
 
     <div class="field">
       <div class="field-top"><label id="nameLabel">आपका नाम</label></div>
-      <input type="text" id="userName" placeholder="जैसे: Ravi, Priya, Amit..." autocomplete="off" oninput="onNameType()"/>
+      <input type="text" id="userName" placeholder="जैसे: Ravi, Priya..." autocomplete="off" oninput="onNameType()"/>
     </div>
 
     <button class="btn-cta" id="btn2" onclick="goStep(3)" disabled><span id="cta2">अपनी राशि देखें</span> ✨</button>
-    <button class="btn-back" onclick="goStep(1)" id="back2">← वापस जाएं</button>
+    <button class="btn-back" id="back2" onclick="goStep(1)">←</button>
   </div>
 
-  <!-- ══ STEP 3 — DOB + TIME (optional) ══ -->
+  <!-- ── STEP 3: DOB (optional) ── -->
   <div class="step" id="step3">
     <div class="sh">
       <span class="sh-icon">🌙</span>
-      <div class="sh-title" id="s3title">जन्म विवरण</div>
-      <div class="sh-desc" id="s3desc">सटीक राशि और नक्षत्र के लिए — आप चाहें तो छोड़ सकते हैं</div>
+      <div class="sh-title" id="s3title">जन्म तिथि</div>
+      <div class="sh-desc" id="s3desc">सटीक राशि के लिए — चाहें तो छोड़ सकते हैं</div>
     </div>
 
     <div class="field">
       <div class="field-top">
         <label id="dobLabel">जन्म तिथि</label>
-        <span class="field-optional" id="dobOpt">वैकल्पिक</span>
+        <span class="field-opt" id="dobOpt">वैकल्पिक</span>
       </div>
       <input type="date" id="userDOB" onchange="onDOBChange()" max="2010-01-01" min="1940-01-01"/>
       <div class="field-hint" id="dobHint">💡 राशि की सटीक गणना के लिए</div>
     </div>
 
-    <div class="field" id="tobField" style="opacity:0.4;pointer-events:none;">
+    <div class="field" id="tobWrap" style="opacity:0.35;pointer-events:none;">
       <div class="field-top">
         <label id="tobLabel">जन्म समय</label>
-        <span class="field-optional" id="tobOpt">वैकल्पिक</span>
+        <span class="field-opt" id="tobOpt">वैकल्पिक</span>
       </div>
-      <input type="time" id="userTOB" onchange="validateStep3()"/>
+      <input type="time" id="userTOB"/>
       <div class="field-hint" id="tobHint">💡 नक्षत्र पता करने के लिए</div>
     </div>
 
-    <!-- Always active CTA -->
-    <button class="btn-cta" id="btn3" onclick="goStep(4)"><span id="cta3">अपनी राशि देखें</span> ✨</button>
-    <button class="btn-back" onclick="goStep(2)" id="back3">← वापस जाएं</button>
-    <button class="skip-link" onclick="skipDOB()" id="skipDOB">जन्म विवरण छोड़ें → बाद में भरें</button>
+    <button class="btn-cta" id="btn3" onclick="goStep(4)"><span id="cta3">आगे बढ़ें</span> →</button>
+    <button class="btn-back" id="back3" onclick="goStep(2)">←</button>
+    <button class="skip-link" id="skip3" onclick="skipStep()">छोड़ें → बाद में भरें</button>
   </div>
 
-  <!-- ══ STEP 4 — CITY (GPS first) ══ -->
+  <!-- ── STEP 4: CITY ── -->
   <div class="step" id="step4">
     <div class="sh">
       <span class="sh-icon">📍</span>
@@ -276,24 +289,17 @@
       <div class="sh-desc" id="s4desc">राहुकाल आपके शहर के समय पर निर्भर करता है</div>
     </div>
 
-    <!-- GPS button — primary action -->
-    <button class="location-btn" id="gpsBtn" onclick="detectLocation()">
-      <span>📍</span>
-      <span id="gpsBtnText">मेरी लोकेशन अपने-आप पहचानें</span>
+    <button class="loc-btn" id="gpsBtn" onclick="detectLoc()">
+      📍 <span id="gpsTxt">मेरी लोकेशन अपने-आप पहचानें</span>
     </button>
+    <div class="loc-found" id="locFound">✅ <span id="locTxt">लोकेशन मिली!</span></div>
 
-    <!-- Location detected confirmation -->
-    <div class="location-detected" id="locDetected">
-      <span>✅</span>
-      <span id="locDetectedText">लोकेशन मिली!</span>
-    </div>
-
-    <div class="or-divider" id="orDivider"><span style="background:var(--cream);padding:0 10px;position:relative;z-index:1;">या मैन्युअल भरें</span></div>
+    <div class="or-div" id="orDiv"><span>या मैन्युअल भरें</span></div>
 
     <div class="field">
       <div class="field-top"><label id="cityLabel">शहर</label></div>
-      <input type="text" id="userCity" placeholder="जैसे: Delhi, Mumbai, Eluru..." autocomplete="off" oninput="validateStep4()" list="cityList"/>
-      <datalist id="cityList">
+      <input type="text" id="userCity" placeholder="जैसे: Delhi, Eluru..." autocomplete="off" oninput="validateStep4()" list="cList"/>
+      <datalist id="cList">
         <option value="Delhi"><option value="Mumbai"><option value="Hyderabad">
         <option value="Bangalore"><option value="Chennai"><option value="Kolkata">
         <option value="Pune"><option value="Ahmedabad"><option value="Visakhapatnam">
@@ -301,7 +307,6 @@
         <option value="Surat"><option value="Jaipur"><option value="Lucknow">
         <option value="Kanpur"><option value="Nagpur"><option value="Indore">
         <option value="Bhopal"><option value="Patna"><option value="Kochi">
-        <option value="Coimbatore"><option value="Rajamahendravaram">
       </datalist>
     </div>
 
@@ -330,341 +335,257 @@
     </div>
 
     <button class="btn-cta" id="btn4" onclick="goStep(5)" disabled><span id="cta4">मेरी यात्रा शुरू करें</span> 🙏</button>
-    <button class="btn-back" onclick="goStep(3)" id="back4">← वापस जाएं</button>
+    <button class="btn-back" id="back4" onclick="goStep(3)">←</button>
   </div>
 
-  <!-- ══ STEP 5 — WELCOME + WOW ══ -->
+  <!-- ── STEP 5: WELCOME ── -->
   <div class="step" id="step5">
     <div class="welcome">
       <span class="w-om">ॐ</span>
       <div class="w-title" id="wTitle">स्वागत है! 🙏</div>
       <div class="w-sub" id="wSub">आपकी साधना यात्रा आज से शुरू होती है</div>
 
-      <!-- Rashi card — PROMINENT -->
       <div class="rashi-card">
         <div class="rc-top">
-          <span class="rc-icon" id="rashiIcon">♏</span>
+          <span class="rc-icon" id="rIcon">♏</span>
           <div>
-            <div class="rc-label" id="rcLabel">आपकी राशि और नक्षत्र</div>
-            <div class="rc-name" id="rashiName">वृश्चिक राशि</div>
-            <div class="rc-sub" id="rashiSub">अनुराधा नक्षत्र • मंगल स्वामी</div>
+            <div class="rc-label" id="rcLbl">आपकी राशि और नक्षत्र</div>
+            <div class="rc-name" id="rName">वृश्चिक राशि</div>
+            <div class="rc-sub" id="rSub">अनुराधा नक्षत्र</div>
           </div>
         </div>
-        <!-- WOW moment — today's insight -->
         <div class="today-insight">
-          <span class="ti-icon">✨</span>
           <div>
-            <div class="ti-label" id="tiLabel">आज आपके लिए</div>
-            <div class="ti-text" id="tiText">आज का <strong>शुभ समय 9:00–10:30</strong> है। हनुमान जी का जप करें — मनोकामना पूर्ण होगी।</div>
+            <div class="ti-label" id="tiLbl">आज आपके लिए</div>
+            <div class="ti-text" id="tiTxt">आज हनुमान जी का जप करें। शुभ समय <strong>9:00–10:30</strong>।</div>
           </div>
         </div>
       </div>
 
-      <button class="btn-cta" onclick="enterApp()"><span id="enterText">शुभ दिन खोलें</span> →</button>
+      <button class="btn-cta" onclick="enterApp()"><span id="enterTxt">शुभ दिन खोलें</span> →</button>
     </div>
   </div>
 
-</div>
+</div><!-- end card -->
 
 <script>
   let lang = 'hi';
   const user = {};
-  const progressMap = {0:10, 1:25, 2:45, 3:62, 4:80, 5:100};
-  const counterMap  = {0:'', 1:'Step 1 of 4', 2:'Step 2 of 4', 3:'Step 3 of 4', 4:'Step 4 of 4', 5:''};
 
-  // ── Bilingual text ──
+  // ── Progress map ──
+  const pMap = {1:20, 2:40, 3:60, 4:80, 5:100};
+  const cMap = {
+    hi:  {1:'', 2:'चरण 2 / 4', 3:'चरण 3 / 4', 4:'चरण 4 / 4', 5:''},
+    en:  {1:'', 2:'Step 2 of 4', 3:'Step 3 of 4', 4:'Step 4 of 4', 5:''},
+  };
+
+  // ── Text ──
   const T = {
     hi:{
       hookTitle:'आपका दैनिक आध्यात्मिक साथी',
-      hookSub:'10 सेकंड में अपना पंचांग, राशिफल और साधना — सब कुछ आपकी भाषा में',
+      hookSub:'10 सेकंड में — पंचांग, राशिफल और साधना सब आपकी भाषा में',
       v1:'दैनिक पंचांग', v2:'राशि मार्गदर्शन', v3:'108 जप साधना',
-      trust:'🙏 उपयोग करने के लिए मुफ़्त • आपका डेटा सुरक्षित है',
-      cta0:'यात्रा शुरू करें',
-      s1title:'अपना अनुभव अपनी भाषा में शुरू करें', s1desc:'पूरा ऐप आपकी चुनी हुई भाषा में होगा',
-      cta1:'आगे बढ़ें', back1:'← वापस जाएं',
+      trust:'🙏 उपयोग के लिए मुफ़्त • आपका डेटा सुरक्षित',
+      cta1:'यात्रा शुरू करें',
       s2title:'आपका नाम क्या है?', s2desc:'हम आपको हर सुबह नाम से बुलाएंगे',
       greeting:'🙏 नमस्कार,', nameLabel:'आपका नाम', namePH:'जैसे: Ravi, Priya...',
-      cta2:'अपनी राशि देखें', back2:'← वापस जाएं',
-      s3title:'जन्म विवरण', s3desc:'सटीक राशि के लिए — आप चाहें तो छोड़ सकते हैं',
+      cta2:'अपनी राशि देखें',
+      s3title:'जन्म तिथि', s3desc:'सटीक राशि के लिए — चाहें तो छोड़ सकते हैं',
       dobLabel:'जन्म तिथि', dobOpt:'वैकल्पिक', dobHint:'💡 राशि की सटीक गणना के लिए',
       tobLabel:'जन्म समय', tobOpt:'वैकल्पिक', tobHint:'💡 नक्षत्र पता करने के लिए',
-      cta3:'अपनी राशि देखें', back3:'← वापस जाएं', skipDOB:'जन्म विवरण छोड़ें → बाद में भरें',
+      cta3:'आगे बढ़ें', skip3:'छोड़ें → बाद में भरें',
       s4title:'आप कहाँ हैं?', s4desc:'राहुकाल आपके शहर के समय पर निर्भर करता है',
-      gpsBtn:'📍 मेरी लोकेशन अपने-आप पहचानें',
+      gpsTxt:'मेरी लोकेशन अपने-आप पहचानें',
       orDiv:'या मैन्युअल भरें',
       cityLabel:'शहर', cityPH:'जैसे: Delhi, Eluru...',
       stateLabel:'राज्य', stateOpt:'चुनें',
-      cta4:'मेरी यात्रा शुरू करें', back4:'← वापस जाएं',
-      rcLabel:'आपकी राशि और नक्षत्र',
-      tiLabel:'आज आपके लिए',
-      enterText:'शुभ दिन खोलें',
+      cta4:'मेरी यात्रा शुरू करें',
+      rcLbl:'आपकी राशि और नक्षत्र',
+      tiLbl:'आज आपके लिए',
+      enterTxt:'शुभ दिन खोलें',
     },
     en:{
       hookTitle:'Your Daily Spiritual Companion',
-      hookSub:'Get your personalized panchang, rashi guidance & sadhana in 10 seconds',
+      hookSub:'Get your panchang, rashi guidance & sadhana in 10 seconds',
       v1:'Daily Panchang', v2:'Rashi Guidance', v3:'108 Jap Sadhana',
       trust:'🙏 Free to use • Your data is always safe',
-      cta0:'Begin My Journey',
-      s1title:'Start your experience in your language', s1desc:'Your entire app will be in the chosen language',
-      cta1:'Continue', back1:'← Go back',
-      s2title:"What's your name?", s2desc:"We'll greet you personally every morning",
-      greeting:'🙏 Welcome,', nameLabel:'Your Name', namePH:'e.g. Ravi, Priya, Amit...',
-      cta2:'See My Rashi', back2:'← Go back',
+      cta1:'Begin My Journey',
+      s2title:"What's your name?", s2desc:"We'll greet you by name every morning",
+      greeting:'🙏 Welcome,', nameLabel:'Your Name', namePH:'e.g. Ravi, Priya...',
+      cta2:'See My Rashi',
       s3title:'Date of Birth', s3desc:'For accurate Rashi — you can skip this for now',
       dobLabel:'Date of Birth', dobOpt:'Optional', dobHint:'💡 Needed for accurate Rashi',
       tobLabel:'Time of Birth', tobOpt:'Optional', tobHint:'💡 Helps find your Nakshatra',
-      cta3:'See My Rashi', back3:'← Go back', skipDOB:'Skip for now → fill later',
+      cta3:'Continue', skip3:'Skip → fill later',
       s4title:'Where are you based?', s4desc:'Rahu Kaal timing depends on your city',
-      gpsBtn:'📍 Detect my location automatically',
+      gpsTxt:'Detect my location automatically',
       orDiv:'or enter manually',
       cityLabel:'City', cityPH:'e.g. Delhi, Mumbai, Eluru...',
       stateLabel:'State', stateOpt:'Select state',
-      cta4:'Start My Journey', back4:'← Go back',
-      rcLabel:'Your Rashi & Nakshatra',
-      tiLabel:"Today's Guidance for You",
-      enterText:'Open Shubh Din',
+      cta4:'Start My Journey',
+      rcLbl:'Your Rashi & Nakshatra',
+      tiLbl:"Today's guidance",
+      enterTxt:'Open Shubh Din',
     }
   };
 
-  // ── Rashi data ──
+  // ── Rashi ──
   const rashis = [
-    {hi:'मेष',en:'Aries',icon:'♈',nak_hi:'अश्विनी',nak_en:'Ashwini',lord_hi:'मंगल',lord_en:'Mars'},
-    {hi:'वृषभ',en:'Taurus',icon:'♉',nak_hi:'कृत्तिका',nak_en:'Krittika',lord_hi:'शुक्र',lord_en:'Venus'},
-    {hi:'मिथुन',en:'Gemini',icon:'♊',nak_hi:'मृगशिरा',nak_en:'Mrigashira',lord_hi:'बुध',lord_en:'Mercury'},
-    {hi:'कर्क',en:'Cancer',icon:'♋',nak_hi:'पुनर्वसु',nak_en:'Punarvasu',lord_hi:'चंद्र',lord_en:'Moon'},
-    {hi:'सिंह',en:'Leo',icon:'♌',nak_hi:'मघा',nak_en:'Magha',lord_hi:'सूर्य',lord_en:'Sun'},
-    {hi:'कन्या',en:'Virgo',icon:'♍',nak_hi:'हस्त',nak_en:'Hasta',lord_hi:'बुध',lord_en:'Mercury'},
-    {hi:'तुला',en:'Libra',icon:'♎',nak_hi:'चित्रा',nak_en:'Chitra',lord_hi:'शुक्र',lord_en:'Venus'},
-    {hi:'वृश्चिक',en:'Scorpio',icon:'♏',nak_hi:'अनुराधा',nak_en:'Anuradha',lord_hi:'मंगल',lord_en:'Mars'},
-    {hi:'धनु',en:'Sagittarius',icon:'♐',nak_hi:'मूल',nak_en:'Mula',lord_hi:'गुरु',lord_en:'Jupiter'},
-    {hi:'मकर',en:'Capricorn',icon:'♑',nak_hi:'श्रवण',nak_en:'Shravana',lord_hi:'शनि',lord_en:'Saturn'},
-    {hi:'कुंभ',en:'Aquarius',icon:'♒',nak_hi:'शतभिषा',nak_en:'Shatabhisha',lord_hi:'शनि',lord_en:'Saturn'},
-    {hi:'मीन',en:'Pisces',icon:'♓',nak_hi:'रेवती',nak_en:'Revati',lord_hi:'गुरु',lord_en:'Jupiter'},
+    {hi:'मेष',en:'Aries',icon:'♈',nh:'अश्विनी',ne:'Ashwini',lh:'मंगल',le:'Mars'},
+    {hi:'वृषभ',en:'Taurus',icon:'♉',nh:'कृत्तिका',ne:'Krittika',lh:'शुक्र',le:'Venus'},
+    {hi:'मिथुन',en:'Gemini',icon:'♊',nh:'मृगशिरा',ne:'Mrigashira',lh:'बुध',le:'Mercury'},
+    {hi:'कर्क',en:'Cancer',icon:'♋',nh:'पुनर्वसु',ne:'Punarvasu',lh:'चंद्र',le:'Moon'},
+    {hi:'सिंह',en:'Leo',icon:'♌',nh:'मघा',ne:'Magha',lh:'सूर्य',le:'Sun'},
+    {hi:'कन्या',en:'Virgo',icon:'♍',nh:'हस्त',ne:'Hasta',lh:'बुध',le:'Mercury'},
+    {hi:'तुला',en:'Libra',icon:'♎',nh:'चित्रा',ne:'Chitra',lh:'शुक्र',le:'Venus'},
+    {hi:'वृश्चिक',en:'Scorpio',icon:'♏',nh:'अनुराधा',ne:'Anuradha',lh:'मंगल',le:'Mars'},
+    {hi:'धनु',en:'Sagittarius',icon:'♐',nh:'मूल',ne:'Mula',lh:'गुरु',le:'Jupiter'},
+    {hi:'मकर',en:'Capricorn',icon:'♑',nh:'श्रवण',ne:'Shravana',lh:'शनि',le:'Saturn'},
+    {hi:'कुंभ',en:'Aquarius',icon:'♒',nh:'शतभिषा',ne:'Shatabhisha',lh:'शनि',le:'Saturn'},
+    {hi:'मीन',en:'Pisces',icon:'♓',nh:'रेवती',ne:'Revati',lh:'गुरु',le:'Jupiter'},
   ];
 
   function getRashi(dob) {
-    if (!dob) return rashis[7]; // default Scorpio
-    const d = new Date(dob);
-    const m = d.getMonth(), day = d.getDate();
+    if (!dob) return rashis[7];
+    const d = new Date(dob), m = d.getMonth(), day = d.getDate();
     const cuts = [20,19,21,20,21,21,23,23,23,23,22,22];
     return rashis[day < cuts[m] ? (m-1+12)%12 : m];
   }
 
-  // ── Apply language ──
+  // ── Apply language text ──
   function applyLang(l) {
-    lang = l;
     const t = T[l];
-    const s = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
-    const ph = (id, val) => { const el = document.getElementById(id); if(el) el.placeholder = val; };
-
+    const s = (id,v) => { const el=document.getElementById(id); if(el) el.innerHTML=v; };
+    const ph = (id,v) => { const el=document.getElementById(id); if(el) el.placeholder=v; };
     s('hookTitle',t.hookTitle); s('hookSub',t.hookSub);
     s('v1',t.v1); s('v2',t.v2); s('v3',t.v3);
-    s('trustLine',t.trust);
-    s('cta0',t.cta0);
-    s('s1title',t.s1title); s('s1desc',t.s1desc);
-    s('cta1',t.cta1); s('back1',t.back1);
+    s('trustLine',t.trust); s('cta1',t.cta1);
     s('s2title',t.s2title); s('s2desc',t.s2desc);
-    s('nameLabel',t.nameLabel); ph('userName',t.namePH);
-    s('cta2',t.cta2); s('back2',t.back2);
+    s('nameLabel',t.nameLabel); ph('userName',t.namePH); s('cta2',t.cta2);
     s('s3title',t.s3title); s('s3desc',t.s3desc);
     s('dobLabel',t.dobLabel); s('dobOpt',t.dobOpt); s('dobHint',t.dobHint);
     s('tobLabel',t.tobLabel); s('tobOpt',t.tobOpt); s('tobHint',t.tobHint);
-    s('cta3',t.cta3); s('back3',t.back3); s('skipDOB',t.skipDOB);
+    s('cta3',t.cta3); s('skip3',t.skip3);
     s('s4title',t.s4title); s('s4desc',t.s4desc);
-    s('gpsBtnText',t.gpsBtn);
-    s('orDivider',`<span style="background:var(--cream);padding:0 10px;position:relative;z-index:1;">${t.orDiv}</span>`);
+    s('gpsTxt',t.gpsTxt);
+    s('orDiv',`<span>${t.orDiv}</span>`);
     s('cityLabel',t.cityLabel); ph('userCity',t.cityPH);
     s('stateLabel',t.stateLabel); s('stateOpt',t.stateOpt);
-    s('cta4',t.cta4); s('back4',t.back4);
-    s('rcLabel',t.rcLabel);
-    s('tiLabel',t.tiLabel);
-    s('enterText',t.enterText);
+    s('cta4',t.cta4);
+    s('rcLbl',t.rcLbl); s('tiLbl',t.tiLbl); s('enterTxt',t.enterTxt);
   }
 
-  // ── Language select ──
-  function selectLang(l) {
-    lang = l;
-    document.getElementById('langHi').classList.toggle('selected', l==='hi');
-    document.getElementById('langEn').classList.toggle('selected', l==='en');
+  // ── Language selection — auto-proceed after brief animation ──
+  function selectLanguage(l) {
+    lang = l; user.lang = l;
+
+    // Highlight selected
+    document.getElementById('optHi').classList.toggle('selecting', l==='hi');
+    document.getElementById('optEn').classList.toggle('selecting', l==='en');
+
     applyLang(l);
+
+    // Auto-proceed after 400ms — feels instant, not abrupt
+    setTimeout(() => {
+      document.getElementById('langScreen').style.display = 'none';
+      const card = document.getElementById('mainCard');
+      card.classList.add('show');
+      showStep(1);
+    }, 400);
   }
 
   // ── Step navigation ──
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step'+n).classList.add('active');
+    document.getElementById('pFill').style.width = (pMap[n]||0) + '%';
+    document.getElementById('stepCtr').textContent = cMap[lang][n] || '';
+  }
+
   function goStep(n) {
-    // Collect data
+    // Save data
     user.name  = document.getElementById('userName')?.value?.trim()  || user.name  || '';
     user.dob   = document.getElementById('userDOB')?.value           || user.dob   || '';
     user.tob   = document.getElementById('userTOB')?.value           || user.tob   || '';
     user.city  = document.getElementById('userCity')?.value?.trim()  || user.city  || '';
     user.state = document.getElementById('userState')?.value         || user.state || '';
-    user.lang  = lang;
 
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    document.getElementById('step'+n).classList.add('active');
-    document.getElementById('pFill').style.width = progressMap[n] + '%';
-    document.getElementById('stepCounter').textContent = counterMap[n];
-
-    // Step-specific personalisation
-    if (n===3 && user.name) {
-      const t = T[lang];
-      document.getElementById('s3title').textContent = lang==='hi' ? user.name+' जी, जन्म विवरण' : 'Your birth details, '+user.name;
-    }
-    if (n===4 && user.name) {
-      document.getElementById('s4title').textContent = lang==='hi' ? 'लगभग हो गया, '+user.name+' जी!' : 'Almost done, '+user.name+'!';
-    }
+    // Personalise step titles
+    const t = T[lang];
+    if (n===3 && user.name) document.getElementById('s3title').textContent = lang==='hi' ? user.name+' जी, जन्म तिथि?' : 'Birth details, '+user.name+'?';
+    if (n===4 && user.name) document.getElementById('s4title').textContent = lang==='hi' ? 'लगभग हो गया, '+user.name+' जी!' : 'Almost done, '+user.name+'!';
     if (n===5) buildWelcome();
 
+    showStep(n);
     window.scrollTo(0,0);
   }
+
+  function skipStep() { user.dob=''; user.tob=''; goStep(4); }
 
   // ── Name typing ──
   function onNameType() {
     const name = document.getElementById('userName').value.trim();
     const greet = document.getElementById('nameGreet');
-    const t = T[lang];
     if (name.length >= 2) {
-      document.getElementById('ngText').textContent = t.greeting + ' ' + name + (lang==='hi' ? ' जी! 🙏' : '! 🙏');
+      document.getElementById('ngText').textContent = T[lang].greeting + ' ' + name + (lang==='hi' ? ' जी! 🙏' : '! 🙏');
       greet.classList.add('show');
-    } else {
-      greet.classList.remove('show');
-    }
+    } else { greet.classList.remove('show'); }
     document.getElementById('btn2').disabled = name.length < 2;
   }
 
-  // ── DOB change — unlock time field ──
+  // ── DOB unlock time ──
   function onDOBChange() {
     const dob = document.getElementById('userDOB').value;
-    const tobField = document.getElementById('tobField');
-    if (dob) {
-      tobField.style.opacity = '1';
-      tobField.style.pointerEvents = 'auto';
-    }
-    validateStep3();
+    const w = document.getElementById('tobWrap');
+    if (dob) { w.style.opacity='1'; w.style.pointerEvents='auto'; }
   }
 
-  function validateStep3() {
-    // Always active — DOB is optional
-    document.getElementById('btn3').disabled = false;
-  }
-
-  function skipDOB() {
-    user.dob = ''; user.tob = '';
-    goStep(4);
-  }
-
-  // ── Location detect ──
-  function detectLocation() {
-    const btn = document.getElementById('gpsBtn');
-    btn.style.opacity = '0.6';
-    document.getElementById('gpsBtnText').textContent = lang==='hi' ? '⏳ लोकेशन ढूंढ रहे हैं...' : '⏳ Detecting location...';
-
-    if (!navigator.geolocation) {
-      btn.style.opacity = '1';
-      document.getElementById('gpsBtnText').textContent = lang==='hi' ? '📍 मेरी लोकेशन पहचानें' : '📍 Detect my location';
-      return;
-    }
-
+  // ── Location ──
+  function detectLoc() {
+    document.getElementById('gpsTxt').textContent = lang==='hi' ? '⏳ ढूंढ रहे हैं...' : '⏳ Detecting...';
+    if (!navigator.geolocation) { resetGPS(); return; }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        // Use reverse geocoding via free API
-        const lat = pos.coords.latitude.toFixed(2);
-        const lon = pos.coords.longitude.toFixed(2);
-
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
-          .then(r => r.json())
-          .then(data => {
-            const city  = data.address?.city || data.address?.town || data.address?.village || '';
-            const state = data.address?.state || '';
+      pos => {
+        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
+          .then(r=>r.json())
+          .then(d => {
+            const city  = d.address?.city || d.address?.town || d.address?.village || '';
+            const state = d.address?.state || '';
             if (city) document.getElementById('userCity').value = city;
+            const sm = {'Andhra Pradesh':'AP','Telangana':'TS','Maharashtra':'MH','Delhi':'DL','Karnataka':'KA','Tamil Nadu':'TN','Gujarat':'GJ','Rajasthan':'RJ','Uttar Pradesh':'UP','Madhya Pradesh':'MP','West Bengal':'WB','Kerala':'KL','Punjab':'PB','Haryana':'HR','Bihar':'BR','Odisha':'OD'};
+            document.getElementById('userState').value = sm[state] || 'Other';
+            user.city = city; user.state = sm[state] || 'Other';
 
-            // Map state to code
-            const stateMap = {
-              'Andhra Pradesh':'AP','Telangana':'TS','Maharashtra':'MH',
-              'Delhi':'DL','Karnataka':'KA','Tamil Nadu':'TN','Gujarat':'GJ',
-              'Rajasthan':'RJ','Uttar Pradesh':'UP','Madhya Pradesh':'MP',
-              'West Bengal':'WB','Kerala':'KL','Punjab':'PB','Haryana':'HR',
-              'Bihar':'BR','Odisha':'OD',
-            };
-            const code = stateMap[state] || 'Other';
-            document.getElementById('userState').value = code;
-
-            user.city = city; user.state = code;
-
-            // Show confirmation
-            const det = document.getElementById('locDetected');
-            document.getElementById('locDetectedText').textContent =
-              (lang==='hi' ? '✅ मिला: ' : '✅ Found: ') + city + (state ? ', '+state : '');
-            det.classList.add('show');
-            document.getElementById('gpsBtn').style.display = 'none';
-            document.getElementById('orDivider').style.display = 'none';
-
+            const lf = document.getElementById('locFound');
+            document.getElementById('locTxt').textContent = (lang==='hi'?'मिला: ':'Found: ') + city + (state?', '+state:'');
+            lf.classList.add('show');
+            document.getElementById('gpsBtn').style.display='none';
+            document.getElementById('orDiv').style.display='none';
             validateStep4();
-          })
-          .catch(() => { resetGPS(); });
-      },
-      () => { resetGPS(); }
+          }).catch(resetGPS);
+      }, resetGPS
     );
   }
-
-  function resetGPS() {
-    const btn = document.getElementById('gpsBtn');
-    btn.style.opacity = '1';
-    document.getElementById('gpsBtnText').innerHTML = lang==='hi' ? '📍 मेरी लोकेशन पहचानें' : '📍 Detect my location';
-  }
-
+  function resetGPS() { document.getElementById('gpsTxt').textContent = T[lang].gpsTxt; }
   function validateStep4() {
-    const city  = document.getElementById('userCity').value.trim();
-    const state = document.getElementById('userState').value;
-    document.getElementById('btn4').disabled = !(city.length>=2 && state);
+    const ok = document.getElementById('userCity').value.trim().length>=2 && document.getElementById('userState').value;
+    document.getElementById('btn4').disabled = !ok;
   }
 
-  // ── Build welcome screen ──
+  // ── Welcome screen ──
   function buildWelcome() {
     const r = getRashi(user.dob);
-    const t = T[lang];
     const name = user.name || '';
+    document.getElementById('wTitle').textContent = lang==='hi' ? 'स्वागत है, '+name+' जी! 🙏' : 'Welcome, '+name+'! 🙏';
+    document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : 'From '+user.city+' — your journey begins today 🌼';
+    document.getElementById('rIcon').textContent  = r.icon;
+    document.getElementById('rName').textContent  = lang==='hi' ? r.hi+' राशि' : r.en+' Rashi';
+    document.getElementById('rSub').textContent   = lang==='hi' ? r.nh+' नक्षत्र • '+r.lh+' स्वामी' : r.ne+' Nakshatra • Lord: '+r.le;
 
-    document.getElementById('wTitle').textContent =
-      lang==='hi' ? 'स्वागत है, '+name+' जी! 🙏' : 'Welcome, '+name+'! 🙏';
-    document.getElementById('wSub').textContent =
-      lang==='hi'
-        ? user.city+' से — आपकी साधना यात्रा आज से शुरू 🌼'
-        : 'From '+user.city+' — your spiritual journey begins today 🌼';
-
-    document.getElementById('rashiIcon').textContent = r.icon;
-    document.getElementById('rashiName').textContent = lang==='hi' ? r.hi+' राशि' : r.en+' Rashi';
-    document.getElementById('rashiSub').textContent  =
-      lang==='hi'
-        ? r.nak_hi+' नक्षत्र • '+r.lord_hi+' स्वामी'
-        : r.nak_en+' Nakshatra • Lord: '+r.lord_en;
-
-    // Today's insight (live panchang data will replace this later)
-    const days = ['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
-    const daysEn = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const day = new Date().getDay();
-    const insights_hi = [
-      'आज <strong>सूर्य देवता</strong> की पूजा करें। शुभ समय <strong>7:00–8:30</strong>।',
-      'आज <strong>शिव जी</strong> का जल चढ़ाएं। शुभ समय <strong>6:30–8:00</strong>।',
-      'आज <strong>हनुमान जी</strong> का जप करें। शुभ समय <strong>9:00–10:30</strong>।',
-      'आज <strong>गणेश जी</strong> की पूजा करें। शुभ समय <strong>10:00–11:30</strong>।',
-      'आज <strong>विष्णु जी</strong> का स्मरण करें। शुभ समय <strong>8:00–9:30</strong>।',
-      'आज <strong>लक्ष्मी जी</strong> की आराधना करें। शुभ समय <strong>6:00–7:30</strong>।',
-      'आज <strong>शनि देव</strong> को तेल चढ़ाएं। शुभ समय <strong>8:30–10:00</strong>।',
-    ];
-    const insights_en = [
-      'Pray to <strong>Surya Dev</strong> today. Auspicious time: <strong>7:00–8:30</strong>.',
-      'Offer water to <strong>Shiva Ji</strong>. Auspicious time: <strong>6:30–8:00</strong>.',
-      'Chant for <strong>Hanuman Ji</strong> today. Auspicious time: <strong>9:00–10:30</strong>.',
-      'Worship <strong>Ganesh Ji</strong> today. Auspicious time: <strong>10:00–11:30</strong>.',
-      'Remember <strong>Vishnu Ji</strong> today. Auspicious time: <strong>8:00–9:30</strong>.',
-      'Pray to <strong>Lakshmi Ji</strong> today. Auspicious time: <strong>6:00–7:30</strong>.',
-      'Offer oil to <strong>Shani Dev</strong>. Auspicious time: <strong>8:30–10:00</strong>.',
-    ];
-
-    document.getElementById('tiText').innerHTML = lang==='hi' ? insights_hi[day] : insights_en[day];
-    document.getElementById('tiLabel').textContent = lang==='hi'
-      ? (days[day]+' — आपके लिए आज')
-      : (daysEn[day]+' — Your guidance today');
+    const days = new Date().getDay();
+    const ihi = ['आज सूर्य देवता की पूजा करें। शुभ समय <strong>7:00–8:30</strong>।','आज शिव जी का जल चढ़ाएं। शुभ समय <strong>6:30–8:00</strong>।','आज हनुमान जी का जप करें। शुभ समय <strong>9:00–10:30</strong>।','आज गणेश जी की पूजा करें। शुभ समय <strong>10:00–11:30</strong>।','आज विष्णु जी का स्मरण करें। शुभ समय <strong>8:00–9:30</strong>।','आज लक्ष्मी जी की आराधना करें। शुभ समय <strong>6:00–7:30</strong>।','आज शनि देव को तेल चढ़ाएं। शुभ समय <strong>8:30–10:00</strong>।'];
+    const ien = ['Pray to Surya Dev. Auspicious time: <strong>7:00–8:30</strong>.','Offer water to Shiva Ji. Auspicious time: <strong>6:30–8:00</strong>.','Chant for Hanuman Ji. Auspicious time: <strong>9:00–10:30</strong>.','Worship Ganesh Ji. Auspicious time: <strong>10:00–11:30</strong>.','Remember Vishnu Ji. Auspicious time: <strong>8:00–9:30</strong>.','Pray to Lakshmi Ji. Auspicious time: <strong>6:00–7:30</strong>.','Offer oil to Shani Dev. Auspicious time: <strong>8:30–10:00</strong>.'];
+    document.getElementById('tiTxt').innerHTML = lang==='hi' ? ihi[days] : ien[days];
   }
 
   // ── Enter app ──
@@ -679,13 +600,9 @@
       const saved = localStorage.getItem('shubhdin_user');
       if (saved && JSON.parse(saved).setupDone) { window.location.href = 'dashboard.html'; return; }
     } catch(e) {}
-    // Auto detect device language
-    const devLang = navigator.language || 'hi';
-    const initialLang = devLang.startsWith('hi') ? 'hi' : 'en';
-    selectLang(initialLang);
-    // Pre-select Hindi
-    document.getElementById('langHi').classList.toggle('selected', initialLang==='hi');
-    document.getElementById('langEn').classList.toggle('selected', initialLang==='en');
+    // Show language screen first — always
+    document.getElementById('langScreen').style.display = 'block';
+    document.getElementById('mainCard').classList.remove('show');
   });
 </script>
 </body>
