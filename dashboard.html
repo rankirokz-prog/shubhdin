@@ -71,7 +71,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 ══════════════════════════════ */
 /* Top nav — minimal, no dark header */
 .nav{
-  flex-shrink:0;padding:48px 18px 10px;
+  flex-shrink:0;padding:10px 18px 6px;
   display:flex;align-items:center;justify-content:space-between;
   position:relative;z-index:5;
 }
@@ -80,16 +80,16 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 .dpill{background:rgba(26,10,0,0.06);border:1px solid rgba(212,168,67,0.16);border-radius:20px;padding:4px 11px;color:rgba(26,10,0,0.50);font-size:10px;font-weight:500;}
 
 /* Greeting */
-.greet{padding:0 18px 12px;position:relative;z-index:5;}
+.greet{padding:0 18px 10px;position:relative;z-index:5;}
 .greet-time{font-size:10px;color:rgba(26,10,0,0.36);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
-.greet-name{font-family:'Tiro Devanagari Hindi',serif;font-size:28px;color:var(--dark);line-height:1.1;margin-bottom:10px;}
-.chips{display:flex;gap:7px;flex-wrap:wrap;}
-.chip{display:flex;align-items:center;gap:4px;background:rgba(212,168,67,0.10);border:1px solid rgba(212,168,67,0.18);border-radius:20px;padding:3px 10px;}
-.chip-l{font-size:7.5px;color:rgba(26,10,0,0.34);text-transform:uppercase;letter-spacing:1px;}
-.chip-v{font-size:11px;color:var(--dark);font-weight:600;margin-left:2px;}
+.greet-name{font-family:'Tiro Devanagari Hindi',serif;font-size:26px;color:var(--dark);line-height:1.1;margin-bottom:8px;}
+.chips{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden;}
+.chip{display:flex;align-items:center;gap:3px;background:rgba(212,168,67,0.10);border:1px solid rgba(212,168,67,0.18);border-radius:20px;padding:3px 8px;flex-shrink:0;}
+.chip-l{font-size:7px;color:rgba(26,10,0,0.34);text-transform:uppercase;letter-spacing:0.5px;}
+.chip-v{font-size:10.5px;color:var(--dark);font-weight:600;margin-left:1px;}
 
 /* Home body */
-.hbody{padding:0 14px 10px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:5;}
+.hbody{padding:0 14px 10px;display:flex;flex-direction:column;gap:8px;position:relative;z-index:5;}
 
 /* ── LISTEN HERO ── */
 .lhero{
@@ -354,6 +354,82 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 .share-btn:active{transform:scale(0.97);}
 .again-btn{width:100%;height:44px;border-radius:14px;border:1.5px solid rgba(212,168,67,0.20);background:rgba(212,168,67,0.07);color:var(--gold);font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
 
+
+/* ══ NIGHT JAP CARD ══ */
+.night-card{
+  border-radius:20px;overflow:hidden;
+  position:relative;min-height:155px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  border:1px solid rgba(135,206,235,0.20);
+  cursor:pointer;transition:transform 0.2s;
+}
+.night-card:active{transform:scale(0.98);}
+.nc-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#020814,#050D1A,#0A1628,#05101E);
+}
+/* Stars background */
+.nc-bg::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 15% 25%,rgba(255,255,255,0.7) 0%,transparent 100%),
+    radial-gradient(1px 1px at 45% 15%,rgba(255,255,255,0.5) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 30%,rgba(255,255,255,0.8) 0%,transparent 100%),
+    radial-gradient(1px 1px at 85% 20%,rgba(255,255,255,0.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 25% 65%,rgba(255,255,255,0.4) 0%,transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 55%,rgba(255,255,255,0.6) 0%,transparent 100%),
+    radial-gradient(1px 1px at 90% 60%,rgba(255,255,255,0.5) 0%,transparent 100%),
+    radial-gradient(1px 1px at 10% 80%,rgba(255,255,255,0.4) 0%,transparent 100%),
+    radial-gradient(2px 2px at 50% 40%,rgba(135,206,250,0.4) 0%,transparent 100%);
+  animation:starsTwinkle 4s ease-in-out infinite;
+}
+@keyframes starsTwinkle{0%,100%{opacity:0.7;}50%{opacity:1;}}
+/* Moon glow */
+.nc-bg::after{
+  content:'';position:absolute;top:-20px;right:-20px;
+  width:130px;height:130px;border-radius:50%;
+  background:radial-gradient(circle,rgba(135,206,250,0.12) 0%,transparent 70%);
+}
+.nc-deity{
+  position:absolute;right:10px;top:50%;transform:translateY(-55%);
+  font-size:90px;opacity:0.22;pointer-events:none;
+  filter:drop-shadow(0 0 12px rgba(135,206,250,0.3));
+}
+.nc-overlay{
+  position:absolute;bottom:0;left:0;right:0;height:80%;
+  background:linear-gradient(0deg,rgba(2,8,20,0.96) 0%,rgba(2,8,20,0.55) 65%,transparent 100%);
+}
+.nc-content{position:relative;z-index:2;padding:14px 16px;}
+.nc-moon{font-size:14px;display:block;margin-bottom:4px;}
+.nc-tag{font-size:9px;color:rgba(135,206,250,0.65);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;}
+.nc-hook{font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:#fff;line-height:1.3;margin-bottom:6px;}
+.nc-bottom{display:flex;align-items:center;justify-content:space-between;}
+.nc-benefit{font-size:11px;color:rgba(255,255,255,0.45);}
+.nc-btn{
+  display:flex;align-items:center;gap:6px;
+  background:linear-gradient(135deg,#1A3A6B,#0D2244);
+  border:1px solid rgba(135,206,250,0.25);
+  border-radius:20px;padding:6px 14px;
+  font-size:11px;font-weight:600;color:rgba(135,206,250,0.90);
+}
+/* Coming soon version */
+.nc-coming{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;padding:20px 16px;text-align:center;position:relative;z-index:2;
+}
+.nc-coming-ico{font-size:32px;display:block;margin-bottom:10px;opacity:0.70;}
+.nc-coming-title{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:rgba(255,255,255,0.80);margin-bottom:5px;line-height:1.4;}
+.nc-coming-sub{font-size:11px;color:rgba(135,206,250,0.50);line-height:1.5;}
+.nc-badge{
+  display:inline-block;margin-top:10px;
+  background:rgba(135,206,250,0.10);
+  border:1px solid rgba(135,206,250,0.22);
+  border-radius:20px;padding:4px 12px;
+  font-size:10px;font-weight:600;
+  color:rgba(135,206,250,0.70);
+  animation:badgePulse 2.5s ease-in-out infinite;
+}
+
 /* ══ TAB BAR ══ */
 .tabbar{flex-shrink:0;height:60px;background:#fff;border-top:1px solid rgba(212,168,67,0.10);display:flex;align-items:center;justify-content:space-around;padding:0 8px 4px;box-shadow:0 -3px 14px rgba(0,0,0,0.04);z-index:30;position:relative;}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 4px 0;border-radius:10px;}
@@ -372,6 +448,46 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 @keyframes wave{0%,100%{transform:rotate(0deg);}25%{transform:rotate(20deg);}75%{transform:rotate(-10deg);}}
 .t-text{font-size:12px;color:#fff;font-weight:500;}
 .t-text em{font-style:normal;color:var(--gold);}
+
+/* ══ NIGHT JAP CARD ══ */
+.night-card{
+  border-radius:20px;overflow:hidden;cursor:pointer;
+  position:relative;min-height:140px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  border:1.5px solid rgba(135,206,235,0.20);
+  transition:transform 0.2s;
+}
+.night-card:active{transform:scale(0.98);}
+.nc-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(155deg,#020510 0%,#050D28 40%,#0A1840 65%,#050D28 100%);
+}
+/* Stars in background */
+.nc-stars{position:absolute;inset:0;overflow:hidden;}
+.nc-star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;animation:twinkle linear infinite;}
+@keyframes twinkle{0%,100%{opacity:0.2;}50%{opacity:1;}}
+/* Shiva silhouette / moon glow */
+.nc-glow{position:absolute;top:-20px;right:10px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(135,206,235,0.15) 0%,transparent 70%);pointer-events:none;}
+.nc-moon{position:absolute;top:14px;right:20px;font-size:48px;opacity:0.22;pointer-events:none;}
+.nc-deity{position:absolute;right:8px;bottom:0;font-size:72px;opacity:0.14;pointer-events:none;line-height:1;}
+/* Overlay */
+.nc-overlay{position:absolute;bottom:0;left:0;right:0;height:85%;background:linear-gradient(0deg,rgba(2,5,16,0.95) 0%,rgba(2,5,16,0.60) 65%,transparent 100%);}
+/* Content */
+.nc-content{position:relative;z-index:2;padding:13px 16px;}
+.nc-tag{font-size:9px;color:rgba(135,206,235,0.65);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;}
+.nc-title{font-family:'Tiro Devanagari Hindi',serif;font-size:17px;color:#fff;line-height:1.35;margin-bottom:6px;}
+.nc-bottom{display:flex;align-items:center;justify-content:space-between;}
+.nc-sub{font-size:11px;color:rgba(255,255,255,0.45);}
+.nc-badge{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(135,206,235,0.12);
+  border:1px solid rgba(135,206,235,0.25);
+  border-radius:20px;padding:5px 12px;
+  font-size:10.5px;font-weight:600;color:rgba(135,206,235,0.90);
+  animation:nightPulse 3s ease-in-out infinite;
+}
+@keyframes nightPulse{0%,100%{opacity:0.7;}50%{opacity:1;box-shadow:0 0 12px rgba(135,206,235,0.20);}}
+
 </style>
 </head>
 <body>
@@ -449,20 +565,8 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
           </div>
         </div>
 
-        <!-- Japa thumbnail -->
-        <div class="jthumb" onclick="goJap()">
-          <div class="jt-bg"></div>
-          <div class="jt-deity" id="jtDeity">🌸</div>
-          <div class="jt-overlay"></div>
-          <div class="jt-content">
-            <div class="jt-tag" id="jtTag">🪔 आज की साधना</div>
-            <div class="jt-hook" id="jtHook">आज लक्ष्मी जी का जाप करें — धन और खुशहाली</div>
-            <div class="jt-bottom">
-              <div class="jt-benefit" id="jtBenefit">👉 108 बार • 11 मिनट</div>
-              <div class="jt-btn">▶ <span id="jtBtn">शुरू करें</span></div>
-            </div>
-          </div>
-        </div>
+        <!-- Japa / Night card — changes by time -->
+        <div id="dynamicCard"></div>
 
         <!-- Streak -->
         <div class="streak">
@@ -779,12 +883,6 @@ function personalise(){
   document.getElementById('avoidLbl').textContent=H?'राहु काल':'Rahu Kaal';
   document.getElementById('avoidTime').textContent=T.avoid;
   document.getElementById('avoidSub').textContent=H?'नया काम टालें':'Avoid new work';
-  // Japa thumb
-  document.getElementById('jtDeity').textContent=T.ico;
-  document.getElementById('jtTag').textContent=H?'🪔 आज की साधना':'🪔 Today\'s Sadhana';
-  document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
-  document.getElementById('jtBenefit').textContent=H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes';
-  document.getElementById('jtBtn').textContent=H?'शुरू करें':'Start';
   // Streak
   const sk=getStreak();
   document.getElementById('skNum').textContent=sk;
@@ -819,7 +917,7 @@ function personalise(){
   document.getElementById('ps1').textContent=H?'📿 पाँच तत्व':'📿 Pancha Tattva';
   document.getElementById('varLbl').textContent=H?'वार':'Vara';
   document.getElementById('varVal').textContent=H?df_h[dow]:df_e[dow];
-  document.getElementById('varSub').textContent=H?T.d_hi+' का दिन':T.d_en+"'s Day";
+  document.getElementById('varSub').textContent=H?T.d_hi+' का दिन':T.d_en+" Day";
   document.getElementById('nakLbl2').textContent=H?'नक्षत्र':'Nakshatra';
   document.getElementById('nakVal2').textContent=H?R.nh:R.ne;
   document.getElementById('ps2').textContent=H?'⚠️ अशुभ काल':'⚠️ Inauspicious Times';
@@ -848,7 +946,7 @@ function personalise(){
   document.getElementById('jplayTxt').textContent=H?'जप शुरू करें':'Start Jap';
   // Complete screen
   document.getElementById('jdTitle').textContent=H?'108 जप पूर्ण! 🙏':'108 Jap Complete! 🙏';
-  document.getElementById('jdSub').textContent=H?T.d_hi+' की कृपा सदा बनी रहे 🌸':'May '+T.d_en+"'s blessings be with you 🌸";
+  document.getElementById('jdSub').textContent=H?T.d_hi+' की कृपा सदा बनी रहे 🌸':'May '+T.d_en+" blessings be with you 🌸"ssings be with you 🌸";
   document.getElementById('scMsg').textContent=H?'आज मैंने '+T.d_hi+' का 108 बार जाप किया 🙏':'Today I chanted for '+T.d_en+' 108 times 🙏';
   document.getElementById('scName').textContent='— '+name+(H?' जी':'');
   document.getElementById('scDay').textContent=H?df_h[dow]+' • '+R.nh+' नक्षत्र':df_e[dow]+' • '+R.ne+' Nakshatra';
@@ -902,14 +1000,14 @@ function nextTr(){selTr(Math.min(tracks.length-1,curTr+1));}
 let mpPlaying=false,mpProg=0,mpTimer=null,mpTr=0;
 const mpTracks=[
   {ico:T.ico,title:H?'आज का पंचांग — '+name+' जी':"Today's Panchang — "+name,sub:H?R.h+' • '+R.nh:R.e+' • '+R.ne,s:204,d:'3:24'},
-  {ico:T.ico,title:H?T.d_hi+' — 108 जाप':T.d_en+' — 108 Chants',sub:H?'आज की साधना':'Today\'s Sadhana',s:702,d:'11:42'},
+  {ico:T.ico,title:H?T.d_hi+' — 108 जाप':T.d_en+' — 108 Chants',sub:H?'आज की साधना':'Todays Sadhana',s:702,d:'11:42'},
   {ico:'☀️',title:H?'गायत्री मंत्र':'Gayatri Mantra',sub:H?'सूर्योदय ध्यान':'Sunrise Meditation',s:310,d:'5:10'},
   {ico:'🌙',title:H?'राशिफल — आज':'Rashi — Today',sub:H?R.h+' राशि':R.e+' Rashi',s:135,d:'2:15'},
 ];
 
 function openMini(){
   const mp=document.getElementById('miniPlayer');
-  mp.style.display='';
+  mp.style.display='block';
   mp.classList.add('open');
   mpSetTr(0);
 }
@@ -1005,9 +1103,84 @@ function showToast(){
   setTimeout(()=>t.classList.remove('show'),5500);
 }
 
+
+// ── Night Jap logic ──
+function isNight(){return new Date().getHours()>=21||new Date().getHours()<5;}
+
+
+// ── Night Jap / Day Jap dynamic card ──
+function buildDynamicCard() {
+  const hour = new Date().getHours();
+  const isNight = hour >= 21 || hour < 5; // 9 PM to 5 AM
+  const el = document.getElementById('dynamicCard');
+
+  if (isNight) {
+    // NIGHT JAP — Shiva, beautiful dark blue
+    const nightScript_hi = [
+      'सोने से पहले शिव जी का नाम लें — नींद गहरी और मन शांत होगा',
+      'रात को शिव जी का जाप करें — बुरे सपने नहीं आएंगे',
+      'शिव जी रात के स्वामी हैं — उनका नाम लेकर सोएं',
+      'रात्रि जाप से दिन की सारी थकान दूर होती है',
+      'ॐ नमः शिवाय — सोने से पहले 21 बार बोलें',
+      'शिव जी की शरण में सोएं — सुबह ताज़ा उठेंगे',
+      'रात का समय ध्यान के लिए सबसे अच्छा है',
+    ];
+    const nightScript_en = [
+      'Chant Shiva Ji before sleep — deep sleep and peaceful mind',
+      'Shiva Ji is the lord of the night — chant His name before sleeping',
+      'Night jap removes the fatigue of the entire day',
+      'Om Namah Shivaya — say it 21 times before sleep',
+      'Sleep in Shiva Ji shelter — wake up fresh',
+      'Night is the best time for meditation',
+      'Let Shiva Ji name be your last thought before sleep',
+    ];
+    const doy = Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
+    const script = H ? nightScript_hi[doy%nightScript_hi.length] : nightScript_en[doy%nightScript_en.length];
+    const benefit = H ? '🌙 21 जाप • 3 मिनट • गहरी नींद' : '🌙 21 chants • 3 minutes • Deep sleep';
+    const btnTxt = H ? '🌙 रात्रि जाप' : '🌙 Night Jap';
+
+    el.innerHTML = `
+      <div class="night-card" onclick="goJap()">
+        <div class="nc-bg"></div>
+        <div class="nc-deity">🔱</div>
+        <div class="nc-overlay"></div>
+        <div class="nc-content">
+          <span class="nc-moon">🌙</span>
+          <div class="nc-tag">${H?'रात्रि साधना — शिव जी':'Night Sadhana — Shiva Ji'}</div>
+          <div class="nc-hook">${script}</div>
+          <div class="nc-bottom">
+            <div class="nc-benefit">${benefit}</div>
+            <div class="nc-btn">${btnTxt}</div>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    // DAY — Normal japa thumbnail
+    el.innerHTML = `
+      <div class="jthumb" onclick="goJap()">
+        <div class="jt-bg"></div>
+        <div class="jt-deity" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:95px;opacity:0.16;pointer-events:none;">${T.ico}</div>
+        <div class="jt-overlay"></div>
+        <div class="jt-content">
+          <div class="jt-tag">${H?'🪔 आज की साधना':'🪔 Todays Sadhana'}</div>
+          <div class="jt-hook">${H?T.hook_hi:T.hook_en}</div>
+          <div class="jt-bottom">
+            <div class="jt-benefit">${H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes'}</div>
+            <div class="jt-btn">▶ <span>${H?'शुरू करें':'Start'}</span></div>
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
 // ── Init ──
+// Ensure mini player hidden
+const mpEl=document.getElementById('miniPlayer');
+mpEl.style.display='none';
+mpEl.classList.remove('open');
 setWallpaper();
 personalise();
+buildDynamicCard();
 // Make sure mini player is hidden on load
 document.getElementById('miniPlayer').style.display='none';
 document.getElementById('miniPlayer').classList.remove('open');
