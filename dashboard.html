@@ -1108,6 +1108,41 @@ function showToast(){
 function isNight(){return new Date().getHours()>=21||new Date().getHours()<5;}
 
 
+// ── Fetch real panchang from API ──
+async function fetchPanchang() {
+  try {
+    const city = (U.city || 'default').toLowerCase().replace(/\s+/g,'');
+    const res = await fetch('/api/panchang?city='+city);
+    const json = await res.json();
+    if (!json.data) return;
+    const p = json.data;
+    if (p.abhijit_muhurta) {
+      document.getElementById('goodTime').textContent = p.abhijit_muhurta;
+      const pv = document.getElementById('pvTime');
+      if(pv) pv.textContent = p.abhijit_muhurta;
+    }
+    if (p.rahu_kaal) {
+      document.getElementById('avoidTime').textContent = p.rahu_kaal;
+      document.getElementById('rahuTime').textContent  = p.rahu_kaal;
+    }
+    if (p.tithi) {
+      document.getElementById('tithiVal').textContent  = p.tithi;
+      document.getElementById('tv').textContent = p.tithi;
+    }
+    if (p.nakshatra) {
+      document.getElementById('nakVal2').textContent = p.nakshatra;
+    }
+    const sunEls = document.querySelectorAll('.si-t');
+    if (sunEls.length >= 3 && p.sunrise) {
+      sunEls[0].textContent = p.sunrise;
+      sunEls[2].textContent = p.sunset;
+    }
+    console.log('✅ Real panchang loaded:', p.date, p.tithi, p.rahu_kaal);
+  } catch(e) {
+    console.log('Panchang API unavailable, using defaults');
+  }
+}
+
 // ── Init ──
 // Ensure mini player hidden
 const mpEl=document.getElementById('miniPlayer');
@@ -1115,6 +1150,7 @@ mpEl.style.display='none';
 mpEl.classList.remove('open');
 setWallpaper();
 personalise();
+fetchPanchang();
 // Make sure mini player is hidden on load
 document.getElementById('miniPlayer').style.display='none';
 document.getElementById('miniPlayer').classList.remove('open');
