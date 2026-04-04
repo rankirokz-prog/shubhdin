@@ -1,7 +1,5 @@
-// api/panchang.js
-// Vercel Serverless Function
-// Cron: runs daily at 5 AM IST — stores today + tomorrow (2-day buffer)
-// Direct call: GET /api/panchang?city=eluru → returns today's data
+// api/panchang.js — Vercel Serverless Function
+// Fixed: body uses "date" (not "day") and "config" (not "settings")
 
 const CITIES = {
   delhi:         { lat: 28.6139, lng: 77.2090, tz: 5.5, name: 'Delhi' },
@@ -17,15 +15,9 @@ const CITIES = {
   default:       { lat: 20.5937, lng: 78.9629, tz: 5.5, name: 'India' },
 };
 
-// Rahu Kaal per weekday — calculated from sunrise, fixed slot pattern
 const RAHU_HRS = [
-  '16:30–18:00', // Sun
-  '07:30–09:00', // Mon
-  '15:00–16:30', // Tue
-  '12:00–13:30', // Wed
-  '13:30–15:00', // Thu
-  '10:30–12:00', // Fri
-  '09:00–10:30', // Sat
+  '16:30–18:00', '07:30–09:00', '15:00–16:30', '12:00–13:30',
+  '13:30–15:00', '10:30–12:00', '09:00–10:30',
 ];
 
 export default async function handler(req, res) {
@@ -36,51 +28,56 @@ export default async function handler(req, res) {
   const city    = CITIES[cityKey] || CITIES.default;
   const isCron  = req.headers['x-vercel-cron'] === '1' || req.query.cron === '1';
 
-  // Get today's IST date
   const now = new Date();
   const ist = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
-  const todayStr    = formatDate(ist);
-  const tomorrowStr = formatDate(new Date(ist.getTime() + 86400000));
+  const todayStr     = formatDate(ist);
+  const tomorrowStr  = formatDate(new Date(ist.getTime() + 86400000));
   const yesterdayStr = formatDate(new Date(ist.getTime() - 86400000));
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
   try {
-    // ── CRON: fetch + store today & tomorrow for all cities ──
+    // ── CRON: store today + tomorrow for all cities ──
     if (isCron && supabaseUrl && supabaseKey) {
       const allCities = Object.keys(CITIES).filter(k => k !== 'default');
       for (const ck of allCities) {
         const c = CITIES[ck];
-        const todayData = await fetchFromAPI(c, ist);
-        await storeInSupabase(ck, todayStr, todayData, supabaseUrl, supabaseKey);
-        const tmrw = new Date(ist.getTime() + 86400000);
-        const tmrwData = await fetchFromAPI(c, tmrw);
-        await storeInSupabase(ck, tomorrowStr, tmrwData, supabaseUrl, supabaseKey);
+        try {
+          const d1 = await fetchFromAPI(c, ist);
+          await storeInSupabase(ck, todayStr, d1, supabaseUrl, supabaseKey);
+        } catch(e) { console.error(`City ${ck} today failed:`, e.message); }
+        try {
+          const tmrw = new Date(ist.getTime() + 86400000);
+          const d2 = await fetchFromAPI(c, tmrw);
+          await storeInSupabase(ck, tomorrowStr, d2, supabaseUrl, supabaseKey);
+        } catch(e) { console.error(`City ${ck} tomorrow failed:`, e.message); }
       }
-      // Delete rows older than 2 days
+      // Cleanup old rows
       await fetch(`${supabaseUrl}/rest/v1/panchang_today?date=lt.${yesterdayStr}`, {
         method: 'DELETE',
         headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
       });
-      return res.status(200).json({ success: true, message: `Stored ${allCities.length} cities × 2 days` });
+      return res.status(200).json({ success: true, message: `Cron done for ${allCities.length} cities` });
     }
 
-    // ── NORMAL: try Supabase first (today, then yesterday as fallback) ──
+    // ── NORMAL: try Supabase today → yesterday → live ──
     if (supabaseUrl && supabaseKey) {
       for (const dateStr of [todayStr, yesterdayStr]) {
-        const dbRes = await fetch(
-          `${supabaseUrl}/rest/v1/panchang_today?city_key=eq.${cityKey}&date=eq.${dateStr}&select=*`,
-          { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
-        );
-        const rows = await dbRes.json();
-        if (Array.isArray(rows) && rows.length > 0) {
-          return res.status(200).json({ success: true, source: 'supabase', data: rows[0] });
-        }
+        try {
+          const dbRes = await fetch(
+            `${supabaseUrl}/rest/v1/panchang_today?city_key=eq.${cityKey}&date=eq.${dateStr}&select=*`,
+            { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } }
+          );
+          const rows = await dbRes.json();
+          if (Array.isArray(rows) && rows.length > 0) {
+            return res.status(200).json({ success: true, source: 'supabase', data: rows[0] });
+          }
+        } catch(e) { console.error('Supabase read error:', e.message); }
       }
     }
 
-    // ── No Supabase data: fetch live ──
+    // ── Live API fetch ──
     const liveData = await fetchFromAPI(city, ist);
     if (supabaseUrl && supabaseKey) {
       await storeInSupabase(cityKey, todayStr, liveData, supabaseUrl, supabaseKey);
@@ -88,66 +85,83 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, source: 'live', data: { date: todayStr, ...liveData } });
 
   } catch (err) {
-    console.error('Panchang error:', err.message);
-    // Always return something — app never breaks
-    return res.status(200).json({
-      success: false,
-      source: 'fallback',
-      data: getFallback(ist)
-    });
+    console.error('Panchang final error:', err.message);
+    return res.status(200).json({ success: false, source: 'fallback', data: getFallback(ist) });
   }
 }
 
-// ── Fetch from Free Astrology API ──
+// ── Fetch panchang from API ──
+// FIXED: field names are "date" and "config" per official API docs
 async function fetchFromAPI(city, dateObj) {
   const apiKey = process.env.ASTROLOGY_API_KEY;
-  if (!apiKey) throw new Error('No API key configured');
+  if (!apiKey) throw new Error('ASTROLOGY_API_KEY not set in Vercel env vars');
 
   const year  = dateObj.getUTCFullYear();
   const month = dateObj.getUTCMonth() + 1;
-  const day   = dateObj.getUTCDate();
+  const date  = dateObj.getUTCDate();   // ← "date" not "day"
   const dow   = dateObj.getUTCDay();
 
+  // EXACTLY matching freeastrologyapi.com official docs format
   const body = {
-    year, month, day,
-    hours: 6, minutes: 0, seconds: 0,
+    year,
+    month,
+    date,                                // ← correct field name
+    hours: 6,
+    minutes: 0,
+    seconds: 0,
     latitude: city.lat,
     longitude: city.lng,
     timezone: city.tz,
-    settings: { observation_point: 'topocentric', ayanamsha: 'lahiri' }
+    config: {                            // ← "config" not "settings"
+      observation_point: 'topocentric',
+      ayanamsha: 'lahiri'
+    }
   };
 
-  const apiRes = await fetch('https://json.freeastrologyapi.com/complete-panchang', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey           // ← freeastrologyapi uses x-api-key
-    },
-    body: JSON.stringify(body)
-  });
+  console.log('Calling API for:', city.name, year, month, date);
 
-  if (!apiRes.ok) {
-    const errText = await apiRes.text();
-    throw new Error(`API ${apiRes.status}: ${errText}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+  try {
+    const apiRes = await fetch('https://json.freeastrologyapi.com/complete-panchang', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      throw new Error(`API returned ${apiRes.status}: ${errText}`);
+    }
+
+    const raw = await apiRes.json();
+    console.log('API success, tithi:', raw.tithi?.name);
+
+    const tithi     = raw.tithi?.name     || 'द्वितीया';
+    const nakshatra = raw.nakshatra?.name || 'अनुराधा';
+    const yoga      = raw.yoga?.[1]?.name || raw.yoga?.[0]?.name || 'शुभ';
+    const karana    = raw.karana?.[2]?.name || raw.karana?.[1]?.name || 'बव';
+    const sunrise   = raw.sun_rise        || '06:08';
+    const sunset    = raw.sun_set         || '18:34';
+
+    return {
+      city: city.name,
+      tithi, nakshatra, yoga, karana,
+      sunrise, sunset,
+      rahu_kaal:       calcRahuKaal(sunrise, dow),
+      abhijit_muhurta: calcAbhijit(sunrise, sunset),
+      updated_at: new Date().toISOString()
+    };
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const raw = await apiRes.json();
-
-  const tithi     = raw.tithi?.name     || 'द्वितीया';
-  const nakshatra = raw.nakshatra?.name || 'अनुराधा';
-  const yoga      = raw.yoga?.[1]?.name || raw.yoga?.[0]?.name || 'शुभ';
-  const karana    = raw.karana?.[2]?.name || raw.karana?.[1]?.name || 'बव';
-  const sunrise   = raw.sun_rise        || '06:08';
-  const sunset    = raw.sun_set         || '18:34';
-
-  return {
-    city: city.name,
-    tithi, nakshatra, yoga, karana,
-    sunrise, sunset,
-    rahu_kaal:       calcRahuKaal(sunrise, dow),
-    abhijit_muhurta: calcAbhijit(sunrise, sunset),
-    updated_at: new Date().toISOString()
-  };
 }
 
 // ── Store in Supabase ──
@@ -164,53 +178,41 @@ async function storeInSupabase(cityKey, date, data, url, key) {
   });
 }
 
-// ── Fallback data ──
 function getFallback(dateObj) {
   const dow = dateObj.getUTCDay();
   return {
-    date: formatDate(dateObj),
-    city: 'India',
-    tithi: 'द्वितीया',
-    nakshatra: 'अनुराधा',
-    yoga: 'शुभ',
-    karana: 'बव',
-    sunrise: '06:08',
-    sunset: '18:34',
-    rahu_kaal: RAHU_HRS[dow],
-    abhijit_muhurta: '11:48–12:36',
+    date: formatDate(dateObj), city: 'India',
+    tithi: 'द्वितीया', nakshatra: 'अनुराधा', yoga: 'शुभ', karana: 'बव',
+    sunrise: '06:08', sunset: '18:34',
+    rahu_kaal: RAHU_HRS[dow], abhijit_muhurta: '11:48–12:36',
     updated_at: new Date().toISOString()
   };
 }
 
-// ── Helpers ──
 function formatDate(d) {
-  const y   = d.getUTCFullYear();
-  const m   = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
 }
 
 function calcRahuKaal(sunrise, dow) {
   try {
     const [h, m] = sunrise.split(':').map(Number);
-    const base   = h * 60 + m;
-    const slots  = [7, 1, 6, 4, 5, 3, 2]; // slot index per weekday
-    const start  = base + slots[dow] * 90;
-    const end    = start + 90;
-    return `${fmt(start)}–${fmt(end)}`;
+    const base = h * 60 + m;
+    const slots = [7, 1, 6, 4, 5, 3, 2];
+    const start = base + slots[dow] * 90;
+    return `${fmt(start)}–${fmt(start + 90)}`;
   } catch(e) { return RAHU_HRS[dow]; }
 }
 
 function calcAbhijit(sunrise, sunset) {
   try {
-    const toM = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const toM = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
     const mid = (toM(sunrise) + toM(sunset)) / 2;
-    return `${fmt(mid - 24)}–${fmt(mid + 24)}`;
+    return `${fmt(mid-24)}–${fmt(mid+24)}`;
   } catch(e) { return '11:48–12:36'; }
 }
 
 function fmt(mins) {
-  const h = Math.floor(mins / 60) % 24;
+  const h = Math.floor(mins/60) % 24;
   const m = Math.round(mins % 60);
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
