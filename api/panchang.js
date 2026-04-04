@@ -22,7 +22,7 @@ const RAHU_HRS = [
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+  res.setHeader('Cache-Control', 'no-store, no-cache');
 
   const cityKey = (req.query.city || 'default').toLowerCase().replace(/\s+/g, '');
   const city    = CITIES[cityKey] || CITIES.default;
@@ -118,7 +118,10 @@ async function fetchFromAPI(city, dateObj) {
     }
   };
 
+  console.log('API Key present:', !!process.env.ASTROLOGY_API_KEY);
+  console.log('API Key length:', (process.env.ASTROLOGY_API_KEY||'').length);
   console.log('Calling API for:', city.name, year, month, date);
+  console.log('Request body:', JSON.stringify(body));
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
