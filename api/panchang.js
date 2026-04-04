@@ -151,7 +151,10 @@ async function fetchFromAPI(city, dateObj) {
 
   const apiRes = await fetch('https://json.freeastrologyapi.com/complete-panchang', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+    headers: { 
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${apiKey}`
+},
     body: JSON.stringify(body)
   });
 
