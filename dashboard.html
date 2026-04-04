@@ -565,8 +565,20 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
           </div>
         </div>
 
-        <!-- Japa / Night card — changes by time -->
-        <div id="dynamicCard"></div>
+        <!-- Japa thumbnail card -->
+        <div class="jthumb" id="jtCard" onclick="goJap()">
+          <div class="jt-bg"></div>
+          <div class="jt-deity" id="jtDeity">🌸</div>
+          <div class="jt-overlay"></div>
+          <div class="jt-content">
+            <div class="jt-tag" id="jtTag">🪔 आज की साधना</div>
+            <div class="jt-hook" id="jtHook">आज लक्ष्मी जी का जाप करें</div>
+            <div class="jt-bottom">
+              <div class="jt-benefit" id="jtBenefit">👉 108 बार • 11 मिनट</div>
+              <div class="jt-btn">▶ <span id="jtBtn">शुरू करें</span></div>
+            </div>
+          </div>
+        </div>
 
         <!-- Streak -->
         <div class="streak">
@@ -883,6 +895,12 @@ function personalise(){
   document.getElementById('avoidLbl').textContent=H?'राहु काल':'Rahu Kaal';
   document.getElementById('avoidTime').textContent=T.avoid;
   document.getElementById('avoidSub').textContent=H?'नया काम टालें':'Avoid new work';
+  // Japa thumbnail
+  document.getElementById('jtDeity').textContent=T.ico;
+  document.getElementById('jtTag').textContent=H?'🪔 आज की साधना':'🪔 Today\'s Sadhana';
+  document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
+  document.getElementById('jtBenefit').textContent=H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes';
+  document.getElementById('jtBtn').textContent=H?'शुरू करें':'Start';
   // Streak
   const sk=getStreak();
   document.getElementById('skNum').textContent=sk;
@@ -1108,71 +1126,6 @@ function showToast(){
 function isNight(){return new Date().getHours()>=21||new Date().getHours()<5;}
 
 
-// ── Night Jap / Day Jap dynamic card ──
-function buildDynamicCard() {
-  const hour = new Date().getHours();
-  const isNight = hour >= 21 || hour < 5; // 9 PM to 5 AM
-  const el = document.getElementById('dynamicCard');
-
-  if (isNight) {
-    // NIGHT JAP — Shiva, beautiful dark blue
-    const nightScript_hi = [
-      'सोने से पहले शिव जी का नाम लें — नींद गहरी और मन शांत होगा',
-      'रात को शिव जी का जाप करें — बुरे सपने नहीं आएंगे',
-      'शिव जी रात के स्वामी हैं — उनका नाम लेकर सोएं',
-      'रात्रि जाप से दिन की सारी थकान दूर होती है',
-      'ॐ नमः शिवाय — सोने से पहले 21 बार बोलें',
-      'शिव जी की शरण में सोएं — सुबह ताज़ा उठेंगे',
-      'रात का समय ध्यान के लिए सबसे अच्छा है',
-    ];
-    const nightScript_en = [
-      'Chant Shiva Ji before sleep — deep sleep and peaceful mind',
-      'Shiva Ji is the lord of the night — chant His name before sleeping',
-      'Night jap removes the fatigue of the entire day',
-      'Om Namah Shivaya — say it 21 times before sleep',
-      'Sleep in Shiva Ji shelter — wake up fresh',
-      'Night is the best time for meditation',
-      'Let Shiva Ji name be your last thought before sleep',
-    ];
-    const doy = Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
-    const script = H ? nightScript_hi[doy%nightScript_hi.length] : nightScript_en[doy%nightScript_en.length];
-    const benefit = H ? '🌙 21 जाप • 3 मिनट • गहरी नींद' : '🌙 21 chants • 3 minutes • Deep sleep';
-    const btnTxt = H ? '🌙 रात्रि जाप' : '🌙 Night Jap';
-
-    el.innerHTML = `
-      <div class="night-card" onclick="goJap()">
-        <div class="nc-bg"></div>
-        <div class="nc-deity">🔱</div>
-        <div class="nc-overlay"></div>
-        <div class="nc-content">
-          <span class="nc-moon">🌙</span>
-          <div class="nc-tag">${H?'रात्रि साधना — शिव जी':'Night Sadhana — Shiva Ji'}</div>
-          <div class="nc-hook">${script}</div>
-          <div class="nc-bottom">
-            <div class="nc-benefit">${benefit}</div>
-            <div class="nc-btn">${btnTxt}</div>
-          </div>
-        </div>
-      </div>`;
-  } else {
-    // DAY — Normal japa thumbnail
-    el.innerHTML = `
-      <div class="jthumb" onclick="goJap()">
-        <div class="jt-bg"></div>
-        <div class="jt-deity" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:95px;opacity:0.16;pointer-events:none;">${T.ico}</div>
-        <div class="jt-overlay"></div>
-        <div class="jt-content">
-          <div class="jt-tag">${H?'🪔 आज की साधना':'🪔 Todays Sadhana'}</div>
-          <div class="jt-hook">${H?T.hook_hi:T.hook_en}</div>
-          <div class="jt-bottom">
-            <div class="jt-benefit">${H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes'}</div>
-            <div class="jt-btn">▶ <span>${H?'शुरू करें':'Start'}</span></div>
-          </div>
-        </div>
-      </div>`;
-  }
-}
-
 // ── Init ──
 // Ensure mini player hidden
 const mpEl=document.getElementById('miniPlayer');
@@ -1180,7 +1133,6 @@ mpEl.style.display='none';
 mpEl.classList.remove('open');
 setWallpaper();
 personalise();
-buildDynamicCard();
 // Make sure mini player is hidden on load
 document.getElementById('miniPlayer').style.display='none';
 document.getElementById('miniPlayer').classList.remove('open');
