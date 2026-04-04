@@ -11,26 +11,10 @@
 
 body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:flex;flex-direction:column;background:var(--cream);position:relative;}
 
-/* ══ OM WATERMARK ══ */
-#omWatermark{
-  position:fixed;inset:0;z-index:0;
-  display:flex;align-items:center;justify-content:center;
-  pointer-events:none;user-select:none;overflow:hidden;
-}
-#omWatermark span{
-  font-family:'Tiro Devanagari Hindi',serif;
-  font-size:82vw;line-height:1;
-  color:rgba(212,168,67,0.06);
-  transform:translateY(-8%);
-  animation:omBreath 7s ease-in-out infinite;
-}
-@keyframes omBreath{0%,100%{opacity:0.7;}50%{opacity:1;}}
-
 /* ══ OPENING WALLPAPER ══ */
 #wallpaper{
   position:fixed;inset:0;z-index:100;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  transition:opacity 0.7s ease;
 }
 #wpBg{position:absolute;inset:0;}
 .bg-sun{background:linear-gradient(155deg,#0D0500,#3D1A05,#5C2508,#0D0500);}
@@ -491,9 +475,6 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 </head>
 <body>
 
-<!-- OM watermark -->
-<div id="omWatermark"><span>ॐ</span></div>
-
 <!-- Opening wallpaper -->
 <div id="wallpaper">
   <div id="wpBg"></div>
@@ -746,7 +727,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 </div><!-- app -->
 
 <!-- Mini player — hidden by default -->
-<div id="miniPlayer">
+<div id="miniPlayer" style="display:none;">
   <div class="mp-handle"></div>
   <div class="mp-top">
     <span class="mp-ico" id="mpIco">🌸</span>
@@ -986,17 +967,13 @@ function personalise(){
 
 // ── Tab switch ──
 function go(tab){
-  try{
-    document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-    const scr=document.getElementById('scr-'+tab);
-    const tb=document.getElementById('tab-'+tab);
-    if(scr)scr.classList.add('on');
-    if(tb)tb.classList.add('on');
-    if(tab!=='listen')pauseAudio();
-    // Scroll to top of new screen
-    if(scr)scr.scrollTop=0;
-  }catch(e){console.error('go() error:',e);}
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  const scr=document.getElementById('scr-'+tab);
+  const tb=document.getElementById('tab-'+tab);
+  if(scr){scr.classList.add('on');scr.scrollTop=0;}
+  if(tb)tb.classList.add('on');
+  if(tab!=='listen')pauseAudio();
 }
 function goJap(){go('jap');}
 
@@ -1142,16 +1119,14 @@ personalise();
 document.getElementById('miniPlayer').style.display='none';
 document.getElementById('miniPlayer').classList.remove('open');
 
-// Hide wallpaper with JS — more reliable than CSS animation on mobile
+// Hide wallpaper completely — instant, no blocking clicks
 setTimeout(()=>{
   const wp = document.getElementById('wallpaper');
   wp.style.opacity = '0';
-  setTimeout(()=>{
-    wp.style.display = 'none';  // Fully remove so it can't block clicks
-    wp.style.pointerEvents = 'none';
-  }, 700);
+  wp.style.pointerEvents = 'none';
+  wp.style.display = 'none';
   showToast();
-}, 2800);
+}, 3000);
 </script>
 </body>
 </html>
