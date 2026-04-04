@@ -30,9 +30,8 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 #wallpaper{
   position:fixed;inset:0;z-index:100;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  animation:wpFade 0.7s ease 2.8s forwards;
+  transition:opacity 0.7s ease;
 }
-@keyframes wpFade{to{opacity:0;pointer-events:none;}}
 #wpBg{position:absolute;inset:0;}
 .bg-sun{background:linear-gradient(155deg,#0D0500,#3D1A05,#5C2508,#0D0500);}
 .bg-mon{background:linear-gradient(155deg,#050D14,#0A2840,#123A52,#050D14);}
@@ -741,7 +740,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
   <div class="tabbar">
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
     <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🔊</span><span class="tab-label" id="tl2">सुनें</span></div>
-    <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">📅</span><span class="tab-label" id="tl3">पंचांग</span></div>
+    <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">📅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जप</span></div>
   </div>
 </div><!-- app -->
@@ -973,7 +972,7 @@ function personalise(){
   // Tab labels
   document.getElementById('tl1').textContent=H?'होम':'Home';
   document.getElementById('tl2').textContent=H?'सुनें':'Listen';
-  document.getElementById('tl3').textContent=H?'पंचांग':'Panchang';
+  document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
   document.getElementById('tl4').textContent=H?'जप':'Jap';
   // Mini player
   document.getElementById('mpIco').textContent=T.ico;
@@ -987,11 +986,17 @@ function personalise(){
 
 // ── Tab switch ──
 function go(tab){
-  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  document.getElementById('scr-'+tab).classList.add('on');
-  document.getElementById('tab-'+tab).classList.add('on');
-  if(tab!=='listen')pauseAudio();
+  try{
+    document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+    const scr=document.getElementById('scr-'+tab);
+    const tb=document.getElementById('tab-'+tab);
+    if(scr)scr.classList.add('on');
+    if(tb)tb.classList.add('on');
+    if(tab!=='listen')pauseAudio();
+    // Scroll to top of new screen
+    if(scr)scr.scrollTop=0;
+  }catch(e){console.error('go() error:',e);}
 }
 function goJap(){go('jap');}
 
@@ -1137,10 +1142,16 @@ personalise();
 document.getElementById('miniPlayer').style.display='none';
 document.getElementById('miniPlayer').classList.remove('open');
 
+// Hide wallpaper with JS — more reliable than CSS animation on mobile
 setTimeout(()=>{
-  document.getElementById('wallpaper').style.pointerEvents='none';
+  const wp = document.getElementById('wallpaper');
+  wp.style.opacity = '0';
+  setTimeout(()=>{
+    wp.style.display = 'none';  // Fully remove so it can't block clicks
+    wp.style.pointerEvents = 'none';
+  }, 700);
   showToast();
-},3400);
+}, 2800);
 </script>
 </body>
 </html>
