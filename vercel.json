@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/panchang",
-      "schedule": "30 23 * * *"
-    }
-  ]
-}
