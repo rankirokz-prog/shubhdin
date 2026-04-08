@@ -740,7 +740,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
   </div>
   <div class="mp-ctrl">
     <button class="mp-pbtn" onclick="mpPrev()">⏮</button>
-    <button class="mp-main" id="mpBtn" onclick="mpToggle()">▶</button>
+    <button class="mp-main" id="mpBtn" onclick="playPanchang()">▶</button>
     <button class="mp-pbtn" onclick="mpNext()">⏭</button>
     <div class="mp-bar" onclick="mpSeek(event)"><div class="mp-fill" id="mpFill"></div></div>
     <span class="mp-time" id="mpTime">0:00 / 3:24</span>
@@ -1010,8 +1010,8 @@ function openMini(){
   mp.style.display='block';
   mp.classList.add('open');
   mpSetTr(0);
-  // Start playing panchang audio
-  playPanchang();
+  // Small delay ensures browser registers user gesture before audio starts
+  setTimeout(()=>playPanchang(), 100);
 }
 function closeMini(){
   document.getElementById('miniPlayer').classList.remove('open');
@@ -1162,14 +1162,14 @@ function getDayKey() {
 }
 
 function getScriptUrl() {
-  const supabaseUrl = 'https://dulfiljhchfkccqwqniv.supabase.co';
+  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
   const day     = getDayKey();
   const version = getScriptVersion();
   return `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/scripts/${day}_${version}.mp3`;
 }
 
 function getNameUrl() {
-  const supabaseUrl = 'https://dulfiljhchfkccqwqniv.supabase.co';
+  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
   const nameKey = (U.name || '').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
   if (!nameKey) return null;
   return `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/names/${nameKey}.mp3`;
@@ -1210,11 +1210,13 @@ async function playPanchang() {
     // Play name audio (if exists), then script
     async function playAudio(url) {
       return new Promise((resolve) => {
+        console.log('Playing:', url);
         const audio = new Audio(url);
         currentAudio = audio;
-        audio.onended = resolve;
-        audio.onerror = resolve; // Skip if fails — play next
-        audio.play().catch(resolve);
+        audio.onended = () => { console.log('Done:', url); resolve(); };
+        audio.onerror = (e) => { console.log('Audio error:', url, e); resolve(); };
+        const playPromise = audio.play();
+        if (playPromise) playPromise.catch(e => { console.log('Play failed:', e); resolve(); });
       });
     }
 
