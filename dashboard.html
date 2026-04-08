@@ -1010,6 +1010,8 @@ function openMini(){
   mp.style.display='block';
   mp.classList.add('open');
   mpSetTr(0);
+  // Start playing panchang audio
+  playPanchang();
 }
 function closeMini(){
   document.getElementById('miniPlayer').classList.remove('open');
@@ -1143,6 +1145,111 @@ async function fetchPanchang() {
   }
 }
 
+// ── AUDIO SYSTEM ──
+// Stitches name.mp3 + day_script.mp3 and plays sequentially
+let audioCtx = null;
+let currentAudio = null;
+
+// Which version to play today — alternates week-odd/even
+function getScriptVersion() {
+  const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+  return weekNum % 2 === 0 ? 'a' : 'b';
+}
+
+function getDayKey() {
+  const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  return days[new Date().getDay()];
+}
+
+function getScriptUrl() {
+  const supabaseUrl = 'https://dulfiljhchfkccqwqniv.supabase.co';
+  const day     = getDayKey();
+  const version = getScriptVersion();
+  return `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/scripts/${day}_${version}.mp3`;
+}
+
+function getNameUrl() {
+  const supabaseUrl = 'https://dulfiljhchfkccqwqniv.supabase.co';
+  const nameKey = (U.name || '').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
+  if (!nameKey) return null;
+  return `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/names/${nameKey}.mp3`;
+}
+
+async function playPanchang() {
+  // Update mini player UI to playing state
+  const mpBtn   = document.getElementById('mpBtn');
+  const mpWaves = document.getElementById('mpWaves');
+  const mpTitle = document.getElementById('mpTitle');
+
+  if (currentAudio && !currentAudio.paused) {
+    // Already playing — pause
+    currentAudio.pause();
+    if (mpBtn) mpBtn.textContent = '▶';
+    if (mpWaves) mpWaves.classList.remove('on');
+    return;
+  }
+
+  if (mpBtn) mpBtn.textContent = '⏸';
+  if (mpWaves) mpWaves.classList.add('on');
+  if (mpTitle) mpTitle.textContent = H ? 'पंचांग लोड हो रहा है...' : 'Loading...';
+
+  try {
+    const nameUrl   = getNameUrl();
+    const scriptUrl = getScriptUrl();
+
+    // Try to play name first, then script
+    // If name doesn't exist yet, generate it
+    if (nameUrl) {
+      const nameRes = await fetch(nameUrl, { method: 'HEAD' });
+      if (!nameRes.ok) {
+        // Name not generated yet — call generate-name API
+        await fetch(`/api/generate-name?name=${encodeURIComponent(U.name || '')}`);
+      }
+    }
+
+    // Play name audio (if exists), then script
+    async function playAudio(url) {
+      return new Promise((resolve) => {
+        const audio = new Audio(url);
+        currentAudio = audio;
+        audio.onended = resolve;
+        audio.onerror = resolve; // Skip if fails — play next
+        audio.play().catch(resolve);
+      });
+    }
+
+    if (mpTitle) mpTitle.textContent = H ? (U.name||'') + ' जी — आज का पंचांग' : 'Playing Panchang...';
+
+    // Play name → then script sequentially
+    if (nameUrl) await playAudio(nameUrl);
+    await playAudio(scriptUrl);
+
+    // Done playing
+    if (mpBtn) mpBtn.textContent = '▶';
+    if (mpWaves) mpWaves.classList.remove('on');
+    if (mpTitle) mpTitle.textContent = H ? 'आज का पंचांग — ' + (U.name||'') + ' जी' : "Today's Panchang";
+
+  } catch(err) {
+    console.log('Audio error:', err);
+    if (mpBtn) mpBtn.textContent = '▶';
+    if (mpWaves) mpWaves.classList.remove('on');
+  }
+}
+
+// Generate name audio on first load (async, non-blocking)
+async function ensureNameAudio() {
+  if (!U.name) return;
+  const nameUrl = getNameUrl();
+  if (!nameUrl) return;
+  try {
+    const res = await fetch(nameUrl, { method: 'HEAD' });
+    if (!res.ok) {
+      // Generate in background
+      fetch(`/api/generate-name?name=${encodeURIComponent(U.name)}`);
+    }
+  } catch(e) { /* silent */ }
+}
+
 // ── Init ──
 // Ensure mini player hidden
 const mpEl=document.getElementById('miniPlayer');
@@ -1151,6 +1258,7 @@ mpEl.classList.remove('open');
 setWallpaper();
 personalise();
 fetchPanchang();
+ensureNameAudio(); // Pre-warm name audio in background
 // Make sure mini player is hidden on load
 document.getElementById('miniPlayer').style.display='none';
 document.getElementById('miniPlayer').classList.remove('open');
