@@ -413,6 +413,86 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
   animation:badgePulse 2.5s ease-in-out infinite;
 }
 
+
+/* ══════════════════════════════
+   MARGADARSHAN SCREEN
+══════════════════════════════ */
+
+/* Power of Chant card */
+.poc-card{
+  background:linear-gradient(135deg,#1A0800,#3D1A05,#2C1208);
+  border-radius:20px;padding:18px 16px;
+  border:1.5px solid rgba(212,168,67,0.28);
+  cursor:pointer;transition:transform 0.2s;
+  position:relative;overflow:hidden;
+  margin-bottom:18px;
+}
+.poc-card:active{transform:scale(0.98);}
+.poc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--saffron),var(--gold),transparent);}
+.poc-glow{position:absolute;top:-20px;right:-20px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,0.10) 0%,transparent 70%);pointer-events:none;}
+.poc-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.poc-ico{font-size:32px;flex-shrink:0;}
+.poc-meta{flex:1;}
+.poc-label{font-size:9px;color:rgba(212,168,67,0.55);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:3px;}
+.poc-title{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:#fff;line-height:1.25;margin-bottom:2px;}
+.poc-sub{font-size:10px;color:rgba(255,255,255,0.36);}
+.poc-play{width:44px;height:44px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;box-shadow:0 5px 16px rgba(255,107,26,0.35);animation:playGlow 2.5s ease-in-out infinite;}
+.poc-story{background:rgba(0,0,0,0.22);border-radius:11px;padding:10px 12px;border-left:2px solid rgba(212,168,67,0.32);}
+.poc-story p{font-size:12px;color:rgba(255,255,255,0.58);line-height:1.6;font-style:italic;}
+
+/* Problem section label */
+.prob-label{font-size:11px;font-weight:600;color:rgba(26,10,0,0.40);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;margin-top:4px;}
+
+/* Problem tiles grid */
+.prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.prob-tile{
+  background:#fff;border-radius:16px;padding:14px 12px;
+  border:1px solid rgba(212,168,67,0.12);
+  cursor:pointer;transition:all 0.2s;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:flex-start;
+  min-height:100px;
+}
+.prob-tile:active{transform:scale(0.97);}
+.prob-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:16px 16px 0 0;}
+.pt-vivah::before{background:linear-gradient(90deg,#E91E8C,#FF6B6B);}
+.pt-dhan::before{background:linear-gradient(90deg,#D4A843,#FF6B1A);}
+.pt-swasthya::before{background:linear-gradient(90deg,#4CAF50,#26A69A);}
+.pt-vidya::before{background:linear-gradient(90deg,#5C6BC0,#7E57C2);}
+.pt-ghar::before{background:linear-gradient(90deg,#FF7043,#FF8F00);}
+.prob-tile-ico{font-size:26px;margin-bottom:6px;}
+.prob-tile-name{font-family:'Tiro Devanagari Hindi',serif;font-size:14px;color:var(--dark);font-weight:600;margin-bottom:2px;}
+.prob-tile-sub{font-size:9.5px;color:rgba(26,10,0,0.40);line-height:1.3;}
+.prob-tile-arrow{position:absolute;bottom:10px;right:12px;font-size:11px;color:rgba(26,10,0,0.22);}
+
+/* Problem audio overlay */
+.prob-overlay{
+  position:fixed;inset:0;z-index:90;
+  background:rgba(13,5,0,0.95);
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px;
+}
+.prob-overlay.open{display:flex;animation:fadeIn 0.3s ease;}
+.po-close{position:absolute;top:48px;right:20px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.10);border:none;cursor:pointer;color:rgba(255,255,255,0.60);font-size:18px;display:flex;align-items:center;justify-content:center;}
+.po-ico{font-size:64px;margin-bottom:12px;animation:omGlow 3s ease-in-out infinite;}
+.po-title{font-family:'Tiro Devanagari Hindi',serif;font-size:22px;color:#fff;text-align:center;margin-bottom:6px;}
+.po-deity{font-size:12px;color:rgba(212,168,67,0.55);text-align:center;letter-spacing:1px;margin-bottom:20px;}
+.po-waves{display:flex;gap:5px;justify-content:center;align-items:flex-end;height:28px;margin-bottom:20px;opacity:0;transition:opacity 0.3s;}
+.po-waves.on{opacity:1;}
+.powb{width:5px;border-radius:2.5px;background:linear-gradient(180deg,var(--gold),var(--saffron));animation:wv 0.8s ease-in-out infinite;}
+.powb:nth-child(1){height:8px;animation-delay:.00s}
+.powb:nth-child(2){height:22px;animation-delay:.10s}
+.powb:nth-child(3){height:14px;animation-delay:.20s}
+.powb:nth-child(4){height:26px;animation-delay:.15s}
+.powb:nth-child(5){height:16px;animation-delay:.05s}
+.po-btn{background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border:none;border-radius:16px;padding:14px 32px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px;box-shadow:0 5px 16px rgba(255,107,26,0.28);}
+.po-btn:active{transform:scale(0.97);}
+.po-guidance{background:rgba(255,255,255,0.05);border:1px solid rgba(212,168,67,0.15);border-radius:14px;padding:14px 16px;width:100%;margin-top:8px;}
+.po-guidance-title{font-size:10px;color:rgba(212,168,67,0.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600;}
+.po-guidance-text{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.7;}
+
+
 /* ══ TAB BAR ══ */
 .tabbar{flex-shrink:0;height:60px;background:#fff;border-top:1px solid rgba(212,168,67,0.10);display:flex;align-items:center;justify-content:space-around;padding:0 8px 4px;box-shadow:0 -3px 14px rgba(0,0,0,0.04);z-index:30;position:relative;}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 4px 0;border-radius:10px;}
@@ -576,47 +656,97 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
       </div>
     </div>
 
-    <!-- ── LISTEN ── -->
+    <!-- ── MARGADARSHAN ── -->
     <div class="scr" id="scr-listen">
       <div class="dark-hdr">
         <div class="dh-row">
           <div style="width:34px;"></div>
-          <div class="dh-title" id="lhdrTitle">दैनिक पंचांग<small>Daily Panchang Audio</small></div>
-          <div class="gpill" id="lhdrPill">शुक्रवार</div>
+          <div class="dh-title" id="margTitle">मार्गदर्शन<small>Margadarshan</small></div>
+          <div class="gpill" id="margPill">🙏</div>
         </div>
-        <div class="dh-sub" id="lhdrSub">🙏 Ravi Ji के लिए</div>
+        <div class="dh-sub" id="margSub">शिव की शरण में — हर समस्या का हल</div>
       </div>
-      <div class="lbody">
-        <div class="np-card">
-          <span class="np-ico" id="npIco">🌸</span>
-          <div class="np-day" id="npDay">✨ आज की साधना</div>
-          <div class="np-title" id="npTitle">लक्ष्मी जी का 108 जाप</div>
-          <div class="np-sub" id="npSub">वृश्चिक • Ravi Ji के लिए</div>
-          <div class="np-waves" id="npWaves">
-            <div class="wb"></div><div class="wb"></div><div class="wb"></div>
-            <div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div>
+
+      <div style="flex:1;padding:12px 14px;overflow-y:auto;scrollbar-width:none;">
+
+        <!-- Power of Chant card -->
+        <div class="poc-card" onclick="playPowerOfChant()">
+          <div class="poc-glow"></div>
+          <div class="poc-top">
+            <span class="poc-ico">🎙️</span>
+            <div class="poc-meta">
+              <div class="poc-label" id="pocLabel">✨ शक्ति जाप की</div>
+              <div class="poc-title" id="pocTitle">Power of Chant — एक सच्ची कहानी</div>
+              <div class="poc-sub" id="pocSub">सुनें — यह कहानी आपकी सोच बदल देगी</div>
+            </div>
+            <div class="poc-play" id="pocPlayBtn">▶</div>
           </div>
-          <div class="prog">
-            <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
-            <div class="prog-times"><span id="curT">0:00</span><span id="totT">3:24</span></div>
-          </div>
-          <div class="ctrls">
-            <button class="ctl" onclick="prevTr()">⏮</button>
-            <button class="ctl" onclick="rew()">⏪</button>
-            <button class="ctl-main" id="playBtn" onclick="togglePlay()">▶</button>
-            <button class="ctl" onclick="fwd()">⏩</button>
-            <button class="ctl" onclick="nextTr()">⏭</button>
+          <div class="poc-story">
+            <p id="pocStory">"241 लोगों की मृत्यु हुई — एक बचा। उसने कहा: यह चमत्कार है। जाप की शक्ति ऐसी होती है..."</p>
           </div>
         </div>
-        <div class="plbl" id="plbl">📋 आज की प्लेलिस्ट</div>
-        <div class="pitem act" onclick="selTr(0)"><span class="pi-ico" id="pi0i">🌸</span><div class="pi-inf"><div class="pi-title" id="pi0t">आज का पंचांग</div><div class="pi-sub" id="pi0s">वृश्चिक • अनुराधा</div></div><span class="pi-dur">3:24</span></div>
-        <div class="pitem" onclick="selTr(1)"><span class="pi-ico" id="pi1i">🌸</span><div class="pi-inf"><div class="pi-title" id="pi1t">108 जाप</div><div class="pi-sub" id="pi1s">आज की साधना</div></div><span class="pi-dur">11:42</span></div>
-        <div class="pitem" onclick="selTr(2)"><span class="pi-ico">☀️</span><div class="pi-inf"><div class="pi-title" id="pi2t">गायत्री मंत्र</div><div class="pi-sub">सूर्योदय ध्यान</div></div><span class="pi-dur">5:10</span></div>
-        <div class="pitem" onclick="selTr(3)"><span class="pi-ico">🌙</span><div class="pi-inf"><div class="pi-title" id="pi3t">राशिफल — आज</div><div class="pi-sub" id="pi3s">वृश्चिक राशि</div></div><span class="pi-dur">2:15</span></div>
+
+        <!-- Problem tiles -->
+        <div class="prob-label" id="probLabel">अपनी समस्या चुनें 👇</div>
+        <div class="prob-grid">
+
+          <div class="prob-tile pt-vivah" onclick="openProblem('vivah')">
+            <span class="prob-tile-ico">💍</span>
+            <div class="prob-tile-name" id="pt-vivah-name">विवाह</div>
+            <div class="prob-tile-sub" id="pt-vivah-sub">Marriage guidance</div>
+            <span class="prob-tile-arrow">▶</span>
+          </div>
+
+          <div class="prob-tile pt-dhan" onclick="openProblem('dhan')">
+            <span class="prob-tile-ico">💰</span>
+            <div class="prob-tile-name" id="pt-dhan-name">धन • करियर</div>
+            <div class="prob-tile-sub" id="pt-dhan-sub">Money & career</div>
+            <span class="prob-tile-arrow">▶</span>
+          </div>
+
+          <div class="prob-tile pt-swasthya" onclick="openProblem('swasthya')">
+            <span class="prob-tile-ico">🌿</span>
+            <div class="prob-tile-name" id="pt-swasthya-name">स्वास्थ्य</div>
+            <div class="prob-tile-sub" id="pt-swasthya-sub">Health guidance</div>
+            <span class="prob-tile-arrow">▶</span>
+          </div>
+
+          <div class="prob-tile pt-vidya" onclick="openProblem('vidya')">
+            <span class="prob-tile-ico">📚</span>
+            <div class="prob-tile-name" id="pt-vidya-name">विद्या</div>
+            <div class="prob-tile-sub" id="pt-vidya-sub">Education guidance</div>
+            <span class="prob-tile-arrow">▶</span>
+          </div>
+
+          <div class="prob-tile pt-ghar" onclick="openProblem('ghar')" style="grid-column:1/-1;">
+            <span class="prob-tile-ico">🏠</span>
+            <div class="prob-tile-name" id="pt-ghar-name">गृह शांति</div>
+            <div class="prob-tile-sub" id="pt-ghar-sub">Family peace & harmony</div>
+            <span class="prob-tile-arrow">▶</span>
+          </div>
+
+        </div>
       </div>
     </div>
 
-    <!-- ── PANCHANG ── -->
+    <!-- Problem audio overlay -->
+    <div class="prob-overlay" id="probOverlay">
+      <button class="po-close" onclick="closeProblem()">✕</button>
+      <span class="po-ico" id="poIco">💍</span>
+      <div class="po-title" id="poTitle">विवाह मार्गदर्शन</div>
+      <div class="po-deity" id="poDeity">पार्वती जी • शिव जी</div>
+      <div class="po-waves" id="poWaves">
+        <div class="powb"></div><div class="powb"></div><div class="powb"></div>
+        <div class="powb"></div><div class="powb"></div>
+      </div>
+      <button class="po-btn" id="poBtn" onclick="toggleProblemAudio()">▶ सुनें</button>
+      <div class="po-guidance">
+        <div class="po-guidance-title" id="poGuidanceTitle">क्या करें</div>
+        <div class="po-guidance-text" id="poGuidanceText">Loading...</div>
+      </div>
+    </div>
+
+<!-- ── PANCHANG ── -->
     <div class="scr" id="scr-panchang">
       <div class="dark-hdr">
         <div class="dh-row">
@@ -720,7 +850,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
   <!-- Tab bar -->
   <div class="tabbar">
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
-    <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🔊</span><span class="tab-label" id="tl2">सुनें</span></div>
+    <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🙏</span><span class="tab-label" id="tl2" style="font-size:7.5px;">मार्गदर्शन</span></div>
     <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">📅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जप</span></div>
   </div>
@@ -889,23 +1019,6 @@ function personalise(){
   document.getElementById('skIco').textContent=sk>6?'🔥':sk>2?'⭐':'🌸';
   document.getElementById('skUnit').textContent=H?'दिन':'days';
   // Listen screen
-  document.getElementById('lhdrTitle').innerHTML=H?'दैनिक पंचांग<small>Daily Panchang Audio</small>':'Daily Panchang<small>आज का पंचांग</small>';
-  document.getElementById('lhdrPill').textContent=H?df_h[dow]:df_e[dow];
-  document.getElementById('lhdrSub').textContent='🙏 '+(H?name+' जी के लिए — '+R.h+' • '+R.nh:'For '+name+' — '+R.e+' • '+R.ne);
-  document.getElementById('npIco').textContent=T.ico;
-  document.getElementById('npDay').textContent=H?'✨ आज की साधना':"✨ Today's Sadhana";
-  document.getElementById('npTitle').textContent=H?T.d_hi+' — 108 जाप':T.d_en+' — 108 Chants';
-  document.getElementById('npSub').textContent=H?R.nh+' • '+name+' जी के लिए':R.ne+' • For '+name;
-  document.getElementById('pi0i').textContent=T.ico;
-  document.getElementById('pi0t').textContent=H?'आज का पंचांग — '+name+' जी':"Today's Panchang — "+name;
-  document.getElementById('pi0s').textContent=H?R.h+' • '+R.nh:R.e+' • '+R.ne;
-  document.getElementById('pi1i').textContent=T.ico;
-  document.getElementById('pi1t').textContent=H?T.d_hi+' — 108 जाप':T.d_en+' — 108 Chants';
-  document.getElementById('pi1s').textContent=H?df_h[dow]+' साधना':df_e[dow]+' Sadhana';
-  document.getElementById('pi2t').textContent=H?'गायत्री मंत्र':'Gayatri Mantra';
-  document.getElementById('pi3t').textContent=H?'राशिफल — आज':'Rashi — Today';
-  document.getElementById('pi3s').textContent=H?R.h+' राशि':R.e+' Rashi';
-  document.getElementById('plbl').textContent=H?'📋 आज की प्लेलिस्ट':"📋 Today's Playlist";
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
   document.getElementById('phDate').textContent=now.toLocaleDateString('en',{day:'numeric',month:'short'});
@@ -987,12 +1100,6 @@ function shareWallpaper(){
 // ── Full audio player ──
 let playing=false,prog=0,ptimer=null,curTr=0;
 const tracks=[{s:204,d:'3:24'},{s:702,d:'11:42'},{s:310,d:'5:10'},{s:135,d:'2:15'}];
-function togglePlay(){playing=!playing;document.getElementById('playBtn').textContent=playing?'⏸':'▶';document.getElementById('npWaves').classList.toggle('on',playing);playing?startP():clearInterval(ptimer);}
-function pauseAudio(){playing=false;const b=document.getElementById('playBtn');if(b)b.textContent='▶';document.getElementById('npWaves').classList.remove('on');clearInterval(ptimer);}
-function startP(){clearInterval(ptimer);const t=tracks[curTr];ptimer=setInterval(()=>{prog+=0.4;if(prog>=100){prog=0;pauseAudio();return;}document.getElementById('progFill').style.width=prog+'%';const c=Math.floor((prog/100)*t.s);document.getElementById('curT').textContent=Math.floor(c/60)+':'+(c%60<10?'0':'')+c%60;},250);}
-function rew(){prog=Math.max(0,prog-5);document.getElementById('progFill').style.width=prog+'%';}
-function fwd(){prog=Math.min(100,prog+5);document.getElementById('progFill').style.width=prog+'%';}
-function selTr(i){curTr=i;prog=0;document.getElementById('progFill').style.width='0%';document.getElementById('curT').textContent='0:00';document.getElementById('totT').textContent=tracks[i].d;document.querySelectorAll('.pitem').forEach((el,j)=>el.classList.toggle('act',j===i));if(playing)startP();}
 function prevTr(){selTr(Math.max(0,curTr-1));}
 function nextTr(){selTr(Math.min(tracks.length-1,curTr+1));}
 
@@ -1252,6 +1359,245 @@ async function ensureNameAudio() {
   } catch(e) { /* silent */ }
 }
 
+
+// ══ MARGADARSHAN ══
+
+// Problem data — guidance text + deity + audio key
+const PROBLEMS = {
+  vivah: {
+    ico: '💍',
+    title_hi: 'विवाह मार्गदर्शन',
+    title_en: 'Marriage Guidance',
+    deity_hi: 'पार्वती जी • शिव जी',
+    deity_en: 'Parvati Ji • Shiva Ji',
+    audio: 'vivah',
+    guidance_hi: `सोमवार को शिव जी का व्रत रखें।
+पार्वती जी को लाल फूल चढ़ाएं।
+"ॐ उमा महेश्वराय नमः" — रोज़ 108 बार जाप करें।
+16 सोमवार का व्रत बहुत शक्तिशाली होता है।
+मन में श्रद्धा रखें — शिव जी जब चाहते हैं, तब सब ठीक हो जाता है।`,
+    guidance_en: `Keep a fast on Monday for Shiva Ji.
+Offer red flowers to Parvati Ji.
+Chant "Om Uma Maheshwaraya Namah" 108 times daily.
+The 16-Monday fast is very powerful.
+Have faith — Shiva Ji makes everything right in His time.`,
+  },
+  dhan: {
+    ico: '💰',
+    title_hi: 'धन • करियर मार्गदर्शन',
+    title_en: 'Money & Career Guidance',
+    deity_hi: 'लक्ष्मी जी • कुबेर देव',
+    deity_en: 'Lakshmi Ji • Kuber Dev',
+    audio: 'dhan',
+    guidance_hi: `शुक्रवार को घर साफ रखें — लक्ष्मी जी साफ घर में आती हैं।
+"ॐ श्रीं महालक्ष्म्यै नमः" — रोज़ सुबह 108 बार।
+शाम को दीया ज़रूर जलाएं।
+किसी ज़रूरतमंद की मदद करें — यही असली पूजा है।
+लक्ष्मी जी उन पर मेहरबान होती हैं जो दूसरों की मदद करते हैं।`,
+    guidance_en: `Keep your home clean on Friday — Lakshmi Ji enters clean homes.
+Chant "Om Shreem Mahalakshmyai Namah" 108 times each morning.
+Light a diya every evening.
+Help someone in need — this is the real worship.
+Lakshmi Ji blesses those who share with others.`,
+  },
+  swasthya: {
+    ico: '🌿',
+    title_hi: 'स्वास्थ्य मार्गदर्शन',
+    title_en: 'Health Guidance',
+    deity_hi: 'सूर्य देवता • हनुमान जी',
+    deity_en: 'Surya Dev • Hanuman Ji',
+    audio: 'swasthya',
+    guidance_hi: `रविवार को सूर्य देव को जल चढ़ाएं — सुबह उगते सूरज को।
+"ॐ सूर्याय नमः" — रोज़ 108 बार।
+मंगलवार को हनुमान जी का जाप करें।
+सुबह खुली हवा में बैठें — यही सबसे बड़ी दवा है।
+शरीर और मन दोनों स्वस्थ रहें तो जीवन सुंदर है।`,
+    guidance_en: `Offer water to the rising sun on Sunday.
+Chant "Om Suryaya Namah" 108 times daily.
+Chant for Hanuman Ji on Tuesdays.
+Sit in fresh morning air — this is the greatest medicine.
+When body and mind are healthy, life is beautiful.`,
+  },
+  vidya: {
+    ico: '📚',
+    title_hi: 'विद्या मार्गदर्शन',
+    title_en: 'Education Guidance',
+    deity_hi: 'सरस्वती जी • गणेश जी',
+    deity_en: 'Saraswati Ji • Ganesh Ji',
+    audio: 'vidya',
+    guidance_hi: `बुधवार को गणेश जी का व्रत रखें।
+"ॐ गं गणपतये नमः" — पढ़ाई से पहले 21 बार।
+सरस्वती वंदना रोज़ सुबह करें।
+किताबों का सम्मान करें — ज्ञान देवी का रूप हैं।
+एकाग्रता के लिए — सुबह ध्यान करें, फिर पढ़ें।`,
+    guidance_en: `Keep a fast on Wednesday for Ganesh Ji.
+Chant "Om Gam Ganapataye Namah" 21 times before studying.
+Do Saraswati Vandana each morning.
+Respect books — they are Saraswati's form.
+For focus — meditate in the morning, then study.`,
+  },
+  ghar: {
+    ico: '🏠',
+    title_hi: 'गृह शांति मार्गदर्शन',
+    title_en: 'Family Peace Guidance',
+    deity_hi: 'विष्णु जी • लक्ष्मी जी',
+    deity_en: 'Vishnu Ji • Lakshmi Ji',
+    audio: 'ghar',
+    guidance_hi: `गुरुवार को विष्णु जी की पूजा करें।
+"ॐ नमो नारायणाय" — घर के सभी सदस्य मिलकर जाप करें।
+घर में सुबह-शाम दीया जलाएं।
+बड़ों का आदर करें — यही घर की नींव है।
+जहाँ प्रेम है, वहाँ भगवान हैं। घर को मंदिर बनाएं।`,
+    guidance_en: `Worship Vishnu Ji on Thursday.
+Chant "Om Namo Narayanaya" together as a family.
+Light a diya morning and evening at home.
+Respect elders — this is the foundation of a home.
+Where there is love, God is present. Make home a temple.`,
+  },
+};
+
+let probAudio = null;
+let probPlaying = false;
+let currentProbKey = null;
+
+function openProblem(key) {
+  const p = PROBLEMS[key];
+  if (!p) return;
+  currentProbKey = key;
+  probPlaying = false;
+
+  document.getElementById('poIco').textContent        = p.ico;
+  document.getElementById('poTitle').textContent      = H ? p.title_hi : p.title_en;
+  document.getElementById('poDeity').textContent      = H ? p.deity_hi : p.deity_en;
+  document.getElementById('poGuidanceTitle').textContent = H ? 'क्या करें 🙏' : 'What to do 🙏';
+  document.getElementById('poGuidanceText').textContent  = H ? p.guidance_hi : p.guidance_en;
+  document.getElementById('poBtn').textContent        = H ? '▶ सुनें' : '▶ Listen';
+  document.getElementById('poWaves').classList.remove('on');
+
+  document.getElementById('probOverlay').classList.add('open');
+}
+
+function closeProblem() {
+  if (probAudio) { probAudio.pause(); probAudio = null; }
+  probPlaying = false;
+  document.getElementById('probOverlay').classList.remove('open');
+  document.getElementById('poWaves').classList.remove('on');
+  currentProbKey = null;
+}
+
+async function toggleProblemAudio() {
+  if (probPlaying && probAudio) {
+    probAudio.pause();
+    probPlaying = false;
+    document.getElementById('poBtn').textContent = H ? '▶ सुनें' : '▶ Listen';
+    document.getElementById('poWaves').classList.remove('on');
+    return;
+  }
+  // Play name + problem audio
+  const p = PROBLEMS[currentProbKey];
+  if (!p) return;
+
+  document.getElementById('poBtn').textContent = H ? '⏸ रोकें' : '⏸ Pause';
+  document.getElementById('poWaves').classList.add('on');
+  probPlaying = true;
+
+  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
+  const nameKey = (U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
+
+  async function playOne(url) {
+    return new Promise(resolve => {
+      const a = new Audio(url);
+      probAudio = a;
+      a.onended = resolve;
+      a.onerror = resolve;
+      a.play().catch(resolve);
+    });
+  }
+
+  try {
+    // Play name first if exists
+    if (nameKey) {
+      const nameUrl = `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/names/${nameKey}.mp3`;
+      await playOne(nameUrl);
+    }
+    // Play problem guidance audio
+    const probUrl = `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/problems/${p.audio}.mp3`;
+    await playOne(probUrl);
+  } catch(e) {
+    console.log('Problem audio error:', e);
+  }
+
+  if (probPlaying) {
+    probPlaying = false;
+    document.getElementById('poBtn').textContent = H ? '▶ सुनें' : '▶ Listen';
+    document.getElementById('poWaves').classList.remove('on');
+  }
+}
+
+// Power of Chant audio
+let pocAudio = null;
+let pocPlaying = false;
+
+async function playPowerOfChant() {
+  const btn = document.getElementById('pocPlayBtn');
+  if (pocPlaying && pocAudio) {
+    pocAudio.pause();
+    pocPlaying = false;
+    btn.textContent = '▶';
+    return;
+  }
+  pocPlaying = true;
+  btn.textContent = '⏸';
+
+  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
+  const url = `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/stories/power_of_chant.mp3`;
+
+  pocAudio = new Audio(url);
+  pocAudio.onended = () => { pocPlaying = false; btn.textContent = '▶'; };
+  pocAudio.onerror = () => { pocPlaying = false; btn.textContent = '▶'; };
+  pocAudio.play().catch(() => { pocPlaying = false; btn.textContent = '▶'; });
+}
+
+// Personalise Margadarshan text
+function personaliseMarg() {
+  document.getElementById('margTitle').innerHTML = H
+    ? 'मार्गदर्शन<small>Margadarshan</small>'
+    : 'Guidance<small>मार्गदर्शन</small>';
+  document.getElementById('margSub').textContent = H
+    ? 'शिव की शरण में — हर समस्या का हल'
+    : "In Shiva Ji grace — solution to every problem";
+  document.getElementById('pocLabel').textContent = H ? '✨ शक्ति जाप की' : '✨ Power of Chant';
+  document.getElementById('pocTitle').textContent = H
+    ? 'Power of Chant — एक सच्ची कहानी'
+    : 'Power of Chant — A True Story';
+  document.getElementById('pocSub').textContent = H
+    ? 'सुनें — यह कहानी आपकी सोच बदल देगी'
+    : 'Listen — this story will change your perspective';
+  document.getElementById('pocStory').textContent = H
+    ? '"241 लोगों की मृत्यु हुई — एक बचा। उसने कहा: यह चमत्कार है। जाप की शक्ति ऐसी होती है..."'
+    : '"241 people died — one survived. He said: this is a miracle. Such is the power of chanting..."';
+  document.getElementById('probLabel').textContent = H ? 'अपनी समस्या चुनें 👇' : 'Choose your concern 👇';
+
+  // Problem tile labels
+  const tiles = { vivah: ['विवाह','Marriage'], dhan: ['धन • करियर','Money & Career'],
+    swasthya: ['स्वास्थ्य','Health'], vidya: ['विद्या','Education'], ghar: ['गृह शांति','Family Peace'] };
+  const subs  = { vivah: ['Marriage guidance','Marriage guidance'],
+    dhan: ['Money & career','Money & career'],
+    swasthya: ['Health guidance','Health guidance'],
+    vidya: ['Education guidance','Education guidance'],
+    ghar: ['Family peace & harmony','Family peace & harmony'] };
+
+  for (const [k, v] of Object.entries(tiles)) {
+    const el = document.getElementById(`pt-${k}-name`);
+    const es = document.getElementById(`pt-${k}-sub`);
+    if (el) el.textContent = H ? v[0] : v[1];
+    if (es) es.textContent = H ? subs[k][0] : subs[k][1];
+  }
+
+  // Tab label
+  document.getElementById('tl2').textContent = H ? 'मार्गदर्शन' : 'Guidance';
+}
+
 // ── Init ──
 // Ensure mini player hidden
 const mpEl=document.getElementById('miniPlayer');
@@ -1259,6 +1605,7 @@ mpEl.style.display='none';
 mpEl.classList.remove('open');
 setWallpaper();
 personalise();
+personaliseMarg();
 fetchPanchang();
 ensureNameAudio(); // Pre-warm name audio in background
 // Make sure mini player is hidden on load
