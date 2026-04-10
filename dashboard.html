@@ -9,7 +9,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{--gold:#D4A843;--deep-gold:#B8860B;--saffron:#FF6B1A;--cream:#FFF8ED;--dark:#1A0A00;--sage:#4A7C59;}
 
-body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:flex;flex-direction:column;background:var(--cream);position:relative;}
+body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden;display:flex;flex-direction:column;background:var(--cream);position:relative;}
 
 /* ══ OPENING WALLPAPER ══ */
 #wallpaper{
@@ -40,11 +40,11 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;overflow:hidden;display:f
 @keyframes ptUp{0%{opacity:0;transform:translateY(0);}20%{opacity:0.4;transform:translateY(-18px);}100%{opacity:0;transform:translateY(-120px);}}
 
 /* ══ APP SHELL ══ */
-#app{flex:1;display:flex;flex-direction:column;position:relative;z-index:1;opacity:0;animation:show 0.5s ease 3.3s forwards;}
+#app{flex:1;display:flex;flex-direction:column;position:relative;z-index:1;opacity:0;animation:show 0.5s ease 3.3s forwards;min-height:0;overflow:hidden;}
 @keyframes show{to{opacity:1;}}
 
 /* ══ SCREENS ══ */
-.sw{flex:1;position:relative;overflow:hidden;}
+.sw{flex:1;position:relative;overflow:hidden;min-height:0;}
 .scr{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;scrollbar-width:none;background:transparent;}
 .scr::-webkit-scrollbar{display:none;}
 .scr.on{display:flex;}
