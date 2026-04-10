@@ -969,6 +969,9 @@ function setWallpaper(){
   document.getElementById('wpBg').className=T.bg;
   document.getElementById('wpDeity').textContent=H?T.d_hi:T.d_en;
   document.getElementById('wpDay').textContent='🙏 '+(H?T.day_hi:T.day_en);
+  // Deity image on wallpaper
+  const wpImg=document.getElementById('wpImg');
+  if(wpImg&&T.img) wpImg.style.backgroundImage="url('"+T.img+"')";
 }
 
 // ── Personalise ──
