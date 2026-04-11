@@ -988,6 +988,7 @@ function personalise(){
   document.getElementById('greetTime').textContent=greetMsg();
   const displayName = name.charAt(0).toUpperCase() + name.slice(1);
   document.getElementById('greetName').textContent=displayName+(H?' जी 🙏':' 🙏');
+
   // Chips
   document.getElementById('rl').textContent=H?'राशि':'Rashi';
   document.getElementById('ri').textContent=R.i;
@@ -1594,7 +1595,7 @@ function personaliseMarg() {
     : "In Shiva Ji grace — solution to every problem";
   document.getElementById('pocLabel').textContent = H ? '✨ शक्ति जाप की' : '✨ Power of Chant';
   document.getElementById('pocTitle').textContent = H
-    ? 'Power of Chant — एक सच्ची कहानी'
+    ? 'जाप की शक्ति — एक सच्ची कहानी'
     : 'Power of Chant — A True Story';
   document.getElementById('pocSub').textContent = H
     ? 'सुनें — यह कहानी आपकी सोच बदल देगी'
