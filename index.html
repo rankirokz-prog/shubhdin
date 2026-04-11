@@ -383,7 +383,7 @@
       trust:'🙏 उपयोग के लिए मुफ़्त • आपका डेटा सुरक्षित',
       cta1:'यात्रा शुरू करें',
       s2title:'आपका नाम क्या है?', s2desc:'हम आपको हर सुबह नाम से बुलाएंगे',
-      greeting:'🙏 नमस्कार,', nameLabel:'आपका नाम', namePH:'जैसे: Ravi, Priya...',
+      greeting:'🙏 नमस्कार,', nameLabel:'आपका नाम', namePH:'जैसे: राम, प्रिया, सीता...',
       cta2:'अपनी राशि देखें',
       s3title:'जन्म तिथि', s3desc:'सटीक राशि के लिए — चाहें तो छोड़ सकते हैं',
       dobLabel:'जन्म तिथि', dobOpt:'वैकल्पिक', dobHint:'💡 राशि की सटीक गणना के लिए',
@@ -457,6 +457,8 @@
     s('trustLine',t.trust); s('cta1',t.cta1);
     s('s2title',t.s2title); s('s2desc',t.s2desc);
     s('nameLabel',t.nameLabel); ph('userName',t.namePH); s('cta2',t.cta2);
+    const ni=document.getElementById('userName');
+    if(ni) ni.lang=l==='hi'?'hi':'en';
     s('s3title',t.s3title); s('s3desc',t.s3desc);
     s('dobLabel',t.dobLabel); s('dobOpt',t.dobOpt); s('dobHint',t.dobHint);
     s('tobLabel',t.tobLabel); s('tobOpt',t.tobOpt); s('tobHint',t.tobHint);
@@ -507,8 +509,9 @@
 
     // Personalise step titles
     const t = T[lang];
-    if (n===3 && user.name) document.getElementById('s3title').textContent = lang==='hi' ? user.name+' जी, जन्म तिथि?' : 'Birth details, '+user.name+'?';
-    if (n===4 && user.name) document.getElementById('s4title').textContent = lang==='hi' ? 'लगभग हो गया, '+user.name+' जी!' : 'Almost done, '+user.name+'!';
+    const cn=(user.name||'').charAt(0).toUpperCase()+(user.name||'').slice(1);
+    if(n===3&&user.name) document.getElementById('s3title').textContent=lang==='hi'?cn+' जी, जन्म तिथि?':'Birth details, '+cn+'?';
+    if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':'Almost done, '+cn+'!';
     if (n===5) buildWelcome();
 
     showStep(n);
@@ -522,7 +525,8 @@
     const name = document.getElementById('userName').value.trim();
     const greet = document.getElementById('nameGreet');
     if (name.length >= 2) {
-      document.getElementById('ngText').textContent = T[lang].greeting + ' ' + name + (lang==='hi' ? ' जी! 🙏' : '! 🙏');
+      const dN=name.charAt(0).toUpperCase()+name.slice(1);
+      document.getElementById('ngText').textContent=T[lang].greeting+' '+dN+(lang==='hi'?' जी! 🙏':'! 🙏');
       greet.classList.add('show');
     } else { greet.classList.remove('show'); }
     document.getElementById('btn2').disabled = name.length < 2;
@@ -646,7 +650,8 @@
   function buildWelcome() {
     const r = getRashi(user.dob);
     const name = user.name || '';
-    document.getElementById('wTitle').textContent = lang==='hi' ? 'स्वागत है, '+name+' जी! 🙏' : 'Welcome, '+name+'! 🙏';
+    const cN=name.charAt(0).toUpperCase()+name.slice(1);
+    document.getElementById('wTitle').textContent=lang==='hi'?'स्वागत है, '+cN+' जी! 🙏':'Welcome, '+cN+'! 🙏';
     document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : 'From '+user.city+' — your journey begins today 🌼';
     document.getElementById('rIcon').textContent  = r.icon;
     document.getElementById('rName').textContent  = lang==='hi' ? r.hi+' राशि' : r.en+' Rashi';
