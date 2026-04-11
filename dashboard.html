@@ -677,7 +677,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <span class="poc-ico">🎙️</span>
             <div class="poc-meta">
               <div class="poc-label" id="pocLabel">✨ शक्ति जाप की</div>
-              <div class="poc-title" id="pocTitle">Power of Chant — एक सच्ची कहानी</div>
+              <div class="poc-title" id="pocTitle">जाप की शक्ति — एक सच्ची कहानी</div>
               <div class="poc-sub" id="pocSub">सुनें — यह कहानी आपकी सोच बदल देगी</div>
             </div>
             <div class="poc-play" id="pocPlayBtn">▶</div>
@@ -795,7 +795,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     <div class="scr japa-scr" id="scr-jap">
       <div class="jnav">
         <div style="width:34px;"></div>
-        <div class="jtitle" id="japaTitle">जप माला<small>Japa Mala</small></div>
+        <div class="jtitle" id="japaTitle">जप माला</div>
         <div class="gpill" id="japaPill">शुक्रवार</div>
       </div>
       <div class="jbody">
@@ -986,7 +986,8 @@ function personalise(){
   document.getElementById('datePill').textContent=H?dn_h[dow]+' • '+now.getDate()+' अप्रैल':dn_e[dow]+' • '+now.toLocaleDateString('en',{day:'numeric',month:'short'});
   // Greeting
   document.getElementById('greetTime').textContent=greetMsg();
-  document.getElementById('greetName').textContent=name+(H?' जी 🙏':' 🙏');
+  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  document.getElementById('greetName').textContent=displayName+(H?' जी 🙏':' 🙏');
   // Chips
   document.getElementById('rl').textContent=H?'राशि':'Rashi';
   document.getElementById('ri').textContent=R.i;
@@ -999,7 +1000,7 @@ function personalise(){
   document.getElementById('lhTag').textContent=H?'✨ आज का पंचांग — आपके लिए':"✨ Today's Panchang — For you";
   document.getElementById('lhTitle').textContent=H?'दैनिक पंचांग सुनें':'Listen to Daily Panchang';
   document.getElementById('lhSub').textContent=H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English');
-  document.getElementById('pvName').textContent=name+(H?' जी':'');
+  document.getElementById('pvName').textContent=name.charAt(0).toUpperCase()+name.slice(1)+(H?' जी':'');
   document.getElementById('pvDeity').textContent=H?T.d_hi:T.d_en;
   document.getElementById('pvTime').textContent=T.good;
   // Times
@@ -1051,7 +1052,7 @@ function personalise(){
   document.getElementById('klSub').textContent=H?'ग्रह • दशा • व्यक्तिगत':'Planets • Dasha • Personal';
   document.getElementById('klBadge').textContent=H?'जल्द आ रहा है':'Coming Soon';
   // Japa screen
-  document.getElementById('japaTitle').innerHTML=H?'जप माला<small>Japa Mala</small>':'Japa Mala<small>जप माला</small>';
+  document.getElementById('japaTitle').innerHTML=H?'जप माला':'Jap Mala';
   document.getElementById('japaPill').textContent=H?df_h[dow]:df_e[dow];
   document.getElementById('jhIco').textContent=T.ico;
   document.getElementById('jhHook').textContent=H?T.hook_hi:T.hook_en;
@@ -1066,7 +1067,7 @@ function personalise(){
   document.getElementById('jdTitle').textContent=H?'108 जप पूर्ण! 🙏':'108 Jap Complete! 🙏';
   document.getElementById('jdSub').textContent=H?T.d_hi+' की कृपा सदा बनी रहे 🌸':'May '+T.d_en+"'s blessings be with you 🌸";
   document.getElementById('scMsg').textContent=H?'आज मैंने '+T.d_hi+' का 108 बार जाप किया 🙏':'Today I chanted for '+T.d_en+' 108 times 🙏';
-  document.getElementById('scName').textContent='— '+name+(H?' जी':'');
+  document.getElementById('scName').textContent='— '+(name.charAt(0).toUpperCase()+name.slice(1))+(H?' जी':'');
   document.getElementById('scDay').textContent=H?df_h[dow]+' • '+R.nh+' नक्षत्र':df_e[dow]+' • '+R.ne+' Nakshatra';
   document.getElementById('shareBtn').textContent=H?'WhatsApp पर साझा करें':'Share on WhatsApp';
   document.getElementById('againBtn').textContent=H?'↺ फिर से जाप करें':'↺ Jap Again';
