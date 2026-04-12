@@ -645,8 +645,8 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div class="streak">
           <span class="sk-ico" id="skIco">🌸</span>
           <div class="sk-body">
-            <div class="sk-title" id="skTitle">आपकी साधना यात्रा</div>
-            <div class="sk-sub" id="skSub">आज से शुरुआत करें 🙏</div>
+            <div class="sk-title" id="skTitle">आपकी साधना यात्रा 🔥</div>
+            <div class="sk-sub" id="skSub">0 दिन लगातार</div>
           </div>
           <div class="sk-right">
             <div class="sk-num" id="skNum">0</div>
@@ -1022,10 +1022,10 @@ function personalise(){
   // Streak
   const sk=getStreak();
   document.getElementById('skNum').textContent=sk;
-  document.getElementById('skTitle').textContent=H?'आपकी साधना यात्रा':'Your Sadhana Journey';
-  document.getElementById('skSub').textContent=sk>0?(H?'लगातार '+sk+' दिन — शाबाश! 🌸':sk+' days in a row! 🌸'):(H?'आज से शुरुआत करें 🙏':'Start today 🙏');
+  document.getElementById('skTitle').textContent=H?'आपकी साधना यात्रा 🔥':'Your Spiritual Streak 🔥';
+  document.getElementById('skSub').textContent=sk>0?(H?sk+' दिन लगातार 🔥':sk+' days streak 🔥'):(H?'0 दिन लगातार':'0 days streak');
   document.getElementById('skIco').textContent=sk>6?'🔥':sk>2?'⭐':'🌸';
-  document.getElementById('skUnit').textContent=H?'दिन':'days';
+  document.getElementById('skUnit').textContent=H?'दिन लगातार':'days';
   // Listen screen
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
@@ -1083,8 +1083,8 @@ function personalise(){
   document.getElementById('mpSub').textContent=H?R.h+' • '+R.nh:R.e+' • '+R.ne;
   // Streak display on complete
   const sk2=getStreak();
-  document.getElementById('sdTitle').textContent=H?'लगातार '+(Math.max(1,sk2))+' दिन! शाबाश! 🌸':(Math.max(1,sk2))+' day streak! Well done! 🌸';
-  document.getElementById('sdSub').textContent=H?'हर दिन जाप करें — साधना आगे बढ़े':'Jap daily — keep your sadhana going';
+  document.getElementById('sdTitle').textContent=H?'आपने आज का जाप पूरा किया ✅':'You completed today\'s chant ✅';
+  document.getElementById('sdSub').textContent=H?(Math.max(1,sk2)+' दिन लगातार 🔥'):(Math.max(1,sk2)+' day streak 🔥');
 }
 
 // ── Tab switch ──
@@ -1176,7 +1176,7 @@ function updateJ(){
   const n=document.getElementById('cnum');n.textContent=jCount;n.classList.add('bump');setTimeout(()=>n.classList.remove('bump'),180);
   cfEl.style.strokeDashoffset=CIRC-(jCount/TOTAL)*CIRC;
   for(let i=0;i<DOTS;i++){const d=document.getElementById('md'+i);d.className='md'+(jCount>=(i+1)*4?' done':jCount>i*4?' cur':'');}
-  if(jCount>=TOTAL){updateStreak();setTimeout(()=>{const sk=getStreak();document.getElementById('sdTitle').textContent=H?'लगातार '+sk+' दिन! शाबाश! 🌸':sk+' day streak! Well done! 🌸';document.getElementById('jdone').classList.add('show');},500);}
+  if(jCount>=TOTAL){updateStreak();setTimeout(()=>{const sk=getStreak();document.getElementById('sdTitle').textContent=H?'आपने आज का जाप पूरा किया ✅':'You completed today\'s chant ✅';document.getElementById('sdSub').textContent=H?(sk+' दिन लगातार 🔥'):(sk+' day streak 🔥');document.getElementById('jdone').classList.add('show');},500);}
 }
 function tap(e){if(jCount>=TOTAL)return;jCount++;updateJ();}
 // Japa chant audio
