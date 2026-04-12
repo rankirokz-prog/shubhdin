@@ -132,11 +132,11 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .streak{background:#fff;border-radius:12px;padding:8px 12px;display:flex;align-items:center;gap:12px;border:1px solid rgba(212,168,67,0.12);}
 .sk-ico{font-size:24px;flex-shrink:0;}
 .sk-body{flex:1;}
-.sk-title{font-size:12px;font-weight:600;color:var(--dark);margin-bottom:1px;}
+.sk-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:1px;line-height:1.2;}
 .sk-sub{font-size:10px;color:rgba(26,10,0,0.38);}
 .sk-right{text-align:right;flex-shrink:0;}
-.sk-num{font-size:22px;font-weight:700;color:var(--deep-gold);line-height:1;}
-.sk-unit{font-size:9px;color:rgba(26,10,0,0.28);text-transform:uppercase;letter-spacing:1px;}
+.sk-num{font-size:10px;font-weight:500;color:rgba(26,10,0,0.45);line-height:1.4;}
+.sk-unit{font-size:10px;color:rgba(26,10,0,0.38);font-weight:500;}
 
 /* ══════════════════════════════
    MINI PLAYER (stays on home)
@@ -646,10 +646,10 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <span class="sk-ico" id="skIco">🌸</span>
           <div class="sk-body">
             <div class="sk-title" id="skTitle">0 दिन लगातार</div>
-            <div class="sk-sub" id="skSub" style="font-size:9px;color:rgba(26,10,0,0.36);">आपकी साधना यात्रा</div>
+            <div class="sk-sub" id="skSub">आपकी साधना यात्रा</div>
           </div>
           <div class="sk-right">
-            <div class="sk-num" id="skNum" style="font-size:11px;font-weight:600;color:var(--saffron);line-height:1.3;">आज का लक्ष्य:</div>
+            <div class="sk-num" id="skNum">आज का लक्ष्य:</div>
             <div class="sk-unit" id="skUnit">दिन</div>
           </div>
         </div>
@@ -1022,7 +1022,7 @@ function personalise(){
   // Streak
   const sk=getStreak();
   document.getElementById('skNum').textContent=H?'आज का लक्ष्य:':'Today\'s goal:';
-  document.getElementById('skTitle').textContent=H?sk+' दिन लगातार':sk+' day streak';
+  document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
   document.getElementById('skSub').textContent=H?'आपकी साधना यात्रा':'Your sadhana journey';
   document.getElementById('skIco').textContent='🔥';
   document.getElementById('skUnit').textContent=H?'108 जाप':'108 chants';
@@ -1180,7 +1180,7 @@ function updateJ(){
       // Update home streak card right side to show goal complete
       document.getElementById('skNum').textContent=H?'आज का लक्ष्य':'Today\'s goal';
       document.getElementById('skUnit').textContent=H?'पूरा हुआ ✅':'completed ✅';
-      document.getElementById('skTitle').textContent=H?sk+' दिन लगातार':sk+' day streak';
+      document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
       document.getElementById('jdone').classList.add('show');},500);}
 }
 function tap(e){if(jCount>=TOTAL)return;jCount++;updateJ();}
