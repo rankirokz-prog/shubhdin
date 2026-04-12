@@ -312,8 +312,10 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .md.cur{background:var(--saffron);border-color:var(--saffron);transform:scale(1.3);animation:mdCur 0.9s ease-in-out infinite;}
 @keyframes mdCur{0%,100%{box-shadow:0 0 5px rgba(255,107,26,0.4);}50%{box-shadow:0 0 12px rgba(255,107,26,0.9);}}
 .jbtns{display:flex;gap:9px;width:100%;max-width:280px;}
-.jplay{flex:1;height:48px;border-radius:16px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));color:#fff;box-shadow:0 5px 16px rgba(255,107,26,0.25);display:flex;align-items:center;justify-content:center;gap:7px;}
-.jplay:active{transform:scale(0.97);}
+.jplay{flex:1;height:52px;border-radius:18px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));color:#fff;box-shadow:0 5px 20px rgba(255,107,26,0.35);display:flex;align-items:center;justify-content:center;gap:7px;animation:japBtnGlow 2.5s ease-in-out infinite;}
+@keyframes japBtnGlow{0%,100%{box-shadow:0 5px 20px rgba(255,107,26,0.35);}50%{box-shadow:0 8px 32px rgba(255,107,26,0.60),0 0 18px rgba(255,107,26,0.25);}}
+.jplay:active{transform:scale(0.97);animation:none;}
+.jplay.playing{animation:none;box-shadow:0 5px 16px rgba(255,107,26,0.25);}
 .jreset{width:48px;height:48px;border-radius:16px;border:1.5px solid rgba(212,168,67,0.18);background:rgba(212,168,67,0.07);color:var(--gold);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 
 /* Japa complete */
@@ -1194,6 +1196,7 @@ const CHANT_MAP = {
 function toggleJap(){
   jPlay=!jPlay;
   document.getElementById('jplayIco').textContent=jPlay?'⏸':'▶';
+  document.getElementById('jplayBtn').classList.toggle('playing',jPlay);
   document.getElementById('jplayTxt').textContent=jPlay?(H?'रोकें':'Pause'):(H?'🙏 जाप शुरू करें':'Start Jap');
   if(jPlay){
     // Play chant audio on loop
