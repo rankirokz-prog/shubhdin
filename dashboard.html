@@ -894,7 +894,7 @@ const name=U.name||(H?'मित्र':'Friend');
 // ── Day config ──
 const dow=new Date().getDay();
 const D={
-  0:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/surya.jpg',bg:'bg-sun',d_hi:'सूर्य देवता',d_en:'Surya Dev',day_hi:'रविवार • स्वास्थ्य',day_en:'Sunday • Health',ico:'☀️',chant:'ॐ सूर्याय नमः',hook_hi:'आज सूर्य देवता का जाप करें — ऊर्जा और स्वास्थ्य',hook_en:'Chant for Surya Dev — health & energy',good:'7:00–8:30',avoid:'4:30–6:00',
+  0:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/surya.jpg',bg:'bg-sun',d_hi:'सूर्य देवता',d_en:'Surya Dev',day_hi:'रविवार • स्वास्थ्य',day_en:'Sunday • Health',ico:'☀️',chant:'ॐ सूर्याय नमः',hook_hi:'आज सूर्य देवता का जाप करें — सफलता और ऊर्जा मिलेगी',hook_en:'Chant for Surya Dev — health & energy',good:'7:00–8:30',avoid:'4:30–6:00',
     s:['आज रविवार है — सूर्य देवता का दिन। सुबह का समय सबसे शुभ है।','रविवार को सूर्य देवता की कृपा होती है। आज अच्छे काम का दिन है।','आज का शुभ समय सात बजे से साढ़े आठ तक है।','सूर्य देवता की शरण में आज का दिन शुरू करें।','आज रविवार — माता-पिता का आशीर्वाद लें।','रविवार को सूर्य उगता है नई उम्मीद लेकर।','आज का समय अच्छे कामों के लिए है।']},
   1:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/shiva.jpg',bg:'bg-mon',d_hi:'शिव जी',d_en:'Shiva Ji',day_hi:'सोमवार • शांति',day_en:'Monday • Peace',ico:'🔱',chant:'ॐ नमः शिवाय',hook_hi:'आज शिव जी का जाप करें — हर संकट टल जाएगा',hook_en:'Chant for Shiva Ji — all troubles will pass',good:'6:30–8:00',avoid:'7:30–9:00',
     s:['आज सोमवार है — शिव जी का दिन। राहु काल में भी उनका नाम काफी है।','सोमवार को शिव जी की कृपा सबसे अधिक होती है।','राहु और केतु शिव जी के सामने झुकते हैं।','शिव जी सरल हैं — एक लोटा जल बस।','आज सोमवार — शिव जी का दिन, मन में शांति रखें।','ॐ नमः शिवाय — यही मंत्र काफी है।','सोमवार को शिव पूजा से सात जन्मों का पुण्य।']},
@@ -1063,7 +1063,7 @@ function personalise(){
   document.getElementById('dName').textContent=H?T.d_hi:T.d_en;
   document.getElementById('dSub').textContent=H?'आज के देवता • भक्ति और साधना':"Today's Deity • Devotion & Sadhana";
   document.getElementById('chant').textContent=T.chant;
-  document.getElementById('jplayTxt').textContent=H?'🙏 जाप प्रारंभ करें':'Start Jap';
+  document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'Start Jap';
   // Complete screen
   document.getElementById('jdTitle').textContent=H?'108 जप पूर्ण! 🙏':'108 Jap Complete! 🙏';
   document.getElementById('jdSub').textContent=H?T.d_hi+' की कृपा सदा बनी रहे 🌸':'May '+T.d_en+"'s blessings be with you 🌸";
@@ -1189,7 +1189,7 @@ const CHANT_MAP = {
 function toggleJap(){
   jPlay=!jPlay;
   document.getElementById('jplayIco').textContent=jPlay?'⏸':'▶';
-  document.getElementById('jplayTxt').textContent=jPlay?(H?'रोकें':'Pause'):(H?'🙏 जाप प्रारंभ करें':'Start Jap');
+  document.getElementById('jplayTxt').textContent=jPlay?(H?'रोकें':'Pause'):(H?'🙏 जाप शुरू करें':'Start Jap');
   if(jPlay){
     // Play chant audio on loop
     const chantKey = CHANT_MAP[new Date().getDay()];
@@ -1209,7 +1209,7 @@ function resetJap(){
   cfEl.style.strokeDashoffset=CIRC;
   document.getElementById('cnum').textContent='0';
   document.getElementById('jplayIco').textContent='▶';
-  document.getElementById('jplayTxt').textContent=H?'🙏 जाप प्रारंभ करें':'Start Jap';
+  document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'Start Jap';
   document.getElementById('jdone').classList.remove('show');
   for(let i=0;i<DOTS;i++)document.getElementById('md'+i).className='md';
 }
