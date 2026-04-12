@@ -822,8 +822,11 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <div class="cinner"><div class="cnum" id="cnum">0</div><div class="cof">of 108</div></div>
         </div>
         <div class="mala" id="mala"></div>
+        <div style="text-align:center;margin-bottom:8px;">
+          <div id="japGoalLine" style="font-size:11px;color:rgba(212,168,67,0.55);letter-spacing:0.5px;font-weight:500;">आज का लक्ष्य: 108 जाप</div>
+        </div>
         <div class="jbtns">
-          <button class="jplay" id="jplayBtn" onclick="toggleJap()"><span id="jplayIco">▶</span><span id="jplayTxt">जप शुरू करें</span></button>
+          <button class="jplay" id="jplayBtn" onclick="toggleJap()"><span id="jplayIco">▶</span><span id="jplayTxt">🙏 जाप शुरू करें</span></button>
           <button class="jreset" onclick="resetJap()">↺</button>
         </div>
       </div>
@@ -1067,6 +1070,8 @@ function personalise(){
   document.getElementById('dSub').textContent=H?'आज के देवता • भक्ति और साधना':"Today's Deity • Devotion & Sadhana";
   document.getElementById('chant').textContent=T.chant;
   document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'Start Jap';
+  const jgl=document.getElementById('japGoalLine');
+  if(jgl) jgl.textContent=H?'आज का लक्ष्य: 108 जाप':'Today\'s goal: 108 chants';
   // Complete screen
   document.getElementById('jdTitle').textContent=H?'108 जप पूर्ण! 🙏':'108 Jap Complete! 🙏';
   document.getElementById('jdSub').textContent=H?T.d_hi+' की कृपा सदा बनी रहे 🌸':'May '+T.d_en+"'s blessings be with you 🌸";
@@ -1100,7 +1105,13 @@ function go(tab){
   if(tb)tb.classList.add('on');
   if(tab!=='listen')pauseAudio();
 }
-function goJap(){go('jap');}
+function goJap(){
+  go('jap');
+  // Auto-start jap only when coming from home thumbnail
+  setTimeout(()=>{
+    if(!jPlay && jCount===0) toggleJap();
+  }, 300);
+}
 
 // ── Wallpaper share ──
 function shareWallpaper(){
@@ -1219,6 +1230,8 @@ function resetJap(){
   document.getElementById('cnum').textContent='0';
   document.getElementById('jplayIco').textContent='▶';
   document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'Start Jap';
+  const jgl=document.getElementById('japGoalLine');
+  if(jgl) jgl.textContent=H?'आज का लक्ष्य: 108 जाप':'Today\'s goal: 108 chants';
   document.getElementById('jdone').classList.remove('show');
   for(let i=0;i<DOTS;i++)document.getElementById('md'+i).className='md';
 }
