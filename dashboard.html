@@ -645,11 +645,11 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div class="streak">
           <span class="sk-ico" id="skIco">🌸</span>
           <div class="sk-body">
-            <div class="sk-title" id="skTitle">आपकी साधना यात्रा 🔥</div>
-            <div class="sk-sub" id="skSub">0 दिन लगातार</div>
+            <div class="sk-title" id="skTitle">0 दिन लगातार</div>
+            <div class="sk-sub" id="skSub" style="font-size:9px;color:rgba(26,10,0,0.36);">आपकी साधना यात्रा</div>
           </div>
           <div class="sk-right">
-            <div class="sk-num" id="skNum">0</div>
+            <div class="sk-num" id="skNum" style="font-size:11px;font-weight:600;color:var(--saffron);line-height:1.3;">आज का लक्ष्य:</div>
             <div class="sk-unit" id="skUnit">दिन</div>
           </div>
         </div>
@@ -1021,11 +1021,11 @@ function personalise(){
   document.getElementById('jtBtn').textContent=H?'शुरू करें':'Start';
   // Streak
   const sk=getStreak();
-  document.getElementById('skNum').textContent=sk;
-  document.getElementById('skTitle').textContent=H?'आपकी साधना यात्रा 🔥':'Your Spiritual Streak 🔥';
-  document.getElementById('skSub').textContent=sk>0?(H?sk+' दिन लगातार 🔥':sk+' days streak 🔥'):(H?'0 दिन लगातार':'0 days streak');
-  document.getElementById('skIco').textContent=sk>6?'🔥':sk>2?'⭐':'🌸';
-  document.getElementById('skUnit').textContent=H?'दिन लगातार':'days';
+  document.getElementById('skNum').textContent=H?'आज का लक्ष्य:':'Today\'s goal:';
+  document.getElementById('skTitle').textContent=H?sk+' दिन लगातार':sk+' day streak';
+  document.getElementById('skSub').textContent=H?'आपकी साधना यात्रा':'Your sadhana journey';
+  document.getElementById('skIco').textContent='🔥';
+  document.getElementById('skUnit').textContent=H?'108 जाप':'108 chants';
   // Listen screen
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
@@ -1176,7 +1176,12 @@ function updateJ(){
   const n=document.getElementById('cnum');n.textContent=jCount;n.classList.add('bump');setTimeout(()=>n.classList.remove('bump'),180);
   cfEl.style.strokeDashoffset=CIRC-(jCount/TOTAL)*CIRC;
   for(let i=0;i<DOTS;i++){const d=document.getElementById('md'+i);d.className='md'+(jCount>=(i+1)*4?' done':jCount>i*4?' cur':'');}
-  if(jCount>=TOTAL){updateStreak();setTimeout(()=>{const sk=getStreak();document.getElementById('sdTitle').textContent=H?'आपने आज का जाप पूरा किया ✅':'You completed today\'s chant ✅';document.getElementById('sdSub').textContent=H?(sk+' दिन लगातार 🔥'):(sk+' day streak 🔥');document.getElementById('jdone').classList.add('show');},500);}
+  if(jCount>=TOTAL){updateStreak();setTimeout(()=>{const sk=getStreak();document.getElementById('sdTitle').textContent=H?'आपने आज का जाप पूरा किया ✅':'You completed today\'s chant ✅';document.getElementById('sdSub').textContent=H?(sk+' दिन लगातार 🔥'):(sk+' day streak 🔥');
+      // Update home streak card right side to show goal complete
+      document.getElementById('skNum').textContent=H?'आज का लक्ष्य':'Today\'s goal';
+      document.getElementById('skUnit').textContent=H?'पूरा हुआ ✅':'completed ✅';
+      document.getElementById('skTitle').textContent=H?sk+' दिन लगातार':sk+' day streak';
+      document.getElementById('jdone').classList.add('show');},500);}
 }
 function tap(e){if(jCount>=TOTAL)return;jCount++;updateJ();}
 // Japa chant audio
