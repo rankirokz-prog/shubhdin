@@ -1188,14 +1188,123 @@ function updateJ(){
     const nowDone=jCount>=(i+1)*4;
     const isCur=jCount>i*4&&!nowDone;
     d.className='jmd'+(nowDone?' done':isCur?' cur':'');
-    // Ripple when dot JUST became done
-    if(!wasDone && nowDone){
-      d.animate([
-        {transform:'scale(1)',boxShadow:'0 0 6px rgba(212,168,67,0.6)'},
-        {transform:'scale(1.8)',boxShadow:'0 0 16px rgba(212,168,67,0.9)'},
-        {transform:'scale(1)',boxShadow:'0 0 6px rgba(212,168,67,0.5)'},
-      ],{duration:300,easing:'ease-out'});
-    }
+    if(!wasDone && nowDone) dotPop(i);
+  }
+  const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/108';
+  if(navigator.vibrate)navigator.vibrate(30);
+  if(jCount>=TOTAL){
+    clearInterval(jTimer);clearInterval(wordTimer);jPlay=false;
+    if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
+    updateStreak();
+    setTimeout(()=>{
+      const sk=getStreak();
+      document.getElementById('jdStreakNum').textContent='🔥 '+sk+(H?' दिन लगातार':' day streak');
+      document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
+      document.getElementById('skNum').textContent=H?'आज का लक्ष्य':"Today's goal";
+      document.getElementById('skUnit').textContent=H?'पूरा हुआ ✅':'completed ✅';
+      document.getElementById('jdone').classList.add('show');
+    },400);
+  }
+}
+function animateWord(el, isActive, linger=false) {
+  if (!el) return;
+  el.getAnimations().forEach(a => a.cancel());
+  if (isActive) {
+    el.animate([
+      { opacity:0.30, transform:'scale(1)',    color:'rgba(255,255,255,0.45)', textShadow:'none', offset:0 },
+      { opacity:1.00, transform:'scale(1.18)', color:'#FFD700',
+        textShadow:'0 0 10px rgba(255,215,0,1),0 0 25px rgba(255,215,0,0.9),0 0 55px rgba(255,180,0,0.6),0 0 90px rgba(255,120,0,0.30)', offset:0.55 },
+      { opacity:1.00, transform:'scale(1.10)', color:'#FFD700',
+        textShadow:'0 0 10px rgba(255,215,0,1),0 0 25px rgba(255,215,0,0.9),0 0 55px rgba(255,180,0,0.6),0 0 90px rgba(255,120,0,0.30)', offset:1 },
+    ], { duration:160, easing:'ease-out', fill:'forwards' });
+  } else if (linger) {
+    // Linger — hold glow briefly then fade (continuity feel)
+    el.animate([
+      { opacity:1.00, transform:'scale(1.10)', color:'#FFD700',
+        textShadow:'0 0 10px rgba(255,215,0,0.9),0 0 25px rgba(255,215,0,0.6),0 0 55px rgba(255,180,0,0.3)', offset:0 },
+      { opacity:0.55, transform:'scale(1.02)', color:'#FFD700',
+        textShadow:'0 0 5px rgba(255,215,0,0.4)', offset:0.5 },
+      { opacity:0.28, transform:'scale(0.95)', color:'rgba(255,200,80,0.35)',
+        textShadow:'none', offset:1 },
+    ], { duration:160, easing:'ease-in', fill:'forwards' });
+  } else {
+    el.animate([
+      { opacity:0.28, transform:'scale(0.95)', color:'rgba(255,200,80,0.35)', textShadow:'none' },
+    ], { duration:80, easing:'ease-in', fill:'forwards' });
+  }
+}
+
+function dotPop(idx) {
+  const d = document.getElementById('jmd'+idx);
+  if (!d) return;
+  d.getAnimations().forEach(a => a.cancel());
+  d.animate([
+    { transform:'scale(1)',   boxShadow:'0 0 6px rgba(255,107,26,0.5)' },
+    { transform:'scale(1.55)',boxShadow:'0 0 18px rgba(255,107,26,1), 0 0 30px rgba(255,107,26,0.5)' },
+    { transform:'scale(1)',   boxShadow:'0 0 6px rgba(255,107,26,0.3)' },
+  ], { duration:320, easing:'cubic-bezier(0.34,1.56,0.64,1)' });
+}
+
+function startWordHighlight(){
+  const words = MANTRA_WORDS[dow] || ['ॐ','नमः','शिवाय'];
+  currentWordIdx = 0;
+  clearInterval(wordTimer);
+
+  // Word timing — first/last words slightly longer (natural chanting rhythm)
+  const baseDur = Math.floor(1350 / words.length);
+  const durations = words.map((_, i) =>
+    (i === 0 || i === words.length-1) ? Math.round(baseDur * 1.25) : baseDur
+  );
+  let elapsed = 0;
+
+  // Reset all words to dim
+  words.forEach((_, i) => {
+    const w = document.getElementById('jw'+i);
+    if (w) { w.getAnimations().forEach(a=>a.cancel()); w.style.cssText='opacity:0.30;transform:scale(1);color:rgba(255,255,255,0.45);'; }
+  });
+
+  function tick() {
+    if (!jPlay) return;
+    const prev = currentWordIdx === 0 ? words.length-1 : currentWordIdx-1;
+    // Linger fade on previous word
+    animateWord(document.getElementById('jw'+prev), false, true);
+    // Glow in current word
+    animateWord(document.getElementById('jw'+currentWordIdx), true);
+    // Light vibration per word
+    if (navigator.vibrate) navigator.vibrate(12);
+    currentWordIdx = (currentWordIdx + 1) % words.length;
+    if (jPlay) wordTimer = setTimeout(tick, durations[currentWordIdx]);
+  }
+
+  wordTimer = setTimeout(tick, 80);
+}
+
+function stopWordHighlight(){
+  clearTimeout(wordTimer);
+  clearInterval(wordTimer);
+  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{
+    const w=document.getElementById('jw'+i);
+    if(w){w.getAnimations().forEach(a=>a.cancel());w.style.cssText='opacity:0.30;transform:scale(1);color:rgba(255,255,255,0.45);text-shadow:none;';}
+  });
+}
+
+function buildMala(){
+  const mala=document.getElementById('jMala');
+  if(!mala)return;
+  mala.innerHTML='';
+  for(let i=0;i<DOTS;i++){const d=document.createElement('div');d.className='jmd';d.id='jmd'+i;mala.appendChild(d);}
+}
+function updateJ(){
+  const el=document.getElementById('jNum');
+  if(!el)return;
+  el.textContent=jCount;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),200);
+  for(let i=0;i<DOTS;i++){
+    const d=document.getElementById('jmd'+i);if(!d)continue;
+    const wasDone=d.classList.contains('done');
+    const nowDone=jCount>=(i+1)*4;
+    const isCur=jCount>i*4&&!nowDone;
+    d.className='jmd'+(nowDone?' done':isCur?' cur':'');
+    if(!wasDone && nowDone) dotPop(i);
   }
   const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/108';
   if(navigator.vibrate)navigator.vibrate(30);
