@@ -270,152 +270,177 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 @keyframes badgePulse{0%,100%{opacity:0.7;}50%{opacity:1;}}
 
 /* ══════════════════════════════
-   JAPA SCREEN
+   JAPA SCREEN — IMMERSIVE
 ══════════════════════════════ */
-.japa-scr{background:#0D0500;}
-.jnav{flex-shrink:0;padding:44px 18px 14px;display:flex;align-items:center;justify-content:space-between;}
-.jtitle{font-family:'Tiro Devanagari Hindi',serif;color:var(--gold);font-size:15px;text-align:center;}
-.jtitle small{display:block;font-family:'Poppins',sans-serif;font-size:8px;color:rgba(212,168,67,0.40);letter-spacing:2px;text-transform:uppercase;margin-top:1px;}
-.jbody{flex:1;display:flex;flex-direction:column;align-items:center;padding:0 20px 10px;overflow-y:auto;scrollbar-width:none;}
-.jbody::-webkit-scrollbar{display:none;}
 
-/* YouTube hook */
-.jhook{width:100%;background:linear-gradient(135deg,rgba(255,107,26,0.10),rgba(212,168,67,0.06));border:1px solid rgba(255,107,26,0.20);border-radius:16px;padding:14px 15px;margin-bottom:16px;text-align:center;}
-.jh-ico{font-size:38px;display:block;margin-bottom:7px;}
-.jh-hook{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:#fff;line-height:1.4;margin-bottom:4px;}
-.jh-benefit{font-size:11px;color:rgba(255,107,26,0.75);}
+/* Full-screen deity background */
+.japa-scr{
+  position:absolute;inset:0;background:#0D0500;
+  display:none;flex-direction:column;overflow:hidden;
+}
+.japa-scr.on{display:flex;}
 
-/* Deity circle */
-.deity-wrap{width:160px;height:160px;position:relative;margin-bottom:12px;}
-.dr{position:absolute;border-radius:50%;border:1px solid rgba(212,168,67,0.16);}
-.dr1{inset:-10px;animation:spin 8s linear infinite;}
-.dr2{inset:-18px;animation:spinR 14s linear infinite;border-style:dashed;border-color:rgba(212,168,67,0.08);}
-.dc{width:160px;height:160px;border-radius:50%;background:rgba(26,10,0,0.55);border:2px solid rgba(212,168,67,0.40);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;box-shadow:0 0 28px rgba(212,168,67,0.12);}
-.d-bg{font-size:70px;opacity:0.17;position:absolute;}
-.d-small{font-size:16px;opacity:0.38;position:relative;z-index:2;}
-.deity-name{text-align:center;margin-bottom:8px;}
-.deity-name h2{font-family:'Tiro Devanagari Hindi',serif;font-size:17px;color:#fff;margin-bottom:2px;}
-.deity-name p{font-size:9px;color:rgba(212,168,67,0.40);letter-spacing:2px;text-transform:uppercase;}
-.chant{font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:var(--gold);text-align:center;margin-bottom:14px;}
+/* Deity image bg */
+.j-img-bg{
+  position:absolute;inset:0;z-index:0;
+  background-size:cover;background-position:center top;
+  filter:blur(3px) brightness(0.35);
+  transform:scale(1.05); /* hide blur edges */
+}
+/* Dark gradient overlay */
+.j-overlay{
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(
+    180deg,
+    rgba(13,5,0,0.55) 0%,
+    rgba(13,5,0,0.20) 30%,
+    rgba(13,5,0,0.20) 60%,
+    rgba(13,5,0,0.85) 100%
+  );
+}
+
+/* Nav bar */
+.jnav{
+  flex-shrink:0;padding:48px 18px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:10;
+}
+.j-deity-name{
+  font-family:'Tiro Devanagari Hindi',serif;
+  font-size:15px;color:var(--gold);text-align:center;
+  text-shadow:0 2px 12px rgba(0,0,0,0.6);
+}
+.j-deity-name em{
+  display:block;font-style:normal;
+  font-family:'Poppins',sans-serif;font-size:8px;
+  color:rgba(212,168,67,0.50);letter-spacing:2px;text-transform:uppercase;margin-top:2px;
+}
+.j-pill{
+  background:rgba(0,0,0,0.35);border:1px solid rgba(212,168,67,0.25);
+  border-radius:12px;padding:4px 10px;
+  font-size:10px;color:rgba(212,168,67,0.80);
+  backdrop-filter:blur(8px);
+}
+
+/* Center focus area */
+.j-center{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;z-index:10;padding:0 24px;
+  gap:20px;
+}
+
+/* Mantra display */
+.j-mantra-wrap{text-align:center;}
+.j-mantra{
+  font-family:'Tiro Devanagari Hindi',serif;
+  font-size:34px;color:rgba(255,255,255,0.92);
+  line-height:1.5;letter-spacing:2px;
+  text-shadow:0 2px 20px rgba(0,0,0,0.8);
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+}
+.j-word{
+  transition:all 0.3s ease;
+  cursor:default;
+  padding:2px 4px;
+  border-radius:6px;
+}
+.j-word.active{
+  color:var(--gold);
+  text-shadow:0 0 30px rgba(212,168,67,0.9),0 0 60px rgba(212,168,67,0.5);
+  transform:scale(1.08);
+}
+.j-word.done{
+  color:rgba(212,168,67,0.50);
+}
 
 /* Counter */
-.cwrap{width:120px;height:120px;position:relative;margin-bottom:12px;cursor:pointer;}
-.csvg{position:absolute;inset:0;transform:rotate(-90deg);}
-.ct{fill:none;stroke:rgba(212,168,67,0.10);stroke-width:5;}
-.cf{fill:none;stroke:url(#cg);stroke-width:5;stroke-linecap:round;stroke-dasharray:345;stroke-dashoffset:345;transition:stroke-dashoffset 0.3s ease;}
-.cinner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(13,5,0,0.60);border-radius:50%;}
-.cnum{font-size:38px;font-weight:700;color:#fff;line-height:1;transition:all 0.15s;}
-.cnum.bump{transform:scale(1.18);color:var(--gold);}
-.cof{font-size:10px;color:rgba(212,168,67,0.38);margin-top:2px;}
-.mala{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:0 30px;max-width:300px;margin-bottom:14px;}
-.md{width:8px;height:8px;border-radius:50%;background:rgba(212,168,67,0.10);border:1px solid rgba(212,168,67,0.16);transition:all 0.3s;flex-shrink:0;}
-.md.done{background:var(--gold);border-color:var(--gold);}
-.md.cur{background:var(--saffron);border-color:var(--saffron);transform:scale(1.3);animation:mdCur 0.9s ease-in-out infinite;}
-@keyframes mdCur{0%,100%{box-shadow:0 0 5px rgba(255,107,26,0.4);}50%{box-shadow:0 0 12px rgba(255,107,26,0.9);}}
-.jbtns{display:flex;gap:9px;width:100%;max-width:280px;}
-.jplay{flex:1;height:52px;border-radius:18px;border:none;cursor:pointer;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));color:#fff;box-shadow:0 5px 20px rgba(255,107,26,0.35);display:flex;align-items:center;justify-content:center;gap:7px;animation:japBtnGlow 2.5s ease-in-out infinite;}
-@keyframes japBtnGlow{0%,100%{box-shadow:0 5px 20px rgba(255,107,26,0.35);}50%{box-shadow:0 8px 32px rgba(255,107,26,0.60),0 0 18px rgba(255,107,26,0.25);}}
-.jplay:active{transform:scale(0.97);animation:none;}
-.jplay.playing{animation:none;box-shadow:0 5px 16px rgba(255,107,26,0.25);}
-.jreset{width:48px;height:48px;border-radius:16px;border:1.5px solid rgba(212,168,67,0.18);background:rgba(212,168,67,0.07);color:var(--gold);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-
-/* Japa complete */
-.jdone{position:absolute;inset:0;background:rgba(13,5,0,0.97);z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;}
-.jdone.show{display:flex;animation:show 0.4s ease;}
-.jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:56px;color:var(--gold);animation:omGlow 2s ease-in-out infinite;margin-bottom:4px;}
-.jd-title{font-family:'Tiro Devanagari Hindi',serif;font-size:22px;color:#fff;text-align:center;}
-.jd-sub{font-size:12px;color:rgba(255,255,255,0.45);text-align:center;line-height:1.6;padding:0 20px;}
-.streak-done{background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,107,26,0.08));border:1px solid rgba(212,168,67,0.22);border-radius:16px;padding:14px 20px;text-align:center;width:100%;}
-.sd-ico{font-size:36px;display:block;margin-bottom:6px;}
-.sd-title{font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);margin-bottom:3px;}
-.sd-sub{font-size:11px;color:rgba(255,255,255,0.40);}
-.share-card{background:linear-gradient(135deg,#1A0800,#3D1A05);border-radius:16px;padding:16px;text-align:center;border:1px solid rgba(212,168,67,0.25);margin-bottom:10px;position:relative;overflow:hidden;width:100%;}
-.share-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--saffron),var(--gold),transparent);}
-.sc-om{font-family:'Tiro Devanagari Hindi',serif;font-size:30px;color:var(--gold);display:block;margin-bottom:6px;}
-.sc-msg{font-family:'Tiro Devanagari Hindi',serif;font-size:14px;color:#fff;line-height:1.5;margin-bottom:4px;}
-.sc-name{font-size:11px;color:rgba(212,168,67,0.55);margin-bottom:3px;}
-.sc-day{font-size:10px;color:rgba(255,255,255,0.28);}
-.sc-url{font-size:9px;color:rgba(212,168,67,0.32);margin-top:5px;letter-spacing:1px;}
-.share-btn{width:100%;height:48px;border-radius:14px;border:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 5px 16px rgba(37,211,102,0.25);margin-bottom:8px;}
-.share-btn:active{transform:scale(0.97);}
-.again-btn{width:100%;height:44px;border-radius:14px;border:1.5px solid rgba(212,168,67,0.20);background:rgba(212,168,67,0.07);color:var(--gold);font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
-
-
-/* ══ NIGHT JAP CARD ══ */
-.night-card{
-  border-radius:20px;overflow:hidden;
-  position:relative;min-height:155px;
-  display:flex;flex-direction:column;justify-content:flex-end;
-  border:1px solid rgba(135,206,235,0.20);
-  cursor:pointer;transition:transform 0.2s;
+.j-counter{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
 }
-.night-card:active{transform:scale(0.98);}
-.nc-bg{
-  position:absolute;inset:0;
-  background:linear-gradient(135deg,#020814,#050D1A,#0A1628,#05101E);
+.j-count-num{
+  font-size:56px;font-weight:700;color:#fff;line-height:1;
+  text-shadow:0 2px 20px rgba(0,0,0,0.6);
+  transition:all 0.2s;
 }
-/* Stars background */
-.nc-bg::before{
-  content:'';position:absolute;inset:0;
-  background-image:
-    radial-gradient(1px 1px at 15% 25%,rgba(255,255,255,0.7) 0%,transparent 100%),
-    radial-gradient(1px 1px at 45% 15%,rgba(255,255,255,0.5) 0%,transparent 100%),
-    radial-gradient(1.5px 1.5px at 70% 30%,rgba(255,255,255,0.8) 0%,transparent 100%),
-    radial-gradient(1px 1px at 85% 20%,rgba(255,255,255,0.6) 0%,transparent 100%),
-    radial-gradient(1px 1px at 25% 65%,rgba(255,255,255,0.4) 0%,transparent 100%),
-    radial-gradient(1.5px 1.5px at 60% 55%,rgba(255,255,255,0.6) 0%,transparent 100%),
-    radial-gradient(1px 1px at 90% 60%,rgba(255,255,255,0.5) 0%,transparent 100%),
-    radial-gradient(1px 1px at 10% 80%,rgba(255,255,255,0.4) 0%,transparent 100%),
-    radial-gradient(2px 2px at 50% 40%,rgba(135,206,250,0.4) 0%,transparent 100%);
-  animation:starsTwinkle 4s ease-in-out infinite;
+.j-count-num.bump{
+  transform:scale(1.15);color:var(--gold);
+  text-shadow:0 0 30px rgba(212,168,67,0.7);
 }
-@keyframes starsTwinkle{0%,100%{opacity:0.7;}50%{opacity:1;}}
-/* Moon glow */
-.nc-bg::after{
-  content:'';position:absolute;top:-20px;right:-20px;
-  width:130px;height:130px;border-radius:50%;
-  background:radial-gradient(circle,rgba(135,206,250,0.12) 0%,transparent 70%);
-}
-.nc-deity{
-  position:absolute;right:10px;top:50%;transform:translateY(-55%);
-  font-size:90px;opacity:0.22;pointer-events:none;
-  filter:drop-shadow(0 0 12px rgba(135,206,250,0.3));
-}
-.nc-overlay{
-  position:absolute;bottom:0;left:0;right:0;height:80%;
-  background:linear-gradient(0deg,rgba(2,8,20,0.96) 0%,rgba(2,8,20,0.55) 65%,transparent 100%);
-}
-.nc-content{position:relative;z-index:2;padding:14px 16px;}
-.nc-moon{font-size:14px;display:block;margin-bottom:4px;}
-.nc-tag{font-size:9px;color:rgba(135,206,250,0.65);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;}
-.nc-hook{font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:#fff;line-height:1.3;margin-bottom:6px;}
-.nc-bottom{display:flex;align-items:center;justify-content:space-between;}
-.nc-benefit{font-size:11px;color:rgba(255,255,255,0.45);}
-.nc-btn{
-  display:flex;align-items:center;gap:6px;
-  background:linear-gradient(135deg,#1A3A6B,#0D2244);
-  border:1px solid rgba(135,206,250,0.25);
-  border-radius:20px;padding:6px 14px;
-  font-size:11px;font-weight:600;color:rgba(135,206,250,0.90);
-}
-/* Coming soon version */
-.nc-coming{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  flex:1;padding:20px 16px;text-align:center;position:relative;z-index:2;
-}
-.nc-coming-ico{font-size:32px;display:block;margin-bottom:10px;opacity:0.70;}
-.nc-coming-title{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:rgba(255,255,255,0.80);margin-bottom:5px;line-height:1.4;}
-.nc-coming-sub{font-size:11px;color:rgba(135,206,250,0.50);line-height:1.5;}
-.nc-badge{
-  display:inline-block;margin-top:10px;
-  background:rgba(135,206,250,0.10);
-  border:1px solid rgba(135,206,250,0.22);
-  border-radius:20px;padding:4px 12px;
-  font-size:10px;font-weight:600;
-  color:rgba(135,206,250,0.70);
-  animation:badgePulse 2.5s ease-in-out infinite;
+.j-count-of{
+  font-size:13px;color:rgba(255,255,255,0.35);font-weight:500;
+  letter-spacing:1px;
 }
 
+/* Mala dots */
+.j-mala{
+  display:flex;gap:4px;justify-content:center;
+  flex-wrap:wrap;max-width:280px;
+}
+.jmd{
+  width:7px;height:7px;border-radius:50%;
+  background:rgba(212,168,67,0.15);
+  border:1px solid rgba(212,168,67,0.20);
+  transition:all 0.3s;flex-shrink:0;
+}
+.jmd.done{background:var(--gold);border-color:var(--gold);box-shadow:0 0 4px rgba(212,168,67,0.5);}
+.jmd.cur{
+  background:var(--saffron);border-color:var(--saffron);
+  transform:scale(1.35);
+  box-shadow:0 0 8px rgba(255,107,26,0.8);
+  animation:mdPulse 0.9s ease-in-out infinite;
+}
+@keyframes mdPulse{0%,100%{box-shadow:0 0 5px rgba(255,107,26,0.4);}50%{box-shadow:0 0 14px rgba(255,107,26,0.9);}}
+
+/* Bottom controls */
+.j-bottom{
+  flex-shrink:0;padding:0 24px 40px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  position:relative;z-index:10;
+}
+.j-goal-line{
+  font-size:11px;color:rgba(212,168,67,0.50);
+  letter-spacing:0.5px;font-weight:500;
+}
+.j-btns{display:flex;gap:10px;width:100%;max-width:300px;}
+.j-play-btn{
+  flex:1;height:52px;border-radius:18px;border:none;
+  cursor:pointer;font-family:'Poppins',sans-serif;
+  font-size:14px;font-weight:600;
+  background:linear-gradient(135deg,var(--saffron),var(--deep-gold));
+  color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;
+  box-shadow:0 5px 20px rgba(255,107,26,0.35);
+  animation:japBtnGlow 2.5s ease-in-out infinite;
+  transition:all 0.2s;
+}
+.j-play-btn.playing{animation:none;box-shadow:0 3px 12px rgba(255,107,26,0.25);}
+.j-play-btn:active{transform:scale(0.97);}
+@keyframes japBtnGlow{0%,100%{box-shadow:0 5px 20px rgba(255,107,26,0.35);}50%{box-shadow:0 8px 32px rgba(255,107,26,0.65),0 0 18px rgba(255,107,26,0.25);}}
+.j-reset-btn{
+  width:52px;height:52px;border-radius:18px;
+  border:1.5px solid rgba(212,168,67,0.25);
+  background:rgba(0,0,0,0.30);backdrop-filter:blur(8px);
+  color:var(--gold);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all 0.2s;
+}
+.j-reset-btn:active{transform:scale(0.97);}
+
+/* Completion overlay */
+.jdone{
+  position:absolute;inset:0;z-index:50;
+  background:rgba(13,5,0,0.96);
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;
+}
+.jdone.show{display:flex;}
+.jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:52px;color:var(--gold);animation:omGlow 2s ease-in-out infinite;}
+.jd-title{font-family:'Tiro Devanagari Hindi',serif;font-size:24px;color:var(--gold);}
+.jd-sub{font-size:13px;color:rgba(255,255,255,0.50);text-align:center;padding:0 30px;line-height:1.6;}
+.jd-streak{background:rgba(212,168,67,0.10);border:1px solid rgba(212,168,67,0.25);border-radius:14px;padding:10px 24px;margin:4px 0;}
+.jd-streak-num{font-size:20px;font-weight:700;color:var(--gold);text-align:center;}
+.jd-streak-lbl{font-size:10px;color:rgba(212,168,67,0.50);text-align:center;letter-spacing:1px;}
+.jd-btn{background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border:none;border-radius:14px;padding:13px 28px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;margin-top:4px;}
 
 /* ══════════════════════════════
    MARGADARSHAN SCREEN
@@ -795,61 +820,64 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     </div>
 
     <!-- ── JAPA ── -->
-    <div class="scr japa-scr" id="scr-jap">
+    <div class="scr" id="scr-jap">
+
+      <!-- Full-screen deity image bg -->
+      <div class="j-img-bg" id="jImgBg"></div>
+      <div class="j-overlay"></div>
+
+      <!-- Nav -->
       <div class="jnav">
-        <div style="width:34px;"></div>
-        <div class="jtitle" id="japaTitle">जप माला</div>
-        <div class="gpill" id="japaPill">शुक्रवार</div>
+        <div class="j-pill" id="jPill">मंगलवार</div>
+        <div class="j-deity-name" id="jDeityName">हनुमान जी<em>शक्ति और भक्ति</em></div>
+        <div class="j-pill" id="jCountPill">0/108</div>
       </div>
-      <div class="jbody">
-        <div class="jhook">
-          <span class="jh-ico" id="jhIco">🌸</span>
-          <div class="jh-hook" id="jhHook">आज लक्ष्मी जी का जाप करें — लक्ष्मी जी प्रसन्न होंगी</div>
-          <div class="jh-benefit" id="jhBenefit">👉 108 बार • 11 मिनट • मन की शांति</div>
+
+      <!-- Center: mantra + counter -->
+      <div class="j-center">
+
+        <!-- Mantra words -->
+        <div class="j-mantra-wrap">
+          <div class="j-mantra" id="jMantra">
+            <!-- filled by JS -->
+          </div>
         </div>
-        <div class="deity-wrap">
-          <div class="dr dr2"></div><div class="dr dr1"></div>
-          <div class="dc"><span class="d-bg" id="dBg">🌸</span><span class="d-small">🙏</span></div>
+
+        <!-- Counter -->
+        <div class="j-counter">
+          <div class="j-count-num" id="jNum">0</div>
+          <div class="j-count-of" id="jOf">of 108</div>
         </div>
-        <div class="deity-name"><h2 id="dName">लक्ष्मी जी</h2><p id="dSub">आज के देवता</p></div>
-        <div class="chant" id="chant">ॐ श्रीं महालक्ष्म्यै नमः</div>
-        <div class="cwrap" id="cwrap" onclick="tap(event)">
-          <svg class="csvg" viewBox="0 0 120 120">
-            <defs><linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF6B1A"/><stop offset="100%" stop-color="#D4A843"/></linearGradient></defs>
-            <circle class="ct" cx="60" cy="60" r="55"/>
-            <circle class="cf" id="cf" cx="60" cy="60" r="55"/>
-          </svg>
-          <div class="cinner"><div class="cnum" id="cnum">0</div><div class="cof">of 108</div></div>
-        </div>
-        <div class="mala" id="mala"></div>
-        <div style="text-align:center;margin-bottom:8px;">
-          <div id="japGoalLine" style="font-size:11px;color:rgba(212,168,67,0.55);letter-spacing:0.5px;font-weight:500;">आज का लक्ष्य: 108 जाप</div>
-        </div>
-        <div class="jbtns">
-          <button class="jplay" id="jplayBtn" onclick="toggleJap()"><span id="jplayIco">▶</span><span id="jplayTxt">🙏 जाप शुरू करें</span></button>
-          <button class="jreset" onclick="resetJap()">↺</button>
+
+        <!-- Mala dots -->
+        <div class="j-mala" id="jMala"></div>
+
+      </div>
+
+      <!-- Bottom controls -->
+      <div class="j-bottom">
+        <div class="j-goal-line" id="jGoalLine">आज का लक्ष्य: 108 जाप</div>
+        <div class="j-btns">
+          <button class="j-play-btn" id="jplayBtn" onclick="toggleJap()">
+            <span id="jplayIco">▶</span>
+            <span id="jplayTxt">🙏 जाप शुरू करें</span>
+          </button>
+          <button class="j-reset-btn" onclick="resetJap()">↺</button>
         </div>
       </div>
-      <!-- Complete overlay -->
+
+      <!-- Completion overlay -->
       <div class="jdone" id="jdone">
         <div class="jd-om">ॐ</div>
-        <div class="jd-title" id="jdTitle">108 जप पूर्ण! 🙏</div>
-        <div class="jd-sub" id="jdSub">लक्ष्मी जी की कृपा सदा बनी रहे 🌸</div>
-        <div class="streak-done">
-          <span class="sd-ico">🌸</span>
-          <div class="sd-title" id="sdTitle">शाबाश! 🌸</div>
-          <div class="sd-sub" id="sdSub">हर दिन जाप करें</div>
+        <div class="jd-title" id="jdTitle">108 जाप पूर्ण! 🙏</div>
+        <div class="jd-sub" id="jdSub">हनुमान जी की कृपा आप पर सदा बनी रहे 🌸</div>
+        <div class="jd-streak">
+          <div class="jd-streak-num" id="jdStreakNum">🔥 1 दिन लगातार</div>
+          <div class="jd-streak-lbl" id="jdStreakLbl">आपकी साधना यात्रा</div>
         </div>
-        <div class="share-card" style="width:100%;">
-          <span class="sc-om">ॐ</span>
-          <div class="sc-msg" id="scMsg">आज मैंने लक्ष्मी जी का 108 बार जाप किया 🙏</div>
-          <div class="sc-name" id="scName">— Ravi Ji</div>
-          <div class="sc-day" id="scDay">शुक्रवार • अनुराधा नक्षत्र</div>
-          <div class="sc-url">shubhdin.app</div>
-        </div>
-        <button class="share-btn" onclick="doShare()">📤 <span id="shareBtn">WhatsApp पर साझा करें</span></button>
-        <button class="again-btn" onclick="resetJap()" id="againBtn">↺ फिर से जाप करें</button>
+        <button class="jd-btn" onclick="resetJap()" id="jdBtn">↺ फिर से जाप करें</button>
       </div>
+
     </div>
 
   </div><!-- sw -->
@@ -1058,42 +1086,126 @@ function personalise(){
   document.getElementById('klName').textContent=H?'जन्म कुंडली देखें':'View Birth Chart';
   document.getElementById('klSub').textContent=H?'ग्रह • दशा • व्यक्तिगत':'Planets • Dasha • Personal';
   document.getElementById('klBadge').textContent=H?'जल्द आ रहा है':'Coming Soon';
-  // Japa screen
-  document.getElementById('japaTitle').innerHTML=H?'जप माला':'Jap Mala';
-  document.getElementById('japaPill').textContent=H?df_h[dow]:df_e[dow];
-  document.getElementById('jhIco').textContent=T.ico;
-  document.getElementById('jhHook').textContent=H?T.hook_hi:T.hook_en;
-  document.getElementById('jhBenefit').textContent=H?'🙏 108 बार • 11 मिनट • मन की शांति':'🙏 108 times • 11 minutes • Peace of mind';
-  document.getElementById('dBg').textContent=T.ico;
+  // Japa screen — new immersive design
+  const jImgBg = document.getElementById('jImgBg');
+  if(jImgBg && T.img) jImgBg.style.backgroundImage = "url('"+T.img+"')";
+  const jdn = document.getElementById('jDeityName');
+  if(jdn) jdn.innerHTML = (H?T.d_hi:T.d_en)+'<em>'+(H?T.day_hi:T.day_en)+'</em>';
+  const jpill = document.getElementById('jPill');
+  if(jpill) jpill.textContent = H?df_h[dow]:df_e[dow];
+  const jgl2 = document.getElementById('jGoalLine');
+  if(jgl2) jgl2.textContent = H?'आज का लक्ष्य: 108 जाप':'Today\'s goal: 108 chants';
+  document.getElementById('jdTitle').textContent = H?'108 जाप पूर्ण! 🙏':'108 Jap Complete! 🙏';
+  document.getElementById('jdSub').textContent = H?T.d_hi+' की कृपा आप पर सदा बनी रहे 🌸':'May '+T.d_en+'\'s blessings always be with you 🌸';
+  document.getElementById('jdStreakLbl').textContent = H?'आपकी साधना यात्रा':'Your sadhana journey';
+  document.getElementById('jdBtn').textContent = H?'↺ फिर से जाप करें':'↺ Jap Again';
 
-  document.getElementById('dName').textContent=H?T.d_hi:T.d_en;
-  document.getElementById('dSub').textContent=H?'आज के देवता • भक्ति और साधना':"Today's Deity • Devotion & Sadhana";
-  document.getElementById('chant').textContent=T.chant;
-  document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'Start Jap';
-  const jgl=document.getElementById('japGoalLine');
-  if(jgl) jgl.textContent=H?'आज का लक्ष्य: 108 जाप':'Today\'s goal: 108 chants';
-  // Complete screen
-  document.getElementById('jdTitle').textContent=H?'108 जप पूर्ण! 🙏':'108 Jap Complete! 🙏';
-  document.getElementById('jdSub').textContent=H?T.d_hi+' की कृपा सदा बनी रहे 🌸':'May '+T.d_en+"'s blessings be with you 🌸";
-  document.getElementById('scMsg').textContent=H?'आज मैंने '+T.d_hi+' का 108 बार जाप किया 🙏':'Today I chanted for '+T.d_en+' 108 times 🙏';
-  document.getElementById('scName').textContent='— '+(name.charAt(0).toUpperCase()+name.slice(1))+(H?' जी':'');
-  document.getElementById('scDay').textContent=H?df_h[dow]+' • '+R.nh+' नक्षत्र':df_e[dow]+' • '+R.ne+' Nakshatra';
-  document.getElementById('shareBtn').textContent=H?'WhatsApp पर साझा करें':'Share on WhatsApp';
-  document.getElementById('againBtn').textContent=H?'↺ फिर से जाप करें':'↺ Jap Again';
-  // Tab labels
+  // Tab bar
   document.getElementById('tl1').textContent=H?'होम':'Home';
-  document.getElementById('tl2').textContent=H?'सुनें':'Listen';
+  document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
   document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
-  document.getElementById('tl4').textContent=H?'जप':'Jap';
-  // Mini player
-  document.getElementById('mpIco').textContent=T.ico;
-  document.getElementById('mpTitle').textContent=H?'आज का पंचांग — '+name+' जी':"Today's Panchang — "+name;
-  document.getElementById('mpSub').textContent=H?R.h+' • '+R.nh:R.e+' • '+R.ne;
-  // Streak display on complete
-  const sk2=getStreak();
-  document.getElementById('sdTitle').textContent=H?'आपने आज का जाप पूरा किया ✅':'You completed today\'s chant ✅';
-  document.getElementById('sdSub').textContent=H?(Math.max(1,sk2)+' दिन लगातार 🔥'):(Math.max(1,sk2)+' day streak 🔥');
+  document.getElementById('tl4').textContent=H?'जाप':'Jap';
 }
+
+// ── Streak ──
+function getStreak(){try{return JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count||0;}catch(e){return 0;}}
+function updateStreak(){
+  const today=new Date().toDateString();
+  let d={};try{d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');}catch(e){}
+  if(d.date===today)return;
+  d.count=(d.date===new Date(Date.now()-86400000).toDateString())?(d.count||0)+1:1;
+  d.date=today;
+  localStorage.setItem('shubhdin_streak',JSON.stringify(d));
+}
+
+// ── JAPA ──
+const TOTAL=108,DOTS=27;
+let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWordIdx=0;
+const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
+const MANTRA_WORDS={
+  0:['ॐ','सूर्याय','नमः'],1:['ॐ','नमः','शिवाय'],2:['ॐ','हं','हनुमते','नमः'],
+  3:['ॐ','गं','गणपतये','नमः'],4:['ॐ','श्री','रामाय','नमः'],
+  5:['ॐ','श्रीं','महालक्ष्म्यै','नमः'],6:['ॐ','शं','शनिचराय','नमः'],
+};
+function buildMantra(){
+  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
+  const el=document.getElementById('jMantra');
+  if(!el)return;
+  el.innerHTML=words.map((w,i)=>`<span class="j-word" id="jw${i}">${w}</span>`).join('');
+}
+function buildMala(){
+  const mala=document.getElementById('jMala');
+  if(!mala)return;
+  mala.innerHTML='';
+  for(let i=0;i<DOTS;i++){const d=document.createElement('div');d.className='jmd';d.id='jmd'+i;mala.appendChild(d);}
+}
+function updateJ(){
+  const el=document.getElementById('jNum');
+  if(!el)return;
+  el.textContent=jCount;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),200);
+  for(let i=0;i<DOTS;i++){const d=document.getElementById('jmd'+i);if(!d)continue;d.className='jmd'+(jCount>=(i+1)*4?' done':jCount>i*4?' cur':'');}
+  const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/108';
+  if(navigator.vibrate)navigator.vibrate(30);
+  if(jCount>=TOTAL){
+    clearInterval(jTimer);clearInterval(wordTimer);jPlay=false;
+    if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
+    updateStreak();
+    setTimeout(()=>{
+      const sk=getStreak();
+      document.getElementById('jdStreakNum').textContent='🔥 '+sk+(H?' दिन लगातार':' day streak');
+      document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
+      document.getElementById('skNum').textContent=H?'आज का लक्ष्य':"Today's goal";
+      document.getElementById('skUnit').textContent=H?'पूरा हुआ ✅':'completed ✅';
+      document.getElementById('jdone').classList.add('show');
+    },400);
+  }
+}
+function startWordHighlight(){
+  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
+  currentWordIdx=0;clearInterval(wordTimer);
+  const wordDur=Math.floor(1400/words.length);
+  wordTimer=setInterval(()=>{
+    if(!jPlay)return;
+    words.forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word'+(i<currentWordIdx?' done':'');});
+    const cur=document.getElementById('jw'+currentWordIdx);
+    if(cur)cur.className='j-word active';
+    currentWordIdx=(currentWordIdx+1)%words.length;
+  },wordDur);
+}
+function stopWordHighlight(){
+  clearInterval(wordTimer);
+  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
+}
+function toggleJap(){
+  jPlay=!jPlay;
+  const btn=document.getElementById('jplayBtn');
+  document.getElementById('jplayIco').textContent=jPlay?'⏸':'▶';
+  document.getElementById('jplayTxt').textContent=jPlay?(H?'रोकें':'Pause'):(H?'🙏 जाप शुरू करें':'🙏 Start Jap');
+  if(btn)btn.classList.toggle('playing',jPlay);
+  if(jPlay){
+    const chantKey=CHANT_MAP[dow];
+    if(chantKey){
+      jChantAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3');
+      jChantAudio.loop=true;jChantAudio.play().catch(e=>console.log('Chant:',e));
+    }
+    startWordHighlight();
+    jTimer=setInterval(()=>{if(jCount<TOTAL){jCount++;updateJ();}else clearInterval(jTimer);},1500);
+  }else{clearInterval(jTimer);stopWordHighlight();if(jChantAudio)jChantAudio.pause();}
+}
+function resetJap(){
+  jCount=0;jPlay=false;clearInterval(jTimer);stopWordHighlight();
+  if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
+  const btn=document.getElementById('jplayBtn');if(btn)btn.classList.remove('playing');
+  document.getElementById('jNum').textContent='0';
+  document.getElementById('jplayIco').textContent='▶';
+  document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'🙏 Start Jap';
+  document.getElementById('jCountPill').textContent='0/108';
+  document.getElementById('jdone').classList.remove('show');
+  buildMala();
+  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
+}
+function goJap(){go('jap');setTimeout(()=>{if(!jPlay&&jCount===0)toggleJap();},300);}
+buildMantra();buildMala();
 
 // ── Tab switch ──
 function go(tab){
@@ -1105,570 +1217,164 @@ function go(tab){
   if(tb)tb.classList.add('on');
   if(tab!=='listen')pauseAudio();
 }
-function goJap(){
-  go('jap');
-  // Auto-start jap only when coming from home thumbnail
-  setTimeout(()=>{
-    if(!jPlay && jCount===0) toggleJap();
-  }, 300);
-}
 
-// ── Wallpaper share ──
-function shareWallpaper(){
-  const b=document.getElementById('wpShare');
-  b.textContent='✅';setTimeout(()=>b.textContent='📤',1500);
-  if(navigator.share)navigator.share({title:'शुभ दिन',text:'🙏 '+(H?T.day_hi:T.day_en)+'\n\nshubhdin.app'});
-}
-
-// ── Full audio player ──
+// ── Audio player ──
 let playing=false,prog=0,ptimer=null,curTr=0;
-const tracks=[{s:204,d:'3:24'},{s:702,d:'11:42'},{s:310,d:'5:10'},{s:135,d:'2:15'}];
+function pauseAudio(){playing=false;clearInterval(ptimer);}
+function selTr(i){curTr=i;prog=0;}
 function prevTr(){selTr(Math.max(0,curTr-1));}
-function nextTr(){selTr(Math.min(tracks.length-1,curTr+1));}
+function nextTr(){selTr(Math.min(3,curTr+1));}
 
-// ── MINI PLAYER ──
+// ── Mini player ──
 let mpPlaying=false,mpProg=0,mpTimer=null,mpTr=0;
-const mpTracks=[
-  {ico:T.ico,title:H?'आज का पंचांग — '+name+' जी':"Today's Panchang — "+name,sub:H?R.h+' • '+R.nh:R.e+' • '+R.ne,s:204,d:'3:24'},
-  {ico:T.ico,title:H?T.d_hi+' — 108 जाप':T.d_en+' — 108 Chants',sub:H?'आज की साधना':'Todays Sadhana',s:702,d:'11:42'},
-  {ico:'☀️',title:H?'गायत्री मंत्र':'Gayatri Mantra',sub:H?'सूर्योदय ध्यान':'Sunrise Meditation',s:310,d:'5:10'},
-  {ico:'🌙',title:H?'राशिफल — आज':'Rashi — Today',sub:H?R.h+' राशि':R.e+' Rashi',s:135,d:'2:15'},
-];
-
 function openMini(){
   const mp=document.getElementById('miniPlayer');
-  mp.style.display='block';
-  mp.classList.add('open');
-  mpSetTr(0);
-  // Small delay ensures browser registers user gesture before audio starts
-  setTimeout(()=>playPanchang(), 100);
+  mp.style.display='block';mp.classList.add('open');
+  setTimeout(()=>playPanchang(),100);
 }
 function closeMini(){
   document.getElementById('miniPlayer').classList.remove('open');
   document.getElementById('miniPlayer').style.display='none';
   mpStop();
 }
-function mpSetTr(i){
-  mpTr=i;const t=mpTracks[i];
-  document.getElementById('mpIco').textContent=t.ico;
-  document.getElementById('mpTitle').textContent=t.title;
-  document.getElementById('mpSub').textContent=t.sub;
-  document.getElementById('mpTime').textContent='0:00 / '+t.d;
-  document.getElementById('mpFill').style.width='0%';
-  mpProg=0;
-}
-function mpToggle(){
-  mpPlaying=!mpPlaying;
-  document.getElementById('mpBtn').textContent=mpPlaying?'⏸':'▶';
-  document.getElementById('mpWaves').classList.toggle('on',mpPlaying);
-  mpPlaying?mpStart():mpStop();
-}
-function mpStop(){mpPlaying=false;const b=document.getElementById('mpBtn');if(b)b.textContent='▶';document.getElementById('mpWaves').classList.remove('on');clearInterval(mpTimer);}
-function mpStart(){
-  clearInterval(mpTimer);
-  const t=mpTracks[mpTr];
-  mpTimer=setInterval(()=>{
-    mpProg+=0.4;
-    if(mpProg>=100){mpProg=0;mpStop();if(mpTr<mpTracks.length-1){mpSetTr(mpTr+1);mpToggle();}return;}
-    document.getElementById('mpFill').style.width=mpProg+'%';
-    const c=Math.floor((mpProg/100)*t.s);
-    document.getElementById('mpTime').textContent=Math.floor(c/60)+':'+(c%60<10?'0':'')+c%60+' / '+t.d;
-  },250);
-}
-function mpPrev(){mpStop();mpSetTr(Math.max(0,mpTr-1));}
-function mpNext(){mpStop();mpSetTr(Math.min(mpTracks.length-1,mpTr+1));}
-function mpSeek(e){const r=e.currentTarget.getBoundingClientRect();mpProg=Math.max(0,Math.min(100,((e.clientX-r.left)/r.width)*100));document.getElementById('mpFill').style.width=mpProg+'%';}
+function mpToggle(){mpPlaying=!mpPlaying;document.getElementById('mpBtn').textContent=mpPlaying?'⏸':'▶';document.getElementById('mpWaves').classList.toggle('on',mpPlaying);}
+function mpStop(){mpPlaying=false;const b=document.getElementById('mpBtn');if(b)b.textContent='▶';document.getElementById('mpWaves')?.classList.remove('on');clearInterval(mpTimer);}
+function mpPrev(){mpStop();}function mpNext(){mpStop();}
+function mpSeek(e){}
 
-// ── Japa counter ──
-const TOTAL=108,DOTS=27,CIRC=2*Math.PI*55;
-let jCount=0,jPlay=false,jTimer=null;
-const cfEl=document.getElementById('cf');
-cfEl.style.strokeDasharray=CIRC;cfEl.style.strokeDashoffset=CIRC;
-const malaEl=document.getElementById('mala');
-for(let i=0;i<DOTS;i++){const d=document.createElement('div');d.className='md';d.id='md'+i;malaEl.appendChild(d);}
-function updateJ(){
-  const n=document.getElementById('cnum');n.textContent=jCount;n.classList.add('bump');setTimeout(()=>n.classList.remove('bump'),180);
-  cfEl.style.strokeDashoffset=CIRC-(jCount/TOTAL)*CIRC;
-  for(let i=0;i<DOTS;i++){const d=document.getElementById('md'+i);d.className='md'+(jCount>=(i+1)*4?' done':jCount>i*4?' cur':'');}
-  if(jCount>=TOTAL){updateStreak();setTimeout(()=>{const sk=getStreak();document.getElementById('sdTitle').textContent=H?'आपने आज का जाप पूरा किया ✅':'You completed today\'s chant ✅';document.getElementById('sdSub').textContent=H?(sk+' दिन लगातार 🔥'):(sk+' day streak 🔥');
-      // Update home streak card right side to show goal complete
-      document.getElementById('skNum').textContent=H?'आज का लक्ष्य':'Today\'s goal';
-      document.getElementById('skUnit').textContent=H?'पूरा हुआ ✅':'completed ✅';
-      document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
-      document.getElementById('jdone').classList.add('show');},500);}
+// ── AUDIO SYSTEM ──
+let currentAudio=null;
+function getScriptVersion(){return Math.floor(Date.now()/(7*24*60*60*1000))%2===0?'a':'b';}
+function getDayKey(){return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];}
+function getScriptUrl(){return 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/scripts/'+getDayKey()+'_'+getScriptVersion()+'.mp3';}
+function getNameUrl(){
+  const nk=(U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
+  return nk?'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/names/'+nk+'.mp3':null;
 }
-function tap(e){if(jCount>=TOTAL)return;jCount++;updateJ();}
-// Japa chant audio
-let jChantAudio = null;
-const CHANT_MAP = {
-  0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',
-  3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'
+async function playPanchang(){
+  const mpBtn=document.getElementById('mpBtn'),mpWaves=document.getElementById('mpWaves'),mpTitle=document.getElementById('mpTitle');
+  if(currentAudio&&!currentAudio.paused){currentAudio.pause();if(mpBtn)mpBtn.textContent='▶';if(mpWaves)mpWaves.classList.remove('on');return;}
+  if(mpBtn)mpBtn.textContent='⏸';if(mpWaves)mpWaves.classList.add('on');
+  async function playAudio(url){return new Promise(resolve=>{const a=new Audio(url);currentAudio=a;a.onended=resolve;a.onerror=resolve;a.play().catch(resolve);});}
+  try{const nu=getNameUrl();if(nu)await playAudio(nu);await playAudio(getScriptUrl());}catch(e){}
+  if(mpBtn)mpBtn.textContent='▶';if(mpWaves)mpWaves.classList.remove('on');
+}
+async function ensureNameAudio(){
+  if(!U.name)return;const nu=getNameUrl();if(!nu)return;
+  try{const r=await fetch(nu,{method:'HEAD'});if(!r.ok)fetch('/api/generate-name?name='+encodeURIComponent(U.name));}catch(e){}
+}
+
+// ── Margadarshan ──
+const PROBLEMS={
+  vivah:{ico:'💍',title_hi:'विवाह मार्गदर्शन',title_en:'Marriage Guidance',deity_hi:'पार्वती जी • शिव जी',deity_en:'Parvati Ji • Shiva Ji',audio:'vivah',
+    guidance_hi:'सोमवार को शिव जी का व्रत रखें। पार्वती जी को लाल फूल चढ़ाएं। ॐ उमा महेश्वराय नमः — रोज़ 108 बार जाप करें। 16 सोमवार का व्रत बहुत शक्तिशाली होता है।',
+    guidance_en:'Keep a fast on Monday for Shiva Ji. Offer red flowers to Parvati Ji. Chant Om Uma Maheshwaraya Namah 108 times daily. The 16-Monday fast is very powerful.'},
+  dhan:{ico:'💰',title_hi:'धन • करियर मार्गदर्शन',title_en:'Money & Career Guidance',deity_hi:'लक्ष्मी जी • कुबेर देव',deity_en:'Lakshmi Ji • Kuber Dev',audio:'dhan',
+    guidance_hi:'शुक्रवार को घर साफ रखें। ॐ श्रीं महालक्ष्म्यै नमः — रोज़ सुबह 108 बार। शाम को दीया ज़रूर जलाएं।',
+    guidance_en:'Keep your home clean on Friday. Chant Om Shreem Mahalakshmyai Namah 108 times each morning. Light a diya every evening.'},
+  swasthya:{ico:'🌿',title_hi:'स्वास्थ्य मार्गदर्शन',title_en:'Health Guidance',deity_hi:'सूर्य देवता • हनुमान जी',deity_en:'Surya Dev • Hanuman Ji',audio:'swasthya',
+    guidance_hi:'रविवार को सूर्य देव को जल चढ़ाएं। ॐ सूर्याय नमः — रोज़ 108 बार। मंगलवार को हनुमान जी का जाप करें।',
+    guidance_en:'Offer water to the rising sun on Sunday. Chant Om Suryaya Namah 108 times daily. Chant for Hanuman Ji on Tuesdays.'},
+  vidya:{ico:'📚',title_hi:'विद्या मार्गदर्शन',title_en:'Education Guidance',deity_hi:'सरस्वती जी • गणेश जी',deity_en:'Saraswati Ji • Ganesh Ji',audio:'vidya',
+    guidance_hi:'बुधवार को गणेश जी का व्रत रखें। ॐ गं गणपतये नमः — पढ़ाई से पहले 21 बार। सरस्वती वंदना रोज़ सुबह करें।',
+    guidance_en:'Keep a fast on Wednesday for Ganesh Ji. Chant Om Gam Ganapataye Namah 21 times before studying. Do Saraswati Vandana each morning.'},
+  ghar:{ico:'🏠',title_hi:'गृह शांति मार्गदर्शन',title_en:'Family Peace Guidance',deity_hi:'विष्णु जी • लक्ष्मी जी',deity_en:'Vishnu Ji • Lakshmi Ji',audio:'ghar',
+    guidance_hi:'गुरुवार को विष्णु जी की पूजा करें। ॐ नमो नारायणाय — घर के सभी सदस्य मिलकर जाप करें। घर में सुबह-शाम दीया जलाएं।',
+    guidance_en:'Worship Vishnu Ji on Thursday. Chant Om Namo Narayanaya together as a family. Light a diya morning and evening at home.'},
 };
-
-function toggleJap(){
-  jPlay=!jPlay;
-  document.getElementById('jplayIco').textContent=jPlay?'⏸':'▶';
-  document.getElementById('jplayBtn').classList.toggle('playing',jPlay);
-  document.getElementById('jplayTxt').textContent=jPlay?(H?'रोकें':'Pause'):(H?'🙏 जाप शुरू करें':'Start Jap');
-  if(jPlay){
-    // Play chant audio on loop
-    const chantKey = CHANT_MAP[new Date().getDay()];
-    const chantUrl = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
-    jChantAudio = new Audio(chantUrl);
-    jChantAudio.loop = true;
-    jChantAudio.play().catch(e=>console.log('Chant audio:', e));
-    jTimer=setInterval(()=>{if(jCount<TOTAL){jCount++;updateJ();}else{clearInterval(jTimer);jPlay=false;if(jChantAudio){jChantAudio.pause();jChantAudio=null;}}},1500);
-  } else {
-    clearInterval(jTimer);
-    if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
+let probAudio=null,probPlaying=false,currentProbKey=null;
+function openProblem(key){
+  const p=PROBLEMS[key];if(!p)return;currentProbKey=key;probPlaying=false;
+  document.getElementById('poIco').textContent=p.ico;
+  document.getElementById('poTitle').textContent=H?p.title_hi:p.title_en;
+  document.getElementById('poDeity').textContent=H?p.deity_hi:p.deity_en;
+  document.getElementById('poGuidanceTitle').textContent=H?'क्या करें 🙏':'What to do 🙏';
+  document.getElementById('poGuidanceText').textContent=H?p.guidance_hi:p.guidance_en;
+  document.getElementById('poBtn').textContent=H?'▶ सुनें':'▶ Listen';
+  document.getElementById('poWaves').classList.remove('on');
+  document.getElementById('probOverlay').classList.add('open');
+}
+function closeProblem(){
+  if(probAudio){probAudio.pause();probAudio=null;}probPlaying=false;
+  document.getElementById('probOverlay').classList.remove('open');
+  document.getElementById('poWaves').classList.remove('on');currentProbKey=null;
+}
+async function toggleProblemAudio(){
+  if(probPlaying&&probAudio){probAudio.pause();probPlaying=false;document.getElementById('poBtn').textContent=H?'▶ सुनें':'▶ Listen';document.getElementById('poWaves').classList.remove('on');return;}
+  const p=PROBLEMS[currentProbKey];if(!p)return;
+  document.getElementById('poBtn').textContent=H?'⏸ रोकें':'⏸ Pause';document.getElementById('poWaves').classList.add('on');probPlaying=true;
+  const sb='https://dulfiljhfchkccqwqniv.supabase.co';
+  const nk=(U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
+  async function playOne(url){return new Promise(r=>{const a=new Audio(url);probAudio=a;a.onended=r;a.onerror=r;a.play().catch(r);});}
+  try{if(nk)await playOne(sb+'/storage/v1/object/public/shubhdin-audio/names/'+nk+'.mp3');
+  await playOne(sb+'/storage/v1/object/public/shubhdin-audio/problems/'+p.audio+'.mp3');}catch(e){}
+  if(probPlaying){probPlaying=false;document.getElementById('poBtn').textContent=H?'▶ सुनें':'▶ Listen';document.getElementById('poWaves').classList.remove('on');}
+}
+let pocAudio=null,pocPlaying=false;
+async function playPowerOfChant(){
+  const btn=document.getElementById('pocPlayBtn');
+  if(pocPlaying&&pocAudio){pocAudio.pause();pocPlaying=false;btn.textContent='▶';return;}
+  pocPlaying=true;btn.textContent='⏸';
+  pocAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/stories/power_of_chant.mp3');
+  pocAudio.onended=()=>{pocPlaying=false;btn.textContent='▶';};
+  pocAudio.onerror=()=>{pocPlaying=false;btn.textContent='▶';};
+  pocAudio.play().catch(()=>{pocPlaying=false;btn.textContent='▶';});
+}
+function personaliseMarg(){
+  document.getElementById('margTitle').innerHTML=H?'मार्गदर्शन<small>Margadarshan</small>':'Guidance<small>मार्गदर्शन</small>';
+  document.getElementById('margSub').textContent=H?'शिव की शरण में — हर समस्या का हल':"In Shiva Ji grace — solution to every problem";
+  document.getElementById('pocLabel').textContent=H?'✨ शक्ति जाप की':'✨ Power of Chant';
+  document.getElementById('pocTitle').textContent=H?'जाप की शक्ति — एक सच्ची कहानी':'Power of Chant — A True Story';
+  document.getElementById('pocSub').textContent=H?'सुनें — यह कहानी आपकी सोच बदल देगी':'Listen — this story will change your perspective';
+  document.getElementById('pocStory').textContent=H?'"241 लोगों की मृत्यु हुई — एक बचा। उसने कहा: यह चमत्कार है। जाप की शक्ति ऐसी होती है..."':'"241 people died — one survived. He said: this is a miracle."';
+  document.getElementById('probLabel').textContent=H?'अपनी समस्या चुनें 👇':'Choose your concern 👇';
+  const tiles={vivah:['विवाह','Marriage'],dhan:['धन • करियर','Money & Career'],swasthya:['स्वास्थ्य','Health'],vidya:['विद्या','Education'],ghar:['गृह शांति','Family Peace']};
+  const subs={vivah:['विवाह मार्गदर्शन','Marriage guidance'],dhan:['धन और करियर','Money & career'],swasthya:['स्वास्थ्य मार्गदर्शन','Health guidance'],vidya:['विद्या मार्गदर्शन','Education guidance'],ghar:['गृह शांति मार्गदर्शन','Family peace & harmony']};
+  for(const[k,v]of Object.entries(tiles)){
+    const el=document.getElementById('pt-'+k+'-name');const es=document.getElementById('pt-'+k+'-sub');
+    if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
   }
-}
-function resetJap(){
-  jCount=0;jPlay=false;clearInterval(jTimer);
-  if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
-  cfEl.style.strokeDashoffset=CIRC;
-  document.getElementById('cnum').textContent='0';
-  document.getElementById('jplayIco').textContent='▶';
-  document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'Start Jap';
-  const jgl=document.getElementById('japGoalLine');
-  if(jgl) jgl.textContent=H?'आज का लक्ष्य: 108 जाप':'Today\'s goal: 108 chants';
-  document.getElementById('jdone').classList.remove('show');
-  for(let i=0;i<DOTS;i++)document.getElementById('md'+i).className='md';
-}
-function doShare(){
-  const msg=H?`🙏 आज मैंने ${T.d_hi} का 108 बार जाप किया\n\n— ${name} जी\n\nshubhdin.app`:`🙏 Today I chanted for ${T.d_en} 108 times\n\n— ${name}\n\nshubhdin.app`;
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
 }
 
-// ── Kundli tap ──
-function kundliTap(){
-  const t=parseInt(localStorage.getItem('kundli_interest')||'0')+1;
-  localStorage.setItem('kundli_interest',t);
-  const b=document.getElementById('klBadge');
-  b.textContent=H?'🙏 जल्द आएगा!':'🙏 Coming soon!';
-  b.style.color='#FF6B1A';b.style.borderColor='rgba(255,107,26,0.4)';
-  setTimeout(()=>{b.textContent=H?'जल्द आ रहा है':'Coming Soon';b.style='';},2000);
+// ── Wallpaper share ──
+function shareWallpaper(){
+  const b=document.getElementById('wpShare');b.textContent='✅';setTimeout(()=>b.textContent='📤',1500);
+  if(navigator.share)navigator.share({title:'शुभ दिन',text:'🙏 '+(H?T.day_hi:T.day_en)+'\n\nshubhdin.app'});
 }
 
-// ── Welcome toast (first time only) ──
+// ── Toast ──
 function showToast(){
   if(localStorage.getItem('shubhdin_toast'))return;
   localStorage.setItem('shubhdin_toast','1');
   const t=document.getElementById('toast');
-  document.getElementById('toastName').textContent=name+(H?' जी':'');
+  if(!t)return;
   document.getElementById('toastTxt').innerHTML=H?`नमस्कार <em>${name} जी</em> — शुभ दिन! 🙏`:`Welcome <em>${name}</em> — Shubh Din! 🙏`;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),5500);
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),5500);
 }
 
-
-// ── Night Jap logic ──
-function isNight(){return new Date().getHours()>=21||new Date().getHours()<5;}
-
-
-// ── Fetch real panchang from API ──
-async function fetchPanchang() {
-  try {
-    const city = (U.city || 'default').toLowerCase().replace(/\s+/g,'');
-    const res = await fetch('/api/panchang?city='+city);
-    const json = await res.json();
-    if (!json.data) return;
-    const p = json.data;
-    if (p.abhijit_muhurta) {
-      document.getElementById('goodTime').textContent = p.abhijit_muhurta;
-      const pv = document.getElementById('pvTime');
-      if(pv) pv.textContent = p.abhijit_muhurta;
-    }
-    if (p.rahu_kaal) {
-      document.getElementById('avoidTime').textContent = p.rahu_kaal;
-      document.getElementById('rahuTime').textContent  = p.rahu_kaal;
-    }
-    if (p.tithi) {
-      document.getElementById('tithiVal').textContent  = p.tithi;
-      document.getElementById('tv').textContent = p.tithi;
-    }
-    if (p.nakshatra) {
-      document.getElementById('nakVal2').textContent = p.nakshatra;
-    }
-    const sunEls = document.querySelectorAll('.si-t');
-    if (sunEls.length >= 3 && p.sunrise) {
-      sunEls[0].textContent = p.sunrise;
-      sunEls[2].textContent = p.sunset;
-    }
-    console.log('✅ Real panchang loaded:', p.date, p.tithi, p.rahu_kaal);
-  } catch(e) {
-    console.log('Panchang API unavailable, using defaults');
-  }
-}
-
-// ── AUDIO SYSTEM ──
-// Stitches name.mp3 + day_script.mp3 and plays sequentially
-let audioCtx = null;
-let currentAudio = null;
-
-// Which version to play today — alternates week-odd/even
-function getScriptVersion() {
-  const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
-  return weekNum % 2 === 0 ? 'a' : 'b';
-}
-
-function getDayKey() {
-  const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-  return days[new Date().getDay()];
-}
-
-function getScriptUrl() {
-  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
-  const day     = getDayKey();
-  const version = getScriptVersion();
-  return `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/scripts/${day}_${version}.mp3`;
-}
-
-function getNameUrl() {
-  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
-  const nameKey = (U.name || '').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
-  if (!nameKey) return null;
-  return `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/names/${nameKey}.mp3`;
-}
-
-async function playPanchang() {
-  // Update mini player UI to playing state
-  const mpBtn   = document.getElementById('mpBtn');
-  const mpWaves = document.getElementById('mpWaves');
-  const mpTitle = document.getElementById('mpTitle');
-
-  if (currentAudio && !currentAudio.paused) {
-    // Already playing — pause
-    currentAudio.pause();
-    if (mpBtn) mpBtn.textContent = '▶';
-    if (mpWaves) mpWaves.classList.remove('on');
-    return;
-  }
-
-  if (mpBtn) mpBtn.textContent = '⏸';
-  if (mpWaves) mpWaves.classList.add('on');
-  if (mpTitle) mpTitle.textContent = H ? 'पंचांग लोड हो रहा है...' : 'Loading...';
-
-  try {
-    const nameUrl   = getNameUrl();
-    const scriptUrl = getScriptUrl();
-
-    // Try to play name first, then script
-    // If name doesn't exist yet, generate it
-    if (nameUrl) {
-      const nameRes = await fetch(nameUrl, { method: 'HEAD' });
-      if (!nameRes.ok) {
-        // Name not generated yet — call generate-name API
-        await fetch(`/api/generate-name?name=${encodeURIComponent(U.name || '')}`);
-      }
-    }
-
-    // Play name audio (if exists), then script
-    async function playAudio(url) {
-      return new Promise((resolve) => {
-        console.log('Playing:', url);
-        const audio = new Audio(url);
-        currentAudio = audio;
-        audio.onended = () => { console.log('Done:', url); resolve(); };
-        audio.onerror = (e) => { console.log('Audio error:', url, e); resolve(); };
-        const playPromise = audio.play();
-        if (playPromise) playPromise.catch(e => { console.log('Play failed:', e); resolve(); });
-      });
-    }
-
-    if (mpTitle) mpTitle.textContent = H ? (U.name||'') + ' जी — आज का पंचांग' : 'Playing Panchang...';
-
-    // Play name → then script sequentially
-    if (nameUrl) await playAudio(nameUrl);
-    await playAudio(scriptUrl);
-
-    // Done playing
-    if (mpBtn) mpBtn.textContent = '▶';
-    if (mpWaves) mpWaves.classList.remove('on');
-    if (mpTitle) mpTitle.textContent = H ? 'आज का पंचांग — ' + (U.name||'') + ' जी' : "Today's Panchang";
-
-  } catch(err) {
-    console.log('Audio error:', err);
-    if (mpBtn) mpBtn.textContent = '▶';
-    if (mpWaves) mpWaves.classList.remove('on');
-  }
-}
-
-// Generate name audio on first load (async, non-blocking)
-async function ensureNameAudio() {
-  if (!U.name) return;
-  const nameUrl = getNameUrl();
-  if (!nameUrl) return;
-  try {
-    const res = await fetch(nameUrl, { method: 'HEAD' });
-    if (!res.ok) {
-      // Generate in background
-      fetch(`/api/generate-name?name=${encodeURIComponent(U.name)}`);
-    }
-  } catch(e) { /* silent */ }
-}
-
-
-// ══ MARGADARSHAN ══
-
-// Problem data — guidance text + deity + audio key
-const PROBLEMS = {
-  vivah: {
-    ico: '💍',
-    title_hi: 'विवाह मार्गदर्शन',
-    title_en: 'Marriage Guidance',
-    deity_hi: 'पार्वती जी • शिव जी',
-    deity_en: 'Parvati Ji • Shiva Ji',
-    audio: 'vivah',
-    guidance_hi: `सोमवार को शिव जी का व्रत रखें।
-पार्वती जी को लाल फूल चढ़ाएं।
-"ॐ उमा महेश्वराय नमः" — रोज़ 108 बार जाप करें।
-16 सोमवार का व्रत बहुत शक्तिशाली होता है।
-मन में श्रद्धा रखें — शिव जी जब चाहते हैं, तब सब ठीक हो जाता है।`,
-    guidance_en: `Keep a fast on Monday for Shiva Ji.
-Offer red flowers to Parvati Ji.
-Chant "Om Uma Maheshwaraya Namah" 108 times daily.
-The 16-Monday fast is very powerful.
-Have faith — Shiva Ji makes everything right in His time.`,
-  },
-  dhan: {
-    ico: '💰',
-    title_hi: 'धन • करियर मार्गदर्शन',
-    title_en: 'Money & Career Guidance',
-    deity_hi: 'लक्ष्मी जी • कुबेर देव',
-    deity_en: 'Lakshmi Ji • Kuber Dev',
-    audio: 'dhan',
-    guidance_hi: `शुक्रवार को घर साफ रखें — लक्ष्मी जी साफ घर में आती हैं।
-"ॐ श्रीं महालक्ष्म्यै नमः" — रोज़ सुबह 108 बार।
-शाम को दीया ज़रूर जलाएं।
-किसी ज़रूरतमंद की मदद करें — यही असली पूजा है।
-लक्ष्मी जी उन पर मेहरबान होती हैं जो दूसरों की मदद करते हैं।`,
-    guidance_en: `Keep your home clean on Friday — Lakshmi Ji enters clean homes.
-Chant "Om Shreem Mahalakshmyai Namah" 108 times each morning.
-Light a diya every evening.
-Help someone in need — this is the real worship.
-Lakshmi Ji blesses those who share with others.`,
-  },
-  swasthya: {
-    ico: '🌿',
-    title_hi: 'स्वास्थ्य मार्गदर्शन',
-    title_en: 'Health Guidance',
-    deity_hi: 'सूर्य देवता • हनुमान जी',
-    deity_en: 'Surya Dev • Hanuman Ji',
-    audio: 'swasthya',
-    guidance_hi: `रविवार को सूर्य देव को जल चढ़ाएं — सुबह उगते सूरज को।
-"ॐ सूर्याय नमः" — रोज़ 108 बार।
-मंगलवार को हनुमान जी का जाप करें।
-सुबह खुली हवा में बैठें — यही सबसे बड़ी दवा है।
-शरीर और मन दोनों स्वस्थ रहें तो जीवन सुंदर है।`,
-    guidance_en: `Offer water to the rising sun on Sunday.
-Chant "Om Suryaya Namah" 108 times daily.
-Chant for Hanuman Ji on Tuesdays.
-Sit in fresh morning air — this is the greatest medicine.
-When body and mind are healthy, life is beautiful.`,
-  },
-  vidya: {
-    ico: '📚',
-    title_hi: 'विद्या मार्गदर्शन',
-    title_en: 'Education Guidance',
-    deity_hi: 'सरस्वती जी • गणेश जी',
-    deity_en: 'Saraswati Ji • Ganesh Ji',
-    audio: 'vidya',
-    guidance_hi: `बुधवार को गणेश जी का व्रत रखें।
-"ॐ गं गणपतये नमः" — पढ़ाई से पहले 21 बार।
-सरस्वती वंदना रोज़ सुबह करें।
-किताबों का सम्मान करें — ज्ञान देवी का रूप हैं।
-एकाग्रता के लिए — सुबह ध्यान करें, फिर पढ़ें।`,
-    guidance_en: `Keep a fast on Wednesday for Ganesh Ji.
-Chant "Om Gam Ganapataye Namah" 21 times before studying.
-Do Saraswati Vandana each morning.
-Respect books — they are Saraswati's form.
-For focus — meditate in the morning, then study.`,
-  },
-  ghar: {
-    ico: '🏠',
-    title_hi: 'गृह शांति मार्गदर्शन',
-    title_en: 'Family Peace Guidance',
-    deity_hi: 'विष्णु जी • लक्ष्मी जी',
-    deity_en: 'Vishnu Ji • Lakshmi Ji',
-    audio: 'ghar',
-    guidance_hi: `गुरुवार को विष्णु जी की पूजा करें।
-"ॐ नमो नारायणाय" — घर के सभी सदस्य मिलकर जाप करें।
-घर में सुबह-शाम दीया जलाएं।
-बड़ों का आदर करें — यही घर की नींव है।
-जहाँ प्रेम है, वहाँ भगवान हैं। घर को मंदिर बनाएं।`,
-    guidance_en: `Worship Vishnu Ji on Thursday.
-Chant "Om Namo Narayanaya" together as a family.
-Light a diya morning and evening at home.
-Respect elders — this is the foundation of a home.
-Where there is love, God is present. Make home a temple.`,
-  },
-};
-
-let probAudio = null;
-let probPlaying = false;
-let currentProbKey = null;
-
-function openProblem(key) {
-  const p = PROBLEMS[key];
-  if (!p) return;
-  currentProbKey = key;
-  probPlaying = false;
-
-  document.getElementById('poIco').textContent        = p.ico;
-  document.getElementById('poTitle').textContent      = H ? p.title_hi : p.title_en;
-  document.getElementById('poDeity').textContent      = H ? p.deity_hi : p.deity_en;
-  document.getElementById('poGuidanceTitle').textContent = H ? 'क्या करें 🙏' : 'What to do 🙏';
-  document.getElementById('poGuidanceText').textContent  = H ? p.guidance_hi : p.guidance_en;
-  document.getElementById('poBtn').textContent        = H ? '▶ सुनें' : '▶ Listen';
-  document.getElementById('poWaves').classList.remove('on');
-
-  document.getElementById('probOverlay').classList.add('open');
-}
-
-function closeProblem() {
-  if (probAudio) { probAudio.pause(); probAudio = null; }
-  probPlaying = false;
-  document.getElementById('probOverlay').classList.remove('open');
-  document.getElementById('poWaves').classList.remove('on');
-  currentProbKey = null;
-}
-
-async function toggleProblemAudio() {
-  if (probPlaying && probAudio) {
-    probAudio.pause();
-    probPlaying = false;
-    document.getElementById('poBtn').textContent = H ? '▶ सुनें' : '▶ Listen';
-    document.getElementById('poWaves').classList.remove('on');
-    return;
-  }
-  // Play name + problem audio
-  const p = PROBLEMS[currentProbKey];
-  if (!p) return;
-
-  document.getElementById('poBtn').textContent = H ? '⏸ रोकें' : '⏸ Pause';
-  document.getElementById('poWaves').classList.add('on');
-  probPlaying = true;
-
-  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
-  const nameKey = (U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
-
-  async function playOne(url) {
-    return new Promise(resolve => {
-      const a = new Audio(url);
-      probAudio = a;
-      a.onended = resolve;
-      a.onerror = resolve;
-      a.play().catch(resolve);
-    });
-  }
-
-  try {
-    // Play name first if exists
-    if (nameKey) {
-      const nameUrl = `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/names/${nameKey}.mp3`;
-      await playOne(nameUrl);
-    }
-    // Play problem guidance audio
-    const probUrl = `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/problems/${p.audio}.mp3`;
-    await playOne(probUrl);
-  } catch(e) {
-    console.log('Problem audio error:', e);
-  }
-
-  if (probPlaying) {
-    probPlaying = false;
-    document.getElementById('poBtn').textContent = H ? '▶ सुनें' : '▶ Listen';
-    document.getElementById('poWaves').classList.remove('on');
-  }
-}
-
-// Power of Chant audio
-let pocAudio = null;
-let pocPlaying = false;
-
-async function playPowerOfChant() {
-  const btn = document.getElementById('pocPlayBtn');
-  if (pocPlaying && pocAudio) {
-    pocAudio.pause();
-    pocPlaying = false;
-    btn.textContent = '▶';
-    return;
-  }
-  pocPlaying = true;
-  btn.textContent = '⏸';
-
-  const supabaseUrl = 'https://dulfiljhfchkccqwqniv.supabase.co';
-  const url = `${supabaseUrl}/storage/v1/object/public/shubhdin-audio/stories/power_of_chant.mp3`;
-
-  pocAudio = new Audio(url);
-  pocAudio.onended = () => { pocPlaying = false; btn.textContent = '▶'; };
-  pocAudio.onerror = () => { pocPlaying = false; btn.textContent = '▶'; };
-  pocAudio.play().catch(() => { pocPlaying = false; btn.textContent = '▶'; });
-}
-
-// Personalise Margadarshan text
-function personaliseMarg() {
-  document.getElementById('margTitle').innerHTML = H
-    ? 'मार्गदर्शन<small>Margadarshan</small>'
-    : 'Guidance<small>मार्गदर्शन</small>';
-  document.getElementById('margSub').textContent = H
-    ? 'शिव की शरण में — हर समस्या का हल'
-    : "In Shiva Ji grace — solution to every problem";
-  document.getElementById('pocLabel').textContent = H ? '✨ शक्ति जाप की' : '✨ Power of Chant';
-  document.getElementById('pocTitle').textContent = H
-    ? 'जाप की शक्ति — एक सच्ची कहानी'
-    : 'Power of Chant — A True Story';
-  document.getElementById('pocSub').textContent = H
-    ? 'सुनें — यह कहानी आपकी सोच बदल देगी'
-    : 'Listen — this story will change your perspective';
-  document.getElementById('pocStory').textContent = H
-    ? '"241 लोगों की मृत्यु हुई — एक बचा। उसने कहा: यह चमत्कार है। जाप की शक्ति ऐसी होती है..."'
-    : '"241 people died — one survived. He said: this is a miracle. Such is the power of chanting..."';
-  document.getElementById('probLabel').textContent = H ? 'अपनी समस्या चुनें 👇' : 'Choose your concern 👇';
-
-  // Problem tile labels
-  const tiles = { vivah: ['विवाह','Marriage'], dhan: ['धन • करियर','Money & Career'],
-    swasthya: ['स्वास्थ्य','Health'], vidya: ['विद्या','Education'], ghar: ['गृह शांति','Family Peace'] };
-  const subs  = { vivah: ['विवाह मार्गदर्शन','Marriage guidance'],
-    dhan: ['धन और करियर','Money & career'],
-    swasthya: ['स्वास्थ्य मार्गदर्शन','Health guidance'],
-    vidya: ['विद्या मार्गदर्शन','Education guidance'],
-    ghar: ['गृह शांति मार्गदर्शन','Family peace & harmony'] };
-
-  for (const [k, v] of Object.entries(tiles)) {
-    const el = document.getElementById(`pt-${k}-name`);
-    const es = document.getElementById(`pt-${k}-sub`);
-    if (el) el.textContent = H ? v[0] : v[1];
-    if (es) es.textContent = H ? subs[k][0] : subs[k][1];
-  }
-
-  // Tab label
-  document.getElementById('tl2').textContent = H ? 'मार्गदर्शन' : 'Guidance';
+// ── Panchang API ──
+async function fetchPanchang(){
+  try{
+    const city=(U.city||'default').toLowerCase().replace(/\s+/g,'');
+    const json=await(await fetch('/api/panchang?city='+city)).json();
+    if(!json.data)return;const p=json.data;
+    if(p.abhijit_muhurta){document.getElementById('goodTime').textContent=p.abhijit_muhurta;}
+    if(p.rahu_kaal){document.getElementById('avoidTime').textContent=p.rahu_kaal;document.getElementById('rahuTime').textContent=p.rahu_kaal;}
+    if(p.tithi){document.getElementById('tithiVal').textContent=p.tithi;document.getElementById('tv').textContent=p.tithi;}
+    if(p.nakshatra)document.getElementById('nakVal2').textContent=p.nakshatra;
+  }catch(e){console.log('Panchang unavailable');}
 }
 
 // ── Init ──
-// Ensure mini player hidden
 const mpEl=document.getElementById('miniPlayer');
-mpEl.style.display='none';
-mpEl.classList.remove('open');
-setWallpaper();
-personalise();
-personaliseMarg();
-fetchPanchang();
-ensureNameAudio(); // Pre-warm name audio in background
-// Make sure mini player is hidden on load
-document.getElementById('miniPlayer').style.display='none';
-document.getElementById('miniPlayer').classList.remove('open');
-
-// Hide wallpaper completely — instant, no blocking clicks
+mpEl.style.display='none';mpEl.classList.remove('open');
+setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
 setTimeout(()=>{
-  const wp = document.getElementById('wallpaper');
-  wp.style.opacity = '0';
-  wp.style.pointerEvents = 'none';
-  wp.style.display = 'none';
+  const wp=document.getElementById('wallpaper');
+  wp.style.opacity='0';wp.style.pointerEvents='none';wp.style.display='none';
   showToast();
-}, 3000);
+},3000);
 </script>
 </body>
 </html>
