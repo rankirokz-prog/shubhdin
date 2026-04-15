@@ -350,18 +350,18 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   align-items:center;gap:10px;
 }
 .j-line{
-  display:flex;gap:16px;align-items:center;justify-content:center;
+  display:flex;gap:8px;align-items:center;justify-content:center;
   flex-wrap:wrap;
 }
 .j-word{
   display:inline-block;
   font-size:40px;letter-spacing:3px;
   color:rgba(255,255,255,0.88);
-  opacity:0.42;
+  opacity:0.45;
   transform:scale(1);
   text-shadow:none;
-  transition:opacity 0.18s ease-out, color 0.18s ease-out,
-             transform 0.18s ease-out, text-shadow 0.22s ease-out;
+  transition:opacity 0.22s ease-out, color 0.22s ease-out,
+             transform 0.22s ease-out, text-shadow 0.25s ease-out;
 }
 .j-word{
   display:inline-block;cursor:default;
@@ -1266,12 +1266,12 @@ function animateWord(el, state){
     el.style.opacity='1';
     el.style.transform='scale(1.08)';
     el.style.color='#FFD700';
-    el.style.textShadow='0 0 8px rgba(255,215,0,1),0 0 20px rgba(255,215,0,0.82),0 0 45px rgba(255,180,0,0.50)';
+    el.style.textShadow='0 0 8px rgba(255,215,0,1),0 0 22px rgba(255,215,0,0.80),0 0 48px rgba(255,180,0,0.48)';
   } else if(state==='last'){
     el.style.opacity='1';
     el.style.transform='scale(1.12)';
     el.style.color='#FFE566';
-    el.style.textShadow='0 0 12px rgba(255,230,100,1),0 0 30px rgba(255,215,0,0.95),0 0 65px rgba(255,180,0,0.65),0 0 110px rgba(255,120,0,0.35)';
+    el.style.textShadow='0 0 8px rgba(255,215,0,1),0 0 22px rgba(255,215,0,0.80),0 0 48px rgba(255,180,0,0.48)';
   } else if(state==='trail'){
     // afterglow — warm gold fading
     el.style.opacity='0.55';
@@ -1280,7 +1280,7 @@ function animateWord(el, state){
     el.style.textShadow='0 0 10px rgba(255,215,0,0.20)';
   } else {
     // idle — clearly readable at 40%
-    el.style.opacity='0.42';
+    el.style.opacity='0.45';
     el.style.transform='scale(1)';
     el.style.color='rgba(255,255,255,0.88)';
     el.style.textShadow='none';
@@ -1305,14 +1305,14 @@ function startWordHighlight(){
   // Timing: ॐ=420ms, last word=700ms, middle=300ms
   function getDur(i){
     if(i===0) return 420;
-    if(i===words.length-1) return 700;
-    return 300;
+    if(i===words.length-1) return 800;
+    return 400;
   }
 
   // Show ALL words at base 42% opacity
   words.forEach((_,i)=>{
     const w=document.getElementById('jw'+i);
-    if(w){ w.style.opacity='0.42'; w.style.transform='scale(1)';
+    if(w){ w.style.opacity='0.45'; w.style.transform='scale(1)';
            w.style.color='rgba(255,255,255,0.88)'; w.style.textShadow='none'; }
   });
 
