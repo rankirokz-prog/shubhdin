@@ -347,15 +347,21 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .j-mantra{
   font-family:'Tiro Devanagari Hindi',serif;
   display:flex;flex-direction:column;
-  align-items:center;gap:18px;
+  align-items:center;gap:10px;
 }
 .j-line{
-  font-size:40px;color:rgba(255,255,255,0.88);
-  line-height:1.3;letter-spacing:8px;word-spacing:14px;
-  text-shadow:0 2px 20px rgba(0,0,0,0.8);
-  text-align:center;
-  opacity:0.55;transform:scale(1);
-  transition:opacity 0.25s ease,transform 0.25s ease,color 0.25s ease,text-shadow 0.25s ease;
+  display:flex;gap:16px;align-items:center;justify-content:center;
+  flex-wrap:wrap;
+}
+.j-word{
+  display:inline-block;
+  font-size:40px;letter-spacing:3px;
+  color:rgba(255,255,255,0.88);
+  opacity:0.42;
+  transform:scale(1);
+  text-shadow:none;
+  transition:opacity 0.18s ease-out, color 0.18s ease-out,
+             transform 0.18s ease-out, text-shadow 0.22s ease-out;
 }
 .j-word{
   display:inline-block;cursor:default;
@@ -1187,33 +1193,30 @@ const TOTAL=108,DOTS=27;
 let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWordIdx=0;
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
 const MANTRA_WORDS={
-  0:[['ॐ','सूर्याय'],['नमः']],
-  1:[['ॐ','नमः'],['शिवाय']],
-  2:[['ॐ','हं'],['हनुमते','नमः']],
-  3:[['ॐ','गं'],['गणपतये','नमः']],
-  4:[['ॐ','श्री'],['रामाय','नमः']],
-  5:[['ॐ','श्रीं'],['महालक्ष्म्यै','नमः']],
-  6:[['ॐ','शं'],['शनिचराय','नमः']],
+  0:['ॐ','सूर्याय','नमः'],
+  1:['ॐ','नमः','शिवाय'],
+  2:['ॐ','हं','हनुमते','नमः'],
+  3:['ॐ','गं','गणपतये','नमः'],
+  4:['ॐ','श्री','रामाय','नमः'],
+  5:['ॐ','श्रीं','महालक्ष्म्यै','नमः'],
+  6:['ॐ','शं','शनिचराय','नमः'],
 };
 function buildMantra(){
-  const lines=MANTRA_WORDS[dow]||[['ॐ','नमः'],['शिवाय']];
+  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
   const el=document.getElementById('jMantra');
   if(!el)return;
-  let html='';let wi=0;
-  lines.forEach((line,li)=>{
-    html+=`<div class="j-line" id="jline${li}">`;
-    line.forEach(word=>{
-      html+=`<span class="j-word" id="jw${wi}">${word}</span>`;
-      wi++;
-    });
+  // Split into 2 visual lines: first 2 words / rest
+  const line1=words.slice(0,2);
+  const line2=words.slice(2);
+  let html='<div class="j-line">';
+  line1.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i}">${w}</span>`;});
+  html+='</div>';
+  if(line2.length){
+    html+='<div class="j-line">';
+    line2.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i+line1.length}">${w}</span>`;});
     html+='</div>';
-  });
+  }
   el.innerHTML=html;
-  // Show all lines at base opacity
-  lines.forEach((_,li)=>{
-    const ln=document.getElementById('jline'+li);
-    if(ln)ln.style.opacity='0.55';
-  });
 }
 function buildMala(){
   const mala=document.getElementById('jMala');
@@ -1257,39 +1260,32 @@ function updateJ(){
     },400);
   }
 }
-function animateWord(el, state) {
-  // state: 'active' | 'done' | 'last' | 'idle'
-  if (!el) return;
-  if (state === 'active') {
-    el.style.opacity = '1';
-    el.style.transform = 'scale(1.08)';
-    el.style.color = '#FFD700';
-    el.style.textShadow = '0 0 8px rgba(255,215,0,1), 0 0 22px rgba(255,215,0,0.85), 0 0 50px rgba(255,180,0,0.55), 0 0 85px rgba(255,120,0,0.28)';
-  } else if (state === 'last') {
-    // Last word — bloom + hold (cancel first, then animate cleanly)
-    el.getAnimations().forEach(a=>a.cancel());
-    el.animate([
-      {transform:'scale(1)', opacity:0.4, textShadow:'none', offset:0},
-      {transform:'scale(1.20)', opacity:1, textShadow:'0 0 14px rgba(255,230,100,1), 0 0 40px rgba(255,215,0,0.9), 0 0 80px rgba(255,180,0,0.7)', offset:0.35},
-      {transform:'scale(1.14)', opacity:1, textShadow:'0 0 14px rgba(255,230,100,1), 0 0 35px rgba(255,215,0,0.95), 0 0 70px rgba(255,180,0,0.70)', offset:0.6},
-      {transform:'scale(1.16)', opacity:1, textShadow:'0 0 20px rgba(255,240,100,1), 0 0 50px rgba(255,215,0,1), 0 0 90px rgba(255,180,0,0.8)', offset:0.80},
-      {transform:'scale(1.14)', opacity:1, textShadow:'0 0 14px rgba(255,230,100,1), 0 0 35px rgba(255,215,0,0.95)', offset:1},
-    ],{duration:700, easing:'ease-out', fill:'forwards'});
-  } else if (state === 'linger') {
-    // Hold gold briefly then fade
-    el.style.opacity = '0.45';
-    el.style.transform = 'scale(1.01)';
-    el.style.color = '#FFD700';
-    el.style.textShadow = '0 0 6px rgba(255,215,0,0.4)';
+function animateWord(el, state){
+  if(!el)return;
+  if(state==='active'){
+    el.style.opacity='1';
+    el.style.transform='scale(1.08)';
+    el.style.color='#FFD700';
+    el.style.textShadow='0 0 8px rgba(255,215,0,1),0 0 20px rgba(255,215,0,0.82),0 0 45px rgba(255,180,0,0.50)';
+  } else if(state==='last'){
+    el.style.opacity='1';
+    el.style.transform='scale(1.12)';
+    el.style.color='#FFE566';
+    el.style.textShadow='0 0 12px rgba(255,230,100,1),0 0 30px rgba(255,215,0,0.95),0 0 65px rgba(255,180,0,0.65),0 0 110px rgba(255,120,0,0.35)';
+  } else if(state==='trail'){
+    // afterglow — warm gold fading
+    el.style.opacity='0.55';
+    el.style.transform='scale(1.01)';
+    el.style.color='rgba(255,215,0,0.55)';
+    el.style.textShadow='0 0 10px rgba(255,215,0,0.20)';
   } else {
-    // idle/done
-    el.style.opacity = '0.28';
-    el.style.transform = 'scale(0.96)';
-    el.style.color = 'rgba(255,200,80,0.35)';
-    el.style.textShadow = 'none';
+    // idle — clearly readable at 40%
+    el.style.opacity='0.42';
+    el.style.transform='scale(1)';
+    el.style.color='rgba(255,255,255,0.88)';
+    el.style.textShadow='none';
   }
 }
-
 function dotPop(idx) {
   const d = document.getElementById('jmd'+idx);
   if (!d) return;
@@ -1302,195 +1298,89 @@ function dotPop(idx) {
 }
 
 function startWordHighlight(){
-  const lines=MANTRA_WORDS[dow]||[['ॐ'],['नमः']];
+  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
   currentWordIdx=0;
   clearTimeout(wordTimer);clearInterval(wordTimer);
 
-  // Timing per line
-  const LINE_DUR=[600, 900]; // line0=600ms, line1(नमः)=900ms
-
-  // Reset all lines dim
-  lines.forEach((_,li)=>{
-    const el=document.getElementById('jline'+li);
-    if(el){el.style.cssText='opacity:0.55;transform:scale(1);transition:opacity 0.2s ease,transform 0.2s ease,text-shadow 0.2s ease;text-shadow:none;';}
-  });
-
-  function activateLine(li){
-    const isLast=li===lines.length-1;
-    const el=document.getElementById('jline'+li);
-    if(!el)return;
-
-    // Deactivate previous line with linger
-    const prevLi=(li===0?lines.length-1:li-1);
-    const prevEl=document.getElementById('jline'+prevLi);
-    if(prevEl){
-      // Fade trail — stays warm gold briefly, then dims
-      prevEl.style.transition='opacity 0.6s ease,transform 0.4s ease,color 0.6s ease,text-shadow 0.6s ease';
-      prevEl.style.opacity='0.55';
-      prevEl.style.transform='scale(1)';
-      prevEl.style.color='rgba(255,215,0,0.50)';
-      prevEl.style.textShadow='0 0 10px rgba(255,215,0,0.18)';
-    }
-
-    if(isLast){
-      // नमः LINE — strong bloom
-      el.style.transition='opacity 0.15s ease-out,transform 0.15s ease-out,color 0.15s ease-out,text-shadow 0.18s ease-out';
-      el.style.opacity='1';el.style.transform='scale(1.10)';
-      el.style.color='#FFE566';
-      el.style.textShadow='0 0 10px rgba(255,230,100,1),0 0 28px rgba(255,215,0,0.95),0 0 60px rgba(255,180,0,0.65),0 0 100px rgba(255,120,0,0.35)';
-      if(navigator.vibrate)navigator.vibrate(25);
-    } else {
-      // ॐ गं LINE — glow in
-      el.style.transition='opacity 0.15s ease-out,transform 0.15s ease-out,color 0.15s ease-out,text-shadow 0.18s ease-out';
-      el.style.opacity='1';el.style.transform='scale(1.06)';
-      el.style.color='#FFD700';
-      el.style.textShadow='0 0 8px rgba(255,215,0,1),0 0 20px rgba(255,215,0,0.82),0 0 45px rgba(255,180,0,0.50),0 0 80px rgba(255,120,0,0.25)';
-      if(navigator.vibrate)navigator.vibrate(12);
-    }
-
-    currentWordIdx=(li+1)%lines.length;
-
-    if(isLast){
-      // After नमः: hold → fade all → pause → restart with ॐ pop
-      setTimeout(()=>{
-        if(!jPlay)return;
-        // Fade all to dim
-        lines.forEach((_,i)=>{
-          const w=document.getElementById('jline'+i);
-          if(w){w.style.opacity='0.18';w.style.transform='scale(0.97)';w.style.textShadow='none';w.style.color='rgba(255,255,255,0.25)';}
-        });
-        // Breathing pause then ॐ pops
-        setTimeout(()=>{
-          if(!jPlay)return;
-          const first=document.getElementById('jline0');
-          if(!first)return;
-          first.getAnimations&&first.getAnimations().forEach(a=>a.cancel());
-          first.animate([
-            {opacity:0.12,transform:'scale(0.93)',textShadow:'none',color:'rgba(255,255,255,0.25)'},
-            {opacity:1,transform:'scale(1.14)',textShadow:'0 0 12px rgba(255,215,0,1),0 0 32px rgba(255,215,0,0.88),0 0 65px rgba(255,180,0,0.58)',color:'#FFD700',offset:0.45},
-            {opacity:1,transform:'scale(1.06)',textShadow:'0 0 8px rgba(255,215,0,1),0 0 20px rgba(255,215,0,0.82),0 0 45px rgba(255,180,0,0.50)',color:'#FFD700'},
-          ],{duration:300,easing:'ease-out',fill:'forwards'});
-          // Restore line1 to base visibility after ॐ pops
-          lines.forEach((_,li)=>{
-            if(li===0)return; // ॐ handled by animate above
-            const ln=document.getElementById('jline'+li);
-            if(ln){ln.style.transition='opacity 0.3s ease,color 0.3s ease,text-shadow 0.3s ease';ln.style.opacity='0.55';ln.style.color='rgba(255,255,255,0.88)';ln.style.textShadow='none';}
-          });
-          // Continue cycle
-          wordTimer=setTimeout(()=>{if(jPlay)activateLine(1);},LINE_DUR[0]);
-        },250); // 250ms breathing pause
-      },700); // hold after नमः
-    } else {
-      wordTimer=setTimeout(()=>{if(jPlay)activateLine((li+1)%lines.length);},LINE_DUR[li]);
-    }
+  // Timing: ॐ=420ms, last word=700ms, middle=300ms
+  function getDur(i){
+    if(i===0) return 420;
+    if(i===words.length-1) return 700;
+    return 300;
   }
 
-  // Start
-  setTimeout(()=>activateLine(0),100);
+  // Show ALL words at base 42% opacity
+  words.forEach((_,i)=>{
+    const w=document.getElementById('jw'+i);
+    if(w){ w.style.opacity='0.42'; w.style.transform='scale(1)';
+           w.style.color='rgba(255,255,255,0.88)'; w.style.textShadow='none'; }
+  });
+
+  function tick(){
+    if(!jPlay)return;
+    const i=currentWordIdx;
+    const isLast=(i===words.length-1);
+    const prev=i===0?words.length-1:i-1;
+
+    // Afterglow on previous word → then idle
+    const prevEl=document.getElementById('jw'+prev);
+    if(prevEl){
+      animateWord(prevEl,'trail');
+      setTimeout(()=>{ if(prevEl) animateWord(prevEl,'idle'); }, 300);
+    }
+
+    // Activate current
+    const curEl=document.getElementById('jw'+i);
+    if(curEl) animateWord(curEl, isLast?'last':'active');
+    if(navigator.vibrate) navigator.vibrate(isLast?20:12);
+
+    currentWordIdx=(i+1)%words.length;
+
+    if(isLast){
+      // Hold नमः → brief dim → ॐ pops
+      setTimeout(()=>{
+        if(!jPlay)return;
+        // Dim all
+        words.forEach((_,j)=>{
+          const w=document.getElementById('jw'+j);
+          if(w){ w.style.opacity='0.18'; w.style.textShadow='none';
+                 w.style.color='rgba(255,255,255,0.88)'; }
+        });
+        // 200ms breath gap → ॐ pops
+        setTimeout(()=>{
+          if(!jPlay)return;
+          words.forEach((_,j)=>{
+            const w=document.getElementById('jw'+j);
+            if(w) animateWord(w,'idle');
+          });
+          // ॐ special pop
+          const om=document.getElementById('jw0');
+          if(om){
+            om.style.opacity='1'; om.style.transform='scale(1.10)';
+            om.style.color='#FFD700';
+            om.style.textShadow='0 0 10px rgba(255,215,0,1),0 0 25px rgba(255,215,0,0.85),0 0 55px rgba(255,180,0,0.55)';
+            setTimeout(()=>{if(om&&jPlay) animateWord(om,'active');},400);
+          }
+          // Continue
+          wordTimer=setTimeout(tick, getDur(0));
+        },200);
+      },600);
+    } else {
+      wordTimer=setTimeout(tick, getDur(i));
+    }
+  }
+  setTimeout(tick,100);
 }
 
 function stopWordHighlight(){
   clearTimeout(wordTimer);clearInterval(wordTimer);
-  const lines=MANTRA_WORDS[dow]||[];
-  lines.forEach((_,li)=>{
-    const el=document.getElementById('jline'+li);
-    if(el){el.getAnimations&&el.getAnimations().forEach(a=>a.cancel());el.style.cssText='opacity:0.55;transform:scale(1);color:rgba(255,255,255,0.45);text-shadow:none;transition:all 0.2s ease;';}
-  });
-}
-
-function buildMala(){
-  const mala=document.getElementById('jMala');
-  if(!mala)return;
-  mala.innerHTML='';
-  for(let i=0;i<DOTS;i++){const d=document.createElement('div');d.className='jmd';d.id='jmd'+i;mala.appendChild(d);}
-}
-function updateJ(){
-  const el=document.getElementById('jNum');
-  if(!el)return;
-  el.textContent=jCount;
-  el.classList.remove('pop');
-  void el.offsetWidth; // force reflow so animation restarts
-  el.classList.add('pop');
-  setTimeout(()=>el.classList.remove('pop'), 220);
-  for(let i=0;i<DOTS;i++){
-    const d=document.getElementById('jmd'+i);if(!d)continue;
-    const wasDone=d.classList.contains('done');
-    const nowDone=jCount>=(i+1)*4;
-    const isCur=jCount>i*4&&!nowDone;
-    d.className='jmd'+(nowDone?' done':isCur?' cur':'');
-    // Pulse current active dot continuously
-    if(isCur){
-      d.getAnimations&&d.getAnimations().forEach(a=>a.cancel());
-    }
-    if(!wasDone && nowDone) dotPop(i);
-  }
-  const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/108';
-  if(navigator.vibrate)navigator.vibrate(30);
-  if(jCount>=TOTAL){
-    clearInterval(jTimer);clearInterval(wordTimer);jPlay=false;
-    if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
-    updateStreak();
-    setTimeout(()=>{
-      const sk=getStreak();
-      document.getElementById('jdStreakNum').textContent='🔥 '+sk+(H?' दिन लगातार':' day streak');
-      document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
-      document.getElementById('skNum').textContent=H?'आज का लक्ष्य':"Today's goal";
-      document.getElementById('skUnit').textContent=H?'पूरा हुआ ✅':'completed ✅';
-      document.getElementById('jdone').classList.add('show');
-    },400);
-  }
-}
-function animateWord(el, isActive) {
-  if (!el) return;
-  if (isActive) {
-    // Force animation replay using Web Animations API
-    el.getAnimations().forEach(a => a.cancel());
-    el.animate([
-      { opacity: 0.32, transform: 'scale(1)',    color: 'rgba(255,255,255,0.50)', textShadow: 'none' },
-      { opacity: 1.00, transform: 'scale(1.12)', color: '#FFD700',               textShadow: '0 0 8px rgba(255,215,0,1), 0 0 20px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.5), 0 0 80px rgba(255,120,0,0.25)', offset: 0.6 },
-      { opacity: 1.00, transform: 'scale(1.07)', color: '#FFD700',               textShadow: '0 0 8px rgba(255,215,0,1), 0 0 20px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.5), 0 0 80px rgba(255,120,0,0.25)' },
-    ], { duration: 160, easing: 'ease-out', fill: 'forwards' });
-  } else {
-    // Fade out — smooth crossfade
-    el.getAnimations().forEach(a => a.cancel());
-    el.animate([
-      { opacity: 1, transform: 'scale(1.07)' },
-      { opacity: 0.28, transform: 'scale(0.95)', color: 'rgba(255,200,80,0.35)', textShadow: 'none' },
-    ], { duration: 90, easing: 'ease-in', fill: 'forwards' });
-  }
-}
-
-function startWordHighlight(){
-  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
-  currentWordIdx=0;clearInterval(wordTimer);
-  const wordDur=Math.floor(1400/words.length);
-
-  // Reset all words to dim first
+  const words=MANTRA_WORDS[dow]||[];
   words.forEach((_,i)=>{
     const w=document.getElementById('jw'+i);
-    if(w){w.getAnimations().forEach(a=>a.cancel());w.style.opacity='0.32';w.style.transform='scale(1)';w.style.color='rgba(255,255,255,0.50)';w.style.textShadow='none';}
-  });
-
-  wordTimer=setInterval(()=>{
-    if(!jPlay)return;
-    // Fade out previous word
-    const prev=currentWordIdx===0?words.length-1:currentWordIdx-1;
-    animateWord(document.getElementById('jw'+prev), false);
-    // Glow in current word
-    animateWord(document.getElementById('jw'+currentWordIdx), true);
-    // Vibrate per word for rhythm
-    if(navigator.vibrate) navigator.vibrate(15);
-    currentWordIdx=(currentWordIdx+1)%words.length;
-  },wordDur);
-}
-
-function stopWordHighlight(){
-  clearInterval(wordTimer);
-  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{
-    const w=document.getElementById('jw'+i);
-    if(w){w.getAnimations().forEach(a=>a.cancel());w.style.opacity='0.32';w.style.transform='scale(1)';w.style.color='rgba(255,255,255,0.50)';w.style.textShadow='none';}
+    if(w){ animateWord(w,'idle'); }
   });
 }
+
 function toggleJap(){
   jPlay=!jPlay;
   const btn=document.getElementById('jplayBtn');
