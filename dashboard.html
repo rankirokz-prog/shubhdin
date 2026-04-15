@@ -868,7 +868,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       </div>
 
       <!-- Center: mantra + counter -->
-      <div class="j-center">
+      <div class="j-center" onclick="(()=>{const b=document.getElementById('jplayBtn');if(b){b.style.opacity='1';clearTimeout(window._jBtnHide);if(jPlay){window._jBtnHide=setTimeout(()=>{if(b&&jPlay)b.style.opacity='0.20';},2000);}})();">
 
         <!-- Focus line -->
         <div id="jFocusLine" style="text-align:center;margin-bottom:16px;font-size:11px;color:rgba(255,255,255,0.30);letter-spacing:1px;font-style:italic;font-family:'Poppins',sans-serif;">मन को शांत करें… श्रद्धा से जाप करें</div>
@@ -1206,31 +1206,32 @@ function updateJ(){
     },400);
   }
 }
-function animateWord(el, isActive, linger=false) {
+function animateWord(el, state) {
+  // state: 'active' | 'done' | 'last' | 'idle'
   if (!el) return;
-  el.getAnimations().forEach(a => a.cancel());
-  if (isActive) {
-    el.animate([
-      { opacity:0.30, transform:'scale(1)',    color:'rgba(255,255,255,0.45)', textShadow:'none', offset:0 },
-      { opacity:1.00, transform:'scale(1.18)', color:'#FFD700',
-        textShadow:'0 0 10px rgba(255,215,0,1),0 0 25px rgba(255,215,0,0.9),0 0 55px rgba(255,180,0,0.6),0 0 90px rgba(255,120,0,0.30)', offset:0.55 },
-      { opacity:1.00, transform:'scale(1.10)', color:'#FFD700',
-        textShadow:'0 0 10px rgba(255,215,0,1),0 0 25px rgba(255,215,0,0.9),0 0 55px rgba(255,180,0,0.6),0 0 90px rgba(255,120,0,0.30)', offset:1 },
-    ], { duration:160, easing:'ease-out', fill:'forwards' });
-  } else if (linger) {
-    // Linger — hold glow briefly then fade (continuity feel)
-    el.animate([
-      { opacity:1.00, transform:'scale(1.10)', color:'#FFD700',
-        textShadow:'0 0 10px rgba(255,215,0,0.9),0 0 25px rgba(255,215,0,0.6),0 0 55px rgba(255,180,0,0.3)', offset:0 },
-      { opacity:0.55, transform:'scale(1.02)', color:'#FFD700',
-        textShadow:'0 0 5px rgba(255,215,0,0.4)', offset:0.5 },
-      { opacity:0.28, transform:'scale(0.95)', color:'rgba(255,200,80,0.35)',
-        textShadow:'none', offset:1 },
-    ], { duration:160, easing:'ease-in', fill:'forwards' });
+  if (state === 'active') {
+    el.style.opacity = '1';
+    el.style.transform = 'scale(1.08)';
+    el.style.color = '#FFD700';
+    el.style.textShadow = '0 0 8px rgba(255,215,0,1), 0 0 22px rgba(255,215,0,0.85), 0 0 50px rgba(255,180,0,0.55), 0 0 85px rgba(255,120,0,0.28)';
+  } else if (state === 'last') {
+    // Last word (नमः) — extra bloom + hold
+    el.style.opacity = '1';
+    el.style.transform = 'scale(1.12)';
+    el.style.color = '#FFE566';
+    el.style.textShadow = '0 0 12px rgba(255,230,100,1), 0 0 30px rgba(255,215,0,0.9), 0 0 65px rgba(255,180,0,0.65), 0 0 110px rgba(255,120,0,0.35)';
+  } else if (state === 'linger') {
+    // Hold gold briefly then fade
+    el.style.opacity = '0.45';
+    el.style.transform = 'scale(1.01)';
+    el.style.color = '#FFD700';
+    el.style.textShadow = '0 0 6px rgba(255,215,0,0.4)';
   } else {
-    el.animate([
-      { opacity:0.28, transform:'scale(0.95)', color:'rgba(255,200,80,0.35)', textShadow:'none' },
-    ], { duration:80, easing:'ease-in', fill:'forwards' });
+    // idle/done
+    el.style.opacity = '0.28';
+    el.style.transform = 'scale(0.96)';
+    el.style.color = 'rgba(255,200,80,0.35)';
+    el.style.textShadow = 'none';
   }
 }
 
@@ -1248,35 +1249,52 @@ function dotPop(idx) {
 function startWordHighlight(){
   const words = MANTRA_WORDS[dow] || ['ॐ','नमः','शिवाय'];
   currentWordIdx = 0;
-  clearInterval(wordTimer);
+  clearTimeout(wordTimer); clearInterval(wordTimer);
 
-  // Word timing — first/last words slightly longer (natural chanting rhythm)
-  const baseDur = Math.floor(1350 / words.length);
-  const durations = words.map((_, i) =>
-    (i === 0 || i === words.length-1) ? Math.round(baseDur * 1.25) : baseDur
-  );
-  let elapsed = 0;
+  // Spiritual timing: first/last = longer, middle = flow
+  function getDur(i) {
+    if (i === 0) return 420;                    // ॐ — hold longer
+    if (i === words.length-1) return 480;       // last word — release
+    return 260;                                 // middle — flow
+  }
 
-  // Reset all words to dim
+  // Reset all to dim
   words.forEach((_, i) => {
     const w = document.getElementById('jw'+i);
-    if (w) { w.getAnimations().forEach(a=>a.cancel()); w.style.cssText='opacity:0.30;transform:scale(1);color:rgba(255,255,255,0.45);'; }
+    if (w) { w.style.opacity='0.32'; w.style.transform='scale(1)'; w.style.color='rgba(255,255,255,0.45)'; w.style.textShadow='none'; }
   });
+
+  // Hint first word before starting
+  const first = document.getElementById('jw0');
+  if (first) { first.style.opacity='0.60'; first.style.color='rgba(255,215,0,0.55)'; }
 
   function tick() {
     if (!jPlay) return;
-    const prev = currentWordIdx === 0 ? words.length-1 : currentWordIdx-1;
-    // Linger fade on previous word
-    animateWord(document.getElementById('jw'+prev), false, true);
-    // Glow in current word
-    animateWord(document.getElementById('jw'+currentWordIdx), true);
-    // Light vibration per word
-    if (navigator.vibrate) navigator.vibrate(12);
+    const idx = currentWordIdx;
+    const isLast = idx === words.length - 1;
+    const prevIdx = idx === 0 ? words.length - 1 : idx - 1;
+
+    // Linger previous word briefly then fade
+    const prevEl = document.getElementById('jw'+prevIdx);
+    if (prevEl) {
+      animateWord(prevEl, 'linger');
+      setTimeout(() => { if (!jPlay) return; animateWord(prevEl, 'done'); }, 120);
+    }
+
+    // Activate current
+    const curEl = document.getElementById('jw'+idx);
+    if (curEl) animateWord(curEl, isLast ? 'last' : 'active');
+
+    if (navigator.vibrate) navigator.vibrate(isLast ? 20 : 12);
+
     currentWordIdx = (currentWordIdx + 1) % words.length;
-    if (jPlay) wordTimer = setTimeout(tick, durations[currentWordIdx]);
+
+    // Extra hold on last word before cycling back
+    const dur = getDur(idx) + (isLast ? 120 : 0);
+    if (jPlay) wordTimer = setTimeout(tick, dur);
   }
 
-  wordTimer = setTimeout(tick, 80);
+  wordTimer = setTimeout(tick, 100);
 }
 
 function stopWordHighlight(){
@@ -1388,7 +1406,18 @@ function toggleJap(){
     }
     startWordHighlight();
     jTimer=setInterval(()=>{if(jCount<TOTAL){jCount++;updateJ();}else clearInterval(jTimer);},1500);
-  }else{clearInterval(jTimer);stopWordHighlight();if(jChantAudio)jChantAudio.pause();}
+    // Auto-hide button after 2s — reduce visual noise during chanting
+    clearTimeout(window._jBtnHide);
+    window._jBtnHide=setTimeout(()=>{
+      const btn=document.getElementById('jplayBtn');
+      if(btn&&jPlay){btn.style.transition='opacity 0.4s';btn.style.opacity='0.20';}
+    },2000);
+  }else{
+    clearInterval(jTimer);stopWordHighlight();if(jChantAudio)jChantAudio.pause();
+    clearTimeout(window._jBtnHide);
+    const btn=document.getElementById('jplayBtn');
+    if(btn){btn.style.opacity='1';}
+  }
 }
 function resetJap(){
   jCount=0;jPlay=false;clearInterval(jTimer);stopWordHighlight();
