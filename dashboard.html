@@ -346,12 +346,16 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .j-mantra-wrap{text-align:center;}
 .j-mantra{
   font-family:'Tiro Devanagari Hindi',serif;
-  font-size:42px;color:rgba(255,255,255,0.88);
-  line-height:1.6;letter-spacing:6px;
+  display:flex;flex-direction:column;
+  align-items:center;gap:14px;
+}
+.j-line{
+  font-size:40px;color:rgba(255,255,255,0.88);
+  line-height:1.3;letter-spacing:5px;
   text-shadow:0 2px 20px rgba(0,0,0,0.8);
-  display:flex;gap:16px;justify-content:center;
-  flex-wrap:wrap;align-items:center;
-  max-width:340px;
+  text-align:center;
+  opacity:0.28;transform:scale(0.97);
+  transition:opacity 0.2s ease,transform 0.2s ease,color 0.2s ease,text-shadow 0.2s ease;
 }
 .j-word{
   display:inline-block;cursor:default;
@@ -398,16 +402,23 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 .j-count-num{
   font-size:28px;font-weight:400;color:rgba(255,255,255,0.32);line-height:1;
-  text-shadow:0 2px 12px rgba(0,0,0,0.5);
-  transition:all 0.2s;
+  /* no transition — animation handles it */
 }
 .j-count-num.bump{
-  transform:scale(1.15);color:rgba(255,200,87,0.9);
+  transform:scale(1.15)  /* unused */;color:rgba(255,200,87,0.9);
   text-shadow:0 0 20px rgba(255,200,87,0.7);
 }
 .j-count-of{
   font-size:13px;color:rgba(255,255,255,0.35);font-weight:500;
   letter-spacing:1px;
+}
+.j-count-num.pop{
+  animation:numPop 0.20s ease-out forwards;
+}
+@keyframes numPop{
+  0%{transform:scale(1);color:rgba(255,255,255,0.32);text-shadow:none;}
+  45%{transform:scale(1.22);color:#FFD700;text-shadow:0 0 18px rgba(255,215,0,0.85),0 0 35px rgba(255,215,0,0.45);}
+  100%{transform:scale(1);color:rgba(255,255,255,0.32);text-shadow:none;}
 }
 
 /* Mala dots */
@@ -469,11 +480,19 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 /* Completion overlay */
 .jdone{
   position:absolute;inset:0;z-index:50;
-  background:rgba(13,5,0,0.96);
+  background:radial-gradient(ellipse at center,rgba(60,30,0,0.97) 0%,rgba(13,5,0,0.99) 100%);
   display:none;flex-direction:column;
-  align-items:center;justify-content:center;gap:12px;
+  align-items:center;justify-content:center;gap:14px;
+  animation:none;
 }
-.jdone.show{display:flex;}
+.jdone.show{
+  display:flex;
+  animation:doneIn 0.6s ease-out forwards;
+}
+@keyframes doneIn{
+  0%{opacity:0;}
+  100%{opacity:1;}
+}
 .jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:52px;color:var(--gold);animation:omGlow 2s ease-in-out infinite;}
 .jd-title{font-family:'Tiro Devanagari Hindi',serif;font-size:24px;color:var(--gold);}
 .jd-sub{font-size:13px;color:rgba(255,255,255,0.50);text-align:center;padding:0 30px;line-height:1.6;}
@@ -911,7 +930,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
       <!-- Completion overlay -->
       <div class="jdone" id="jdone">
-        <div class="jd-om">ॐ</div>
+        <div class="jd-om" style="animation:omGlow 1.5s ease-in-out infinite,omAppear 0.8s ease-out forwards;opacity:0;">ॐ</div>
         <div class="jd-title" id="jdTitle">108 जाप पूर्ण! 🙏</div>
         <div class="jd-sub" id="jdSub">हनुमान जी की कृपा आप पर सदा बनी रहे 🌸</div>
         <div class="jd-streak">
@@ -1168,15 +1187,31 @@ const TOTAL=108,DOTS=27;
 let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWordIdx=0;
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
 const MANTRA_WORDS={
-  0:['ॐ','सूर्याय','नमः'],1:['ॐ','नमः','शिवाय'],2:['ॐ','हं','हनुमते','नमः'],
-  3:['ॐ','गं','गणपतये','नमः'],4:['ॐ','श्री','रामाय','नमः'],
-  5:['ॐ','श्रीं','महालक्ष्म्यै','नमः'],6:['ॐ','शं','शनिचराय','नमः'],
+  0:[['ॐ','सूर्याय'],['नमः']],
+  1:[['ॐ','नमः'],['शिवाय']],
+  2:[['ॐ','हं'],['हनुमते','नमः']],
+  3:[['ॐ','गं'],['गणपतये','नमः']],
+  4:[['ॐ','श्री'],['रामाय','नमः']],
+  5:[['ॐ','श्रीं'],['महालक्ष्म्यै','नमः']],
+  6:[['ॐ','शं'],['शनिचराय','नमः']],
 };
 function buildMantra(){
-  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
+  const lines=MANTRA_WORDS[dow]||[['ॐ','नमः'],['शिवाय']];
   const el=document.getElementById('jMantra');
   if(!el)return;
-  el.innerHTML=words.map((w,i)=>`<span class="j-word${i===0?' first-hint':''}" id="jw${i}">${w}</span>`).join('');
+  let html='';let wi=0;
+  lines.forEach((line,li)=>{
+    html+=`<div class="j-line" id="jline${li}">`;
+    line.forEach(word=>{
+      html+=`<span class="j-word" id="jw${wi}">${word}</span>`;
+      wi++;
+    });
+    html+='</div>';
+  });
+  el.innerHTML=html;
+  // Hint line 0
+  const l0=document.getElementById('jline0');
+  if(l0)l0.style.opacity='0.55';
 }
 function buildMala(){
   const mala=document.getElementById('jMala');
@@ -1188,12 +1223,10 @@ function updateJ(){
   const el=document.getElementById('jNum');
   if(!el)return;
   el.textContent=jCount;
-  el.getAnimations().forEach(a=>a.cancel());
-  el.animate([
-    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
-    {transform:'scale(1.22)', color:'rgba(255,215,0,0.85)', textShadow:'0 0 20px rgba(255,215,0,0.6)', offset:0.4},
-    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
-  ],{duration:180, easing:'ease-out'});
+  el.classList.remove('pop');
+  void el.offsetWidth; // force reflow so animation restarts
+  el.classList.add('pop');
+  setTimeout(()=>el.classList.remove('pop'), 220);
   for(let i=0;i<DOTS;i++){
     const d=document.getElementById('jmd'+i);if(!d)continue;
     const wasDone=d.classList.contains('done');
@@ -1231,11 +1264,7 @@ function animateWord(el, state) {
     el.style.color = '#FFD700';
     el.style.textShadow = '0 0 8px rgba(255,215,0,1), 0 0 22px rgba(255,215,0,0.85), 0 0 50px rgba(255,180,0,0.55), 0 0 85px rgba(255,120,0,0.28)';
   } else if (state === 'last') {
-    // Last word — bloom in, then pulse glow
-    el.style.opacity = '1';
-    el.style.transform = 'scale(1.14)';
-    el.style.color = '#FFE566';
-    el.style.textShadow = '0 0 14px rgba(255,230,100,1), 0 0 35px rgba(255,215,0,0.95), 0 0 70px rgba(255,180,0,0.70), 0 0 120px rgba(255,120,0,0.40)';
+    // Last word — bloom + hold (cancel first, then animate cleanly)
     el.getAnimations().forEach(a=>a.cancel());
     el.animate([
       {transform:'scale(1)', opacity:0.4, textShadow:'none', offset:0},
@@ -1271,90 +1300,95 @@ function dotPop(idx) {
 }
 
 function startWordHighlight(){
-  const words = MANTRA_WORDS[dow] || ['ॐ','नमः','शिवाय'];
-  currentWordIdx = 0;
-  clearTimeout(wordTimer); clearInterval(wordTimer);
+  const lines=MANTRA_WORDS[dow]||[['ॐ'],['नमः']];
+  currentWordIdx=0;
+  clearTimeout(wordTimer);clearInterval(wordTimer);
 
-  // Spiritual timing: first/last = longer, middle = flow
-  function getDur(i) {
-    if (i === 0) return 420;                    // ॐ — hold longer
-    if (i === words.length-1) return 820;       // last word — HOLD (350ms extra)
-    return 260;                                 // middle — flow
-  }
+  // Timing per line
+  const LINE_DUR=[600, 900]; // line0=600ms, line1(नमः)=900ms
 
-  // Reset all to dim
-  words.forEach((_, i) => {
-    const w = document.getElementById('jw'+i);
-    if (w) { w.style.opacity='0.32'; w.style.transform='scale(1)'; w.style.color='rgba(255,255,255,0.45)'; w.style.textShadow='none'; }
+  // Reset all lines dim
+  lines.forEach((_,li)=>{
+    const el=document.getElementById('jline'+li);
+    if(el){el.style.cssText='opacity:0.28;transform:scale(0.97);transition:opacity 0.2s ease,transform 0.2s ease,text-shadow 0.2s ease;text-shadow:none;';}
   });
 
-  // Hint first word before starting
-  const first = document.getElementById('jw0');
-  if (first) { first.style.opacity='0.60'; first.style.color='rgba(255,215,0,0.55)'; }
+  function activateLine(li){
+    const isLast=li===lines.length-1;
+    const el=document.getElementById('jline'+li);
+    if(!el)return;
 
-  function tick() {
-    if (!jPlay) return;
-    const idx = currentWordIdx;
-    const isLast = idx === words.length - 1;
-    const prevIdx = idx === 0 ? words.length - 1 : idx - 1;
-
-    // Linger previous word briefly then fade
-    const prevEl = document.getElementById('jw'+prevIdx);
-    if (prevEl) {
-      animateWord(prevEl, 'linger');
-      setTimeout(() => { if (!jPlay) return; animateWord(prevEl, 'done'); }, 120);
+    // Deactivate previous line with linger
+    const prevLi=(li===0?lines.length-1:li-1);
+    const prevEl=document.getElementById('jline'+prevLi);
+    if(prevEl){
+      prevEl.style.opacity='0.38';
+      prevEl.style.transform='scale(0.98)';
+      prevEl.style.color='rgba(255,215,0,0.35)';
+      prevEl.style.textShadow='none';
     }
 
-    // Activate current
-    const curEl = document.getElementById('jw'+idx);
-    if (curEl) animateWord(curEl, isLast ? 'last' : 'active');
+    if(isLast){
+      // नमः LINE — strong bloom
+      el.style.cssText=`
+        opacity:1;transform:scale(1.10);
+        color:#FFE566;
+        text-shadow:0 0 10px rgba(255,230,100,1),0 0 28px rgba(255,215,0,0.95),0 0 60px rgba(255,180,0,0.65),0 0 100px rgba(255,120,0,0.35);
+        transition:opacity 0.15s ease-out,transform 0.15s ease-out,color 0.15s ease-out,text-shadow 0.18s ease-out;
+      `;
+      if(navigator.vibrate)navigator.vibrate(25);
+    } else {
+      // Line 1 — normal glow
+      el.style.cssText=`
+        opacity:1;transform:scale(1.06);
+        color:#FFD700;
+        text-shadow:0 0 8px rgba(255,215,0,1),0 0 20px rgba(255,215,0,0.82),0 0 45px rgba(255,180,0,0.50),0 0 80px rgba(255,120,0,0.25);
+        transition:opacity 0.15s ease-out,transform 0.15s ease-out,color 0.15s ease-out,text-shadow 0.18s ease-out;
+      `;
+      if(navigator.vibrate)navigator.vibrate(12);
+    }
 
-    if (navigator.vibrate) navigator.vibrate(isLast ? 20 : 12);
+    currentWordIdx=(li+1)%lines.length;
 
-    currentWordIdx = (currentWordIdx + 1) % words.length;
-
-    if (isLast) {
-      // नमः completes → hold 300ms → fade all → ॐ pops back
-      setTimeout(() => {
-        if (!jPlay) return;
-        // Step 1: Fade entire mantra to near-invisible
-        words.forEach((_, i) => {
-          const w = document.getElementById('jw'+i);
-          if (!w) return;
-          w.style.transition = 'opacity 0.18s ease, transform 0.18s ease, color 0.18s ease, text-shadow 0.18s ease';
-          w.style.opacity = '0.12';
-          w.style.transform = 'scale(0.93)';
-          w.style.textShadow = 'none';
-          w.style.color = 'rgba(255,255,255,0.25)';
+    if(isLast){
+      // After नमः: hold → fade all → pause → restart with ॐ pop
+      setTimeout(()=>{
+        if(!jPlay)return;
+        // Fade all to dim
+        lines.forEach((_,i)=>{
+          const w=document.getElementById('jline'+i);
+          if(w){w.style.opacity='0.12';w.style.transform='scale(0.93)';w.style.textShadow='none';w.style.color='rgba(255,255,255,0.25)';}
         });
-        // Step 2: After 200ms gap, ॐ pops back with glow
-        setTimeout(() => {
-          if (!jPlay) return;
-          const first = document.getElementById('jw0');
-          if (!first) return;
-          first.getAnimations().forEach(a=>a.cancel());
+        // Breathing pause then ॐ pops
+        setTimeout(()=>{
+          if(!jPlay)return;
+          const first=document.getElementById('jline0');
+          if(!first)return;
+          first.getAnimations&&first.getAnimations().forEach(a=>a.cancel());
           first.animate([
-            {opacity:0.12, transform:'scale(0.93)', textShadow:'none', color:'rgba(255,255,255,0.25)'},
-            {opacity:1.00, transform:'scale(1.16)', textShadow:'0 0 12px rgba(255,215,0,1), 0 0 30px rgba(255,215,0,0.85), 0 0 60px rgba(255,180,0,0.55)', color:'#FFD700', offset:0.5},
-            {opacity:1.00, transform:'scale(1.08)', textShadow:'0 0 8px rgba(255,215,0,1), 0 0 22px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.5)', color:'#FFD700'},
-          ],{duration:280, easing:'ease-out', fill:'forwards'});
-        }, 200);
-      }, 700); // fires AFTER नमः 700ms animation completes
+            {opacity:0.12,transform:'scale(0.93)',textShadow:'none',color:'rgba(255,255,255,0.25)'},
+            {opacity:1,transform:'scale(1.14)',textShadow:'0 0 12px rgba(255,215,0,1),0 0 32px rgba(255,215,0,0.88),0 0 65px rgba(255,180,0,0.58)',color:'#FFD700',offset:0.45},
+            {opacity:1,transform:'scale(1.06)',textShadow:'0 0 8px rgba(255,215,0,1),0 0 20px rgba(255,215,0,0.82),0 0 45px rgba(255,180,0,0.50)',color:'#FFD700'},
+          ],{duration:300,easing:'ease-out',fill:'forwards'});
+          // Continue cycle
+          wordTimer=setTimeout(()=>{if(jPlay)activateLine(1);},LINE_DUR[0]);
+        },250); // 250ms breathing pause
+      },700); // hold after नमः
+    } else {
+      wordTimer=setTimeout(()=>{if(jPlay)activateLine((li+1)%lines.length);},LINE_DUR[li]);
     }
-
-    const dur = getDur(idx);
-    if (jPlay) wordTimer = setTimeout(tick, dur);
   }
 
-  wordTimer = setTimeout(tick, 100);
+  // Start
+  setTimeout(()=>activateLine(0),100);
 }
 
 function stopWordHighlight(){
-  clearTimeout(wordTimer);
-  clearInterval(wordTimer);
-  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{
-    const w=document.getElementById('jw'+i);
-    if(w){w.getAnimations().forEach(a=>a.cancel());w.style.cssText='opacity:0.30;transform:scale(1);color:rgba(255,255,255,0.45);text-shadow:none;';}
+  clearTimeout(wordTimer);clearInterval(wordTimer);
+  const lines=MANTRA_WORDS[dow]||[];
+  lines.forEach((_,li)=>{
+    const el=document.getElementById('jline'+li);
+    if(el){el.getAnimations&&el.getAnimations().forEach(a=>a.cancel());el.style.cssText='opacity:0.28;transform:scale(0.97);color:rgba(255,255,255,0.45);text-shadow:none;transition:all 0.2s ease;';}
   });
 }
 
@@ -1368,12 +1402,10 @@ function updateJ(){
   const el=document.getElementById('jNum');
   if(!el)return;
   el.textContent=jCount;
-  el.getAnimations().forEach(a=>a.cancel());
-  el.animate([
-    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
-    {transform:'scale(1.22)', color:'rgba(255,215,0,0.85)', textShadow:'0 0 20px rgba(255,215,0,0.6)', offset:0.4},
-    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
-  ],{duration:180, easing:'ease-out'});
+  el.classList.remove('pop');
+  void el.offsetWidth; // force reflow so animation restarts
+  el.classList.add('pop');
+  setTimeout(()=>el.classList.remove('pop'), 220);
   for(let i=0;i<DOTS;i++){
     const d=document.getElementById('jmd'+i);if(!d)continue;
     const wasDone=d.classList.contains('done');
