@@ -351,30 +351,41 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 .j-word{
   display:inline-block;cursor:default;
-  opacity:0.38;
-  color:rgba(255,255,255,0.55);
+  opacity:0.32;
+  color:rgba(255,255,255,0.50);
   transform:scale(1);
-  transition:opacity 0.12s ease, color 0.12s ease, transform 0.12s ease, text-shadow 0.12s ease;
+  /* NO transition here — animation handles active state */
 }
 .j-word.active{
-  opacity:1;
-  color:#FFD700;
-  transform:scale(1.10);
-  text-shadow:
-    0 0 6px rgba(255,215,0,1),
-    0 0 16px rgba(255,215,0,0.85),
-    0 0 35px rgba(255,180,0,0.55),
-    0 0 60px rgba(255,120,0,0.30);
-  animation:wActive 0.12s ease forwards;
+  animation:wActive 0.18s ease-out forwards;
 }
 @keyframes wActive{
-  0%{opacity:0.4;transform:scale(1);}
-  100%{opacity:1;transform:scale(1.10);}
+  0%{
+    opacity:0.32;transform:scale(1);
+    color:rgba(255,255,255,0.50);
+    text-shadow:none;
+  }
+  60%{transform:scale(1.12);}
+  100%{
+    opacity:1;transform:scale(1.08);
+    color:#FFD700;
+    text-shadow:
+      0 0 8px rgba(255,215,0,1),
+      0 0 20px rgba(255,215,0,0.8),
+      0 0 40px rgba(255,180,0,0.5),
+      0 0 70px rgba(255,120,0,0.25);
+  }
+}
+.j-word.first-hint{
+  opacity:0.65;
+  color:rgba(255,215,0,0.60);
+  text-shadow:0 0 10px rgba(255,215,0,0.30);
 }
 .j-word.done{
-  opacity:0.28;
-  color:rgba(255,215,0,0.40);
-  transform:scale(0.96);
+  opacity:0.25;
+  color:rgba(255,200,80,0.35);
+  transform:scale(0.95);
+  transition:opacity 0.15s ease, transform 0.15s ease;
 }
 
 /* Counter */
@@ -382,7 +393,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   display:flex;flex-direction:column;align-items:center;gap:4px;
 }
 .j-count-num{
-  font-size:30px;font-weight:400;color:rgba(255,255,255,0.38);line-height:1;
+  font-size:28px;font-weight:400;color:rgba(255,255,255,0.32);line-height:1;
   text-shadow:0 2px 12px rgba(0,0,0,0.5);
   transition:all 0.2s;
 }
@@ -406,11 +417,11 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   border:1px solid rgba(212,168,67,0.20);
   transition:all 0.3s;flex-shrink:0;
 }
-.jmd.done{background:var(--gold);border-color:var(--gold);box-shadow:0 0 4px rgba(212,168,67,0.5);}
+.jmd.done{background:var(--gold);border-color:var(--gold);box-shadow:0 0 6px rgba(212,168,67,0.6);}
 .jmd.cur{
   background:var(--saffron);border-color:var(--saffron);
-  transform:scale(1.35);
-  box-shadow:0 0 8px rgba(255,107,26,0.8);
+  transform:scale(1.4);
+  box-shadow:0 0 10px rgba(255,107,26,0.9);
   animation:mdPulse 0.9s ease-in-out infinite;
 }
 @keyframes mdPulse{0%,100%{box-shadow:0 0 5px rgba(255,107,26,0.4);transform:scale(1.35);}50%{box-shadow:0 0 18px rgba(255,107,26,1),0 0 30px rgba(255,107,26,0.5);transform:scale(1.55);}}
@@ -1159,7 +1170,7 @@ function buildMantra(){
   const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
   const el=document.getElementById('jMantra');
   if(!el)return;
-  el.innerHTML=words.map((w,i)=>`<span class="j-word" id="jw${i}">${w}</span>`).join('');
+  el.innerHTML=words.map((w,i)=>`<span class="j-word${i===0?' first-hint':''}" id="jw${i}">${w}</span>`).join('');
 }
 function buildMala(){
   const mala=document.getElementById('jMala');
