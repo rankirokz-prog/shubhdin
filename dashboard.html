@@ -283,16 +283,20 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 /* Deity image bg */
 .j-img-bg{
   position:absolute;inset:0;z-index:0;
-  background-size:cover;background-position:center top;
+  background-size:110%;background-position:center top;
   filter:blur(3px) brightness(0.35);
-  transform:scale(1.05);
-  transition:filter 1s ease;
 }
-.j-img-bg.chanting{
-  animation:bgBreath 3s ease-in-out infinite;
+.j-img-bg.playing{
+  animation:bgZoom 30s ease-in-out infinite alternate, bgBreath 5s ease-in-out infinite;
+}
+@keyframes bgZoom{
+  0%{background-size:110%;filter:blur(3px) brightness(0.33);}
+  100%{background-size:118%;filter:blur(3px) brightness(0.33);}
 }
 @keyframes bgBreath{
-  0%,100%{filter:blur(3px) brightness(0.35);}
+  0%,100%{filter:blur(3px) brightness(0.33);}
+  50%{filter:blur(2px) brightness(0.42);}
+}
   50%{filter:blur(2.5px) brightness(0.42);}
 }
 /* Dark gradient overlay */
@@ -1181,13 +1185,23 @@ function buildMala(){
 function updateJ(){
   const el=document.getElementById('jNum');
   if(!el)return;
-  el.textContent=jCount;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),200);
+  el.textContent=jCount;
+  el.getAnimations().forEach(a=>a.cancel());
+  el.animate([
+    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
+    {transform:'scale(1.22)', color:'rgba(255,215,0,0.85)', textShadow:'0 0 20px rgba(255,215,0,0.6)', offset:0.4},
+    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
+  ],{duration:180, easing:'ease-out'});
   for(let i=0;i<DOTS;i++){
     const d=document.getElementById('jmd'+i);if(!d)continue;
     const wasDone=d.classList.contains('done');
     const nowDone=jCount>=(i+1)*4;
     const isCur=jCount>i*4&&!nowDone;
     d.className='jmd'+(nowDone?' done':isCur?' cur':'');
+    // Pulse current active dot continuously
+    if(isCur){
+      d.getAnimations&&d.getAnimations().forEach(a=>a.cancel());
+    }
     if(!wasDone && nowDone) dotPop(i);
   }
   const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/108';
@@ -1215,11 +1229,19 @@ function animateWord(el, state) {
     el.style.color = '#FFD700';
     el.style.textShadow = '0 0 8px rgba(255,215,0,1), 0 0 22px rgba(255,215,0,0.85), 0 0 50px rgba(255,180,0,0.55), 0 0 85px rgba(255,120,0,0.28)';
   } else if (state === 'last') {
-    // Last word (नमः) — extra bloom + hold
+    // Last word — bloom in, then pulse glow
     el.style.opacity = '1';
-    el.style.transform = 'scale(1.12)';
+    el.style.transform = 'scale(1.14)';
     el.style.color = '#FFE566';
-    el.style.textShadow = '0 0 12px rgba(255,230,100,1), 0 0 30px rgba(255,215,0,0.9), 0 0 65px rgba(255,180,0,0.65), 0 0 110px rgba(255,120,0,0.35)';
+    el.style.textShadow = '0 0 14px rgba(255,230,100,1), 0 0 35px rgba(255,215,0,0.95), 0 0 70px rgba(255,180,0,0.70), 0 0 120px rgba(255,120,0,0.40)';
+    el.getAnimations().forEach(a=>a.cancel());
+    el.animate([
+      {transform:'scale(1)', opacity:0.4, textShadow:'none', offset:0},
+      {transform:'scale(1.20)', opacity:1, textShadow:'0 0 14px rgba(255,230,100,1), 0 0 40px rgba(255,215,0,0.9), 0 0 80px rgba(255,180,0,0.7)', offset:0.35},
+      {transform:'scale(1.14)', opacity:1, textShadow:'0 0 14px rgba(255,230,100,1), 0 0 35px rgba(255,215,0,0.95), 0 0 70px rgba(255,180,0,0.70)', offset:0.6},
+      {transform:'scale(1.16)', opacity:1, textShadow:'0 0 20px rgba(255,240,100,1), 0 0 50px rgba(255,215,0,1), 0 0 90px rgba(255,180,0,0.8)', offset:0.80},
+      {transform:'scale(1.14)', opacity:1, textShadow:'0 0 14px rgba(255,230,100,1), 0 0 35px rgba(255,215,0,0.95)', offset:1},
+    ],{duration:700, easing:'ease-out', fill:'forwards'});
   } else if (state === 'linger') {
     // Hold gold briefly then fade
     el.style.opacity = '0.45';
@@ -1332,13 +1354,23 @@ function buildMala(){
 function updateJ(){
   const el=document.getElementById('jNum');
   if(!el)return;
-  el.textContent=jCount;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),200);
+  el.textContent=jCount;
+  el.getAnimations().forEach(a=>a.cancel());
+  el.animate([
+    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
+    {transform:'scale(1.22)', color:'rgba(255,215,0,0.85)', textShadow:'0 0 20px rgba(255,215,0,0.6)', offset:0.4},
+    {transform:'scale(1)',    color:'rgba(255,255,255,0.32)'},
+  ],{duration:180, easing:'ease-out'});
   for(let i=0;i<DOTS;i++){
     const d=document.getElementById('jmd'+i);if(!d)continue;
     const wasDone=d.classList.contains('done');
     const nowDone=jCount>=(i+1)*4;
     const isCur=jCount>i*4&&!nowDone;
     d.className='jmd'+(nowDone?' done':isCur?' cur':'');
+    // Pulse current active dot continuously
+    if(isCur){
+      d.getAnimations&&d.getAnimations().forEach(a=>a.cancel());
+    }
     if(!wasDone && nowDone) dotPop(i);
   }
   const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/108';
