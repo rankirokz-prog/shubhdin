@@ -1182,7 +1182,21 @@ function updateJ(){
   const el=document.getElementById('jNum');
   if(!el)return;
   el.textContent=jCount;el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),200);
-  for(let i=0;i<DOTS;i++){const d=document.getElementById('jmd'+i);if(!d)continue;d.className='jmd'+(jCount>=(i+1)*4?' done':jCount>i*4?' cur':'');}
+  for(let i=0;i<DOTS;i++){
+    const d=document.getElementById('jmd'+i);if(!d)continue;
+    const wasDone=d.classList.contains('done');
+    const nowDone=jCount>=(i+1)*4;
+    const isCur=jCount>i*4&&!nowDone;
+    d.className='jmd'+(nowDone?' done':isCur?' cur':'');
+    // Ripple when dot JUST became done
+    if(!wasDone && nowDone){
+      d.animate([
+        {transform:'scale(1)',boxShadow:'0 0 6px rgba(212,168,67,0.6)'},
+        {transform:'scale(1.8)',boxShadow:'0 0 16px rgba(212,168,67,0.9)'},
+        {transform:'scale(1)',boxShadow:'0 0 6px rgba(212,168,67,0.5)'},
+      ],{duration:300,easing:'ease-out'});
+    }
+  }
   const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/108';
   if(navigator.vibrate)navigator.vibrate(30);
   if(jCount>=TOTAL){
@@ -1199,21 +1213,56 @@ function updateJ(){
     },400);
   }
 }
+function animateWord(el, isActive) {
+  if (!el) return;
+  if (isActive) {
+    // Force animation replay using Web Animations API
+    el.getAnimations().forEach(a => a.cancel());
+    el.animate([
+      { opacity: 0.32, transform: 'scale(1)',    color: 'rgba(255,255,255,0.50)', textShadow: 'none' },
+      { opacity: 1.00, transform: 'scale(1.12)', color: '#FFD700',               textShadow: '0 0 8px rgba(255,215,0,1), 0 0 20px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.5), 0 0 80px rgba(255,120,0,0.25)', offset: 0.6 },
+      { opacity: 1.00, transform: 'scale(1.07)', color: '#FFD700',               textShadow: '0 0 8px rgba(255,215,0,1), 0 0 20px rgba(255,215,0,0.8), 0 0 45px rgba(255,180,0,0.5), 0 0 80px rgba(255,120,0,0.25)' },
+    ], { duration: 160, easing: 'ease-out', fill: 'forwards' });
+  } else {
+    // Fade out — smooth crossfade
+    el.getAnimations().forEach(a => a.cancel());
+    el.animate([
+      { opacity: 1, transform: 'scale(1.07)' },
+      { opacity: 0.28, transform: 'scale(0.95)', color: 'rgba(255,200,80,0.35)', textShadow: 'none' },
+    ], { duration: 90, easing: 'ease-in', fill: 'forwards' });
+  }
+}
+
 function startWordHighlight(){
   const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
   currentWordIdx=0;clearInterval(wordTimer);
   const wordDur=Math.floor(1400/words.length);
+
+  // Reset all words to dim first
+  words.forEach((_,i)=>{
+    const w=document.getElementById('jw'+i);
+    if(w){w.getAnimations().forEach(a=>a.cancel());w.style.opacity='0.32';w.style.transform='scale(1)';w.style.color='rgba(255,255,255,0.50)';w.style.textShadow='none';}
+  });
+
   wordTimer=setInterval(()=>{
     if(!jPlay)return;
-    words.forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word'+(i<currentWordIdx?' done':'');});
-    const cur=document.getElementById('jw'+currentWordIdx);
-    if(cur)cur.className='j-word active';
+    // Fade out previous word
+    const prev=currentWordIdx===0?words.length-1:currentWordIdx-1;
+    animateWord(document.getElementById('jw'+prev), false);
+    // Glow in current word
+    animateWord(document.getElementById('jw'+currentWordIdx), true);
+    // Vibrate per word for rhythm
+    if(navigator.vibrate) navigator.vibrate(15);
     currentWordIdx=(currentWordIdx+1)%words.length;
   },wordDur);
 }
+
 function stopWordHighlight(){
   clearInterval(wordTimer);
-  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
+  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{
+    const w=document.getElementById('jw'+i);
+    if(w){w.getAnimations().forEach(a=>a.cancel());w.style.opacity='0.32';w.style.transform='scale(1)';w.style.color='rgba(255,255,255,0.50)';w.style.textShadow='none';}
+  });
 }
 function toggleJap(){
   jPlay=!jPlay;
