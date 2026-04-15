@@ -1202,7 +1202,7 @@ function stopWordHighlight(){
 function toggleJap(){
   jPlay=!jPlay;
   const btn=document.getElementById('jplayBtn');
-  document.getElementById('jplayIco').textContent=jPlay?'⏸':'▶';
+  document.getElementById('jplayIco').textContent=jPlay?'⏸':'🙏';
   document.getElementById('jplayTxt').textContent=jPlay?(H?'⏸ रोकें':'⏸ Pause'):(H?'🙏 जाप शुरू करें':'🙏 Start Jap');
   if(btn)btn.classList.toggle('playing',jPlay);
   const jbg=document.getElementById('jImgBg');if(jbg)jbg.classList.toggle('chanting',jPlay);
