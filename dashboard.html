@@ -1279,7 +1279,8 @@ function animateWord(el, state){
     el.style.color='rgba(255,215,0,0.55)';
     el.style.textShadow='0 0 10px rgba(255,215,0,0.20)';
   } else {
-    // idle — clearly readable at 40%
+    // idle — fade back naturally
+    el.style.transition='opacity 0.35s ease-in-out, color 0.35s ease-in-out, transform 0.25s ease-in-out, text-shadow 0.35s ease-in-out';
     el.style.opacity='0.45';
     el.style.transform='scale(1)';
     el.style.color='rgba(255,255,255,0.88)';
@@ -1322,11 +1323,11 @@ function startWordHighlight(){
     const isLast=(i===words.length-1);
     const prev=i===0?words.length-1:i-1;
 
-    // Afterglow on previous word → then idle
+    // Afterglow on previous word → fade back to normal (350ms)
     const prevEl=document.getElementById('jw'+prev);
     if(prevEl){
       animateWord(prevEl,'trail');
-      setTimeout(()=>{ if(prevEl) animateWord(prevEl,'idle'); }, 300);
+      setTimeout(()=>{ if(prevEl) animateWord(prevEl,'idle'); }, 380);
     }
 
     // Activate entire line (all words in same line glow together)
