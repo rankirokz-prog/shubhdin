@@ -350,7 +350,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   align-items:center;gap:10px;
 }
 .j-line{
-  display:flex;gap:8px;align-items:center;justify-content:center;
+  display:flex;gap:4px;align-items:center;justify-content:center;
   flex-wrap:wrap;
 }
 .j-word{
@@ -360,8 +360,8 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   opacity:0.45;
   transform:scale(1);
   text-shadow:none;
-  transition:opacity 0.22s ease-out, color 0.22s ease-out,
-             transform 0.22s ease-out, text-shadow 0.25s ease-out;
+  transition:opacity 0.25s ease-in-out, color 0.25s ease-in-out,
+             transform 0.25s ease-in-out, text-shadow 0.25s ease-in-out;
 }
 .j-word{
   display:inline-block;cursor:default;
@@ -1304,9 +1304,9 @@ function startWordHighlight(){
 
   // Timing: ॐ=420ms, last word=700ms, middle=300ms
   function getDur(i){
-    if(i===0) return 420;
-    if(i===words.length-1) return 800;
-    return 400;
+    if(i===0) return 700;
+    if(i===words.length-1) return 1000;
+    return 700;
   }
 
   // Show ALL words at base 42% opacity
