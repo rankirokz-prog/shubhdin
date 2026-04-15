@@ -1254,7 +1254,7 @@ function startWordHighlight(){
   // Spiritual timing: first/last = longer, middle = flow
   function getDur(i) {
     if (i === 0) return 420;                    // ॐ — hold longer
-    if (i === words.length-1) return 480;       // last word — release
+    if (i === words.length-1) return 820;       // last word — HOLD (350ms extra)
     return 260;                                 // middle — flow
   }
 
@@ -1289,8 +1289,25 @@ function startWordHighlight(){
 
     currentWordIdx = (currentWordIdx + 1) % words.length;
 
-    // Extra hold on last word before cycling back
-    const dur = getDur(idx) + (isLast ? 120 : 0);
+    // On cycle reset (last word just played) — fade all then restart ॐ
+    if (isLast) {
+      setTimeout(() => {
+        if (!jPlay) return;
+        // Fade all words to dim
+        words.forEach((_, i) => {
+          const w = document.getElementById('jw'+i);
+          if (w) { w.style.opacity='0.15'; w.style.transform='scale(0.95)'; w.style.textShadow='none'; w.style.color='rgba(255,255,255,0.30)'; }
+        });
+        // Then ॐ glows back in after 90ms gap
+        setTimeout(() => {
+          if (!jPlay) return;
+          const first = document.getElementById('jw0');
+          if (first) { first.style.opacity='0.65'; first.style.color='rgba(255,215,0,0.60)'; first.style.textShadow='0 0 14px rgba(255,215,0,0.40)'; }
+        }, 90);
+      }, getDur(idx) - 100);
+    }
+
+    const dur = getDur(idx);
     if (jPlay) wordTimer = setTimeout(tick, dur);
   }
 
