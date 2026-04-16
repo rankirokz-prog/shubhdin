@@ -1335,7 +1335,7 @@ function startWordHighlight(){
     words=MANTRA_WORDS[dow2]||['ॐ','नमः'];
   }
 
-  currentWordIdx=0;
+  currentWordIdx = -1; // -1 so first word ALWAYS triggers
   clearTimeout(wordTimer);clearInterval(wordTimer);
 
   // Show ALL words at base opacity
@@ -1343,34 +1343,42 @@ function startWordHighlight(){
 
   if(!jChantAudio||jChantAudio.ended||jChantAudio.paused) return;
 
+  // ── Immediately highlight word 0 — don't wait for timeupdate ──
+  currentWordIdx = 0;
+  const firstEl = document.getElementById('jw0');
+  if(firstEl) animateWord(firstEl, 'active');
+
   // ── AUDIO-SYNCED highlight via ontimeupdate ──
-  const totalWords=words.length;
+  const totalWords = words.length;
+  let lastWordIdx = 0;
 
   function onTimeUpdate(){
     if(!jPlay||!jChantAudio)return;
-    const dur=jChantAudio.duration;
-    if(!dur||isNaN(dur))return;
-    const ct=jChantAudio.currentTime;
-    // Which word are we on? Equal ratio slices
-    const wordIdx=Math.min(Math.floor((ct/dur)*totalWords), totalWords-1);
-    if(wordIdx===currentWordIdx)return; // no change
-    // Fade previous
-    const prevEl=document.getElementById('jw'+currentWordIdx);
+    const dur = jChantAudio.duration;
+    if(!dur || isNaN(dur)) return;
+    const ct = jChantAudio.currentTime;
+    // Which word based on equal ratio slices
+    const wordIdx = Math.min(Math.floor((ct/dur)*totalWords), totalWords-1);
+    if(wordIdx === lastWordIdx) return; // no change — use lastWordIdx not currentWordIdx
+
+    // Trail previous
+    const prevEl = document.getElementById('jw'+lastWordIdx);
     if(prevEl){
       animateWord(prevEl,'trail');
       setTimeout(()=>{if(prevEl)animateWord(prevEl,'idle');},350);
     }
-    currentWordIdx=wordIdx;
+    lastWordIdx = wordIdx;
+    currentWordIdx = wordIdx;
+
     // Activate current
-    const curEl=document.getElementById('jw'+currentWordIdx);
-    const isLast=(wordIdx===totalWords-1);
+    const curEl = document.getElementById('jw'+wordIdx);
+    const isLast = (wordIdx===totalWords-1);
     if(curEl) animateWord(curEl, isLast?'last':'active');
     if(navigator.vibrate) navigator.vibrate(isLast?20:12);
   }
 
   jChantAudio.addEventListener('timeupdate', onTimeUpdate);
-  // Store ref for cleanup
-  jChantAudio._onTimeUpdate=onTimeUpdate;
+  jChantAudio._onTimeUpdate = onTimeUpdate;
 }
 
 function buildMantraForWords(words){
