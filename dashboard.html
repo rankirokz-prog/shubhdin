@@ -1194,9 +1194,13 @@ let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWord
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
 // Exact word start timestamps (seconds) per day
 // Format: [startTime, ...] — word highlights when audio.currentTime >= startTime
+const SYNC_OFFSET = 0.13; // 130ms early — compensates for event lag + CSS transition
+
+// Timestamps shifted 130ms EARLY so visual highlight matches audio
+function shiftTS(ts){ return ts.map(t=>Math.max(0, t-SYNC_OFFSET)); }
+
 const MANTRA_TIMESTAMPS={
-  4: [0.9, 1.6, 2.1, 2.7, 3.7, 4.2, 5.0], // Thu - Rama
-  // Others: null = use equal ratio fallback
+  4: shiftTS([0.9, 1.6, 2.1, 2.7, 3.7, 4.2, 5.0]), // Thu - Rama
   0: null, 1: null, 2: null, 3: null, 5: null, 6: null,
 };
 
@@ -1314,7 +1318,7 @@ function animateWord(el, state){
     el.style.textShadow='0 0 10px rgba(255,215,0,0.20)';
   } else {
     // idle — fade back naturally
-    el.style.transition='opacity 0.35s ease-in-out, color 0.35s ease-in-out, transform 0.25s ease-in-out, text-shadow 0.35s ease-in-out';
+    el.style.transition='opacity 0.20s ease-in-out, color 0.20s ease-in-out, transform 0.15s ease-in-out, text-shadow 0.20s ease-in-out';
     el.style.opacity='0.45';
     el.style.transform='scale(1)';
     el.style.color='rgba(255,255,255,0.88)';
@@ -1402,8 +1406,18 @@ function startWordHighlight(){
     if(navigator.vibrate) navigator.vibrate(isLast?20:12);
   }
 
-  jChantAudio.addEventListener('timeupdate', onTimeUpdate);
+  // Use requestAnimationFrame for smoother polling (60fps vs 4fps)
+  let rafId = null;
+  function rafCheck(){
+    if(!jPlay||!jChantAudio){rafId=null;return;}
+    onTimeUpdate();
+    rafId = requestAnimationFrame(rafCheck);
+  }
+  rafId = requestAnimationFrame(rafCheck);
+  // Store cleanup refs
   jChantAudio._onTimeUpdate = onTimeUpdate;
+  jChantAudio._rafId = rafId;
+  jChantAudio.addEventListener('timeupdate', onTimeUpdate); // keep as backup
 }
 
 function buildMantraForWords(words){
@@ -1426,9 +1440,10 @@ function buildMantraForWords(words){
 function stopWordHighlight(){
   clearTimeout(wordTimer);clearInterval(wordTimer);
   // Remove timeupdate listener
-  if(jChantAudio&&jChantAudio._onTimeUpdate){
-    jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
-    jChantAudio._onTimeUpdate=null;
+  if(jChantAudio){
+    if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
+    if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+    jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
   }
   const words=MANTRA_WORDS[new Date().getDay()]||[];
   words.forEach((_,i)=>{
