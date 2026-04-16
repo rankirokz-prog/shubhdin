@@ -1268,7 +1268,13 @@ function updateJ(){
   if(navigator.vibrate)navigator.vibrate(30);
   if(jCount>=TOTAL){
     clearInterval(jTimer);clearInterval(wordTimer);jPlay=false;
-    if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
+    if(jChantAudio){
+    if(jChantAudio._onTimeUpdate){
+      jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+      jChantAudio._onTimeUpdate=null;
+    }
+    jChantAudio.pause();jChantAudio=null;
+  }
     updateStreak();
     setTimeout(()=>{
       const sk=getStreak();
@@ -1408,17 +1414,54 @@ function toggleJap(){
   if(jPlay){
     const chantKey=CHANT_MAP[dow];
     if(chantKey){
-      jChantAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3');
-      jChantAudio.loop=true;
-      jChantAudio.play().catch(e=>console.log('Chant:',e));
-      // Start highlight sync after audio begins
-      jChantAudio.addEventListener('canplay', ()=>{
-        startWordHighlight();
-      }, {once:true});
-      // Fallback if canplay already fired
-      setTimeout(()=>{ if(jPlay&&jChantAudio&&!jChantAudio._onTimeUpdate) startWordHighlight(); },500);
+      function playOneCycle(){
+        if(!jPlay)return;
+        // Rebuild mantra for Friday name cycling
+        if(new Date().getDay()===5){
+          const nameIdx=jCount%LAKSHMI_NAMES.length;
+          buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः']);
+        }
+        jChantAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3');
+        // NO loop — count on onended
+        jChantAudio.play().catch(e=>console.log('Chant:',e));
+
+        // Sync highlight via ontimeupdate
+        jChantAudio.addEventListener('canplay',()=>{
+          startWordHighlight();
+        },{once:true});
+        // Fallback if canplay already fired
+        setTimeout(()=>{
+          if(jPlay&&jChantAudio&&!jChantAudio._onTimeUpdate) startWordHighlight();
+        },600);
+
+        // ── ONE JAP = ONE AUDIO CYCLE ──
+        jChantAudio.addEventListener('ended',()=>{
+          if(!jPlay)return;
+          // Remove old listener
+          if(jChantAudio._onTimeUpdate){
+            jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+            jChantAudio._onTimeUpdate=null;
+          }
+          // Increment count
+          if(jCount<TOTAL){
+            jCount++;
+            updateJ();
+          }
+          // If not complete, play next cycle
+          if(jPlay&&jCount<TOTAL){
+            playOneCycle();
+          }
+        },{once:true});
+      }
+      playOneCycle();
+    } else {
+      // No audio file yet — fallback timer (8s per jap = typical mantra duration)
+      jTimer=setInterval(()=>{
+        if(!jPlay)return;
+        if(jCount<TOTAL){jCount++;updateJ();}
+        else clearInterval(jTimer);
+      },8000);
     }
-    jTimer=setInterval(()=>{if(jCount<TOTAL){jCount++;updateJ();}else clearInterval(jTimer);},1500);
     // Auto-hide button after 2s — reduce visual noise during chanting
     clearTimeout(window._jBtnHide);
     window._jBtnHide=setTimeout(()=>{
@@ -1426,7 +1469,15 @@ function toggleJap(){
       if(btn&&jPlay){btn.style.transition='opacity 0.4s';btn.style.opacity='0.20';}
     },2000);
   }else{
-    clearInterval(jTimer);stopWordHighlight();if(jChantAudio)jChantAudio.pause();
+    clearInterval(jTimer);
+    stopWordHighlight();
+    if(jChantAudio){
+      if(jChantAudio._onTimeUpdate){
+        jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+        jChantAudio._onTimeUpdate=null;
+      }
+      jChantAudio.pause();
+    }
     clearTimeout(window._jBtnHide);
     const btn=document.getElementById('jplayBtn');
     if(btn){btn.style.opacity='1';}
@@ -1434,7 +1485,13 @@ function toggleJap(){
 }
 function resetJap(){
   jCount=0;jPlay=false;clearInterval(jTimer);stopWordHighlight();
-  if(jChantAudio){jChantAudio.pause();jChantAudio=null;}
+  if(jChantAudio){
+    if(jChantAudio._onTimeUpdate){
+      jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+      jChantAudio._onTimeUpdate=null;
+    }
+    jChantAudio.pause();jChantAudio=null;
+  }
   const btn=document.getElementById('jplayBtn');if(btn)btn.classList.remove('playing');
   document.getElementById('jNum').textContent='0';
   document.getElementById('jplayIco').textContent='';
