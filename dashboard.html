@@ -1194,7 +1194,7 @@ let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWord
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
 // Exact word start timestamps (seconds) per day
 // Format: [startTime, ...] — word highlights when audio.currentTime >= startTime
-const SYNC_OFFSET = 0.13; // 130ms early — compensates for event lag + CSS transition
+const SYNC_OFFSET = 0.22; // 220ms early — compensates for event lag + CSS transition + mobile lag
 
 // Timestamps shifted 130ms EARLY so visual highlight matches audio
 function shiftTS(ts){ return ts.map(t=>Math.max(0, t-SYNC_OFFSET)); }
