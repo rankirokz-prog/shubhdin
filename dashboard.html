@@ -1192,6 +1192,14 @@ function updateStreak(){
 const TOTAL=108,DOTS=27;
 let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWordIdx=0;
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
+// Exact word start timestamps (seconds) per day
+// Format: [startTime, ...] — word highlights when audio.currentTime >= startTime
+const MANTRA_TIMESTAMPS={
+  4: [0.9, 1.6, 2.1, 2.7, 3.7, 4.2, 5.0], // Thu - Rama
+  // Others: null = use equal ratio fallback
+  0: null, 1: null, 2: null, 3: null, 5: null, 6: null,
+};
+
 // Correct mantras per day — split into words for highlight sync
 const MANTRA_WORDS={
   0:['नमः','सूर्याय','शान्ताय','सर्वरोग','निवारिणे','आयुरारोग्य','ऐश्वर्यं'],
@@ -1352,14 +1360,31 @@ function startWordHighlight(){
   const totalWords = words.length;
   let lastWordIdx = 0;
 
+  // Use exact timestamps if available, else equal ratio
+  const timestamps = MANTRA_TIMESTAMPS[dow2];
+
+  function getWordIdx(ct, dur){
+    if(timestamps && timestamps.length === totalWords){
+      // Exact timestamp mode
+      let idx = 0;
+      for(let i=0; i<timestamps.length; i++){
+        if(ct >= timestamps[i]) idx = i;
+        else break;
+      }
+      return idx;
+    } else {
+      // Fallback: equal ratio
+      return Math.min(Math.floor((ct/dur)*totalWords), totalWords-1);
+    }
+  }
+
   function onTimeUpdate(){
     if(!jPlay||!jChantAudio)return;
     const dur = jChantAudio.duration;
     if(!dur || isNaN(dur)) return;
     const ct = jChantAudio.currentTime;
-    // Which word based on equal ratio slices
-    const wordIdx = Math.min(Math.floor((ct/dur)*totalWords), totalWords-1);
-    if(wordIdx === lastWordIdx) return; // no change — use lastWordIdx not currentWordIdx
+    const wordIdx = getWordIdx(ct, dur);
+    if(wordIdx === lastWordIdx) return;
 
     // Trail previous
     const prevEl = document.getElementById('jw'+lastWordIdx);
