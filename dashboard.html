@@ -503,7 +503,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .jdsc-line{font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:3px;}
 .jdsc-app{font-size:9px;color:rgba(212,168,67,0.40);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;}
 .jdsc-btn{
-  background:linear-gradient(135deg,#25D366,#128C7E);
+  background:linear-gradient(135deg,var(--saffron),var(--deep-gold));
   border:none;border-radius:10px;padding:8px 18px;
   color:#fff;font-size:12px;font-weight:600;
   cursor:pointer;font-family:'Poppins',sans-serif;
@@ -949,7 +949,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <canvas id="jdCanvas" style="position:absolute;inset:0;pointer-events:none;opacity:0.7;"></canvas>
 
         <div class="jd-om" id="jdOm" style="opacity:0;">ॐ</div>
-        <div class="jd-title" id="jdTitle">🙏 आज का 108 जप पूर्ण हुआ</div>
+        <div class="jd-title" id="jdTitle">🙏 आज का जप पूर्ण हुआ</div>
         <div class="jd-sub" id="jdSub">मन शांत हो, बुद्धि प्रसन्न हो</div>
         <div class="jd-streak">
           <div class="jd-streak-num" id="jdStreakNum" style="opacity:0;">🔥 1 दिन लगातार</div>
@@ -958,15 +958,14 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
         <!-- WhatsApp share card -->
         <div class="jd-share-card" id="jdShareCard" style="opacity:0;">
-          <div class="jdsc-top" id="jdscTop">आज मैंने 108 बार गणेश मंत्र का जप पूरा किया</div>
-          <div class="jdsc-mantra" id="jdscMantra">ॐ गं गणपतये नमः</div>
-          <div class="jdsc-line">मन शांत हो, बुद्धि प्रसन्न हो 🕉️</div>
+          <div class="jdsc-top" id="jdscTop">🙏 आज मैंने 108 बार राम नाम जप किया</div>
+          <div class="jdsc-mantra" id="jdscMantra">श्री राम जय राम जय जय राम</div>
           <div class="jdsc-app">shubhdin.app</div>
-          <button class="jdsc-btn" onclick="shareJap()">📤 आज का जप अपनों के साथ साझा करें</button>
+          <button class="jdsc-btn" onclick="shareJap()">📤 अपनों के साथ साझा करें</button>
         </div>
 
         <button class="jd-btn" onclick="resetJap()" id="jdBtn">एक और माला करें 🙏</button>
-        <button onclick="go('home')" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:11px;cursor:pointer;font-family:'Poppins',sans-serif;padding:4px;">🏠 होम पर जाएं</button>
+
       </div>
 
     </div>
@@ -1324,7 +1323,7 @@ function updateJ(){
       if(jScr){jScr.style.opacity='1';}
       const sk=getStreak();
       // Update overlay content
-      document.getElementById('jdTitle').textContent=H?'🙏 आज का 108 जप पूर्ण हुआ':'108 Jap Complete! 🙏';
+      document.getElementById('jdTitle').textContent=H?'🙏 आज का जप पूर्ण हुआ':'108 Jap Complete! 🙏';
       document.getElementById('jdSub').textContent=H?'मन शांत हो, बुद्धि प्रसन्न हो':"May your mind be at peace";
       document.getElementById('jdStreakLbl').textContent=H?'आपने अपनी साधना जारी रखी':'Your sadhana continues';
       document.getElementById('jdBtn').textContent=H?'एक और माला करें 🙏':'One More Mala 🙏';
@@ -1334,7 +1333,8 @@ function updateJ(){
       const dtype_hi={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
       const scTop=document.getElementById('jdscTop');
       const scMan=document.getElementById('jdscMantra');
-      if(scTop) scTop.textContent=H?'आज मैंने 108 बार '+dtype_hi[dow]+' का जप पूरा किया':'I completed 108 '+T2.d_en+' chants today';
+      const dtypes={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
+      if(scTop) scTop.textContent=H?'🙏 आज मैंने 108 बार '+dtypes[dow]+' जप किया':'🙏 I chanted 108 times today';
       if(scMan) scMan.textContent=mantras_display[dow]||'ॐ नमः';
       // Show overlay
       document.getElementById('jdone').classList.add('show');
@@ -1656,17 +1656,17 @@ function animateCompletionOverlay(sk){
   if(snEl&&sk>1){
     let c=Math.max(0,sk-1);
     snEl.style.opacity='1';
-    snEl.textContent='🔥 '+c+(H?' दिन लगातार':' day streak');
+    snEl.textContent='🔥 '+c+(H?' दिन की साधना':' day streak');
     const iv=setInterval(()=>{
       c++;
-      snEl.textContent='🔥 '+c+(H?' दिन लगातार':' day streak');
+      snEl.textContent='🔥 '+c+(H?' दिन की साधना':' day streak');
       snEl.style.textShadow='0 0 20px rgba(255,150,0,0.8)';
       setTimeout(()=>snEl.style.textShadow='',200);
       if(c>=sk)clearInterval(iv);
     },400);
   } else if(snEl){
     snEl.style.opacity='1';
-    snEl.textContent='🔥 '+sk+(H?' दिन लगातार':' day streak');
+    snEl.textContent='🔥 '+sk+(H?' दिन की साधना':' day streak');
   }
 }
 
