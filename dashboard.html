@@ -499,16 +499,23 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   text-align:center;width:100%;max-width:280px;
 }
 .jdsc-top{font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:6px;line-height:1.4;}
-.jdsc-mantra{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:var(--gold);margin-bottom:5px;letter-spacing:1px;}
+.jdsc-mantra{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:var(--gold);margin-top:8px;margin-bottom:5px;letter-spacing:1px;}
 .jdsc-line{font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:3px;}
-.jdsc-app{font-size:9px;color:rgba(212,168,67,0.40);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;}
+.jdsc-app{font-size:9px;color:rgba(212,168,67,0.40);letter-spacing:1px;margin-bottom:14px;text-transform:uppercase;}
 .jdsc-btn{
   background:linear-gradient(135deg,rgba(255,107,26,0.75),rgba(184,134,11,0.80));
   border:none;border-radius:10px;padding:7px 16px;
   color:rgba(255,255,255,0.90);font-size:11px;font-weight:600;
   cursor:pointer;font-family:'Poppins',sans-serif;
 }
-.jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:62px;color:var(--gold);animation:omGlow 1.8s ease-in-out infinite;filter:drop-shadow(0 0 28px rgba(212,168,67,0.65)) drop-shadow(0 0 55px rgba(212,168,67,0.25));}
+.jdsc-btn.pulse{
+  animation:sharePulse 1.2s ease-in-out 2;
+}
+@keyframes sharePulse{
+  0%,100%{transform:scale(1);box-shadow:none;}
+  50%{transform:scale(1.04);box-shadow:0 0 16px rgba(255,107,26,0.40),0 0 32px rgba(255,107,26,0.15);}
+}
+.jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:62px;color:var(--gold);animation:omGlow 1.8s ease-in-out infinite;filter:drop-shadow(0 0 28px rgba(212,168,67,0.60)) drop-shadow(0 0 70px rgba(212,168,67,0.22)) drop-shadow(0 0 110px rgba(212,168,67,0.10));}
 .jd-title{font-family:'Tiro Devanagari Hindi',serif;font-size:24px;color:var(--gold);text-shadow:0 0 12px rgba(212,168,67,0.45);}
 .jd-sub{font-size:13px;color:rgba(255,255,255,0.50);text-align:center;padding:0 30px;line-height:1.6;}
 .jd-streak{background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.18);border-radius:14px;padding:10px 24px;margin:4px 0;box-shadow:0 0 12px rgba(212,168,67,0.08);}
@@ -1668,6 +1675,15 @@ function animateCompletionOverlay(sk){
     snEl.style.opacity='1';
     snEl.textContent='🔥 '+sk+(H?' दिन की साधना':' day streak');
   }
+  // Share button gentle pulse after 2.5s — after user absorbs completion
+  setTimeout(()=>{
+    const shareBtn=document.querySelector('.jdsc-btn');
+    if(shareBtn){
+      shareBtn.classList.add('pulse');
+      // Remove after 2 cycles (2×1.2s = 2.4s)
+      setTimeout(()=>shareBtn.classList.remove('pulse'), 2500);
+    }
+  }, 2500);
 }
 
 // ── Golden particles ──
