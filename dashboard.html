@@ -1192,31 +1192,51 @@ function updateStreak(){
 const TOTAL=108,DOTS=27;
 let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWordIdx=0;
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
+// Correct mantras per day — split into words for highlight sync
 const MANTRA_WORDS={
-  0:['ॐ','सूर्याय','नमः'],
-  1:['ॐ','नमः','शिवाय'],
-  2:['ॐ','हं','हनुमते','नमः'],
-  3:['ॐ','गं','गणपतये','नमः'],
-  4:['ॐ','श्री','रामाय','नमः'],
-  5:['ॐ','श्रीं','महालक्ष्म्यै','नमः'],
-  6:['ॐ','शं','शनिचराय','नमः'],
+  0:['नमः','सूर्याय','शान्ताय','सर्वरोग','निवारिणे','आयुरारोग्य','ऐश्वर्यं'],
+  1:['ॐ','त्र्यम्बकं','यजामहे','सुगन्धिं','पुष्टिवर्धनम्','उर्वारुकमिव','बन्धनान्','मृत्योर्मुक्षीय','मामृतात्'],
+  2:['ॐ','नमो','हनुमते','रुद्रावताराय','सर्वशत्रु','संहारकाय','सर्वरोग','हराय','रामदूताय','स्वाहा'],
+  3:['ॐ','श्रीं','ह्रीं','क्लीं','गं','गणपतये','वर','वरद','सर्वजनं','मे','वशमानय','स्वाहा'],
+  4:['श्री','राम','जय','राम','जय','जय','राम'],
+  5:['ॐ','महालक्ष्म्यै','नमः'], // cycles through 108 names — one per jap
+  6:['ॐ','शनैश्चराय','विद्महे','सूर्यपुत्राय','धीमहि','तन्नः','मन्दः','प्रचोदयात्'],
 };
+
+// Friday special: 108 Lakshmi names — one name per jap cycle
+const LAKSHMI_NAMES=[
+  'प्रकृत्यै','विकृत्यै','विद्यायै','सर्वभूतहितप्रदायै','श्रद्धायै',
+  'विभूत्यै','सुरभ्यै','परमात्मिकायै','वाच्यै','पद्मालयायै',
+  'पद्मायै','शुचये','स्वाहायै','स्वधायै','सुधायै',
+  'धन्यायै','हिरण्मय्यै','लक्ष्म्यै','नित्यपुष्टायै','विभावर्यै',
+  'आदित्यै','दित्यै','दीपायै','वसुधायै','वसुधारिण्यै',
+  'कमलायै','कान्तायै','कामाक्ष्यै','अनुग्रहप्रदायै','बुद्ध्यै',
+  'अनघायै','हरिवल्लभायै','अशोकायै','अमृतायै','लोकशोकविनाशिन्यै',
+  'धर्मनिलयायै','करुणायै','लोकमात्रे','पद्मप्रियायै','पद्महस्तायै',
+  'पद्माक्ष्यै','पद्मसुन्दर्यै','पद्मोद्भवायै','पद्ममुख्यै','पद्मनाभप्रियायै',
+  'रमायै','पद्ममालाधरायै','देव्यै','पद्मिन्यै','पद्मगन्धिन्यै',
+  'पुण्यगन्धायै','सुप्रसन्नायै','प्रभायै','चन्द्रवदनायै','चन्द्रायै',
+  'चन्द्रसहोदर्यै','चतुर्भुजायै','इन्दिरायै','इन्दुशीतलायै','आह्लादजनन्यै',
+  'पुष्ट्यै','शिवायै','शिवकर्यै','सत्यायै','विमलायै',
+  'विश्वजनन्यै','तुष्ट्यै','दारिद्र्यनाशिन्यै','शान्तायै','श्रियै',
+  'भास्कर्यै','बिल्वनिलयायै','वरारोहायै','यशस्विन्यै','वसुन्धरायै',
+  'उदाराङ्गायै','हरिण्यै','हेममालिन्यै','धनधान्यकर्यै','सिद्ध्यै',
+  'शुभप्रदायै','वरलक्ष्म्यै','वसुप्रदायै','शुभायै','हिरण्यप्राकारायै',
+  'समुद्रतनयायै','जयायै','मङ्गलायै','विष्णुपत्न्यै','प्रसन्नाक्ष्यै',
+  'नारायणसमाश्रितायै','दारिद्र्यध्वंसिन्यै','सर्वोपद्रववारिण्यै','नवदुर्गायै','महाकाल्यै',
+  'ब्रह्मविष्णुशिवात्मिकायै','त्रिकालज्ञानसम्पन्नायै','भुवनेश्वर्यै','महालक्ष्म्यै','लक्ष्म्यै',
+  'श्रियै','पद्मायै','कमलायै','रमायै','इन्दिरायै',
+  'चन्द्रायै','विश्वायै','महायै','शान्तायै','सुधायै',
+];
 function buildMantra(){
-  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
-  const el=document.getElementById('jMantra');
-  if(!el)return;
-  // Split into 2 visual lines: first 2 words / rest
-  const line1=words.slice(0,2);
-  const line2=words.slice(2);
-  let html='<div class="j-line">';
-  line1.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i}">${w}</span>`;});
-  html+='</div>';
-  if(line2.length){
-    html+='<div class="j-line">';
-    line2.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i+line1.length}">${w}</span>`;});
-    html+='</div>';
+  const dow2=new Date().getDay();
+  let words;
+  if(dow2===5){
+    words=['ॐ', LAKSHMI_NAMES[0], 'नमः'];
+  } else {
+    words=MANTRA_WORDS[dow2]||['ॐ','नमः'];
   }
-  el.innerHTML=html;
+  buildMantraForWords(words);
 }
 function buildMala(){
   const mala=document.getElementById('jMala');
@@ -1299,92 +1319,82 @@ function dotPop(idx) {
 }
 
 function startWordHighlight(){
-  const words=MANTRA_WORDS[dow]||['ॐ','नमः','शिवाय'];
+  const dow2=new Date().getDay();
+  // Friday: use current jap count to pick Lakshmi name
+  let words;
+  if(dow2===5){
+    const nameIdx=jCount%LAKSHMI_NAMES.length;
+    words=['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः'];
+  } else {
+    words=MANTRA_WORDS[dow2]||['ॐ','नमः'];
+  }
+
   currentWordIdx=0;
   clearTimeout(wordTimer);clearInterval(wordTimer);
 
-  // Timing: ॐ=420ms, last word=700ms, middle=300ms
-  function getDur(i){
-    if(i===0) return 700;
-    if(i===words.length-1) return 1000;
-    return 700;
-  }
+  // Show ALL words at base opacity
+  buildMantraForWords(words);
 
-  // Show ALL words at base 42% opacity
-  words.forEach((_,i)=>{
-    const w=document.getElementById('jw'+i);
-    if(w){ w.style.opacity='0.45'; w.style.transform='scale(1)';
-           w.style.color='rgba(255,255,255,0.88)'; w.style.textShadow='none'; }
-  });
+  if(!jChantAudio||jChantAudio.ended||jChantAudio.paused) return;
 
-  function tick(){
-    if(!jPlay)return;
-    const i=currentWordIdx;
-    const isLast=(i===words.length-1);
-    const prev=i===0?words.length-1:i-1;
+  // ── AUDIO-SYNCED highlight via ontimeupdate ──
+  const totalWords=words.length;
 
-    // Afterglow on previous word → fade back to normal (350ms)
-    const prevEl=document.getElementById('jw'+prev);
+  function onTimeUpdate(){
+    if(!jPlay||!jChantAudio)return;
+    const dur=jChantAudio.duration;
+    if(!dur||isNaN(dur))return;
+    const ct=jChantAudio.currentTime;
+    // Which word are we on? Equal ratio slices
+    const wordIdx=Math.min(Math.floor((ct/dur)*totalWords), totalWords-1);
+    if(wordIdx===currentWordIdx)return; // no change
+    // Fade previous
+    const prevEl=document.getElementById('jw'+currentWordIdx);
     if(prevEl){
       animateWord(prevEl,'trail');
-      setTimeout(()=>{ if(prevEl) animateWord(prevEl,'idle'); }, 380);
+      setTimeout(()=>{if(prevEl)animateWord(prevEl,'idle');},350);
     }
-
-    // Activate entire line (all words in same line glow together)
-    const words2=MANTRA_WORDS[dow]||[];
-    // line0 = words 0-1, line1 = words 2+
-    const lineStart=i<=1?0:2;
-    const lineEnd=i<=1?Math.min(1,words2.length-1):words2.length-1;
-    for(let wi=lineStart;wi<=lineEnd;wi++){
-      const wEl=document.getElementById('jw'+wi);
-      if(wEl) animateWord(wEl, isLast?'last':'active');
-    }
+    currentWordIdx=wordIdx;
+    // Activate current
+    const curEl=document.getElementById('jw'+currentWordIdx);
+    const isLast=(wordIdx===totalWords-1);
+    if(curEl) animateWord(curEl, isLast?'last':'active');
     if(navigator.vibrate) navigator.vibrate(isLast?20:12);
-
-    currentWordIdx=(i+1)%words.length;
-
-    if(isLast){
-      // Hold नमः → brief dim → ॐ pops
-      setTimeout(()=>{
-        if(!jPlay)return;
-        // Dim all
-        words.forEach((_,j)=>{
-          const w=document.getElementById('jw'+j);
-          if(w){ w.style.opacity='0.18'; w.style.textShadow='none';
-                 w.style.color='rgba(255,255,255,0.88)'; }
-        });
-        // 200ms breath gap → ॐ pops
-        setTimeout(()=>{
-          if(!jPlay)return;
-          words.forEach((_,j)=>{
-            const w=document.getElementById('jw'+j);
-            if(w) animateWord(w,'idle');
-          });
-          // ॐ special pop
-          const om=document.getElementById('jw0');
-          if(om){
-            om.style.opacity='1'; om.style.transform='scale(1.10)';
-            om.style.color='#FFD700';
-            om.style.textShadow='0 0 10px rgba(255,215,0,1),0 0 25px rgba(255,215,0,0.85),0 0 55px rgba(255,180,0,0.55)';
-            setTimeout(()=>{if(om&&jPlay) animateWord(om,'active');},400);
-          }
-          // Continue
-          wordTimer=setTimeout(tick, getDur(0));
-        },200);
-      },600);
-    } else {
-      wordTimer=setTimeout(tick, getDur(i));
-    }
   }
-  setTimeout(tick,100);
+
+  jChantAudio.addEventListener('timeupdate', onTimeUpdate);
+  // Store ref for cleanup
+  jChantAudio._onTimeUpdate=onTimeUpdate;
+}
+
+function buildMantraForWords(words){
+  const el=document.getElementById('jMantra');
+  if(!el)return;
+  // 2-line split: first 2 / rest
+  const line1=words.slice(0,Math.ceil(words.length/2));
+  const line2=words.slice(Math.ceil(words.length/2));
+  let html='<div class="j-line">';
+  line1.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i}" style="opacity:0.45;">${w}</span>`;});
+  html+='</div>';
+  if(line2.length){
+    html+='<div class="j-line">';
+    line2.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i+line1.length}" style="opacity:0.45;">${w}</span>`;});
+    html+='</div>';
+  }
+  el.innerHTML=html;
 }
 
 function stopWordHighlight(){
   clearTimeout(wordTimer);clearInterval(wordTimer);
-  const words=MANTRA_WORDS[dow]||[];
+  // Remove timeupdate listener
+  if(jChantAudio&&jChantAudio._onTimeUpdate){
+    jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+    jChantAudio._onTimeUpdate=null;
+  }
+  const words=MANTRA_WORDS[new Date().getDay()]||[];
   words.forEach((_,i)=>{
     const w=document.getElementById('jw'+i);
-    if(w){ animateWord(w,'idle'); }
+    if(w) animateWord(w,'idle');
   });
 }
 
@@ -1399,9 +1409,15 @@ function toggleJap(){
     const chantKey=CHANT_MAP[dow];
     if(chantKey){
       jChantAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3');
-      jChantAudio.loop=true;jChantAudio.play().catch(e=>console.log('Chant:',e));
+      jChantAudio.loop=true;
+      jChantAudio.play().catch(e=>console.log('Chant:',e));
+      // Start highlight sync after audio begins
+      jChantAudio.addEventListener('canplay', ()=>{
+        startWordHighlight();
+      }, {once:true});
+      // Fallback if canplay already fired
+      setTimeout(()=>{ if(jPlay&&jChantAudio&&!jChantAudio._onTimeUpdate) startWordHighlight(); },500);
     }
-    startWordHighlight();
     jTimer=setInterval(()=>{if(jCount<TOTAL){jCount++;updateJ();}else clearInterval(jTimer);},1500);
     // Auto-hide button after 2s — reduce visual noise during chanting
     clearTimeout(window._jBtnHide);
