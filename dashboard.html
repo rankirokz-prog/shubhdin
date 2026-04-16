@@ -503,12 +503,12 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .jdsc-line{font-size:10px;color:rgba(255,255,255,0.45);margin-bottom:3px;}
 .jdsc-app{font-size:9px;color:rgba(212,168,67,0.40);letter-spacing:1px;margin-bottom:10px;text-transform:uppercase;}
 .jdsc-btn{
-  background:linear-gradient(135deg,var(--saffron),var(--deep-gold));
-  border:none;border-radius:10px;padding:8px 18px;
-  color:#fff;font-size:12px;font-weight:600;
+  background:linear-gradient(135deg,rgba(255,107,26,0.75),rgba(184,134,11,0.80));
+  border:none;border-radius:10px;padding:7px 16px;
+  color:rgba(255,255,255,0.90);font-size:11px;font-weight:600;
   cursor:pointer;font-family:'Poppins',sans-serif;
 }
-.jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:62px;color:var(--gold);animation:omGlow 1.8s ease-in-out infinite;filter:drop-shadow(0 0 18px rgba(212,168,67,0.7));}
+.jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:62px;color:var(--gold);animation:omGlow 1.8s ease-in-out infinite;filter:drop-shadow(0 0 28px rgba(212,168,67,0.65)) drop-shadow(0 0 55px rgba(212,168,67,0.25));}
 .jd-title{font-family:'Tiro Devanagari Hindi',serif;font-size:24px;color:var(--gold);text-shadow:0 0 12px rgba(212,168,67,0.45);}
 .jd-sub{font-size:13px;color:rgba(255,255,255,0.50);text-align:center;padding:0 30px;line-height:1.6;}
 .jd-streak{background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.18);border-radius:14px;padding:10px 24px;margin:4px 0;box-shadow:0 0 12px rgba(212,168,67,0.08);}
@@ -958,7 +958,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
         <!-- WhatsApp share card -->
         <div class="jd-share-card" id="jdShareCard" style="opacity:0;">
-          <div class="jdsc-top" id="jdscTop">🙏 आज मैंने 108 बार राम नाम जप किया</div>
+          <div class="jdsc-top" id="jdscTop">🙏 आज 108 बार राम नाम जप किया</div>
           <div class="jdsc-mantra" id="jdscMantra">श्री राम जय राम जय जय राम</div>
           <div class="jdsc-app">shubhdin.app</div>
           <button class="jdsc-btn" onclick="shareJap()">📤 अपनों के साथ साझा करें</button>
@@ -1334,7 +1334,7 @@ function updateJ(){
       const scTop=document.getElementById('jdscTop');
       const scMan=document.getElementById('jdscMantra');
       const dtypes={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
-      if(scTop) scTop.textContent=H?'🙏 आज मैंने 108 बार '+dtypes[dow]+' जप किया':'🙏 I chanted 108 times today';
+      if(scTop) scTop.textContent=H?'🙏 आज 108 बार '+dtypes[dow]+' जप किया':'🙏 I chanted 108 times today';
       if(scMan) scMan.textContent=mantras_display[dow]||'ॐ नमः';
       // Show overlay
       document.getElementById('jdone').classList.add('show');
