@@ -1147,17 +1147,16 @@ function personalise(){
   document.getElementById('avoidSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new work';
   // Japa thumbnail
   document.getElementById('jtDeity').textContent=T.ico;
-  document.getElementById('jtTag').textContent=isFriday
+  document.getElementById('jtTag').textContent=new Date().getDay()===5
     ?(H?'🎧 श्रवण जप — लक्ष्मी अष्टोत्तर':'🎧 Shravana Jap — Lakshmi Ashtottara')
     :(H?'🪔 आज की साधना':'🪔 Today\'s Sadhana');
   const jtBg=document.getElementById('jtBg');
   if(jtBg&&T.img){jtBg.style.cssText=`position:absolute;inset:0;background:url('${T.img}') center top/cover;opacity:0.30;`;}
   document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
-  const isFriday=new Date().getDay()===5;
-  document.getElementById('jtBenefit').textContent=isFriday
+  document.getElementById('jtBenefit').textContent=new Date().getDay()===5
     ?(H?'🎧 108 नाम • 4 मिनट':'🎧 108 names • 4 minutes')
     :(H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes');
-  document.getElementById('jtBtn').textContent=isFriday
+  document.getElementById('jtBtn').textContent=new Date().getDay()===5
     ?(H?'108 नामों का जप सुनें':'🎧 Listen 108 Names')
     :(H?'108 बार जाप शुरू करें':'Start 108 times chanting');
   // Streak
@@ -1739,7 +1738,6 @@ function toggleJap(){
         }
       }
 
-      const isFriday = new Date().getDay()===5;
       window._lastLakshmiIdx = -1;
       playOneCycle();
     } else {
