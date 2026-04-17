@@ -1447,7 +1447,7 @@ function updateJ(){
       const scTop=document.getElementById('jdscTop');
       const scMan=document.getElementById('jdscMantra');
       const dtypes={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
-      if(scTop) scTop.textContent=H?'🙏 आज 108 बार '+dtypes[dow]+' जप किया':'🙏 I chanted 108 times today';
+      if(scTop) scTop.textContent=H?(isFriNow?'🙏 आज मैंने लक्ष्मी अष्टोत्तर नामों का जप सुना':'🙏 आज 108 बार '+dtypes[dow]+' जप किया'):'🙏 108 chants completed today';
       if(scMan) scMan.textContent=mantras_display[dow]||'ॐ नमः';
       // Show overlay
       document.getElementById('jdone').classList.add('show');
