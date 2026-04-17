@@ -1547,22 +1547,45 @@ function toggleJap(){
         // ── ONE JAP = ONE AUDIO CYCLE ──
         jChantAudio.addEventListener('ended',()=>{
           if(!jPlay)return;
-          // Remove old listener
-          if(jChantAudio._onTimeUpdate){
-            jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
-            jChantAudio._onTimeUpdate=null;
-          }
-          // Increment count
-          if(jCount<TOTAL){
-            jCount++;
+          if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
+          if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+          jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
+
+          if(isFriday){
+            // Friday: one 4-min audio = all 108 names complete
+            jCount = TOTAL;
             updateJ();
-          }
-          // If not complete, play next cycle
-          if(jPlay&&jCount<TOTAL){
-            playOneCycle();
+          } else {
+            if(jCount<TOTAL){ jCount++; updateJ(); }
+            if(jPlay&&jCount<TOTAL) playOneCycle();
           }
         },{once:true});
+
+        // Friday: update counter + name text as audio progresses
+        if(isFriday){
+          const friUpdate = ()=>{
+            if(!jChantAudio)return;
+            const dur=jChantAudio.duration;
+            if(!dur||isNaN(dur))return;
+            const ct=jChantAudio.currentTime;
+            const nameIdx=Math.min(Math.floor((ct/dur)*108),107);
+            if(nameIdx!==window._lastLakshmiIdx){
+              window._lastLakshmiIdx=nameIdx;
+              const cEl=document.getElementById('jNum');
+              if(cEl){cEl.textContent=nameIdx+1;cEl.classList.remove('pop');void cEl.offsetWidth;cEl.classList.add('pop');setTimeout(()=>cEl.classList.remove('pop'),220);}
+              const pEl=document.getElementById('jCountPill');
+              if(pEl)pEl.textContent=(nameIdx+1)+'/108';
+              buildMantraForWords(['ॐ',LAKSHMI_NAMES[nameIdx],'नमः']);
+              if(navigator.vibrate)navigator.vibrate(12);
+            }
+          };
+          jChantAudio.addEventListener('timeupdate', friUpdate);
+          jChantAudio._onTimeUpdate = friUpdate;
+        }
       }
+
+      const isFriday = new Date().getDay()===5;
+      window._lastLakshmiIdx = -1;
       playOneCycle();
     } else {
       // No audio file yet — fallback timer (8s per jap = typical mantra duration)
