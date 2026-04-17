@@ -1038,7 +1038,7 @@ const D={
     s:['आज बुधवार है — गणेश जी का दिन।','हर शुभ काम से पहले उनका नाम।','गणेश जी बुद्धि के देवता हैं।','बुधवार को हरा रंग शुभ होता है।','गणेश जी विघ्नहर्ता हैं।','आज मन में मीठे विचार रखें।','बुधवार को जाप से मस्तिष्क तेज होता है।']},
   4:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/rama.jpg',bg:'bg-thu',d_hi:'राम जी',d_en:'Ram Ji',day_hi:'गुरुवार • ज्ञान',day_en:'Thursday • Knowledge',ico:'🏹',chant:'ॐ श्री रामाय नमः',hook_hi:'आज राम जी का दिन है — 108 बार नाम जप करें, मन को शांति और जीवन में सही मार्ग मिलेगा',hook_en:'Chant for Vishnu Ji — peace & prosperity',good:'8:00–9:30',avoid:'1:30–3:00',
     s:['आज गुरुवार है — विष्णु जी का दिन।','ज्ञान की प्रार्थना करें।','गुरुवार को पीला रंग शुभ होता है।','आज गुरु का आशीर्वाद लें।','विष्णु जी कहते हैं — सत्य बोलो।','गुरुवार को केले का प्रसाद चढ़ाएं।','आज का शुभ समय आठ से साढ़े नौ तक है।']},
-  5:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/lakshmi.jpg',bg:'bg-fri',d_hi:'लक्ष्मी जी',d_en:'Lakshmi Ji',day_hi:'शुक्रवार • धन',day_en:'Friday • Wealth',ico:'🌸',chant:'ॐ श्रीं महालक्ष्म्यै नमः',hook_hi:'आज लक्ष्मी जी का दिन है — 108 बार जाप करें, धन और सुख में वृद्धि होगी',hook_en:'Chant for Lakshmi Ji — wealth & happiness',good:'6:00–7:30',avoid:'10:30–12:00',
+  5:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/lakshmi.jpg',bg:'bg-fri',d_hi:'लक्ष्मी जी',d_en:'Lakshmi Ji',day_hi:'शुक्रवार • धन',day_en:'Friday • Wealth',ico:'🌸',chant:'ॐ श्रीं महालक्ष्म्यै नमः',hook_hi:'आज लक्ष्मी जी का दिन — जप सुनें, धन और सुख में वृद्धि हो',hook_en:'Chant for Lakshmi Ji — wealth & happiness',good:'6:00–7:30',avoid:'10:30–12:00',
     s:['आज शुक्रवार है — लक्ष्मी जी का दिन। घर को साफ रखें, वो आती हैं।','लक्ष्मी जी को सफाई और शांति पसंद है।','शुक्रवार को गुलाबी रंग शुभ होता है।','आज लक्ष्मी जी का जाप करें।','लक्ष्मी जी कमल पर बैठती हैं।','शुक्रवार को घर में दीया जलाएं।','आज का शुभ समय सुबह छह से साढ़े सात तक है।']},
   6:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/shani.jpg',bg:'bg-sat',d_hi:'शनि देव',d_en:'Shani Dev',day_hi:'शनिवार • कर्म',day_en:'Saturday • Karma',ico:'⚫',chant:'ॐ शं शनिचराय नमः',hook_hi:'आज शनि देव का दिन है — 108 बार जाप करें, कष्ट और बाधाओं से राहत मिलेगी',hook_en:'Chant for Shani Dev — karma will be purified',good:'8:30–10:00',avoid:'9:00–10:30',
     s:['आज शनिवार है — शनि देव का दिन।','ईमानदारी से काम करें, वो देख रहे हैं।','शनिवार को काले तिल का दान करें।','शनि देव न्यायप्रिय हैं।','आज सच्चाई से जियो।','तेल और काली चीजें दान करें।','हनुमान जी शनि से रक्षा करते हैं।']},
@@ -1147,12 +1147,19 @@ function personalise(){
   document.getElementById('avoidSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new work';
   // Japa thumbnail
   document.getElementById('jtDeity').textContent=T.ico;
-  document.getElementById('jtTag').textContent=H?'🪔 आज की साधना':'🪔 Today\'s Sadhana';
+  document.getElementById('jtTag').textContent=isFriday
+    ?(H?'🎧 श्रवण जप — लक्ष्मी अष्टोत्तर':'🎧 Shravana Jap — Lakshmi Ashtottara')
+    :(H?'🪔 आज की साधना':'🪔 Today\'s Sadhana');
   const jtBg=document.getElementById('jtBg');
   if(jtBg&&T.img){jtBg.style.cssText=`position:absolute;inset:0;background:url('${T.img}') center top/cover;opacity:0.30;`;}
   document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
-  document.getElementById('jtBenefit').textContent=H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes';
-  document.getElementById('jtBtn').textContent=H?'108 बार जाप शुरू करें':'Start 108 times chanting';
+  const isFriday=new Date().getDay()===5;
+  document.getElementById('jtBenefit').textContent=isFriday
+    ?(H?'🎧 108 नाम • 4 मिनट':'🎧 108 names • 4 minutes')
+    :(H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes');
+  document.getElementById('jtBtn').textContent=isFriday
+    ?(H?'108 नामों का जप सुनें':'🎧 Listen 108 Names')
+    :(H?'108 बार जाप शुरू करें':'Start 108 times chanting');
   // Streak
   const sk=getStreak();
   document.getElementById('skNum').textContent=H?'आज का लक्ष्य:':'Today\'s goal:';
@@ -1429,7 +1436,8 @@ function updateJ(){
       if(jScr){jScr.style.opacity='1';}
       const sk=getStreak();
       // Update overlay content
-      document.getElementById('jdTitle').textContent=H?'🙏 आज का जप पूर्ण हुआ':'108 Jap Complete! 🙏';
+      const isFriNow=new Date().getDay()===5;
+      document.getElementById('jdTitle').textContent=H?(isFriNow?'🙏 आज लक्ष्मी अष्टोत्तर जप पूर्ण हुआ':'🙏 आज का जप पूर्ण हुआ'):'108 Jap Complete! 🙏';
       document.getElementById('jdSub').textContent=H?'मन शांत हो, बुद्धि प्रसन्न हो':"May your mind be at peace";
       document.getElementById('jdStreakLbl').textContent=H?'आपने अपनी साधना जारी रखी':'Your sadhana continues';
       document.getElementById('jdBtn').textContent=H?'एक और माला करें 🙏':'One More Mala 🙏';
@@ -1833,17 +1841,17 @@ function animateCompletionOverlay(sk){
   if(snEl&&sk>1){
     let c=Math.max(0,sk-1);
     snEl.style.opacity='1';
-    snEl.textContent='🔥 '+c+(H?' दिन की साधना':' day streak');
+    snEl.textContent='🔥 '+c+(H?' दिन लगातार साधना':' day streak');
     const iv=setInterval(()=>{
       c++;
-      snEl.textContent='🔥 '+c+(H?' दिन की साधना':' day streak');
+      snEl.textContent='🔥 '+c+(H?' दिन लगातार साधना':' day streak');
       snEl.style.textShadow='0 0 20px rgba(255,150,0,0.8)';
       setTimeout(()=>snEl.style.textShadow='',200);
       if(c>=sk)clearInterval(iv);
     },400);
   } else if(snEl){
     snEl.style.opacity='1';
-    snEl.textContent='🔥 '+sk+(H?' दिन की साधना':' day streak');
+    snEl.textContent='🔥 '+sk+(H?' दिन लगातार साधना':' day streak');
   }
   // Share button gentle pulse after 2.5s — after user absorbs completion
   setTimeout(()=>{
