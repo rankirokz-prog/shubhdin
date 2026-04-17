@@ -915,6 +915,9 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       </div>
 
       <!-- Center: mantra + counter -->
+      <!-- Friday श्रवण जप label -->
+      <div id="jShravan" style="display:none;font-size:11px;color:rgba(212,168,67,0.55);letter-spacing:1px;margin-top:-8px;margin-bottom:4px;text-align:center;">🎧 श्रवण जप</div>
+
       <div class="j-center" onclick="(()=>{const b=document.getElementById('jplayBtn');if(b){b.style.opacity='1';clearTimeout(window._jBtnHide);if(jPlay){window._jBtnHide=setTimeout(()=>{if(b&&jPlay)b.style.opacity='0.20';},2000);}})();">
 
         <!-- Focus line -->
@@ -1371,6 +1374,13 @@ function buildMantra(){
 function buildMala(){
   const mala=document.getElementById('jMala');
   if(!mala)return;
+  if(new Date().getDay()===5){
+    mala.style.display='none'; // Friday: no dots — श्रवण जप
+    const shEl=document.getElementById('jShravan');if(shEl)shEl.style.display='block';
+    return;
+  }
+  mala.style.display='flex';
+  const shEl2=document.getElementById('jShravan');if(shEl2)shEl2.style.display='none';
   mala.innerHTML='';
   for(let i=0;i<DOTS;i++){const d=document.createElement('div');d.className='jmd';d.id='jmd'+i;mala.appendChild(d);}
 }
@@ -1700,7 +1710,7 @@ function toggleJap(){
               const cEl = document.getElementById('jNum');
               if(cEl){ cEl.textContent=nameIdx+1; cEl.classList.remove('pop'); void cEl.offsetWidth; cEl.classList.add('pop'); setTimeout(()=>cEl.classList.remove('pop'),220); }
               const pEl = document.getElementById('jCountPill');
-              if(pEl) pEl.textContent = (nameIdx+1)+'/108';
+              if(pEl) pEl.textContent = H ? 'नाम '+(nameIdx+1)+' / 108' : 'Name '+(nameIdx+1)+' / 108';
               if(navigator.vibrate) navigator.vibrate(10);
             }
 
