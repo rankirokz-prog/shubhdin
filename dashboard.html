@@ -1654,24 +1654,35 @@ function toggleJap(){
         if(isFriday){
           // Full ॐ → body → नमः animation per name slot
           // LAKSHMI_TS[i] = when body starts (after ॐ ends)
-          const OM_DUR   = 0.85;  // estimated ॐ duration
-          const BODY_DUR = 1.20;  // estimated body duration
-          let lastFriWord = -1;   // 0=ॐ, 1=body, 2=नमः, tracks per-word changes
+          // Timing is proportional to slot duration — so नमः always fits
+          let lastFriWord = -1;
+
+          function getSlotDur(i){
+            if(i>=LAKSHMI_TS.length-1) return 3.0;
+            return LAKSHMI_TS[i+1] - LAKSHMI_TS[i];
+          }
 
           const friUpdate = ()=>{
             if(!jChantAudio) return;
             const ct = jChantAudio.currentTime;
 
             // Find current name index
+            // ॐ starts 30% of slot BEFORE the body timestamp
             let nameIdx = 0;
             for(let i=0; i<LAKSHMI_TS.length; i++){
-              if(ct >= LAKSHMI_TS[i] - OM_DUR) nameIdx = i;
+              const omStart = LAKSHMI_TS[i] - getSlotDur(i)*0.30;
+              if(ct >= omStart) nameIdx = i;
               else break;
             }
 
-            // Determine which word within this name slot
+            // Proportional timing within this slot
+            const slot     = getSlotDur(nameIdx);
+            const omDur    = slot * 0.30;  // 30% of slot
+            const bodyDur  = slot * 0.42;  // 42% of slot
+            // नमः gets remaining 28% — always has room!
+
             const bodyStart  = LAKSHMI_TS[nameIdx];
-            const namahStart = bodyStart + BODY_DUR;
+            const namahStart = bodyStart + bodyDur;
             let wordSlot; // 0=ॐ, 1=body, 2=नमः
             if(ct < bodyStart)        wordSlot = 0; // ॐ
             else if(ct < namahStart)  wordSlot = 1; // body
