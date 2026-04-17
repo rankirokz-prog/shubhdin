@@ -964,7 +964,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         </div>
 
         <!-- WhatsApp share card -->
-        <div class="jd-share-card" id="jdShareCard" style="opacity:0;">
+        <div class="jd-share-card" id="jdShareCard">
           <div class="jdsc-top" id="jdscTop">🙏 आज 108 बार राम नाम जप किया</div>
           <div class="jdsc-mantra" id="jdscMantra">श्री राम जय राम जय जय राम</div>
           <div class="jdsc-app">shubhdin.app</div>
@@ -1651,7 +1651,7 @@ function animateCompletionOverlay(sk){
     },50);
   }
   // Text content fades in after 200ms delay
-  ['jdTitle','jdSub','jd-share-card','jdShareCard','jdBtn'].forEach((id,i)=>{
+  ['jdTitle','jdSub','jdShareCard','jdBtn'].forEach((id,i)=>{
     const el=document.getElementById(id)||document.querySelector('.'+id);
     if(!el)return;
     el.style.opacity='0';
