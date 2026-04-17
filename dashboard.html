@@ -1521,7 +1521,7 @@ function startWordHighlight(){
   // Show ALL words at base opacity
   buildMantraForWords(words);
 
-  if(!jChantAudio||jChantAudio.ended||jChantAudio.paused) return;
+  if(!jChantAudio||jChantAudio.ended) return;
 
   // ── Immediately highlight word 0 — don't wait for timeupdate ──
   currentWordIdx = 0;
@@ -1630,6 +1630,7 @@ function toggleJap(){
   if(jPlay){
     const chantKey=CHANT_MAP[dow];
     if(chantKey){
+      const isFriday = new Date().getDay()===5;
       function playOneCycle(){
         if(!jPlay)return;
         // Rebuild mantra for Friday name cycling
