@@ -497,6 +497,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   border:1px solid rgba(212,168,67,0.25);
   border-radius:16px;padding:12px 16px;
   text-align:center;width:100%;max-width:280px;
+  overflow:visible;
 }
 .jdsc-top{font-size:11px;color:rgba(255,255,255,0.65);margin-bottom:6px;line-height:1.4;}
 .jdsc-mantra{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:var(--gold);margin-top:8px;margin-bottom:5px;letter-spacing:1px;}
@@ -509,11 +510,11 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   cursor:pointer;font-family:'Poppins',sans-serif;
 }
 .jdsc-btn.pulse{
-  animation:sharePulse 1.2s ease-in-out 2;
+  animation:sharePulse 1.3s ease-in-out 2;
 }
 @keyframes sharePulse{
-  0%,100%{transform:scale(1);box-shadow:none;}
-  50%{transform:scale(1.04);box-shadow:0 0 16px rgba(255,107,26,0.40),0 0 32px rgba(255,107,26,0.15);}
+  0%,100%{opacity:0.85;box-shadow:none;}
+  50%{opacity:1;box-shadow:0 0 20px rgba(255,150,26,0.65),0 0 40px rgba(255,150,26,0.30);border-color:rgba(255,150,26,0.5);}
 }
 .jd-om{font-family:'Tiro Devanagari Hindi',serif;font-size:62px;color:var(--gold);animation:omGlow 1.8s ease-in-out infinite;filter:drop-shadow(0 0 28px rgba(212,168,67,0.60)) drop-shadow(0 0 70px rgba(212,168,67,0.22)) drop-shadow(0 0 110px rgba(212,168,67,0.10));}
 .jd-title{font-family:'Tiro Devanagari Hindi',serif;font-size:24px;color:var(--gold);text-shadow:0 0 12px rgba(212,168,67,0.45);}
@@ -1147,16 +1148,16 @@ function personalise(){
   document.getElementById('avoidSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new work';
   // Japa thumbnail
   document.getElementById('jtDeity').textContent=T.ico;
-  document.getElementById('jtTag').textContent=new Date().getDay()===5
+  document.getElementById('jtTag').textContent=isShravan()
     ?(H?'🎧 श्रवण जप — लक्ष्मी अष्टोत्तर':'🎧 Shravana Jap — Lakshmi Ashtottara')
     :(H?'🪔 आज की साधना':'🪔 Today\'s Sadhana');
   const jtBg=document.getElementById('jtBg');
   if(jtBg&&T.img){jtBg.style.cssText=`position:absolute;inset:0;background:url('${T.img}') center top/cover;opacity:0.30;`;}
   document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
-  document.getElementById('jtBenefit').textContent=new Date().getDay()===5
+  document.getElementById('jtBenefit').textContent=isShravan()
     ?(H?'🎧 108 नाम • 4 मिनट':'🎧 108 names • 4 minutes')
     :(H?'👉 108 बार • 11 मिनट':'👉 108 times • 11 minutes');
-  document.getElementById('jtBtn').textContent=new Date().getDay()===5
+  document.getElementById('jtBtn').textContent=isShravan()
     ?(H?'108 नामों का जप सुनें':'🎧 Listen 108 Names')
     :(H?'108 बार जाप शुरू करें':'Start 108 times chanting');
   // Streak
@@ -1226,10 +1227,29 @@ function updateStreak(){
   localStorage.setItem('shubhdin_streak',JSON.stringify(d));
 }
 
+// ── DAY MODE HELPERS ──
+function isShravan(d){ const dm=DAY_MODE[d!=null?d:new Date().getDay()]; return dm&&dm.mode==='shravan'; }
+function getNames(d){ const dm=DAY_MODE[d!=null?d:new Date().getDay()]; return dm&&dm.names?window[dm.names]:null; }
+function getTS(d){ const dm=DAY_MODE[d!=null?d:new Date().getDay()]; return dm&&dm.ts?window[dm.ts]:null; }
+
 // ── JAPA ──
 const TOTAL=108,DOTS=27;
 let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWordIdx=0;
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
+
+// ── DAY MODE CONFIG ──
+// Change these to swap primary/secondary anytime without touching other code
+// mode: 'jap' = tap-to-count | 'shravan' = audio listen (like Lakshmi 108 names)
+const DAY_MODE={
+  0:{mode:'jap',     names:null,           ts:null},           // Sun - Surya
+  1:{mode:'jap',     names:null,           ts:null},           // Mon - Shiva
+  2:{mode:'jap',     names:null,           ts:null},           // Tue - Hanuman
+  3:{mode:'jap',     names:null,           ts:null},           // Wed - Ganesh
+  4:{mode:'jap',     names:null,           ts:null},           // Thu - Rama
+  5:{mode:'shravan', names:'LAKSHMI_NAMES',ts:'LAKSHMI_TS'},  // Fri - Lakshmi Ashtottara
+  6:{mode:'jap',     names:null,           ts:null},           // Sat - Shani
+};
+// To swap Friday in future: just change DAY_MODE[5].mode to 'jap' or add new day
 // Exact word start timestamps (seconds) per day
 // Format: [startTime, ...] — word highlights when audio.currentTime >= startTime
 const SYNC_OFFSET = 0.22; // 220ms early — compensates for event lag + CSS transition + mobile lag
@@ -1370,8 +1390,9 @@ const LAKSHMI_TS=[1.5,4.5,7.0,9.4,13.1,15.4,17.7,20.1,22.6,24.9,27.4,29.6,31.6,3
 function buildMantra(){
   const dow2=new Date().getDay();
   let words;
-  if(dow2===5){
-    words=['ॐ', LAKSHMI_NAMES[0], 'नमः'];
+  const _sn=getNames(dow2);
+  if(isShravan(dow2)&&_sn){
+    words=['ॐ', _sn[0], 'नमः'];
   } else {
     words=MANTRA_WORDS[dow2]||['ॐ','नमः'];
   }
@@ -1380,7 +1401,7 @@ function buildMantra(){
 function buildMala(){
   const mala=document.getElementById('jMala');
   if(!mala)return;
-  if(new Date().getDay()===5){
+  if(isShravan()){
     mala.style.display='none'; // Friday: no dots — श्रवण जप
     const shEl=document.getElementById('jShravan');if(shEl)shEl.style.display='block';
     return;
@@ -1435,7 +1456,7 @@ function updateJ(){
       if(jScr){jScr.style.opacity='1';}
       const sk=getStreak();
       // Update overlay content
-      const isFriNow=new Date().getDay()===5;
+      const isFriNow=isShravan();
       document.getElementById('jdTitle').textContent=H?(isFriNow?'🙏 आज लक्ष्मी अष्टोत्तर जप पूर्ण हुआ':'🙏 आज का जप पूर्ण हुआ'):'108 Jap Complete! 🙏';
       document.getElementById('jdSub').textContent=H?'मन शांत हो, बुद्धि प्रसन्न हो':"May your mind be at peace";
       document.getElementById('jdStreakLbl').textContent=H?'आपने अपनी साधना जारी रखी':'Your sadhana continues';
@@ -1508,9 +1529,10 @@ function startWordHighlight(){
   const dow2=new Date().getDay();
   // Friday: use current jap count to pick Lakshmi name
   let words;
-  if(dow2===5){
-    const nameIdx=jCount%LAKSHMI_NAMES.length;
-    words=['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः'];
+  const _names=getNames(dow2);
+  if(isShravan(dow2)&&_names){
+    const nameIdx=jCount%_names.length;
+    words=['ॐ', _names[nameIdx], 'नमः'];
   } else {
     words=MANTRA_WORDS[dow2]||['ॐ','नमः'];
   }
@@ -1630,11 +1652,11 @@ function toggleJap(){
   if(jPlay){
     const chantKey=CHANT_MAP[dow];
     if(chantKey){
-      const isFriday = new Date().getDay()===5;
+      const isFriday = isShravan();
       function playOneCycle(){
         if(!jPlay)return;
         // Rebuild mantra for Friday name cycling
-        if(new Date().getDay()===5){
+        if(isShravan()){
           const nameIdx=jCount%LAKSHMI_NAMES.length;
           buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः']);
         }
@@ -1855,10 +1877,12 @@ function animateCompletionOverlay(sk){
   // Share button gentle pulse after 2.5s — after user absorbs completion
   setTimeout(()=>{
     const shareBtn=document.querySelector('.jdsc-btn');
+    console.log('Pulse firing, shareBtn:', shareBtn);
     if(shareBtn){
+      shareBtn.classList.remove('pulse');
+      void shareBtn.offsetWidth; // force reflow
       shareBtn.classList.add('pulse');
-      // Remove after 2 cycles (2×1.2s = 2.4s)
-      setTimeout(()=>shareBtn.classList.remove('pulse'), 2500);
+      setTimeout(()=>shareBtn.classList.remove('pulse'), 2800);
     }
   }, 2500);
 }
