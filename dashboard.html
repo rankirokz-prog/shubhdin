@@ -1652,33 +1652,58 @@ function toggleJap(){
 
         // Friday: update counter + name text as audio progresses
         if(isFriday){
-          // Exact timestamp-based sync for Lakshmi 108 names
-          const SYNC_OFF = 0.18; // 180ms pre-trigger
+          // Full ॐ → body → नमः animation per name slot
+          // LAKSHMI_TS[i] = when body starts (after ॐ ends)
+          const OM_DUR   = 0.85;  // estimated ॐ duration
+          const BODY_DUR = 1.20;  // estimated body duration
+          let lastFriWord = -1;   // 0=ॐ, 1=body, 2=नमः, tracks per-word changes
+
           const friUpdate = ()=>{
-            if(!jChantAudio)return;
-            const ct=jChantAudio.currentTime + SYNC_OFF;
-            // Find which name we're on using exact timestamps
-            let nameIdx=0;
-            for(let i=0;i<LAKSHMI_TS.length;i++){
-              if(ct>=LAKSHMI_TS[i]) nameIdx=i;
+            if(!jChantAudio) return;
+            const ct = jChantAudio.currentTime;
+
+            // Find current name index
+            let nameIdx = 0;
+            for(let i=0; i<LAKSHMI_TS.length; i++){
+              if(ct >= LAKSHMI_TS[i] - OM_DUR) nameIdx = i;
               else break;
             }
-            if(nameIdx===window._lastLakshmiIdx)return;
-            window._lastLakshmiIdx=nameIdx;
-            // Update counter
-            const cEl=document.getElementById('jNum');
-            if(cEl){cEl.textContent=nameIdx+1;cEl.classList.remove('pop');void cEl.offsetWidth;cEl.classList.add('pop');setTimeout(()=>cEl.classList.remove('pop'),220);}
-            const pEl=document.getElementById('jCountPill');
-            if(pEl)pEl.textContent=(nameIdx+1)+'/108';
-            // Update mantra display: ॐ → body → नमः animation
-            // Show ॐ first (already shown), then body word highlighted
-            buildMantraForWords(['ॐ',LAKSHMI_NAMES[nameIdx],'नमः']);
-            // Immediately highlight body word (index 1)
-            setTimeout(()=>{
-              const w=document.getElementById('jw1');
-              if(w) animateWord(w,'active');
-            },10);
-            if(navigator.vibrate)navigator.vibrate(12);
+
+            // Determine which word within this name slot
+            const bodyStart  = LAKSHMI_TS[nameIdx];
+            const namahStart = bodyStart + BODY_DUR;
+            let wordSlot; // 0=ॐ, 1=body, 2=नमः
+            if(ct < bodyStart)        wordSlot = 0; // ॐ
+            else if(ct < namahStart)  wordSlot = 1; // body
+            else                      wordSlot = 2; // नमः
+
+            // Encode state as combined key
+            const stateKey = nameIdx * 10 + wordSlot;
+            if(stateKey === lastFriWord) return;
+            lastFriWord = stateKey;
+
+            // Update mantra text when name changes
+            if(wordSlot === 0){
+              buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः']);
+              // Update counter
+              const cEl = document.getElementById('jNum');
+              if(cEl){ cEl.textContent=nameIdx+1; cEl.classList.remove('pop'); void cEl.offsetWidth; cEl.classList.add('pop'); setTimeout(()=>cEl.classList.remove('pop'),220); }
+              const pEl = document.getElementById('jCountPill');
+              if(pEl) pEl.textContent = (nameIdx+1)+'/108';
+              if(navigator.vibrate) navigator.vibrate(10);
+            }
+
+            // Highlight correct word — jw0=ॐ, jw1=body, jw2=नमः
+            // First dim all 3
+            [0,1,2].forEach(i=>{
+              const w=document.getElementById('jw'+i);
+              if(w) animateWord(w, 'idle');
+            });
+            // Then light up current word
+            const activeEl = document.getElementById('jw'+wordSlot);
+            const isNamehLast = (wordSlot===2 && nameIdx===107);
+            if(activeEl) animateWord(activeEl, isNamehLast ? 'last' : (wordSlot===2 ? 'active' : wordSlot===1 ? 'active' : 'active'));
+            if(wordSlot===2 && navigator.vibrate) navigator.vibrate(18);
           };
           jChantAudio.addEventListener('timeupdate', friUpdate);
           jChantAudio._onTimeUpdate = friUpdate;
