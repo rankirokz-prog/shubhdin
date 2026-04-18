@@ -1252,15 +1252,15 @@ const DAY_MODE={
 // To swap Friday in future: just change DAY_MODE[5].mode to 'jap' or add new day
 // Exact word start timestamps (seconds) per day
 // Format: [startTime, ...] — word highlights when audio.currentTime >= startTime
-const SYNC_OFFSET = 0.22; // 220ms early — compensates for event lag + CSS transition + mobile lag
+const SYNC_OFFSET = 0.45; // 450ms early — compensates for mobile event lag + CSS transition + mobile lag
 
 // Timestamps shifted 130ms EARLY so visual highlight matches audio
 function shiftTS(ts){ return ts.map(t=>Math.max(0, t-SYNC_OFFSET)); }
 
 const MANTRA_TIMESTAMPS={
-  4: shiftTS([0.9, 1.6, 2.1, 2.7, 3.7, 4.2, 5.0]), // Thu - Rama
+  4: [0.9, 1.6, 2.1, 2.7, 3.7, 4.2, 5.0], // Thu - Rama
   0: null, 1: null, 2: null, 3: null, 5: null,
-  6: shiftTS([0.0, 3.0, 4.8, 6.2, 8.0, 9.3, 10.5, 11.2]), // Sat - Shani Gayatri
+  6: [0.0, 3.0, 4.8, 6.2, 8.0, 9.3, 10.5, 11.2], // Sat - Shani Gayatri
 };
 
 // Correct mantras per day — split into words for highlight sync
@@ -1560,10 +1560,11 @@ function startWordHighlight(){
 
   function getWordIdx(ct, dur){
     if(timestamps && timestamps.length === totalWords){
-      // Exact timestamp mode
+      // Exact timestamp mode — apply SYNC_OFFSET at runtime for easy tuning
+      const adjusted = ct + SYNC_OFFSET;
       let idx = 0;
       for(let i=0; i<timestamps.length; i++){
-        if(ct >= timestamps[i]) idx = i;
+        if(adjusted >= timestamps[i]) idx = i;
         else break;
       }
       return idx;
