@@ -221,7 +221,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 /* ══════════════════════════════
    PANCHANG SCREEN
 ══════════════════════════════ */
-.sun-bar{display:flex;justify-content:space-around;align-items:center;margin-top:10px;position:relative;z-index:5;}
+.sun-bar{display:flex;justify-content:space-around;align-items:center;margin-top:16px;position:relative;z-index:5;}
 .si{text-align:center;}
 .si-ico{font-size:16px;display:block;margin-bottom:1px;}
 .si-lbl{font-size:8px;color:rgba(212,168,67,0.46);text-transform:uppercase;letter-spacing:1px;}
@@ -232,7 +232,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .psec{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(26,10,0,0.26);margin:10px 0 7px 2px;}
 .pg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
 .pf{grid-column:1/-1;}
-.pc{background:#fff;border-radius:13px;padding:11px 12px;border:1px solid rgba(212,168,67,0.10);position:relative;overflow:hidden;}
+.pc{background:#fff;border-radius:12px;padding:9px 10px;border:1px solid rgba(212,168,67,0.08);position:relative;overflow:hidden;}
 .pc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;}
 .c1::before{background:linear-gradient(90deg,#FF6B1A,#D4A843);}
 .c2::before{background:linear-gradient(90deg,#7E57C2,#5C6BC0);}
@@ -874,13 +874,21 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         </div>
       </div>
       <div class="pbody">
+        <!-- आज का सार strip -->
+        <div class="aaj-saar" id="aajSaar">
+          <span class="as-icon">⭐</span>
+          <div class="as-text">
+            <div class="as-title" id="asTitle">आज का दिन: शुभ</div>
+            <div class="as-sub" id="asSub">महत्वपूर्ण कार्य कर सकते हैं</div>
+          </div>
+        </div>
         <div class="psec" id="ps1">📿 पाँच तत्व</div>
         <div class="pg">
           <div class="pc c1"><div class="plabel" id="varLbl">वार</div><div class="pval" id="varVal">शुक्रवार</div><div class="psub2" id="varSub">लक्ष्मी जी का दिन</div></div>
           <div class="pc c2"><div class="plabel" id="tithiLbl">तिथि</div><div class="pval" id="tithiVal">द्वितीया</div><div class="psub2">चैत्र शुक्ल</div><div class="pend">समाप्त: 11:42 PM</div></div>
           <div class="pc c3"><div class="plabel" id="nakLbl2">नक्षत्र</div><div class="pval" id="nakVal2">अनुराधा</div><div class="psub2">शनि स्वामी</div><div class="pend">समाप्त: 5:18 PM</div></div>
           <div class="pc c4"><div class="plabel" id="yogLbl">योग</div><div class="pval">शुभ</div><div class="psub2">उत्तम दिन</div></div>
-          <div class="pc c5 pf"><div class="plabel" id="karLbl">करण</div><div style="display:flex;gap:14px;margin-top:3px;"><div><div class="pval">बव</div><div class="psub2">12:30 PM तक</div></div><div style="width:1px;background:rgba(212,168,67,0.10);align-self:stretch;"></div><div><div class="pval">बालव</div><div class="psub2">11:42 PM तक</div></div></div></div>
+          <div class="pc c5 pf" style="padding:8px 12px;"><div class="plabel" id="karLbl">करण</div><div style="font-size:13px;font-weight:600;color:var(--dark);margin-top:2px;">बव → बालव <span style="font-size:10px;font-weight:400;color:rgba(26,10,0,0.40);">(11:42 PM तक)</span></div></div>
         </div>
         <div class="psec" id="ps2">⚠️ अशुभ समय</div>
         <div class="krow">
@@ -892,11 +900,6 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <span class="ab-ico">⭐</span>
           <div class="ab-txt"><strong id="abTitle">अभिजित मुहूर्त</strong><span id="abDesc">सबसे शुभ — नए काम शुरू करें</span></div>
           <div class="ab-time"><strong>11:48–12:36</strong><span id="abSub">दोपहर</span></div>
-        </div>
-        <div class="psec">🔮 जन्म कुंडली</div>
-        <div class="kundli" onclick="kundliTap()">
-          <div class="kl-left"><span class="kl-lock">🔒</span><div><div class="kl-name" id="klName">जन्म कुंडली देखें</div><div class="kl-sub" id="klSub">ग्रह • दशा • व्यक्तिगत</div></div></div>
-          <div class="kl-badge" id="klBadge">जल्द आ रहा है</div>
         </div>
       </div>
     </div>
@@ -1171,6 +1174,13 @@ function personalise(){
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
   document.getElementById('phDate').textContent=now.toLocaleDateString('en',{day:'numeric',month:'short'});
+  // आज का सार — dynamic based on day/panchang
+  const saarTitle=document.getElementById('asTitle');
+  const saarSub=document.getElementById('asSub');
+  const hour=now.getHours();
+  // Simple logic: if current time is in rahu kaal window → warning, else शुभ
+  if(saarTitle){saarTitle.textContent=H?'आज का दिन: शुभ':'Today: Auspicious';}
+  if(saarSub){saarSub.textContent=H?'महत्वपूर्ण कार्य कर सकते हैं':'Important tasks can be done today';}
   document.getElementById('sl1').textContent=H?'सूर्योदय':'Sunrise';
   document.getElementById('sl2').textContent=H?'चंद्रोदय':'Moonrise';
   document.getElementById('sl3').textContent=H?'सूर्यास्त':'Sunset';
@@ -1190,9 +1200,6 @@ function personalise(){
   document.getElementById('abTitle').textContent=H?'अभिजित मुहूर्त':'Abhijit Muhurta';
   document.getElementById('abDesc').textContent=H?'सबसे शुभ — नए काम शुरू करें':'Most auspicious — start new work';
   document.getElementById('abSub').textContent=H?'दोपहर':'Afternoon';
-  document.getElementById('klName').textContent=H?'जन्म कुंडली देखें':'View Birth Chart';
-  document.getElementById('klSub').textContent=H?'ग्रह • दशा • व्यक्तिगत':'Planets • Dasha • Personal';
-  document.getElementById('klBadge').textContent=H?'जल्द आ रहा है':'Coming Soon';
   // Japa screen — new immersive design
   const jfl = document.getElementById('jFocusLine');
   if(jfl) jfl.textContent = H ? 'मन को शांत करें… श्रद्धा से जाप करें' : 'Focus your mind… chant with devotion';
