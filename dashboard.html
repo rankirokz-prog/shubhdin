@@ -1174,13 +1174,57 @@ function personalise(){
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
   document.getElementById('phDate').textContent=now.toLocaleDateString('en',{day:'numeric',month:'short'});
-  // आज का सार — dynamic based on day/panchang
+  // आज का सार — yoga + tithi + day based dynamic logic
   const saarTitle=document.getElementById('asTitle');
   const saarSub=document.getElementById('asSub');
-  const hour=now.getHours();
-  // Simple logic: if current time is in rahu kaal window → warning, else शुभ
-  if(saarTitle){saarTitle.textContent=H?'आज का दिन: शुभ':'Today: Auspicious';}
-  if(saarSub){saarSub.textContent=H?'महत्वपूर्ण कार्य कर सकते हैं':'Important tasks can be done today';}
+  const saarEl=document.getElementById('aajSaar');
+  const saarIcon=document.querySelector('.as-icon');
+
+  // Get live yoga value from panchang card (updated by fetchPanchang)
+  const yogaEl=document.querySelector('#yogLbl ~ .pval') || {textContent:''};
+  const yogaVal=(yogaEl.textContent||document.getElementById('tithiVal')?.textContent||'').trim();
+
+  // Day suffix — adds spiritual flavour
+  const daySuffix_hi={
+    0:'सूर्य साधना विशेष लाभकारी होगी',
+    1:'शिव साधना से मन शांत होगा',
+    2:'हनुमान जी की आराधना फलदायी है',
+    3:'गणेश जी का स्मरण करें',
+    4:'राम नाम जप शुभ है',
+    5:'लक्ष्मी साधना लाभकारी होगी',
+    6:'शनि साधना से कष्ट दूर होंगे'
+  };
+  const suffix=daySuffix_hi[dow]||'';
+
+  // Yoga-based rule engine
+  const shubhYogas=['शुभ','सिद्ध','शुभकारक','अमृत','ब्रह्म','इन्द्र','वज्र'];
+  const ashubhYogas=['व्यतीपात','वैधृति','विष्कम्भ','परिघ','शूल','गण्ड','अतिगण्ड'];
+
+  let level='normal'; // shubh / normal / ashubh
+  for(const y of shubhYogas){ if(yogaVal.includes(y)){level='shubh';break;} }
+  for(const y of ashubhYogas){ if(yogaVal.includes(y)){level='ashubh';break;} }
+
+  if(saarTitle && saarSub && saarEl){
+    if(level==='shubh'){
+      saarEl.style.background='linear-gradient(135deg,rgba(74,124,89,0.12),rgba(74,124,89,0.06))';
+      saarEl.style.borderColor='rgba(74,124,89,0.30)';
+      if(saarIcon) saarIcon.textContent='🟢';
+      saarTitle.textContent=H?'आज का दिन: शुभ ✨':'Today: Auspicious ✨';
+      saarSub.textContent=H?'महत्वपूर्ण कार्य कर सकते हैं — '+suffix:'Good day for important tasks';
+    } else if(level==='ashubh'){
+      saarEl.style.background='linear-gradient(135deg,rgba(198,40,40,0.08),rgba(198,40,40,0.04))';
+      saarEl.style.borderColor='rgba(198,40,40,0.25)';
+      if(saarIcon) saarIcon.textContent='🔴';
+      saarTitle.textContent=H?'आज सावधानी रखें ⚠️':'Today: Be Cautious ⚠️';
+      saarSub.textContent=H?'नए कार्य टालें — '+suffix:'Avoid starting new tasks today';
+    } else {
+      saarEl.style.background='linear-gradient(135deg,rgba(212,168,67,0.10),rgba(255,107,26,0.05))';
+      saarEl.style.borderColor='rgba(212,168,67,0.25)';
+      if(saarIcon) saarIcon.textContent='🟡';
+      saarTitle.textContent=H?'आज का दिन: सामान्य':'Today: Normal Day';
+      saarSub.textContent=H?'सोच-समझकर कार्य करें — '+suffix:'Proceed thoughtfully today';
+    }
+  }
   document.getElementById('sl1').textContent=H?'सूर्योदय':'Sunrise';
   document.getElementById('sl2').textContent=H?'चंद्रोदय':'Moonrise';
   document.getElementById('sl3').textContent=H?'सूर्यास्त':'Sunset';
