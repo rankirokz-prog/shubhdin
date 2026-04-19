@@ -573,7 +573,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .prob-tile-ico{font-size:26px;margin-bottom:6px;}
 .prob-tile-name{font-family:'Tiro Devanagari Hindi',serif;font-size:14px;color:var(--dark);font-weight:600;margin-bottom:2px;}
 .prob-tile-sub{font-size:9.5px;color:rgba(26,10,0,0.40);line-height:1.3;}
-.prob-tile-arrow{position:absolute;bottom:10px;right:12px;font-size:13px;color:rgba(26,10,0,0.45);font-weight:600;}
+.prob-tile-arrow{position:absolute;bottom:10px;right:12px;font-size:13px;color:rgba(26,10,0,0.60);font-weight:600;}
 
 /* Problem audio overlay */
 .prob-overlay{
@@ -2120,7 +2120,7 @@ function personaliseMarg(){
   document.getElementById('pocStory').textContent=H?'"जाप में ऐसी शक्ति है जो जीवन बदल सकती है"':'"Chanting has the power to transform life"';
   document.getElementById('probLabel').textContent=H?'अपनी समस्या चुनें 👇':'Choose your concern 👇';
   const tiles={vivah:['विवाह समस्या','Marriage Problem'],dhan:['धन और करियर','Money & Career'],swasthya:['स्वास्थ्य समस्या','Health Problem'],vidya:['पढ़ाई और एकाग्रता','Study & Focus'],ghar:['गृह शांति','Family Peace']};
-  const subs={vivah:['शादी में रुकावट या देरी दूर करें','Remove obstacles in marriage'],dhan:['पैसे और नौकरी में सुधार लाएं','Improve finances & career'],swasthya:['शरीर और मन को स्वस्थ करें','Heal body and mind'],vidya:['ध्यान और याददाश्त बढ़ाएं','Improve focus & memory'],ghar:['घर में सुख-शांति लाएं','Bring peace & harmony home']};
+  const subs={vivah:['शादी में रुकावट दूर करें','Remove marriage obstacles'],dhan:['पैसे और नौकरी में सुधार लाएं','Improve finances & career'],swasthya:['शरीर और मन को स्वस्थ करें','Heal body and mind'],vidya:['ध्यान और याददाश्त बढ़ाएं','Improve focus & memory'],ghar:['घर में शांति और सकारात्मकता लाएं','Bring peace & positivity home']};
   for(const[k,v]of Object.entries(tiles)){
     const el=document.getElementById('pt-'+k+'-name');const es=document.getElementById('pt-'+k+'-sub');
     if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
