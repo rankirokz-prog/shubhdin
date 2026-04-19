@@ -2119,8 +2119,8 @@ function personaliseMarg(){
   document.getElementById('pocSub').textContent=H?'2 मिनट सुनें — मन शांत होगा और विश्वास बढ़ेगा':'Listen for 2 minutes — your mind will calm and your faith will grow';
   document.getElementById('pocStory').textContent=H?'"जाप में ऐसी शक्ति है जो जीवन बदल सकती है"':'"Chanting has the power to transform life"';
   document.getElementById('probLabel').textContent=H?'अपनी समस्या चुनें 👇':'Choose your concern 👇';
-  const tiles={vivah:['विवाह','Marriage'],dhan:['धन • करियर','Money & Career'],swasthya:['स्वास्थ्य','Health'],vidya:['विद्या','Education'],ghar:['गृह शांति','Family Peace']};
-  const subs={vivah:['विवाह मार्गदर्शन','Marriage guidance'],dhan:['धन और करियर','Money & career'],swasthya:['स्वास्थ्य मार्गदर्शन','Health guidance'],vidya:['विद्या मार्गदर्शन','Education guidance'],ghar:['गृह शांति मार्गदर्शन','Family peace & harmony']};
+  const tiles={vivah:['विवाह समस्या','Marriage Problem'],dhan:['धन और करियर','Money & Career'],swasthya:['स्वास्थ्य समस्या','Health Problem'],vidya:['पढ़ाई और एकाग्रता','Study & Focus'],ghar:['गृह शांति','Family Peace']};
+  const subs={vivah:['शादी में रुकावट या देरी दूर करें','Remove obstacles in marriage'],dhan:['पैसे और नौकरी में सुधार लाएं','Improve finances & career'],swasthya:['शरीर और मन को स्वस्थ करें','Heal body and mind'],vidya:['ध्यान और याददाश्त बढ़ाएं','Improve focus & memory'],ghar:['घर में सुख-शांति लाएं','Bring peace & harmony home']};
   for(const[k,v]of Object.entries(tiles)){
     const el=document.getElementById('pt-'+k+'-name');const es=document.getElementById('pt-'+k+'-sub');
     if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
