@@ -1412,63 +1412,56 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
       <!-- Header -->
       <div class="po-hdr">
-        <button class="po-close" onclick="closeProblem()">←</button>
+        <button class="po-back" onclick="closeProblem()">←</button>
         <div class="po-hdr-center">
           <div class="po-hdr-title" id="poTitle">विवाह मार्गदर्शन</div>
-          <div class="po-hdr-sub" id="poDeity">Marriage Guidance</div>
+          <div class="po-hdr-en" id="poDeity">Marriage Guidance</div>
         </div>
-        <span class="po-hdr-ico" id="poIco">🙏</span>
+        <span style="width:36px;"></span>
       </div>
 
       <!-- Scrollable body -->
       <div class="po-body">
 
-        <!-- Emotional top card -->
-        <div class="po-top-card">
-          <div class="po-top-ico" id="poTopIco">💍</div>
-          <div class="po-top-q" id="poTopQ">विवाह में देरी या समस्या?</div>
-          <div class="po-top-sub" id="poTopSub">सही मार्गदर्शन से समाधान संभव है</div>
+        <!-- 1. Understanding -->
+        <div class="po-understand" id="poUnderstand">
+          शादी में देरी कभी-कभी समय, परिस्थितियों या मानसिक तनाव के कारण होती है
         </div>
 
-        <!-- Sub-problem selector -->
-        <div class="po-sel-label" id="poSelLabel">अपनी समस्या चुनें</div>
-        <div class="po-sel-grid" id="poSelGrid">
-          <!-- filled by JS -->
+        <!-- 2. Japam — core -->
+        <div class="po-jap-card">
+          <div class="po-jap-label">🕉️ मंत्र</div>
+          <div class="po-jap-mantra" id="poMantra">ॐ नमो नारायणाय</div>
+          <div class="po-jap-en" id="poMantraEn">Om Namo Narayanaya</div>
+          <div class="po-jap-divider"></div>
+          <div class="po-jap-label">🔁 कैसे करें</div>
+          <ul class="po-jap-steps" id="poSteps">
+            <li>रोज सुबह या शाम शांत मन से जप करें</li>
+            <li>108 बार (1 माला)</li>
+          </ul>
         </div>
 
-        <!-- Solution card — hidden until selection -->
-        <div class="po-solution" id="poSolution" style="display:none;">
-          <div class="po-sol-section">
-            <div class="po-sol-sec-title">🕉️ उपाय</div>
-            <div class="po-sol-sec-text" id="solUpay"></div>
-          </div>
-          <div class="po-sol-divider"></div>
-          <div class="po-sol-section">
-            <div class="po-sol-sec-title">📖 क्यों</div>
-            <div class="po-sol-sec-text" id="solKyun"></div>
-          </div>
-          <div class="po-sol-divider"></div>
-          <div class="po-sol-section">
-            <div class="po-sol-sec-title">🪔 कैसे करें</div>
-            <ul class="po-sol-list" id="solKaise"></ul>
-          </div>
-          <div class="po-sol-divider"></div>
-          <div class="po-sol-section">
-            <div class="po-sol-sec-title">⏱️ अवधि</div>
-            <div class="po-sol-sec-text" id="solDuration"></div>
-          </div>
+        <!-- 3. Outside action -->
+        <div class="po-action-card">
+          <div class="po-action-label">🪔 बाहरी उपाय</div>
+          <ul class="po-action-list" id="poActions">
+            <li>गुरुवार को मंदिर जाएं</li>
+            <li>विष्णु जी को तुलसी अर्पित करें</li>
+          </ul>
         </div>
 
-        <!-- Action button -->
-        <button class="po-action-btn" id="poActionBtn" style="display:none;" onclick="closeProblem()">
-          🙏 आज से शुरू करें
+        <!-- 4. Duration -->
+        <div class="po-duration" id="poDuration">
+          ⏱️ कम से कम <strong>21 दिन</strong> नियमित करें
+        </div>
+
+        <!-- 5. Start button -->
+        <button class="po-start-btn" onclick="closeProblem()">
+          🙏 साधना शुरू करें
         </button>
 
-        <!-- Audio button (existing — don't remove) -->
-        <div class="po-waves" id="poWaves" style="display:none;">
-          <div class="powb"></div><div class="powb"></div><div class="powb"></div>
-          <div class="powb"></div><div class="powb"></div>
-        </div>
+        <!-- Existing audio (hidden) -->
+        <div id="poWaves" style="display:none;"><div class="powb"></div><div class="powb"></div><div class="powb"></div><div class="powb"></div><div class="powb"></div></div>
         <button class="po-btn" id="poBtn" onclick="toggleProblemAudio()" style="display:none;">▶ सुनें</button>
 
       </div>
@@ -2693,205 +2686,78 @@ const PROBLEMS={
     guidance_en:'Worship Vishnu Ji on Thursday. Chant Om Namo Narayanaya together as a family. Light a diya morning and evening at home.'},
 };
 let probAudio=null,probPlaying=false,currentProbKey=null;
-// Sub-problems data per category
-const SUB_PROBLEMS = {
-  vivah: [
-    { ico:'💍', name:'विवाह में देरी',    sub:'शादी में देरी हो रही है',
-      upay:'सोमवार को शिव-पार्वती पूजा करें',
-      kyun:'शिव-पार्वती आदर्श विवाह के प्रतीक हैं — उनकी कृपा से विवाह संपन्न होता है',
-      kaise:['सुबह स्नान करके शिवलिंग पर जल चढ़ाएं','ॐ नमः शिवाय — 108 बार जप करें','पार्वती जी को लाल फूल अर्पित करें'],
-      duration:'16 सोमवार' },
-    { ico:'⚔️', name:'रिश्तों में टकराव', sub:'परिवार में विरोध है',
-      upay:'गुरुवार को विष्णु सहस्रनाम पाठ करें',
-      kyun:'विष्णु जी संबंधों में सामंजस्य लाते हैं',
-      kaise:['घर में शांति की प्रार्थना करें','विष्णु जी को तुलसी दल चढ़ाएं','ॐ नमो नारायणाय — 108 बार'],
-      duration:'21 दिन' },
-    { ico:'🔍', name:'सही साथी नहीं',    sub:'उचित रिश्ता नहीं मिल रहा',
-      upay:'शुक्रवार को लक्ष्मी-नारायण पूजा करें',
-      kyun:'शुक्र ग्रह विवाह का कारक है — लक्ष्मी जी सुयोग्य साथी दिलाती हैं',
-      kaise:['शुक्रवार को व्रत रखें','ॐ श्रीं महालक्ष्म्यै नमः — 108 बार','घी का दीपक जलाएं'],
-      duration:'7 शुक्रवार' },
-    { ico:'🚧', name:'रुकावटें आ रही हैं', sub:'बार-बार बाधा आती है',
-      upay:'मंगलवार को हनुमान जी का जप करें',
-      kyun:'हनुमान जी सभी बाधाएं दूर करते हैं',
-      kaise:['हनुमान चालीसा पाठ करें','ॐ हं हनुमते नमः — 108 बार','सिंदूर और तेल चढ़ाएं'],
-      duration:'11 मंगलवार' },
-  ],
-  dhan: [
-    { ico:'💸', name:'पैसों की तंगी',      sub:'आमदनी कम है',
-      upay:'शुक्रवार को लक्ष्मी पूजा करें',
-      kyun:'लक्ष्मी जी धन और समृद्धि की देवी हैं',
-      kaise:['घर साफ रखें — विशेषतः शुक्रवार','ॐ श्रीं महालक्ष्म्यै नमः — 108 बार','शाम को दीया जलाएं'],
-      duration:'नित्य' },
-    { ico:'💼', name:'नौकरी में समस्या',   sub:'करियर में आगे नहीं बढ़ रहे',
-      upay:'बुधवार को गणेश जी की पूजा करें',
-      kyun:'गणेश जी विघ्नहर्ता हैं — करियर की राहें खोलते हैं',
-      kaise:['ॐ गं गणपतये नमः — 108 बार','हरी घास और मोदक अर्पित करें','गणेश यंत्र स्थापित करें'],
-      duration:'21 दिन' },
-    { ico:'📉', name:'कर्ज की समस्या',     sub:'कर्ज बढ़ता जा रहा है',
-      upay:'शनिवार को शनि देव की पूजा करें',
-      kyun:'शनि कर्म और न्याय के देवता हैं — उनकी कृपा से ऋण मुक्ति होती है',
-      kaise:['शनि देव को तेल चढ़ाएं','ॐ शं शनिश्चराय नमः — 108 बार','काले तिल का दान करें'],
-      duration:'7 शनिवार' },
-    { ico:'🌱', name:'व्यापार में नुकसान', sub:'बिज़नेस नहीं चल रहा',
-      upay:'रविवार को सूर्य देव को जल चढ़ाएं',
-      kyun:'सूर्य देव सफलता और यश के प्रदाता हैं',
-      kaise:['उगते सूरज को जल अर्पित करें','नमः सूर्याय — 108 बार','तांबे के पात्र में जल चढ़ाएं'],
-      duration:'40 दिन' },
-  ],
-  swasthya: [
-    { ico:'🤒', name:'लंबी बीमारी',        sub:'स्वास्थ्य ठीक नहीं हो रहा',
-      upay:'सोमवार को महामृत्युंजय मंत्र जप करें',
-      kyun:'महामृत्युंजय मंत्र रोग-मुक्ति का सबसे शक्तिशाली मंत्र है',
-      kaise:['ॐ त्र्यम्बकं यजामहे — 108 बार','शिवलिंग पर दूध और बेलपत्र चढ़ाएं','नियमित उपवास रखें'],
-      duration:'40 दिन' },
-    { ico:'😰', name:'मानसिक तनाव',        sub:'चिंता और घबराहट रहती है',
-      upay:'रोज़ सुबह गायत्री मंत्र जप करें',
-      kyun:'सूर्य देव मन और बुद्धि को शांत करते हैं',
-      kaise:['सूर्योदय पर जप करें','ओम ध्यान 10 मिनट','प्रकृति में सुबह की सैर'],
-      duration:'नित्य' },
-    { ico:'🌿', name:'ऊर्जा की कमी',       sub:'थकान और कमज़ोरी रहती है',
-      upay:'रविवार को सूर्य नमस्कार और जप करें',
-      kyun:'सूर्य देव प्राण ऊर्जा के स्रोत हैं',
-      kaise:['सूर्योदय में 12 सूर्य नमस्कार','नमः सूर्याय — 108 बार','सात्विक भोजन लें'],
-      duration:'21 दिन' },
-    { ico:'💊', name:'जल्दी स्वस्थ होना', sub:'बीमारी से उबरना है',
-      upay:'मंगलवार को हनुमान जी की आराधना करें',
-      kyun:'हनुमान जी बल और स्वास्थ्य के प्रदाता हैं',
-      kaise:['हनुमान चालीसा पाठ करें','ॐ हं हनुमते नमः — 108 बार','सुंदरकांड का पाठ करें'],
-      duration:'11 दिन' },
-  ],
-  vidya: [
-    { ico:'📚', name:'पढ़ाई में मन नहीं',  sub:'ध्यान नहीं लगता',
-      upay:'बुधवार को सरस्वती जी की पूजा करें',
-      kyun:'सरस्वती जी विद्या और एकाग्रता की देवी हैं',
-      kaise:['सरस्वती वंदना रोज़ सुबह','ॐ ऐं सरस्वत्यै नमः — 108 बार','किताबों का सम्मान करें'],
-      duration:'नित्य' },
-    { ico:'🧠', name:'याददाश्त कमज़ोर',   sub:'पढ़ा याद नहीं रहता',
-      upay:'बुधवार को गणेश जी का जप करें',
-      kyun:'गणेश जी बुद्धि और स्मरण शक्ति के दाता हैं',
-      kaise:['ॐ गं गणपतये नमः — 108 बार','पढ़ाई से पहले 21 बार जप','स्वच्छ और शांत स्थान पर पढ़ें'],
-      duration:'21 दिन' },
-    { ico:'😨', name:'परीक्षा का डर',      sub:'एग्ज़ाम से घबराहट होती है',
-      upay:'गणेश जी को मोदक चढ़ाकर पूजा करें',
-      kyun:'गणेश जी विघ्नहर्ता हैं — परीक्षा में सफलता देते हैं',
-      kaise:['परीक्षा से पहले गणेश पूजा करें','ॐ गं गणपतये नमः — 21 बार','शांत मन से परीक्षा दें'],
-      duration:'परीक्षा तक' },
-    { ico:'🎯', name:'करियर दिशा चाहिए', sub:'क्या करूं समझ नहीं आता',
-      upay:'गुरुवार को विष्णु जी की पूजा करें',
-      kyun:'विष्णु जी ज्ञान और सही मार्गदर्शन देते हैं',
-      kaise:['ॐ नमो नारायणाय — 108 बार','प्रातःकाल ध्यान करें','गुरु का आशीर्वाद लें'],
-      duration:'21 दिन' },
-  ],
-  ghar: [
-    { ico:'😤', name:'परिवार में झगड़े',   sub:'घर में शांति नहीं है',
-      upay:'गुरुवार को विष्णु पूजा और घर में धूप करें',
-      kyun:'विष्णु जी गृह शांति और प्रेम के देवता हैं',
-      kaise:['घर में धूप-अगरबत्ती जलाएं','ॐ नमो नारायणाय — 108 बार','सभी सदस्य मिलकर पूजा करें'],
-      duration:'21 दिन' },
-    { ico:'🏚️', name:'घर में नकारात्मकता', sub:'घर का माहौल अच्छा नहीं',
-      upay:'घर में गंगाजल छिड़कें और हनुमान चालीसा पढ़ें',
-      kyun:'हनुमान जी नकारात्मक शक्तियों से रक्षा करते हैं',
-      kaise:['हर कमरे में गंगाजल छिड़कें','हनुमान चालीसा पाठ करें','मुख्य द्वार पर स्वस्तिक बनाएं'],
-      duration:'11 दिन' },
-    { ico:'💔', name:'रिश्तों में दूरी',   sub:'परिवार के सदस्यों से दूरी',
-      upay:'शुक्रवार को लक्ष्मी-नारायण पूजा करें',
-      kyun:'लक्ष्मी-नारायण प्रेम और एकता के प्रतीक हैं',
-      kaise:['घर में साथ मिलकर पूजा करें','ॐ श्रीं महालक्ष्म्यै नमः — 108 बार','प्रतिदिन एक साथ भोजन करें'],
-      duration:'नित्य' },
-    { ico:'🌙', name:'घर में सुख-समृद्धि', sub:'घर में खुशहाली चाहिए',
-      upay:'रोज़ शाम दीपक जलाएं और लक्ष्मी स्तोत्र पढ़ें',
-      kyun:'दीपक जलाने से घर में लक्ष्मी का वास होता है',
-      kaise:['शाम को तुलसी के पास दीपक जलाएं','ॐ श्रीं महालक्ष्म्यै नमः — 108 बार','घर को सदा स्वच्छ रखें'],
-      duration:'नित्य' },
-  ],
+
+const PROB_CONTENT = {
+  vivah: {
+    title_hi: 'विवाह मार्गदर्शन', title_en: 'Marriage Guidance',
+    understand: 'शादी में देरी कभी-कभी समय, परिस्थितियों या मानसिक तनाव के कारण होती है',
+    mantra: 'ॐ नमो नारायणाय', mantra_en: 'Om Namo Narayanaya',
+    steps: ['रोज सुबह या शाम शांत मन से जप करें', '108 बार (1 माला)'],
+    actions: ['गुरुवार को मंदिर जाएं', 'विष्णु जी को तुलसी अर्पित करें'],
+    duration: '21 दिन',
+  },
+  dhan: {
+    title_hi: 'धन और करियर मार्गदर्शन', title_en: 'Money & Career Guidance',
+    understand: 'पैसों की तंगी या करियर में रुकावट अक्सर सही दिशा और श्रद्धा की कमी से होती है',
+    mantra: 'ॐ श्रीं महालक्ष्म्यै नमः', mantra_en: 'Om Shreem Mahalakshmyai Namah',
+    steps: ['शुक्रवार को विशेष जप करें', '108 बार रोज शाम करें'],
+    actions: ['घर को सदा स्वच्छ रखें', 'शाम को दीपक जलाएं'],
+    duration: '21 दिन',
+  },
+  swasthya: {
+    title_hi: 'स्वास्थ्य मार्गदर्शन', title_en: 'Health Guidance',
+    understand: 'स्वास्थ्य समस्याएं शरीर और मन दोनों से जुड़ी होती हैं — भक्ति से मन शांत होता है',
+    mantra: 'ॐ त्र्यम्बकं यजामहे', mantra_en: 'Om Tryambakam Yajamahe',
+    steps: ['सोमवार को विशेष जप करें', 'रोज सुबह 108 बार करें'],
+    actions: ['शिवलिंग पर जल और बेलपत्र चढ़ाएं', 'सात्विक भोजन लें'],
+    duration: '40 दिन',
+  },
+  vidya: {
+    title_hi: 'पढ़ाई और एकाग्रता', title_en: 'Education & Focus',
+    understand: 'एकाग्रता और स्मरण शक्ति श्रद्धा और नियमित अभ्यास से बढ़ती है',
+    mantra: 'ॐ ऐं सरस्वत्यै नमः', mantra_en: 'Om Aim Saraswatyai Namah',
+    steps: ['रोज सुबह पढ़ाई से पहले जप करें', '108 बार या कम से कम 21 बार'],
+    actions: ['किताबों का सम्मान करें', 'बुधवार को सरस्वती पूजा करें'],
+    duration: '21 दिन',
+  },
+  ghar: {
+    title_hi: 'गृह शांति मार्गदर्शन', title_en: 'Home & Relationships',
+    understand: 'घर में शांति तब आती है जब हर सदस्य प्रेम और श्रद्धा से जीता है',
+    mantra: 'ॐ नमो नारायणाय', mantra_en: 'Om Namo Narayanaya',
+    steps: ['रोज शाम परिवार के साथ जप करें', '108 बार मिलकर करें'],
+    actions: ['हर शाम घर में दीपक जलाएं', 'गुरुवार को विष्णु पूजा करें'],
+    duration: '21 दिन',
+  },
 };
 
 function openProblem(key) {
-  const p = PROBLEMS[key];
-  const subs = SUB_PROBLEMS[key];
+  const p = PROB_CONTENT[key];
   if (!p) return;
   currentProbKey = key;
-  probPlaying = false;
 
   // Header
-  document.getElementById('poTitle').textContent  = H ? p.title_hi : p.title_en;
-  document.getElementById('poDeity').textContent  = H ? p.deity_hi : p.deity_en;
-  document.getElementById('poIco').textContent    = p.ico;
+  document.getElementById('poTitle').textContent = H ? p.title_hi : p.title_en;
+  document.getElementById('poDeity').textContent = H ? p.title_en : p.title_hi;
 
-  // Top card
-  document.getElementById('poTopIco').textContent = p.ico;
-  const topQs = {
-    vivah:    'विवाह में देरी या समस्या?',
-    dhan:     'पैसे या करियर में परेशानी?',
-    swasthya: 'स्वास्थ्य समस्या है?',
-    vidya:    'पढ़ाई में मुश्किल है?',
-    ghar:     'घर में शांति नहीं है?',
-  };
-  const topSubs = {
-    vivah:    'सही मार्गदर्शन से समाधान संभव है',
-    dhan:     'सही साधना से उन्नति संभव है',
-    swasthya: 'ईश्वर की कृपा से स्वास्थ्य लाभ संभव है',
-    vidya:    'श्रद्धा और साधना से सफलता मिलती है',
-    ghar:     'भक्ति से घर में सुख-शांति आती है',
-  };
-  document.getElementById('poTopQ').textContent   = H ? topQs[key]   : p.title_en+'?';
-  document.getElementById('poTopSub').textContent = H ? topSubs[key] : 'Guidance is possible with devotion';
+  // Understanding
+  document.getElementById('poUnderstand').textContent = p.understand;
 
-  // Selector label
-  document.getElementById('poSelLabel').textContent = H ? 'अपनी समस्या चुनें' : 'Choose your issue';
+  // Mantra
+  document.getElementById('poMantra').textContent = p.mantra;
+  document.getElementById('poMantraEn').textContent = p.mantra_en;
 
-  // Build sub-problem grid
-  const grid = document.getElementById('poSelGrid');
-  grid.innerHTML = '';
-  if (subs) {
-    subs.forEach((s, i) => {
-      const card = document.createElement('div');
-      card.className = 'po-sel-card';
-      card.innerHTML = `
-        <span class="po-sel-ico">${s.ico}</span>
-        <div class="po-sel-name">${s.name}</div>
-        <div class="po-sel-sub">${s.sub}</div>
-        <span class="po-sel-arrow">›</span>`;
-      card.onclick = () => selectSubProblem(key, i);
-      grid.appendChild(card);
-    });
-  }
+  // Steps
+  document.getElementById('poSteps').innerHTML = p.steps.map(s=>`<li>${s}</li>`).join('');
 
-  // Hide solution until selected
-  document.getElementById('poSolution').style.display = 'none';
-  document.getElementById('poActionBtn').style.display = 'none';
-  document.getElementById('poBtn').style.display = 'none';
+  // Actions
+  document.getElementById('poActions').innerHTML = p.actions.map(a=>`<li>${a}</li>`).join('');
 
+  // Duration
+  document.getElementById('poDuration').innerHTML = `⏱️ कम से कम <strong>${p.duration}</strong> नियमित करें`;
+
+  // Scroll to top + show
+  document.querySelector('.po-body').scrollTop = 0;
   document.getElementById('probOverlay').classList.add('open');
-}
-
-function selectSubProblem(key, idx) {
-  const s = SUB_PROBLEMS[key]?.[idx];
-  if (!s) return;
-
-  // Highlight selected card
-  document.querySelectorAll('.po-sel-card').forEach((c, i) => {
-    c.classList.toggle('selected', i === idx);
-  });
-
-  // Fill solution
-  document.getElementById('solUpay').textContent = s.upay;
-  document.getElementById('solKyun').textContent = s.kyun;
-  const kaiseEl = document.getElementById('solKaise');
-  kaiseEl.innerHTML = s.kaise.map(k => `<li>${k}</li>`).join('');
-  document.getElementById('solDuration').textContent = s.duration;
-
-  // Show solution + button
-  const sol = document.getElementById('poSolution');
-  sol.style.display = 'block';
-  document.getElementById('poActionBtn').style.display = 'block';
-  document.getElementById('poActionBtn').textContent = H ? '🙏 आज से शुरू करें' : '🙏 Start Today';
-
-  // Scroll to solution
-  setTimeout(() => {
-    sol.scrollIntoView({behavior:'smooth', block:'start'});
-  }, 100);
 }
 
 
