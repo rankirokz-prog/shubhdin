@@ -1248,15 +1248,15 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .po-body{flex:1;overflow-y:auto;padding:0 0 80px;scrollbar-width:none;}
 .po-body::-webkit-scrollbar{display:none;}
 .po-understand{
-  font-size:13px;color:rgba(255,255,255,0.72);
+  font-size:13px;color:rgba(255,255,255,0.85);
   line-height:1.7;text-align:center;
-  padding:20px 20px 18px;
+  padding:24px 20px 20px;
   border-bottom:1px solid rgba(212,168,67,0.08);
 }
 .po-jap-card{
   background:linear-gradient(135deg,rgba(60,25,5,0.90),rgba(30,10,0,0.95));
   border-left:3px solid var(--gold);
-  margin:16px;border-radius:16px;padding:18px;
+  margin:16px 16px 12px;border-radius:16px;padding:18px;
 }
 .po-sec-label{
   font-size:10px;font-weight:700;color:rgba(212,168,67,0.60);
@@ -1264,9 +1264,9 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 .po-jap-mantra{
   font-family:'Tiro Devanagari Hindi',serif;
-  font-size:24px;color:var(--gold);
+  font-size:24px;color:var(--gold);font-weight:600;
   text-align:center;margin-bottom:4px;
-  text-shadow:0 0 20px rgba(212,168,67,0.40);
+  text-shadow:0 0 28px rgba(212,168,67,0.60),0 0 60px rgba(212,168,67,0.20);
 }
 .po-jap-en{font-size:10px;color:rgba(255,255,255,0.28);text-align:center;margin-bottom:14px;letter-spacing:1px;}
 .po-jap-divider{height:1px;background:rgba(212,168,67,0.12);margin:14px 0;}
@@ -1275,7 +1275,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .po-action-card{
   background:rgba(255,255,255,0.03);
   border:1px solid rgba(212,168,67,0.12);
-  margin:0 16px 14px;border-radius:14px;padding:14px 16px;
+  margin:0 16px 12px;border-radius:14px;padding:14px 16px;
 }
 .po-action-list{padding-left:16px;margin:0;}
 .po-action-list li{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.9;}
@@ -1292,6 +1292,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   color:#fff;font-family:'Poppins',sans-serif;
   font-size:15px;font-weight:600;cursor:pointer;
   box-shadow:0 6px 20px rgba(255,107,26,0.35);
+  margin-bottom:20px;
 }
 
 .po-duration-inline{
@@ -1300,6 +1301,11 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   font-size:11px;color:rgba(255,255,255,0.40);
 }
 .po-duration-inline strong{color:rgba(212,168,67,0.65);}
+.po-microcopy{
+  text-align:center;font-size:11px;
+  color:rgba(255,255,255,0.30);
+  padding:0 16px 10px;line-height:1.5;
+}
 </style>
 </head>
 <body>
@@ -1527,6 +1533,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         </div>
 
         <!-- 5. Start button -->
+        <div class="po-microcopy" id="poMicrocopy">आज से शुरू करें — 21 दिन तक निरंतर करें</div>
         <button class="po-start-btn" onclick="closeProblem()">
           🙏 साधना शुरू करें
         </button>
@@ -2825,6 +2832,8 @@ function openProblem(key) {
 
   // Duration
   document.getElementById('poDuration').innerHTML = `⏱️ अवधि: <strong>${p.duration}</strong>`;
+  const mc=document.getElementById('poMicrocopy');
+  if(mc) mc.textContent=`आज से शुरू करें — ${p.duration} तक निरंतर करें`;
 
   // Scroll to top + show
   document.querySelector('.po-body').scrollTop = 0;
