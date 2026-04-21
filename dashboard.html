@@ -1548,7 +1548,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
         <!-- 5. Start button -->
         <div class="po-cta-divider"></div>
-        <div class="po-microcopy" id="poMicrocopy">आज से शुरू करें — 21 दिन लगातार करें</div>
+        <div class="po-microcopy" id="poMicrocopy">यह एक 21 दिन की साधना है — रोज़ पूरा करना आवश्यक है</div>
         <button class="po-start-btn" onclick="closeProblem()">
           🙏 साधना शुरू करें
         </button>
@@ -2854,7 +2854,7 @@ function openProblem(key) {
   // Duration
   document.getElementById('poDuration').innerHTML = `⏱️ अवधि: <strong>${p.duration}</strong>`;
   const mc=document.getElementById('poMicrocopy');
-  if(mc) mc.textContent=`आज से शुरू करें — ${p.duration} लगातार करें`;
+  if(mc) mc.textContent=`यह एक ${p.duration} की साधना है — रोज़ पूरा करना आवश्यक है`;
   const whyEl=document.getElementById('poWhy');
   if(whyEl) whyEl.textContent=p.why||'यह मंत्र मन को शांत कर समस्या के मूल तक पहुँचता है';
 
