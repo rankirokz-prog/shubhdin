@@ -1703,21 +1703,18 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <!-- Canvas for mala ring (always works on mobile) -->
           <canvas id="sjCanvas" width="220" height="220" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
 
-          <!-- Tap button -->
-          <button id="sjTapBtn" ontouchstart="sadhanaTap();event.preventDefault();" onclick="if(!event.cancelable)sadhanaTap();" style="
+          <!-- Tap button — simple onclick only -->
+          <button id="sjTapBtn" onclick="sadhanaTap()" style="
             position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-            width:168px;height:168px;border-radius:50%;border:none;
+            width:168px;height:168px;border-radius:50%;border:2px solid rgba(212,168,67,0.30);
             background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);
-            color:var(--gold);cursor:pointer;
-            box-shadow:0 0 0 1.5px rgba(212,168,67,0.28),0 0 50px rgba(212,168,67,0.10);
-            animation:sjPulse 2.8s ease-in-out infinite;
+            cursor:pointer;z-index:5;
             display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
           ">
-            <div id="sjDeityImg" style="width:80px;height:80px;border-radius:50%;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.30);display:flex;align-items:center;justify-content:center;font-size:36px;">🕉️</div>
-            <span style="font-size:9px;opacity:0.45;font-family:'Poppins',sans-serif;letter-spacing:0.5px;margin-top:4px;">जप करें</span>
+            <span style="font-size:36px;">🕉️</span>
+            <span style="font-size:11px;color:rgba(212,168,67,0.60);font-family:'Poppins',sans-serif;">जप करें</span>
           </button>
 
-          <!-- Ripple layer -->
           <div id="sjRipple" style="position:absolute;top:50%;left:50%;pointer-events:none;transform:translate(-50%,-50%);"></div>
         </div>
 
@@ -3236,27 +3233,9 @@ function continueSadhana(){
   // Draw mala after screen renders
   requestAnimationFrame(()=>buildMalaDots());
   // Set deity image
-  const dImg=document.getElementById('sjDeityImg');
-  if(dImg){
-    const imgUrl=DEITY_IMGS[new Date().getDay()];
-    if(imgUrl){
-      dImg.style.backgroundImage='url('+imgUrl+')';
-      dImg.style.backgroundSize='cover';
-      dImg.style.backgroundPosition='center top';
-      dImg.innerHTML='';
-    }
-  }
 
-  // Auto-play today's chant as background (user can continue tapping)
-  const chantMap={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
-  const ck=chantMap[new Date().getDay()];
-  if(ck){
-    if(window._sadAudio){window._sadAudio.pause();window._sadAudio=null;}
-    window._sadAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+ck+'.mp3');
-    window._sadAudio.loop=true;
-    window._sadAudio.volume=0.35;
-    window._sadAudio.play().catch(()=>{});
-  }
+
+
 }
 
 function sadhanaTap(){
@@ -3265,9 +3244,6 @@ function sadhanaTap(){
 
   // 1. Vibration
   if(navigator.vibrate) navigator.vibrate(18);
-  // Restart audio if ended
-  if(window._sadAudio&&window._sadAudio.paused)window._sadAudio.play().catch(()=>{});
-
   // 2. Button scale
   const btn=document.getElementById('sjTapBtn');
   if(btn){btn.style.transform='translate(-50%,-50%) scale(0.88)';setTimeout(()=>btn.style.transform='translate(-50%,-50%) scale(1)',90);}
@@ -3409,7 +3385,6 @@ function sadhanaTap(){
 }
 
 function exitSadhanaJap(){
-  if(window._sadAudio){window._sadAudio.pause();window._sadAudio=null;}
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('scr-sadhana').classList.add('on');
