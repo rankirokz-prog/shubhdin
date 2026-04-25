@@ -1701,7 +1701,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div style="position:relative;width:220px;height:220px;flex-shrink:0;z-index:2;">
 
           <!-- Canvas for mala ring (always works on mobile) -->
-          <canvas id="sjCanvas" width="220" height="220" style="position:absolute;top:0;left:0;"></canvas>
+          <canvas id="sjCanvas" width="220" height="220" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
 
           <!-- Tap button -->
           <button id="sjTapBtn" onclick="sadhanaTap()" style="
@@ -1713,8 +1713,8 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             animation:sjPulse 2.8s ease-in-out infinite;
             display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
           ">
-            <span style="font-size:32px;">🙏</span>
-            <span style="font-size:10px;opacity:0.45;font-family:'Poppins',sans-serif;letter-spacing:0.5px;">जप करें</span>
+            <img id="sjDeityImg" src="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;object-position:top;opacity:0.85;"/>
+            <span style="font-size:9px;opacity:0.45;font-family:'Poppins',sans-serif;letter-spacing:0.5px;margin-top:4px;">जप करें</span>
           </button>
 
           <!-- Ripple layer -->
@@ -3135,6 +3135,17 @@ function shareWallpaper(){
 }
 
 
+
+// Deity image map for sadhana jap screen
+const DEITY_IMGS={
+  0:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/surya.jpg',
+  1:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/shiva.jpg',
+  2:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/hanuman.jpg',
+  3:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/ganesh.jpg',
+  4:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/rama.jpg',
+  5:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/lakshmi.jpg',
+  6:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/shani.jpg',
+};
 // ── SADHANA SYSTEM ──
 function getSadhana(){ try{return JSON.parse(localStorage.getItem('shubhdin_sadhana')||'null');}catch(e){return null;} }
 function saveSadhana(s){ localStorage.setItem('shubhdin_sadhana', JSON.stringify(s)); }
@@ -3224,6 +3235,9 @@ function continueSadhana(){
   document.getElementById('scr-sadhana-jap').classList.add('on');
   // Draw mala after screen renders
   requestAnimationFrame(()=>buildMalaDots());
+  // Set deity image
+  const dImg=document.getElementById('sjDeityImg');
+  if(dImg) dImg.src=DEITY_IMGS[new Date().getDay()]||'';
 
   // Auto-play today's chant as background (user can continue tapping)
   const chantMap={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
