@@ -1678,39 +1678,44 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     <div class="scr" id="scr-sadhana-jap" style="background:#0A0300;position:relative;">
 
       <!-- Top bar -->
-      <div style="width:100%;display:flex;align-items:center;padding:44px 18px 10px;flex-shrink:0;">
+      <div style="width:100%;display:flex;align-items:center;padding:44px 18px 8px;flex-shrink:0;">
         <button onclick="exitSadhanaJap()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:36px;height:36px;color:rgba(212,168,67,0.8);font-size:18px;cursor:pointer;flex-shrink:0;">←</button>
-        <div style="flex:1;text-align:center;font-family:'Tiro Devanagari Hindi',serif;font-size:14px;color:rgba(212,168,67,0.70);" id="sjMantraTop">ॐ नमो नारायणाय</div>
+        <div style="flex:1;text-align:center;">
+          <div id="sjMantraTop" style="font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);font-weight:600;text-shadow:0 0 20px rgba(212,168,67,0.40);">ॐ नमो नारायणाय</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.22);margin-top:3px;letter-spacing:0.5px;">हर जप के साथ मन को स्थिर करें</div>
+        </div>
         <div style="width:36px;"></div>
       </div>
 
-      <!-- Guidance -->
-      <div style="text-align:center;font-size:12px;color:rgba(255,255,255,0.28);letter-spacing:0.5px;flex-shrink:0;padding:4px 0 0;">
-        हर जप के साथ मन को स्थिर करें
-      </div>
+      <!-- Counter -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;">
 
-      <!-- Counter + ring area -->
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+        <!-- Aura -->
+        <div style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,0.08) 0%,transparent 65%);pointer-events:none;"></div>
 
-        <!-- Subtle aura -->
-        <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(212,168,67,0.07) 0%,transparent 65%);pointer-events:none;"></div>
+        <!-- Count display -->
+        <div id="sjCount" style="font-size:86px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;z-index:2;transition:transform 0.1s ease-out;text-shadow:0 0 30px rgba(255,255,255,0.15);">0</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.20);margin-bottom:10px;z-index:2;">/ 108 जप</div>
 
-        <!-- Count -->
-        <div id="sjCount" style="font-size:90px;font-weight:700;color:#fff;line-height:1;font-family:'Poppins',sans-serif;z-index:2;transition:transform 0.08s ease-out;">0</div>
-        <div style="font-size:15px;color:rgba(255,255,255,0.22);z-index:2;margin-bottom:20px;">/ 108</div>
+        <!-- Ring + dots + button -->
+        <div style="position:relative;width:220px;height:220px;flex-shrink:0;z-index:2;">
 
-        <!-- Ring + button -->
-        <div style="position:relative;width:210px;height:210px;flex-shrink:0;z-index:2;">
-          <svg width="210" height="210" style="position:absolute;top:0;left:0;transform:rotate(-90deg);">
-            <circle cx="105" cy="105" r="96" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"/>
-            <circle id="sjRing" cx="105" cy="105" r="96" fill="none"
-              stroke="url(#sjGrad)" stroke-width="4"
-              stroke-dasharray="603" stroke-dashoffset="603"
-              stroke-linecap="round" style="transition:stroke-dashoffset 0.35s ease;"/>
+          <!-- SVG: outer ring + 27 dot positions (every 4th jap) -->
+          <svg id="sjSvg" width="220" height="220" style="position:absolute;top:0;left:0;">
+            <!-- Background ring -->
+            <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3" transform="rotate(-90 110 110)"/>
+            <!-- Progress arc -->
+            <circle id="sjRing" cx="110" cy="110" r="100" fill="none"
+              stroke="url(#sjGrad2)" stroke-width="3"
+              stroke-dasharray="628" stroke-dashoffset="628"
+              stroke-linecap="round" transform="rotate(-90 110 110)"
+              style="transition:stroke-dashoffset 0.35s ease;"/>
+            <!-- 27 mala dots (every 4 japs) -->
+            <g id="sjDots"></g>
             <defs>
-              <linearGradient id="sjGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#FF6B1A;"/>
-                <stop offset="100%" style="stop-color:#D4A843;"/>
+              <linearGradient id="sjGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF6B1A"/>
+                <stop offset="100%" stop-color="#D4A843"/>
               </linearGradient>
             </defs>
           </svg>
@@ -1718,28 +1723,31 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <!-- Tap button -->
           <button id="sjTapBtn" onclick="sadhanaTap()" style="
             position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-            width:168px;height:168px;border-radius:50%;border:none;
-            background:radial-gradient(circle,rgba(255,107,26,0.20) 0%,rgba(13,5,0,0.96) 68%);
+            width:172px;height:172px;border-radius:50%;border:none;
+            background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);
             color:var(--gold);cursor:pointer;
-            box-shadow:0 0 0 1.5px rgba(212,168,67,0.30),0 0 50px rgba(212,168,67,0.10);
+            box-shadow:0 0 0 1.5px rgba(212,168,67,0.28),0 0 50px rgba(212,168,67,0.10);
             animation:sjPulse 2.8s ease-in-out infinite;
             display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
           ">
-            <span style="font-size:30px;">🙏</span>
-            <span style="font-size:11px;opacity:0.50;font-family:'Poppins',sans-serif;letter-spacing:0.5px;">जप करें</span>
+            <span style="font-size:32px;">🙏</span>
+            <span style="font-size:10px;opacity:0.45;font-family:'Poppins',sans-serif;letter-spacing:0.5px;">जप करें</span>
           </button>
 
           <!-- Ripple layer -->
-          <div id="sjRipple" style="position:absolute;top:50%;left:50%;pointer-events:none;"></div>
+          <div id="sjRipple" style="position:absolute;top:50%;left:50%;pointer-events:none;transform:translate(-50%,-50%);"></div>
         </div>
+
+        <!-- Remaining count -->
+        <div id="sjRemaining" style="font-size:12px;color:rgba(255,255,255,0.28);margin-top:14px;z-index:2;">शेष: 108 जप</div>
       </div>
 
       <!-- Bottom progress bar -->
-      <div style="width:calc(100% - 48px);height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;flex-shrink:0;margin:0 24px 48px;">
+      <div style="width:calc(100% - 48px);height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;flex-shrink:0;margin:0 24px 44px;">
         <div id="sjProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#FF6B1A,#D4A843);border-radius:99px;transition:width 0.35s;"></div>
       </div>
 
-      <!-- Completion overlay (absolute, contained) -->
+      <!-- Completion overlay -->
       <div id="sjDoneMsg" style="display:none;position:absolute;inset:0;background:rgba(10,3,0,0.97);z-index:10;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:32px;">
         <div style="font-size:60px;">🙏</div>
         <div style="font-family:'Tiro Devanagari Hindi',serif;font-size:26px;color:#D4A843;text-shadow:0 0 30px rgba(212,168,67,0.50);">आज का जप पूर्ण हुआ</div>
@@ -3221,6 +3229,7 @@ function continueSadhana(){
 
   // Reset UI safely
   updateSJDisplay();
+  buildMalaDots();
   const doneEl = document.getElementById('sjDoneMsg');
   if(doneEl) doneEl.style.display = 'none';
   const tapBtn = document.getElementById('sjTapBtn');
@@ -3258,18 +3267,45 @@ function sadhanaTap(){
 }
 
 function updateSJDisplay(){
-  const countEl = document.getElementById('sjCount');
-  countEl.textContent = sjTapCount;
-  // Pop animation
-  countEl.style.transform='scale(1.25)';
-  setTimeout(()=>countEl.style.transform='scale(1)',100);
-
-  const pct = sjTapCount/108;
-  document.getElementById('sjProgressBar').style.width = Math.round(pct*100)+'%';
-  // Circular ring: circumference=603 (r=96)
-  const ring = document.getElementById('sjRing');
-  if(ring) ring.style.strokeDashoffset = 603 - (603 * pct);
+  // Count pop
+  const cEl=document.getElementById('sjCount');
+  if(cEl){ cEl.textContent=sjTapCount; cEl.style.transform='scale(1.22)'; setTimeout(()=>cEl.style.transform='scale(1)',100); }
+  // Progress bar
+  const pct=sjTapCount/108;
+  const pb=document.getElementById('sjProgressBar'); if(pb) pb.style.width=Math.round(pct*100)+'%';
+  // Ring circumference=628 (r=100)
+  const ring=document.getElementById('sjRing'); if(ring) ring.style.strokeDashoffset=628-(628*pct);
+  // Remaining
+  const rem=document.getElementById('sjRemaining'); if(rem) rem.textContent='शेष: '+(108-sjTapCount)+' जप';
+  // Mala dots — 27 dots, each lights every 4 japs
+  buildMalaDots();
 }
+
+function buildMalaDots(){
+  const g=document.getElementById('sjDots'); if(!g)return;
+  g.innerHTML='';
+  const total=27; const r=100; const cx=110; const cy=110;
+  for(let i=0;i<total;i++){
+    const angle=((i/total)*360-90)*(Math.PI/180);
+    const x=cx+r*Math.cos(angle);
+    const y=cy+r*Math.sin(angle);
+    const filled=sjTapCount>=((i+1)*4);
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx',x.toFixed(1));
+    dot.setAttribute('cy',y.toFixed(1));
+    dot.setAttribute('r',filled?4:2.5);
+    dot.setAttribute('fill',filled?'#D4A843':'rgba(255,255,255,0.15)');
+    if(filled) dot.setAttribute('filter','url(#dotGlow)');
+    g.appendChild(dot);
+  }
+  // Add glow filter if not exists
+  const svg=document.getElementById('sjSvg');
+  if(svg&&!svg.querySelector('#dotGlow')){
+    const defs=svg.querySelector('defs')||svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg','defs'));
+    defs.innerHTML+=`<filter id="dotGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+  }
+}
+
 
 function sjShowRipple(){
   const r = document.getElementById('sjRipple');
