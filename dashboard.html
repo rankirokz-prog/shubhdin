@@ -3242,78 +3242,132 @@ function continueSadhana(){
 }
 
 function sadhanaTap(){
-  if(sjTapCount >= 108) return;
+  if(sjTapCount>=108)return;
+  sjTapCount++;
+
+  // 1. Vibration
+  if(navigator.vibrate) navigator.vibrate(18);
+
+  // 2. Button scale
+  const btn=document.getElementById('sjTapBtn');
+  if(btn){btn.style.transform='translate(-50%,-50%) scale(0.88)';setTimeout(()=>btn.style.transform='translate(-50%,-50%) scale(1)',90);}
+
+  // 3. Ripple from center
+  sjShowRipple();
+
+  // 4. Bell sound every 27 taps
+  if(sjTapCount%27===0) sjPlayBell();
+
+  // 5. Update display
+  updateSJDisplay();
+
+  // 6. Save
+  const s=getSadhana();
+  if(s){s.todayCount=sjTapCount;s.todayDate=new Date().toISOString().slice(0,10);saveSadhana(s);}
+
+  // 7. Completion
+  if(sjTapCount>=108){
+    setTimeout(()=>{
+      if(navigator.vibrate)navigator.vibrate([80,50,80,50,120]);
+      sjPlayBell(); setTimeout(sjPlayBell,400); setTimeout(sjPlayBell,800);
+      const dm=document.getElementById('sjDoneMsg');if(dm)dm.style.display='flex';
+      const b=document.getElementById('sjTapBtn');if(b)b.style.animation='none';
+      completeSadhanaDay();
+    },300);
+  }
+}
+
+
+function updateSJDisplay(){
+  // Count pop
+  const cEl=document.getElementById('sjCount');
+  if(cEl){
+    cEl.textContent=sjTapCount;
+    cEl.style.transform='scale(1.25)';
+    setTimeout(()=>cEl.style.transform='scale(1)',100);
+  }
+  // Progress bar
+  const pct=sjTapCount/108;
+  const pb=document.getElementById('sjProgressBar');if(pb)pb.style.width=Math.round(pct*100)+'%';
+  // Ring circumference=628
+  const ring=document.getElementById('sjRing');if(ring)ring.style.strokeDashoffset=628-(628*pct);
+  // Remaining
+  const rem=document.getElementById('sjRemaining');if(rem)rem.textContent='शेष: '+(108-sjTapCount)+' जप';
+  // Dots
+  buildMalaDots();
+}
+
+
+function buildMalaDots(){
+  const g=document.getElementById('sjDots');if(!g)return;
+  g.innerHTML='';
+  const total=27,r=100,cx=110,cy=110;
+  // Current active bead index
+  const activeBead=Math.floor(sjTapCount/4);
+
+  for(let i=0;i<total;i++){
+    const angle=((i/total)*360-90)*(Math.PI/180);
+    const x=cx+r*Math.cos(angle);
+    const y=cy+r*Math.sin(angle);
+    const filled=sjTapCount>=(i*4+1); // lit once 1 tap in its slot
+    const isActive=(i===activeBead&&sjTapCount<108);
+    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    dot.setAttribute('cx',x.toFixed(1));
+    dot.setAttribute('cy',y.toFixed(1));
+    dot.setAttribute('r',isActive?5.5:filled?4:2.5);
+    dot.setAttribute('fill',isActive?'#FFD700':filled?'#D4A843':'rgba(255,255,255,0.12)');
+    if(isActive||filled){dot.setAttribute('filter','url(#dotGlow)');}
+    g.appendChild(dot);
+  }
+}
+
+
+function sjPlayBell(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.frequency.value=528;osc.type='sine';
+    gain.gain.setValueAtTime(0,ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.08,ctx.currentTime+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.6);
+  }catch(e){}
+}
+function sjShowRipple(){
+  const r=document.getElementById('sjRipple'); if(!r) return;
+  const d=document.createElement('div');
+  d.style.cssText='position:absolute;border-radius:50%;border:1.5px solid rgba(212,168,67,0.55);animation:sjRippleAnim 0.55s ease-out forwards;width:172px;height:172px;margin:-86px 0 0 -86px;';
+  r.appendChild(d); setTimeout(()=>d.remove(),560);
+}
+
+function sadhanaTap(){
+  if(sjTapCount>=108) return;
   sjTapCount++;
   if(navigator.vibrate) navigator.vibrate(12);
-  // Tap animation on button
-  const btn = document.getElementById('sjTapBtn');
+  sjShowRipple();
+  sjTick();
+  if(sjTapCount%27===0) sjBell();
+
+  const btn=document.getElementById('sjTapBtn');
   if(btn){ btn.style.transform='translate(-50%,-50%) scale(0.90)'; setTimeout(()=>btn.style.transform='translate(-50%,-50%) scale(1)',90); }
 
   updateSJDisplay();
 
   // Save progress
-  const s = getSadhana();
-  if(s){ s.todayCount = sjTapCount; s.todayDate = new Date().toISOString().slice(0,10); saveSadhana(s); }
+  const s=getSadhana();
+  if(s){ s.todayCount=sjTapCount; s.todayDate=new Date().toISOString().slice(0,10); saveSadhana(s); }
 
-  // Completion
-  if(sjTapCount >= 108){
+  if(sjTapCount>=108){
     if(navigator.vibrate) navigator.vibrate([60,40,80]);
-    const dm=document.getElementById('sjDoneMsg'); if(dm)dm.style.display='flex';
-    const sjTapBtnEl=document.getElementById('sjTapBtn');
-    if(sjTapBtnEl)sjTapBtnEl.style.animation='none';
-    // Update sadhana record
+    sjBell();
+    // All dots lit — brief pause then show completion
+    setTimeout(()=>{
+      const dm=document.getElementById('sjDoneMsg'); if(dm) dm.style.display='flex';
+    }, 600);
     completeSadhanaDay();
   }
-}
-
-function updateSJDisplay(){
-  // Count pop
-  const cEl=document.getElementById('sjCount');
-  if(cEl){ cEl.textContent=sjTapCount; cEl.style.transform='scale(1.22)'; setTimeout(()=>cEl.style.transform='scale(1)',100); }
-  // Progress bar
-  const pct=sjTapCount/108;
-  const pb=document.getElementById('sjProgressBar'); if(pb) pb.style.width=Math.round(pct*100)+'%';
-  // Ring circumference=628 (r=100)
-  const ring=document.getElementById('sjRing'); if(ring) ring.style.strokeDashoffset=628-(628*pct);
-  // Remaining
-  const rem=document.getElementById('sjRemaining'); if(rem) rem.textContent='शेष: '+(108-sjTapCount)+' जप';
-  // Mala dots — 27 dots, each lights every 4 japs
-  buildMalaDots();
-}
-
-function buildMalaDots(){
-  const g=document.getElementById('sjDots'); if(!g)return;
-  g.innerHTML='';
-  const total=27; const r=100; const cx=110; const cy=110;
-  for(let i=0;i<total;i++){
-    const angle=((i/total)*360-90)*(Math.PI/180);
-    const x=cx+r*Math.cos(angle);
-    const y=cy+r*Math.sin(angle);
-    const filled=sjTapCount>=((i+1)*4);
-    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    dot.setAttribute('cx',x.toFixed(1));
-    dot.setAttribute('cy',y.toFixed(1));
-    dot.setAttribute('r',filled?4:2.5);
-    dot.setAttribute('fill',filled?'#D4A843':'rgba(255,255,255,0.15)');
-    if(filled) dot.setAttribute('filter','url(#dotGlow)');
-    g.appendChild(dot);
-  }
-  // Add glow filter if not exists
-  const svg=document.getElementById('sjSvg');
-  if(svg&&!svg.querySelector('#dotGlow')){
-    const defs=svg.querySelector('defs')||svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg','defs'));
-    defs.innerHTML+=`<filter id="dotGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
-  }
-}
-
-
-function sjShowRipple(){
-  const r = document.getElementById('sjRipple');
-  if(!r) return;
-  const ripple = document.createElement('div');
-  ripple.style.cssText='position:absolute;top:50%;left:50%;width:160px;height:160px;border-radius:50%;border:2px solid rgba(212,168,67,0.5);animation:sjRippleAnim 0.5s ease-out forwards;';
-  r.appendChild(ripple);
-  setTimeout(()=>ripple.remove(), 500);
 }
 
 function exitSadhanaJap(){
@@ -3323,6 +3377,7 @@ function exitSadhanaJap(){
   document.getElementById('tab-sadhana').classList.add('on');
   renderSadhana();
 }
+
 
 function completeSadhanaDay(){
   const s = getSadhana(); if(!s) return;
