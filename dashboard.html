@@ -1704,7 +1704,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <canvas id="sjCanvas" width="220" height="220" style="position:absolute;top:0;left:0;pointer-events:none;"></canvas>
 
           <!-- Tap button -->
-          <button id="sjTapBtn" onclick="sadhanaTap()" style="
+          <button id="sjTapBtn" ontouchstart="sadhanaTap();event.preventDefault();" onclick="if(!event.cancelable)sadhanaTap();" style="
             position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
             width:168px;height:168px;border-radius:50%;border:none;
             background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);
@@ -1713,7 +1713,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             animation:sjPulse 2.8s ease-in-out infinite;
             display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
           ">
-            <img id="sjDeityImg" src="" style="width:80px;height:80px;border-radius:50%;object-fit:cover;object-position:top;opacity:0.85;"/>
+            <div id="sjDeityImg" style="width:80px;height:80px;border-radius:50%;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.30);display:flex;align-items:center;justify-content:center;font-size:36px;">🕉️</div>
             <span style="font-size:9px;opacity:0.45;font-family:'Poppins',sans-serif;letter-spacing:0.5px;margin-top:4px;">जप करें</span>
           </button>
 
@@ -3237,7 +3237,15 @@ function continueSadhana(){
   requestAnimationFrame(()=>buildMalaDots());
   // Set deity image
   const dImg=document.getElementById('sjDeityImg');
-  if(dImg) dImg.src=DEITY_IMGS[new Date().getDay()]||'';
+  if(dImg){
+    const imgUrl=DEITY_IMGS[new Date().getDay()];
+    if(imgUrl){
+      dImg.style.backgroundImage='url('+imgUrl+')';
+      dImg.style.backgroundSize='cover';
+      dImg.style.backgroundPosition='center top';
+      dImg.innerHTML='';
+    }
+  }
 
   // Auto-play today's chant as background (user can continue tapping)
   const chantMap={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
