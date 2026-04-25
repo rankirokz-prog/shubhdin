@@ -1717,6 +1717,10 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
                 <stop offset="0%" stop-color="#FF6B1A"/>
                 <stop offset="100%" stop-color="#D4A843"/>
               </linearGradient>
+              <filter id="dotGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
             </defs>
           </svg>
 
@@ -3316,6 +3320,7 @@ function buildMalaDots(){
     dot.setAttribute('cy',y.toFixed(1));
     dot.setAttribute('r',isActive?5.5:filled?4:2.5);
     dot.setAttribute('fill',isActive?'#FFD700':filled?'#D4A843':'rgba(255,255,255,0.12)');
+    dot.setAttribute('style','transition:r 0.2s ease,fill 0.25s ease;');
     if(isActive||filled){dot.setAttribute('filter','url(#dotGlow)');}
     g.appendChild(dot);
   }
