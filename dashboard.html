@@ -1697,37 +1697,16 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div id="sjCount" style="font-size:86px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;z-index:2;transition:transform 0.1s ease-out;text-shadow:0 0 30px rgba(255,255,255,0.15);">0</div>
         <div style="font-size:13px;color:rgba(255,255,255,0.20);margin-bottom:10px;z-index:2;">/ 108 जप</div>
 
-        <!-- Ring + dots + button -->
+        <!-- Canvas mala + button -->
         <div style="position:relative;width:220px;height:220px;flex-shrink:0;z-index:2;">
 
-          <!-- SVG: outer ring + 27 dot positions (every 4th jap) -->
-          <svg id="sjSvg" width="220" height="220" style="position:absolute;top:0;left:0;">
-            <defs>
-              <linearGradient id="sjGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#FF6B1A"/>
-                <stop offset="100%" stop-color="#D4A843"/>
-              </linearGradient>
-              <filter id="dotGlow" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur stdDeviation="2.5" result="blur"/>
-                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            <!-- Background ring -->
-            <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3" transform="rotate(-90 110 110)"/>
-            <!-- Progress arc -->
-            <circle id="sjRing" cx="110" cy="110" r="100" fill="none"
-              stroke="url(#sjGrad2)" stroke-width="4"
-              stroke-dasharray="628" stroke-dashoffset="628"
-              stroke-linecap="round" transform="rotate(-90 110 110)"
-              style="transition:stroke-dashoffset 0.35s ease;"/>
-            <!-- 27 mala dots -->
-            <g id="sjDots"></g>
-          </svg>
+          <!-- Canvas for mala ring (always works on mobile) -->
+          <canvas id="sjCanvas" width="220" height="220" style="position:absolute;top:0;left:0;"></canvas>
 
           <!-- Tap button -->
           <button id="sjTapBtn" onclick="sadhanaTap()" style="
             position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-            width:172px;height:172px;border-radius:50%;border:none;
+            width:168px;height:168px;border-radius:50%;border:none;
             background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);
             color:var(--gold);cursor:pointer;
             box-shadow:0 0 0 1.5px rgba(212,168,67,0.28),0 0 50px rgba(212,168,67,0.10);
@@ -3293,53 +3272,70 @@ function updateSJDisplay(){
   // Progress bar
   const pct=sjTapCount/108;
   const pb=document.getElementById('sjProgressBar');if(pb)pb.style.width=Math.round(pct*100)+'%';
-  // Ring circumference=628
-  const ring=document.getElementById('sjRing');if(ring)ring.style.strokeDashoffset=628-(628*pct);
   // Remaining
   const rem=document.getElementById('sjRemaining');if(rem)rem.textContent='शेष: '+(108-sjTapCount)+' जप';
-  // Dots
+  // Canvas mala
   buildMalaDots();
 }
 
 
 function buildMalaDots(){
-  const g=document.getElementById('sjDots');if(!g)return;
-  g.innerHTML='';
-  const total=27,r=100,cx=110,cy=110;
-  // Current active bead index
-  const activeBead=Math.floor(sjTapCount/4);
+  const canvas = document.getElementById('sjCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=220, H=220, cx=110, cy=110, R=100;
+  ctx.clearRect(0,0,W,H);
 
+  // 1. Background ring
+  ctx.beginPath();
+  ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.06)';
+  ctx.lineWidth=3; ctx.stroke();
+
+  // 2. Progress arc (orange→gold gradient)
+  if(sjTapCount>0){
+    const pct=sjTapCount/108;
+    const grd=ctx.createLinearGradient(cx-R,cy,cx+R,cy);
+    grd.addColorStop(0,'#FF6B1A'); grd.addColorStop(1,'#D4A843');
+    ctx.beginPath();
+    ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+(Math.PI*2*pct));
+    ctx.strokeStyle=grd; ctx.lineWidth=4;
+    ctx.lineCap='round'; ctx.stroke();
+  }
+
+  // 3. Mala dots — 27 beads
+  const total=27;
+  const activeBead=Math.min(Math.floor(sjTapCount/4), total-1);
   for(let i=0;i<total;i++){
-    const angle=((i/total)*360-90)*(Math.PI/180);
-    const x=cx+r*Math.cos(angle);
-    const y=cy+r*Math.sin(angle);
-    const filled=sjTapCount>=(i*4+1); // lit once 1 tap in its slot
-    const isActive=(i===activeBead&&sjTapCount<108);
-    const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    dot.setAttribute('cx',x.toFixed(1));
-    dot.setAttribute('cy',y.toFixed(1));
-    dot.setAttribute('r',isActive?5.5:filled?4:2.5);
-    dot.setAttribute('fill',isActive?'#FFD700':filled?'#D4A843':'rgba(255,255,255,0.12)');
-    dot.setAttribute('style','transition:r 0.2s ease,fill 0.25s ease;');
-    if(isActive||filled){dot.setAttribute('filter','url(#dotGlow)');}
-    g.appendChild(dot);
+    const angle=((i/total)*Math.PI*2)-(Math.PI/2);
+    const x=cx+R*Math.cos(angle);
+    const y=cy+R*Math.sin(angle);
+    const filled = sjTapCount>=(i*4+1);
+    const isActive = (i===activeBead && sjTapCount<108);
+
+    if(isActive){
+      // Active bead — bright yellow with glow
+      ctx.shadowColor='rgba(255,215,0,0.80)';
+      ctx.shadowBlur=10;
+      ctx.beginPath(); ctx.arc(x,y,5.5,0,Math.PI*2);
+      ctx.fillStyle='#FFD700'; ctx.fill();
+      ctx.shadowBlur=0;
+    } else if(filled){
+      // Completed bead — soft gold with subtle glow
+      ctx.shadowColor='rgba(212,168,67,0.50)';
+      ctx.shadowBlur=6;
+      ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2);
+      ctx.fillStyle='#D4A843'; ctx.fill();
+      ctx.shadowBlur=0;
+    } else {
+      // Future bead — faint
+      ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.fill();
+    }
   }
 }
 
 
-function sjPlayBell(){
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    const osc=ctx.createOscillator();
-    const gain=ctx.createGain();
-    osc.connect(gain);gain.connect(ctx.destination);
-    osc.frequency.value=528;osc.type='sine';
-    gain.gain.setValueAtTime(0,ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.08,ctx.currentTime+0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.6);
-    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.6);
-  }catch(e){}
-}
 function sjShowRipple(){
   const r=document.getElementById('sjRipple'); if(!r) return;
   const d=document.createElement('div');
