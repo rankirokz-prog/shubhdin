@@ -3222,6 +3222,19 @@ function continueSadhana(){
   document.querySelectorAll('.scr').forEach(el=>el.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('on'));
   document.getElementById('scr-sadhana-jap').classList.add('on');
+  // Draw mala after screen renders
+  requestAnimationFrame(()=>buildMalaDots());
+
+  // Auto-play today's chant as background (user can continue tapping)
+  const chantMap={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
+  const ck=chantMap[new Date().getDay()];
+  if(ck){
+    if(window._sadAudio){window._sadAudio.pause();window._sadAudio=null;}
+    window._sadAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+ck+'.mp3');
+    window._sadAudio.loop=true;
+    window._sadAudio.volume=0.35;
+    window._sadAudio.play().catch(()=>{});
+  }
 }
 
 function sadhanaTap(){
@@ -3230,6 +3243,8 @@ function sadhanaTap(){
 
   // 1. Vibration
   if(navigator.vibrate) navigator.vibrate(18);
+  // Restart audio if ended
+  if(window._sadAudio&&window._sadAudio.paused)window._sadAudio.play().catch(()=>{});
 
   // 2. Button scale
   const btn=document.getElementById('sjTapBtn');
@@ -3372,6 +3387,7 @@ function sadhanaTap(){
 }
 
 function exitSadhanaJap(){
+  if(window._sadAudio){window._sadAudio.pause();window._sadAudio=null;}
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('scr-sadhana').classList.add('on');
