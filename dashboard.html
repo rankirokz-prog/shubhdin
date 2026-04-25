@@ -3219,15 +3219,16 @@ function continueSadhana(){
   const mantraEl = document.getElementById('sjMantraTop');
   if(mantraEl) mantraEl.textContent = s.mantra;
 
-  // Reset UI
+  // Reset UI safely
   updateSJDisplay();
-  document.getElementById('sjDoneMsg').style.display = 'none';
-  document.getElementById('sjTapBtn').style.display = 'block';
-  document.getElementById('sjBackBtn').style.display = 'none';
+  const doneEl = document.getElementById('sjDoneMsg');
+  if(doneEl) doneEl.style.display = 'none';
+  const tapBtn = document.getElementById('sjTapBtn');
+  if(tapBtn) tapBtn.style.display = 'flex';
 
-  // Show screen
-  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  // Show jap screen
+  document.querySelectorAll('.scr').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('on'));
   document.getElementById('scr-sadhana-jap').classList.add('on');
 }
 
