@@ -1675,7 +1675,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     </div>
 
     <!-- ── SADHANA JAP COUNTER ── -->
-    <div class="scr" id="scr-sadhana-jap" style="background:#0A0300;">
+    <div class="scr" id="scr-sadhana-jap" style="background:#0A0300;position:relative;">
 
       <!-- Top bar -->
       <div style="width:100%;display:flex;align-items:center;padding:44px 18px 10px;flex-shrink:0;">
@@ -1737,7 +1737,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       </div>
 
       <!-- Completion message -->
-      <div id="sjDoneMsg" style="display:none;position:fixed;inset:0;background:rgba(10,3,0,0.97);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:32px;">
+      <div id="sjDoneMsg" style="display:none;position:absolute;inset:0;background:rgba(10,3,0,0.97);z-index:10;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:32px;">
         <div style="font-size:56px;">🙏</div>
         <div style="font-family:'Tiro Devanagari Hindi',serif;font-size:26px;color:var(--gold);text-shadow:0 0 30px rgba(212,168,67,0.5);">आज का जप पूर्ण हुआ</div>
         <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;">108 जप पूरे हुए<br>साधना जारी रह रही है 🔥</div>
@@ -1750,6 +1750,8 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       <div style="width:calc(100% - 48px);height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;flex-shrink:0;margin:16px 24px 48px;">
         <div id="sjProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:99px;transition:width 0.3s;"></div>
       </div>
+
+    </div><!-- end scr-sadhana-jap -->
 
     <!-- ── SADHANA ── -->
     <div class="scr" id="scr-sadhana">
