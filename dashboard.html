@@ -1675,6 +1675,93 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     </div>
 
     
+    <!-- ── SADHANA JAP ── -->
+    <div class="scr" id="scr-sadhana-jap" style="background:#0A0300;flex-direction:column;align-items:center;justify-content:space-between;padding:0;">
+
+      <!-- Header -->
+      <div style="width:100%;display:flex;align-items:center;padding:44px 18px 10px;flex-shrink:0;">
+        <button onclick="exitSadhanaJap()" style="background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:36px;height:36px;color:rgba(212,168,67,0.8);font-size:18px;cursor:pointer;flex-shrink:0;">←</button>
+        <div id="sadJMantra" style="flex:1;text-align:center;font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);font-weight:600;">ॐ नमो नारायणाय</div>
+        <div style="width:36px;"></div>
+      </div>
+
+      <!-- Focus text -->
+      <div id="sadJFocus" style="font-size:12px;color:rgba(255,255,255,0.35);letter-spacing:0.5px;transition:opacity 1.5s;flex-shrink:0;">✨ ध्यान से जप करें</div>
+
+      <!-- Counter -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;">
+        <div id="sadJCount" style="font-size:96px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;">0</div>
+        <div style="font-size:16px;color:rgba(255,255,255,0.25);">/ 108</div>
+        <div style="height:20px;"></div>
+        <button onclick="sadJTap()" id="sadJBtn" style="width:180px;height:180px;border-radius:50%;border:1.5px solid rgba(212,168,67,0.30);background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sjPulse 2.8s ease-in-out infinite;">
+          <span style="font-size:36px;">🙏</span>
+          <span style="font-size:11px;opacity:0.50;font-family:'Poppins',sans-serif;">जप करें</span>
+        </button>
+      </div>
+
+      <!-- Bottom -->
+      <div style="width:100%;flex-shrink:0;padding:0 24px 44px;">
+        <div id="sadJRemain" style="text-align:center;font-size:12px;color:rgba(255,255,255,0.28);margin-bottom:10px;">शेष: 108 जप</div>
+        <div style="height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+          <div id="sadJBar" style="height:100%;width:0%;background:linear-gradient(90deg,#FF6B1A,#D4A843);border-radius:99px;transition:width 0.3s;"></div>
+        </div>
+      </div>
+
+      <!-- Completion overlay -->
+      <div id="sadJDone" style="display:none;position:absolute;inset:0;background:rgba(10,3,0,0.97);z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:32px;">
+        <div style="font-size:56px;">🙏</div>
+        <div style="font-family:'Tiro Devanagari Hindi',serif;font-size:24px;color:#D4A843;">आज का जप पूर्ण हुआ</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.40);">108 जप पूरे हुए 🔥</div>
+        <button onclick="exitSadhanaJap()" style="margin-top:8px;width:220px;height:52px;border-radius:14px;border:none;background:linear-gradient(135deg,#FF6B1A,#D4A843);color:#fff;font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">साधना पर लौटें</button>
+      </div>
+
+    </div>
+
+    <!-- ── SADHANA ── -->
+    <div class="scr" id="scr-sadhana">
+      <div class="dark-hdr" style="padding:16px 18px 12px;">
+        <div class="dh-row">
+          <div style="width:34px;"></div>
+          <div class="dh-title">साधना<small>My Sadhana</small></div>
+          <div style="width:34px;"></div>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 14px 80px;scrollbar-width:none;" id="sadhanaBody">
+        <div id="sadNone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:14px;">
+          <div style="font-size:48px;">📿</div>
+          <div style="font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);">कोई साधना नहीं</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:240px;">मार्गदर्शन में जाकर अपनी समस्या चुनें और साधना शुरू करें</div>
+          <button onclick="go('listen')" style="margin-top:8px;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border:none;border-radius:12px;padding:12px 24px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">🙏 साधना चुनें</button>
+        </div>
+        <div id="sadActive" style="display:none;">
+          <div class="sad-identity">
+            <div class="sad-purpose" id="sadPurpose">विवाह साधना</div>
+            <div class="sad-mantra" id="sadMantra">ॐ नमो नारायणाय</div>
+          </div>
+          <div class="sad-progress-card">
+            <div class="sad-day-row">
+              <div class="sad-day-big" id="sadDayNum">Day 1</div>
+              <div class="sad-day-of" id="sadDayOf">/ 21</div>
+              <div class="sad-streak">🔥 <span id="sadStreak">0</span> दिन लगातार</div>
+            </div>
+            <div class="sad-bar-bg"><div class="sad-bar-fill" id="sadBarFill" style="width:5%;"></div></div>
+            <div class="sad-bar-label" id="sadBarLabel">0% पूर्ण</div>
+          </div>
+          <div class="sad-today-card">
+            <div class="sad-today-label">आज का लक्ष्य</div>
+            <div class="sad-today-count"><span id="sadTodayDone">0</span><span class="sad-today-sep"> / </span><span>108</span><span class="sad-today-unit">जप</span></div>
+            <div class="sad-today-bar-bg"><div class="sad-today-bar" id="sadTodayBar" style="width:0%;"></div></div>
+          </div>
+          <div class="sad-motivation" id="sadMotivation">"श्रद्धा और निरंतरता — यही साधना की शक्ति है"</div>
+          <button class="sad-continue-btn" id="sadContinueBtn" onclick="continueSadhana()">🙏 साधना जारी रखें</button>
+          <div class="sad-done-badge" id="sadDoneBadge" style="display:none;">✨ आज की साधना पूर्ण</div>
+          <div style="text-align:center;margin-top:16px;">
+            <button onclick="resetSadhana()" style="background:none;border:none;color:rgba(255,255,255,0.20);font-size:11px;cursor:pointer;">साधना रीसेट करें</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── JAPA ── -->
     <div class="scr" id="scr-jap">
 
