@@ -1166,6 +1166,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
 /* ══ TAB BAR ══ */
 .sadhana-mode .tabbar{display:none!important;}
+.sadhana-mode .mp-handle,.sadhana-mode .mp-fab{display:none!important;}
 .tabbar{flex-shrink:0;height:60px;background:#fff;border-top:1px solid rgba(212,168,67,0.10);display:flex;align-items:center;justify-content:space-around;padding:0 8px 4px;box-shadow:0 -3px 14px rgba(0,0,0,0.04);z-index:30;position:relative;}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 4px 0;border-radius:10px;}
 .tab:active{background:rgba(212,168,67,0.06);}
@@ -1691,23 +1692,26 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
       <!-- Counter -->
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;">
-        <div id="sadJCount" style="font-size:88px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;transition:transform 0.1s;">0</div>
-        <div style="font-size:14px;color:rgba(255,255,255,0.25);">/ 108</div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
+          <div id="sadJCount" style="font-size:88px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;transition:transform 0.1s;">0</div>
+          <div style="font-size:20px;color:rgba(255,255,255,0.22);font-family:'Poppins',sans-serif;">/ 108</div>
+        </div>
         <div id="sadJRemain2" style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px;">शेष: 108</div>
 
         <!-- Ring + button -->
         <div style="position:relative;width:200px;height:200px;">
           <svg width="200" height="200" style="position:absolute;top:0;left:0;pointer-events:none;transform:rotate(-90deg);">
-            <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
-            <circle id="sadJRing" cx="100" cy="100" r="95" fill="none" stroke="url(#sadGrad)" stroke-width="3" stroke-linecap="round" stroke-dasharray="597" stroke-dashoffset="597" style="transition:stroke-dashoffset 0.3s ease;"/>
+            <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"/>
+            <circle id="sadJRing" cx="100" cy="100" r="95" fill="none" stroke="url(#sadGrad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="597" stroke-dashoffset="597" style="transition:stroke-dashoffset 0.3s ease;filter:url(#ringGlow);"/>
             <defs>
+              <filter id="ringGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
               <linearGradient id="sadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#FF6B1A"/>
                 <stop offset="100%" stop-color="#D4A843"/>
               </linearGradient>
             </defs>
           </svg>
-          <button onclick="sadJTap()" id="sadJBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:none;background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sjPulse 2.8s ease-in-out infinite;">
+          <button onclick="sadJTap()" id="sadJBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:none;background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sjPulse 2.8s ease-in-out infinite;transition:box-shadow 0.15s;">
             <span style="font-size:36px;">🙏</span>
             <span style="font-size:11px;opacity:0.50;font-family:'Poppins',sans-serif;">जप करें</span>
           </button>
@@ -3342,6 +3346,9 @@ function sadJTap(){
   if(sadJCount >= 108) return;
   sadJCount++;
   if(navigator.vibrate) navigator.vibrate(15);
+  // Tap glow burst
+  const b=document.getElementById('sadJBtn');
+  if(b){b.style.boxShadow='0 0 50px rgba(255,107,26,0.55),0 0 80px rgba(212,168,67,0.25)';setTimeout(()=>b.style.boxShadow='',200);}
 
   // Count pop
   const cEl = document.getElementById('sadJCount');
