@@ -1165,6 +1165,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
 
 /* ══ TAB BAR ══ */
+.sadhana-mode .tabbar{display:none!important;}
 .tabbar{flex-shrink:0;height:60px;background:#fff;border-top:1px solid rgba(212,168,67,0.10);display:flex;align-items:center;justify-content:space-around;padding:0 8px 4px;box-shadow:0 -3px 14px rgba(0,0,0,0.04);z-index:30;position:relative;}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 4px 0;border-radius:10px;}
 .tab:active{background:rgba(212,168,67,0.06);}
@@ -1690,18 +1691,31 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
       <!-- Counter -->
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;">
-        <div id="sadJCount" style="font-size:96px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;">0</div>
-        <div style="font-size:16px;color:rgba(255,255,255,0.25);">/ 108</div>
-        <div style="height:20px;"></div>
-        <button onclick="sadJTap()" id="sadJBtn" style="width:180px;height:180px;border-radius:50%;border:1.5px solid rgba(212,168,67,0.30);background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sjPulse 2.8s ease-in-out infinite;">
-          <span style="font-size:36px;">🙏</span>
-          <span style="font-size:11px;opacity:0.50;font-family:'Poppins',sans-serif;">जप करें</span>
-        </button>
+        <div id="sadJCount" style="font-size:88px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;transition:transform 0.1s;">0</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.25);">/ 108</div>
+        <div id="sadJRemain2" style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px;">शेष: 108</div>
+
+        <!-- Ring + button -->
+        <div style="position:relative;width:200px;height:200px;">
+          <svg width="200" height="200" style="position:absolute;top:0;left:0;pointer-events:none;transform:rotate(-90deg);">
+            <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
+            <circle id="sadJRing" cx="100" cy="100" r="95" fill="none" stroke="url(#sadGrad)" stroke-width="3" stroke-linecap="round" stroke-dasharray="597" stroke-dashoffset="597" style="transition:stroke-dashoffset 0.3s ease;"/>
+            <defs>
+              <linearGradient id="sadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#FF6B1A"/>
+                <stop offset="100%" stop-color="#D4A843"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <button onclick="sadJTap()" id="sadJBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:none;background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sjPulse 2.8s ease-in-out infinite;">
+            <span style="font-size:36px;">🙏</span>
+            <span style="font-size:11px;opacity:0.50;font-family:'Poppins',sans-serif;">जप करें</span>
+          </button>
+        </div>
       </div>
 
       <!-- Bottom -->
       <div style="width:100%;flex-shrink:0;padding:0 24px 44px;">
-        <div id="sadJRemain" style="text-align:center;font-size:12px;color:rgba(255,255,255,0.28);margin-bottom:10px;">शेष: 108 जप</div>
         <div style="height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
           <div id="sadJBar" style="height:100%;width:0%;background:linear-gradient(90deg,#FF6B1A,#D4A843);border-radius:99px;transition:width 0.3s;"></div>
         </div>
@@ -3312,6 +3326,7 @@ function continueSadhana(){
   document.querySelectorAll('.scr').forEach(el=>el.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('on'));
   document.getElementById('scr-sadhana-jap').classList.add('on');
+  document.body.classList.add('sadhana-mode');
 
   // Fade out focus message after 2s
   setTimeout(()=>{
@@ -3360,15 +3375,28 @@ function sadJTap(){
 }
 
 function sadJUpdate(){
+  // Count
   const cEl=document.getElementById('sadJCount');
-  if(cEl) cEl.textContent=sadJCount;
+  if(cEl){cEl.textContent=sadJCount;cEl.style.transform='scale(1.18)';setTimeout(()=>cEl.style.transform='scale(1)',100);}
+  // Remaining under count
+  const r2=document.getElementById('sadJRemain2');
+  if(r2) r2.textContent='शेष: '+(108-sadJCount);
+  // Bar
   const bar=document.getElementById('sadJBar');
   if(bar) bar.style.width=Math.round((sadJCount/108)*100)+'%';
-  const rem=document.getElementById('sadJRemain');
-  if(rem) rem.textContent='शेष: '+(108-sadJCount)+' जप';
+  // Ring (circumference=597)
+  const ring=document.getElementById('sadJRing');
+  if(ring) ring.style.strokeDashoffset=597-(597*(sadJCount/108));
+  // Milestones
+  if(sadJCount===27||sadJCount===54||sadJCount===81){
+    if(navigator.vibrate)navigator.vibrate([30,20,30]);
+    const btn=document.getElementById('sadJBtn');
+    if(btn){btn.style.boxShadow='0 0 40px rgba(212,168,67,0.60)';setTimeout(()=>btn.style.boxShadow='',600);}
+  }
 }
 
 function exitSadhanaJap(){
+  document.body.classList.remove('sadhana-mode');
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('scr-sadhana').classList.add('on');
