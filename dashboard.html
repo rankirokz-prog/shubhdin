@@ -1378,6 +1378,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   font-family:'Tiro Devanagari Hindi',serif;
 }
 
+@keyframes sadBreathe{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.05);}}
 @keyframes sjPulse{
   0%,100%{box-shadow:0 0 0 1.5px rgba(212,168,67,0.35),0 0 40px rgba(212,168,67,0.12);}
   50%{box-shadow:0 0 0 1.5px rgba(212,168,67,0.60),0 0 60px rgba(212,168,67,0.22),0 0 90px rgba(212,168,67,0.08);}
@@ -1696,22 +1697,33 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <div id="sadJCount" style="font-size:88px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;transition:transform 0.1s;">0</div>
           <div style="font-size:20px;color:rgba(255,255,255,0.22);font-family:'Poppins',sans-serif;">/ 108</div>
         </div>
-        <div id="sadJRemain2" style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px;">शेष: 108</div>
+        <div id="sadJRemain2" style="font-size:13px;color:rgba(212,168,67,0.65);margin-bottom:16px;">शेष: 108</div>
 
         <!-- Ring + button -->
         <div style="position:relative;width:200px;height:200px;">
-          <svg width="200" height="200" style="position:absolute;top:0;left:0;pointer-events:none;transform:rotate(-90deg);">
-            <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4"/>
-            <circle id="sadJRing" cx="100" cy="100" r="95" fill="none" stroke="url(#sadGrad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="597" stroke-dashoffset="597" style="transition:stroke-dashoffset 0.3s ease;filter:url(#ringGlow);"/>
+          <svg width="200" height="200" style="position:absolute;top:0;left:0;pointer-events:none;overflow:visible;">
             <defs>
-              <filter id="ringGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="ringGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="dotGlow2" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
               <linearGradient id="sadGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#FF6B1A"/>
                 <stop offset="100%" stop-color="#D4A843"/>
               </linearGradient>
             </defs>
+            <!-- Background ring -->
+            <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="4" transform="rotate(-90 100 100)"/>
+            <!-- Progress arc — starts at top -->
+            <circle id="sadJRing" cx="100" cy="100" r="95" fill="none" stroke="url(#sadGrad)" stroke-width="5" stroke-linecap="round" stroke-dasharray="597" stroke-dashoffset="597" transform="rotate(-90 100 100)" style="transition:stroke-dashoffset 0.3s ease;filter:url(#ringGlow);"/>
+            <!-- Current position dot -->
+            <circle id="sadJDot" cx="100" cy="5" r="5" fill="#FFD700" filter="url(#dotGlow2)" style="display:none;transition:all 0.3s ease;"/>
           </svg>
-          <button onclick="sadJTap()" id="sadJBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:none;background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sjPulse 2.8s ease-in-out infinite;transition:box-shadow 0.15s;">
+          <button onclick="sadJTap()" id="sadJBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:none;background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sadBreathe 3s ease-in-out infinite;transition:box-shadow 0.15s,transform 0.1s;">
             <span style="font-size:36px;">🙏</span>
             <span style="font-size:11px;opacity:0.50;font-family:'Poppins',sans-serif;">जप करें</span>
           </button>
@@ -1719,11 +1731,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       </div>
 
       <!-- Bottom -->
-      <div style="width:100%;flex-shrink:0;padding:0 24px 44px;">
-        <div style="height:3px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
-          <div id="sadJBar" style="height:100%;width:0%;background:linear-gradient(90deg,#FF6B1A,#D4A843);border-radius:99px;transition:width 0.3s;"></div>
-        </div>
-      </div>
+      <div style="width:100%;flex-shrink:0;padding:0 24px 44px;"></div>
 
       <!-- Completion overlay -->
       <div id="sadJDone" style="display:none;position:absolute;inset:0;background:rgba(10,3,0,0.97);z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:32px;">
@@ -3346,6 +3354,8 @@ function sadJTap(){
   if(sadJCount >= 108) return;
   sadJCount++;
   if(navigator.vibrate) navigator.vibrate(15);
+  // Soft tick sound
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(0.06,ac.currentTime+0.005);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.12);o.start();o.stop(ac.currentTime+0.12);}catch(e){}
   // Tap glow burst
   const b=document.getElementById('sadJBtn');
   if(b){b.style.boxShadow='0 0 50px rgba(255,107,26,0.55),0 0 80px rgba(212,168,67,0.25)';setTimeout(()=>b.style.boxShadow='',200);}
@@ -3388,12 +3398,22 @@ function sadJUpdate(){
   // Remaining under count
   const r2=document.getElementById('sadJRemain2');
   if(r2) r2.textContent='शेष: '+(108-sadJCount);
-  // Bar
-  const bar=document.getElementById('sadJBar');
-  if(bar) bar.style.width=Math.round((sadJCount/108)*100)+'%';
-  // Ring (circumference=597)
+
+  // Ring + dot
   const ring=document.getElementById('sadJRing');
-  if(ring) ring.style.strokeDashoffset=597-(597*(sadJCount/108));
+  const dot=document.getElementById('sadJDot');
+  const pct=sadJCount/108;
+  if(ring) ring.style.strokeDashoffset=597-(597*pct);
+  if(dot){
+    if(sadJCount>0){
+      dot.style.display='block';
+      const angle=(pct*360-90)*(Math.PI/180);
+      const x=100+95*Math.cos(angle);
+      const y=100+95*Math.sin(angle);
+      dot.setAttribute('cx',x.toFixed(1));
+      dot.setAttribute('cy',y.toFixed(1));
+    } else { dot.style.display='none'; }
+  }
   // Milestones
   if(sadJCount===27||sadJCount===54||sadJCount===81){
     if(navigator.vibrate)navigator.vibrate([30,20,30]);
