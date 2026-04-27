@@ -1784,6 +1784,22 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="sad-today-bar-bg"><div class="sad-today-bar" id="sadTodayBar" style="width:0%;"></div></div>
           </div>
           <div class="sad-motivation" id="sadMotivation">"श्रद्धा और निरंतरता — यही साधना की शक्ति है"</div>
+          <div style="display:flex;justify-content:space-around;margin-bottom:14px;">
+            <div style="text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:#fff;" id="sadLifetimeJap">0</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">कुल जप</div>
+            </div>
+            <div style="width:1px;background:rgba(212,168,67,0.15);"></div>
+            <div style="text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:#fff;" id="sadTotalDays">0</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">कुल दिन</div>
+            </div>
+            <div style="width:1px;background:rgba(212,168,67,0.15);"></div>
+            <div style="text-align:center;">
+              <div style="font-size:20px;font-weight:700;color:rgba(255,150,0,0.90);" id="sadBestStreak">0</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">सर्वश्रेष्ठ</div>
+            </div>
+          </div>
           <button class="sad-continue-btn" id="sadContinueBtn" onclick="continueSadhana()">🙏 साधना जारी रखें</button>
           <div class="sad-done-badge" id="sadDoneBadge" style="display:none;">✨ आज की साधना पूर्ण</div>
           <div style="text-align:center;margin-top:16px;">
@@ -3175,6 +3191,10 @@ function renderSadhana(){
     '"नियमितता ही सिद्धि का द्वार है"',
   ];
   document.getElementById('sadMotivation').textContent = motivations[s.daysDone.length % motivations.length];
+  const ltj=document.getElementById('sadLifetimeJap'); if(ltj) ltj.textContent=(s.totalJap||0).toLocaleString('en-IN');
+  const ttd=document.getElementById('sadTotalDays'); if(ttd) ttd.textContent=s.daysDone.length;
+  const bst=document.getElementById('sadBestStreak'); if(bst) bst.textContent=Math.max(s.streak||0,parseInt(localStorage.getItem('shubhdin_best_streak')||'0'));
+  if(s.streak) localStorage.setItem('shubhdin_best_streak',Math.max(s.streak,parseInt(localStorage.getItem('shubhdin_best_streak')||'0')));
 }
 
 let sjTapCount = 0;
@@ -3185,10 +3205,10 @@ function completeSadhanaDay(){
   const s = getSadhana(); if(!s) return;
   const today = new Date().toISOString().slice(0,10);
   if(!s.daysDone.includes(today)){ s.daysDone.push(today); }
-  // Update streak
   const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
   s.streak = s.daysDone.includes(yesterday) ? s.streak+1 : 1;
   s.todayCount = 108; s.todayDate = today;
+  s.totalJap = (s.totalJap||0) + 108;
   saveSadhana(s);
   renderSadhana();
 }
