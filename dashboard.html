@@ -3358,30 +3358,49 @@ function continueSadhana(){
 function sadJTap(){
   if(sadJCount>=108)return;
   sadJCount++;
+  const left=108-sadJCount;
 
-  // Vibration — builds up near end
-  if(sadJCount>=106) navigator.vibrate&&navigator.vibrate([30,15,30]);
-  else navigator.vibrate&&navigator.vibrate(15);
+  // ── PROGRESSIVE VIBRATION ──
+  if(sadJCount===108) navigator.vibrate&&navigator.vibrate([100,40,100,40,150]);
+  else if(left<=5)    navigator.vibrate&&navigator.vibrate([20+((5-left)*8),10,20+((5-left)*8)]);
+  else                navigator.vibrate&&navigator.vibrate(15);
 
-  // Tick sound
-  try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);
-    o.frequency.value=sadJCount>=106?660:800;o.type='sine';
-    g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(0.06,ac.currentTime+0.005);
-    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.12);o.start();o.stop(ac.currentTime+0.12);}catch(e){}
+  // ── PROGRESSIVE TICK SOUND ──
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    // Higher pitch + louder near end
+    o.frequency.value = left<=5 ? 528+(5-left)*40 : 800;
+    const vol = left<=5 ? 0.06+((5-left)*0.015) : 0.05;
+    g.gain.setValueAtTime(0,ac.currentTime);
+    g.gain.linearRampToValueAtTime(vol,ac.currentTime+0.005);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.15);
+    o.start();o.stop(ac.currentTime+0.15);
+  }catch(e){}
 
-  // Glow burst — stronger near end
+  // ── PROGRESSIVE GLOW ON BUTTON ──
   const b=document.getElementById('sadJBtn');
   if(b){
-    const glow=sadJCount>=106?'0 0 80px rgba(255,215,0,0.80),0 0 120px rgba(255,107,26,0.50)':
-               sadJCount>=100?'0 0 60px rgba(255,107,26,0.65),0 0 90px rgba(212,168,67,0.30)':
-               '0 0 50px rgba(255,107,26,0.55),0 0 80px rgba(212,168,67,0.25)';
+    let glow;
+    if(sadJCount===108)      glow='0 0 120px rgba(255,215,0,1.0),0 0 200px rgba(255,107,26,0.70)';
+    else if(left===0)        glow='0 0 120px rgba(255,215,0,1.0)';
+    else if(left<=5){
+      const intensity=0.40+((5-left)*0.12);
+      glow=`0 0 ${60+(5-left)*15}px rgba(255,215,0,${intensity}),0 0 ${90+(5-left)*20}px rgba(255,107,26,${intensity*0.6})`;
+    } else glow='0 0 50px rgba(255,107,26,0.55),0 0 80px rgba(212,168,67,0.25)';
     b.style.boxShadow=glow;
-    setTimeout(()=>b.style.boxShadow='',sadJCount>=106?400:200);
+    const dur=sadJCount===108?800:left<=5?350:200;
+    setTimeout(()=>{if(sadJCount<108)b.style.boxShadow='';},dur);
   }
 
-  // Count pop
+  // ── COUNT POP (bigger near end) ──
   const cEl=document.getElementById('sadJCount');
-  if(cEl){cEl.style.transform='scale(1.18)';setTimeout(()=>cEl.style.transform='scale(1)',100);}
+  if(cEl){
+    const s=left<=5?1.28:1.18;
+    cEl.style.transform=`scale(${s})`;
+    setTimeout(()=>cEl.style.transform='scale(1)',100);
+  }
 
   // Update display
   sadJUpdate();
@@ -3390,30 +3409,37 @@ function sadJTap(){
   const s=getSadhana();
   if(s){s.todayCount=sadJCount;s.todayDate=new Date().toISOString().slice(0,10);saveSadhana(s);}
 
-  // Milestones
+  // Milestones 27/54/81
   if(sadJCount===27||sadJCount===54||sadJCount===81){
     navigator.vibrate&&navigator.vibrate([30,20,30]);
     if(b){b.style.boxShadow='0 0 40px rgba(212,168,67,0.60)';setTimeout(()=>b.style.boxShadow='',600);}
   }
 
-  // Completion at 108
+  // ── 108 COMPLETION ──
   if(sadJCount>=108){
+    // Ring completes — full gold
+    const ring=document.getElementById('sadJRing');
+    if(ring){ring.style.stroke='#FFD700';ring.style.filter='url(#ringGlow) brightness(2.5)';ring.style.animation='none';}
+    // Dot disappears
+    const dot=document.getElementById('sadJDot');if(dot)dot.style.display='none';
+    // Button expands then settles
+    if(b){
+      b.style.animation='none';
+      b.style.transform='translate(-50%,-50%) scale(1.15)';
+      setTimeout(()=>{b.style.transform='translate(-50%,-50%) scale(1)';b.style.transition='transform 0.4s ease';},300);
+    }
     // Triple bell
     [0,0.4,0.8].forEach(d=>setTimeout(()=>{
       try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=528;g.gain.setValueAtTime(0,ac.currentTime);g.gain.linearRampToValueAtTime(0.12,ac.currentTime+0.02);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+1.5);o.start();o.stop(ac.currentTime+1.5);}catch(e){}
     },d*1000));
-    navigator.vibrate&&navigator.vibrate([80,40,80,40,120]);
-    // Full ring flash
-    const ring=document.getElementById('sadJRing');
-    if(ring){ring.style.filter='url(#ringGlow) brightness(2)';ring.style.stroke='#FFD700';}
+    // Show overlay after 600ms
     setTimeout(()=>{
       const done=document.getElementById('sadJDone');
       if(done)done.style.display='flex';
       completeSadhanaDay();
-      // Show streak
       const sk=getSadhana();
       const strEl=document.getElementById('sadJDoneStreak');
-      if(strEl&&sk) strEl.textContent='🔥 '+sk.streak+' दिन लगातार';
+      if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+' दिन लगातार';
     },600);
   }
 }
