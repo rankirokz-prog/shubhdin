@@ -3490,7 +3490,13 @@ function sadJUpdate(){
     const btn=document.getElementById('sadJBtn');
     if(btn){btn.style.boxShadow='0 0 40px rgba(212,168,67,0.60)';setTimeout(()=>btn.style.boxShadow='',600);}
   }
+
+  // Mid-progress motivation
+  const msgs={27:'अच्छी शुरुआत 🙏',54:'आधा पूरा हो गया 🔥',81:'बस थोड़ा और ✨'};
+  const motivEl=document.getElementById('sadJFocus');
+  if(msgs[sadJCount]&&motivEl){motivEl.style.opacity='1';motivEl.textContent=msgs[sadJCount];setTimeout(()=>motivEl.style.opacity='0',2000);}
 }
+
 
 function sadJContinueExtra(){
   sadJCount=0;
