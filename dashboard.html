@@ -1726,7 +1726,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           </svg>
           <button onclick="sadJTap()" id="sadJBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:none;background:radial-gradient(circle,rgba(255,107,26,0.22) 0%,rgba(13,5,0,0.96) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;animation:sadBreathe 3s ease-in-out infinite;transition:box-shadow 0.15s,transform 0.1s;">
             <span style="font-size:36px;">🙏</span>
-            <span style="font-size:11px;opacity:0.50;font-family:'Poppins',sans-serif;">जप करें</span>
+            <span style="font-size:10px;opacity:0.40;font-family:'Poppins',sans-serif;letter-spacing:0.3px;">टैप करें</span>
           </button>
         </div>
       </div>
@@ -3439,7 +3439,7 @@ function sadJTap(){
   if(sadJCount>=108){
     // Ring completes — full gold
     const ring=document.getElementById('sadJRing');
-    if(ring){ring.style.stroke='#FFD700';ring.style.filter='url(#ringGlow) brightness(2.5)';ring.style.animation='none';}
+    if(ring){ring.style.filter='url(#ringGlow) brightness(2.2)';ring.style.animation='none';ring.style.strokeDashoffset='0';}
     // Dot disappears
     const dot=document.getElementById('sadJDot');if(dot)dot.style.display='none';
     // Button expands then settles
@@ -3459,7 +3459,8 @@ function sadJTap(){
       completeSadhanaDay();
       const sk=getSadhana();
       const strEl=document.getElementById('sadJDoneStreak');
-      if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+' दिन लगातार';
+      if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+' दिन';
+      const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
     },900);
   }
 }
