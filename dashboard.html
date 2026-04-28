@@ -1708,7 +1708,9 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div id="sadJRemain2" style="font-size:13px;color:rgba(212,168,67,0.65);margin-bottom:16px;">शेष: 108</div>
 
         <!-- Ring + button -->
-        <div style="position:relative;width:200px;height:200px;">
+        <div style="position:relative;width:200px;height:200px;overflow:visible;">
+          <!-- Glow layer -->
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;pointer-events:none;"></div>
           <svg width="200" height="200" style="position:absolute;top:0;left:0;pointer-events:none;overflow:visible;">
             <defs>
               <filter id="ringGlow" x="-30%" y="-30%" width="160%" height="160%">
