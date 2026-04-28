@@ -1379,6 +1379,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 
 @keyframes ringPulse{0%,100%{filter:url(#ringGlow) brightness(1);}50%{filter:url(#ringGlow) brightness(1.8);}}
+@keyframes sadIdleGlow2{0%,100%{opacity:0.45;}50%{opacity:0.90;}}
 @keyframes sadIdleGlow{0%,100%{box-shadow:0 0 25px rgba(212,168,67,0.20),0 0 50px rgba(255,107,26,0.10);}50%{box-shadow:0 0 45px rgba(212,168,67,0.45),0 0 80px rgba(255,107,26,0.20);}}
 @keyframes sadBreathe{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.05);}}
 @keyframes sjPulse{
@@ -3352,6 +3353,11 @@ function continueSadhana(){
   // Set mantra from sadhana data
   const mEl = document.getElementById('sadJMantra');
   if(mEl) mEl.textContent = s.mantra || 'ॐ नमो नारायणाय';
+
+  const bh=document.getElementById('sadJBelowHint');
+  if(bh){bh.style.display='block';bh.style.opacity='1';bh.style.animation='sadIdleGlow2 1.8s ease-in-out infinite';}
+  const th=document.getElementById('sadJTapHint');
+  if(th){th.style.display='block';th.style.opacity='1';}
 
   // Update display
   sadJUpdate();
