@@ -1380,7 +1380,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
 @keyframes ringPulse{0%,100%{filter:url(#ringGlow) brightness(1);}50%{filter:url(#ringGlow) brightness(1.8);}}
 @keyframes sadIdleGlow2{0%,100%{opacity:0.45;}50%{opacity:0.90;}}
-@keyframes sadIdleGlow{0%,100%{box-shadow:0 0 25px rgba(212,168,67,0.20),0 0 50px rgba(255,107,26,0.10);}50%{box-shadow:0 0 45px rgba(212,168,67,0.45),0 0 80px rgba(255,107,26,0.20);}}
+@keyframes sadIdleGlow{0%,100%{box-shadow:0 0 40px rgba(212,168,67,0.50),0 0 80px rgba(255,107,26,0.30),0 0 140px rgba(212,168,67,0.15);}50%{box-shadow:0 0 70px rgba(212,168,67,0.80),0 0 130px rgba(255,107,26,0.50),0 0 200px rgba(212,168,67,0.25);}}
 .sad-jap-btn{
   box-shadow:0 0 60px rgba(212,168,67,0.50),0 0 120px rgba(255,107,26,0.25),0 0 180px rgba(212,168,67,0.10);
   animation:sadBreathe 3s ease-in-out infinite,sadIdleGlow 2s ease-in-out infinite;
@@ -1733,7 +1733,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <!-- Current position dot -->
             <circle id="sadJDot" cx="100" cy="5" r="5" fill="#FFD700" filter="url(#dotGlow2)" style="display:none;transition:all 0.3s ease;"/>
           </svg>
-          <button onclick="sadJTap()" id="sadJBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:2.5px solid rgba(212,168,67,0.70);background:radial-gradient(circle,rgba(255,107,26,0.35) 0%,rgba(20,8,0,0.95) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:box-shadow 0.15s,transform 0.1s;" class="sad-jap-btn">
+          <button onclick="sadJTap()" id="sadJBtn" class="sad-jap-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:168px;height:168px;border-radius:50%;border:2.5px solid rgba(212,168,67,0.70);background:radial-gradient(circle,rgba(255,107,26,0.35) 0%,rgba(20,8,0,0.95) 65%);color:var(--gold);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:transform 0.1s;">
 <span style="font-size:44px;">🙏</span>
           </button>
         </div>
