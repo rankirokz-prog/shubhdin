@@ -2042,7 +2042,7 @@ function personalise(){
   document.getElementById('greetTime').textContent=greetMsg();
   const rawName = name.charAt(0).toUpperCase() + name.slice(1);
   // Transliterate to Hindi if H mode
-  const displayName = H ? toHindiName(rawName) : rawName;
+  const displayName = rawName; // name already translated at registration
   document.getElementById('greetName').textContent=displayName+(H?' जी 🙏':' 🙏');
 
   // Chips
