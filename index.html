@@ -3015,27 +3015,35 @@ function getChantType(){
 
 // Get shubh/rahu times from stored data
 function parsePanchangTime(str){
-  // Handles "10:30 AM - 12:00 PM" or "10:30-12:00"
-  if(!str) return null;
-  const parts=str.replace(/AM|PM/gi,'').split(/[-–]/);
-  if(parts.length<2) return null;
-  const clean=(s)=>{
-    s=s.trim();
-    let [h,m]=s.split(':').map(Number);
-    if(str.toLowerCase().includes('pm')&&h<12) h+=12;
-    if(str.toLowerCase().includes('am')&&h===12) h=0;
+  if(!str||str.length<5) return null;
+  // Match times like "8:15", "10:30", "8:15 AM", "08:15:00"
+  const timeRe=/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/gi;
+  const matches=[...str.matchAll(timeRe)];
+  if(matches.length<2) return null;
+  const toHH=(h,m,ampm)=>{
+    h=parseInt(h); m=parseInt(m);
+    if(ampm&&ampm.toUpperCase()==='PM'&&h<12) h+=12;
+    if(ampm&&ampm.toUpperCase()==='AM'&&h===12) h=0;
     return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
   };
-  return {start:clean(parts[0]),end:clean(parts[1])};
+  return {
+    start:toHH(matches[0][1],matches[0][2],matches[0][3]),
+    end:toHH(matches[1][1],matches[1][2],matches[1][3])
+  };
 }
 
 function getPanchangTimes(){
-  const pd=window._panchangData;
   const def={shubh:{start:'08:00',end:'09:30'},rahu:{start:'13:30',end:'15:00'}};
-  if(!pd) return def;
-  const rahu=parsePanchangTime(pd.rahu_kaal)||def.rahu;
-  const shubh=parsePanchangTime(pd.abhijit_muhurta)||def.shubh;
-  return {shubh, rahu};
+  // Read directly from DOM — always available after fetchPanchang
+  const shubhEl=document.getElementById('goodTime');
+  const rahuEl=document.getElementById('rahuTime');
+  const shubhStr=shubhEl?shubhEl.textContent:'';
+  const rahuStr=rahuEl?rahuEl.textContent:'';
+  console.log('Shubh samay:', shubhStr, 'Rahu kaal:', rahuStr);
+  return {
+    shubh: parsePanchangTime(shubhStr)||def.shubh,
+    rahu:  parsePanchangTime(rahuStr)||def.rahu
+  };
 }
 
 async function playPanchang(){
