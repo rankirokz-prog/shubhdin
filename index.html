@@ -2997,14 +2997,11 @@ function buildTimeSegments(timeStr, isStart){
 
 // Determine if day is good or careful from panchang data
 function getDayType(){
-  // Use stored panchang data if available
   const pd=window._panchangData;
-  if(!pd) return 'good'; // default
-  // Check yoga quality
-  const yoga=(pd.yoga||'').toLowerCase();
-  const badYogas=['vishkumbha','atiganda','shoola','ganda','vyaghat','vajra','siddhi','vyatipata','parigha'];
+  if(!pd) return 'good';
+  const yoga=(pd.yoga||pd.yog||'').toLowerCase();
+  const badYogas=['vyatipat','vaidhriti','vishkambha','parigha','shool','gand','atigand','vajra'];
   if(badYogas.some(b=>yoga.includes(b))) return 'careful';
-  // Check if rahu kaal is current time
   return 'good';
 }
 
@@ -3017,14 +3014,28 @@ function getChantType(){
 }
 
 // Get shubh/rahu times from stored data
+function parsePanchangTime(str){
+  // Handles "10:30 AM - 12:00 PM" or "10:30-12:00"
+  if(!str) return null;
+  const parts=str.replace(/AM|PM/gi,'').split(/[-–]/);
+  if(parts.length<2) return null;
+  const clean=(s)=>{
+    s=s.trim();
+    let [h,m]=s.split(':').map(Number);
+    if(str.toLowerCase().includes('pm')&&h<12) h+=12;
+    if(str.toLowerCase().includes('am')&&h===12) h=0;
+    return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+  };
+  return {start:clean(parts[0]),end:clean(parts[1])};
+}
+
 function getPanchangTimes(){
   const pd=window._panchangData;
   const def={shubh:{start:'08:00',end:'09:30'},rahu:{start:'13:30',end:'15:00'}};
   if(!pd) return def;
-  return {
-    shubh:{start:pd.sunrise||'06:00',end:pd.sunrise_end||'07:30'},
-    rahu:{start:pd.rahu_start||'13:30',end:pd.rahu_end||'15:00'}
-  };
+  const rahu=parsePanchangTime(pd.rahu_kaal)||def.rahu;
+  const shubh=parsePanchangTime(pd.abhijit_muhurta)||def.shubh;
+  return {shubh, rahu};
 }
 
 async function playPanchang(){
@@ -3714,6 +3725,7 @@ async function fetchPanchang(){
     const city=(U.city||'default').toLowerCase().replace(/\s+/g,'');
     const json=await(await fetch('/api/panchang?city='+city)).json();
     if(!json.data)return;const p=json.data;
+    window._panchangData=p; // store for audio stitching
     if(p.abhijit_muhurta){document.getElementById('goodTime').textContent=p.abhijit_muhurta;}
     if(p.rahu_kaal){document.getElementById('avoidTime').textContent=p.rahu_kaal;document.getElementById('rahuTime').textContent=p.rahu_kaal;}
     if(p.tithi){document.getElementById('tithiVal').textContent=p.tithi;document.getElementById('tv').textContent=p.tithi;}
