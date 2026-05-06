@@ -2968,30 +2968,45 @@ function getNameUrl(){
 const BASE = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/';
 function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
-// Time conversion: "08:15" → {period:"subah", hour:8, min:15}
-function parseTime(str){
-  const [h,m]=str.split(':').map(Number);
-  let period;
-  if(h>=5&&h<12) period='subah';
-  else if(h>=12&&h<16) period='dopahar';
-  else if(h>=16&&h<20) period='sham';
-  else period='raat';
-  const hour12=h>12?h-12:h===0?12:h;
-  return {period, hour:hour12, min:m};
+
+
+// Map period+hour to exact uploaded filename
+function getPeriodFile(period, hour){
+  // Exact names as uploaded in Supabase
+  if(period==='subah')   return 'subah_'+hour;      // subah_1 to subah_12
+  if(period==='dopahar') return 'Dophar_'+hour;     // Dophar_1 to Dophar_4
+  if(period==='sham')    return 'shaam_'+hour;      // shaam_1 to shaam_4
+  if(period==='raat'){
+    // Raat_1=7pm, Raat_2=8pm... Raat_6=12am → map hour to 1-6
+    const raatMap={7:1,8:2,9:3,10:4,11:5,12:6,0:6};
+    return 'Raat_'+(raatMap[hour]||1);
+  }
+  return 'subah_'+hour;
+}
+
+// Determine period from 24hr hour
+function getPeriod(h){
+  if(h>=5&&h<12)  return 'subah';
+  if(h>=12&&h<16) return 'dopahar';
+  if(h>=16&&h<20) return 'sham';
+  return 'raat';
 }
 
 // Build time audio segments: returns array of URLs
 function buildTimeSegments(timeStr, isStart){
-  const {period,hour,min}=parseTime(timeStr);
+  if(!timeStr) return [];
+  const [hStr,mStr]=timeStr.split(':');
+  const h=parseInt(hStr), m=parseInt(mStr);
+  const period=getPeriod(h);
+  const hour12=h>12?h-12:(h===0?12:h);
   const urls=[];
   if(isStart){
-    // With period: e.g. subah_8.mp3
-    urls.push(BASE+'time/hours_with_period/'+period+'_'+hour+'.mp3');
+    const fname=getPeriodFile(period, hour12);
+    urls.push(BASE+'Time/'+fname+'.mp3');
   } else {
-    // Plain hour: e.g. hour_9.mp3
-    urls.push(BASE+'time/hours_plain/hour_'+hour+'.mp3');
+    urls.push(BASE+'Time/hour_'+hour12+'.mp3');
   }
-  if(min>0) urls.push(BASE+'time/minutes/min_'+min+'.mp3');
+  if(m>0) urls.push(BASE+'Time/min_'+m+'.mp3');
   return urls;
 }
 
@@ -3098,18 +3113,18 @@ async function playPanchang(){
   }
 
   // 3. TIME BLOCK — Shubh samay
-  playlist.push(BASE+'time/intros/'+rnd(['time_intro_1','time_intro_2'])+'.mp3');
+  playlist.push(BASE+'time_intros/'+rnd(['time_intro_1','time_intro_2'])+'.mp3');
   playlist.push(...buildTimeSegments(times.shubh.start,true));
-  playlist.push(BASE+'time/connectors/se.mp3');
+  playlist.push(BASE+'Time/se.mp3');
   playlist.push(...buildTimeSegments(times.shubh.end,false));
-  playlist.push(BASE+'time/connectors/tak_rahega.mp3');
+  playlist.push(BASE+'Time/tak_rahega.mp3');
 
   // Rahu kaal
-  playlist.push(BASE+'time/intros/'+rnd(['time_careful_1','time_careful_2'])+'.mp3');
+  playlist.push(BASE+'time_intros/'+rnd(['time_careful_1','time_careful_2'])+'.mp3');
   playlist.push(...buildTimeSegments(times.rahu.start,true));
-  playlist.push(BASE+'time/connectors/se.mp3');
+  playlist.push(BASE+'Time/se.mp3');
   playlist.push(...buildTimeSegments(times.rahu.end,false));
-  playlist.push(BASE+'time/connectors/tak_rahega.mp3');
+  playlist.push(BASE+'Time/tak_rahega.mp3');
 
   // 4. HUMAN TOUCH
   playlist.push(BASE+'human_touch/'+rnd(dayType==='good'?['good_1','good_2','good_3','good_4']:['careful_1','careful_2','careful_3','careful_4'])+'.mp3');
