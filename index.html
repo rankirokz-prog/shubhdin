@@ -3113,14 +3113,14 @@ async function playPanchang(){
   }
 
   // 3. TIME BLOCK — Shubh samay
-  playlist.push(BASE+'time_intros/'+rnd(['time_intro_1','time_intro_2'])+'.mp3');
+  playlist.push(BASE+'Time/'+rnd(['time_intro_1','time_intro_2'])+'.mp3');
   playlist.push(...buildTimeSegments(times.shubh.start,true));
   playlist.push(BASE+'Time/se.mp3');
   playlist.push(...buildTimeSegments(times.shubh.end,false));
   playlist.push(BASE+'Time/tak_rahega.mp3');
 
   // Rahu kaal
-  playlist.push(BASE+'time_intros/'+rnd(['time_careful_1','time_careful_2'])+'.mp3');
+  playlist.push(BASE+'Time/'+rnd(['time_careful_1','time_careful_2'])+'.mp3');
   playlist.push(...buildTimeSegments(times.rahu.start,true));
   playlist.push(BASE+'Time/se.mp3');
   playlist.push(...buildTimeSegments(times.rahu.end,false));
