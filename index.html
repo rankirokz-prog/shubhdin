@@ -3032,6 +3032,7 @@ function getChantType(){
 function parsePanchangTime(str){
   if(!str||str.length<5) return null;
   // Match times like "8:15", "10:30", "8:15 AM", "08:15:00"
+  str=str.replace(/[–—]/g,'-'); // normalize dashes
   const timeRe=/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/gi;
   const matches=[...str.matchAll(timeRe)];
   if(matches.length<2) return null;
@@ -3054,7 +3055,11 @@ function getPanchangTimes(){
   const rahuEl=document.getElementById('rahuTime');
   const shubhStr=shubhEl?shubhEl.textContent:'';
   const rahuStr=rahuEl?rahuEl.textContent:'';
-  console.log('Shubh samay:', shubhStr, 'Rahu kaal:', rahuStr);
+  console.log('Shubh samay raw:', shubhStr);
+  console.log('Rahu kaal raw:', rahuStr);
+  const sp=parsePanchangTime(shubhStr)||def.shubh;
+  const rp=parsePanchangTime(rahuStr)||def.rahu;
+  console.log('Parsed shubh:', sp, 'Parsed rahu:', rp);
   return {
     shubh: parsePanchangTime(shubhStr)||def.shubh,
     rahu:  parsePanchangTime(rahuStr)||def.rahu
@@ -3080,7 +3085,7 @@ async function playPanchang(){
       if(stopped){resolve();return;}
       const a=new Audio(url);
       currentAudio=a;
-      a.onended=()=>setTimeout(resolve,200);
+      a.onended=()=>setTimeout(resolve,80);
       a.onerror=resolve; // skip missing files silently
       a.play().catch(resolve);
     });
