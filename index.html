@@ -3007,6 +3007,7 @@ function buildTimeSegments(timeStr, isStart){
     urls.push(BASE+'Time/hour_'+hour12+'.mp3');
   }
   if(m>0) urls.push(BASE+'Time/min_'+m+'.mp3');
+  console.log('Time segments:', isStart?'START':'END', timeStr, '→', urls.map(u=>u.split('/').pop()));
   return urls;
 }
 
