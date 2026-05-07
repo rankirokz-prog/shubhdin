@@ -2972,12 +2972,13 @@ function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
 // Map period+hour to exact uploaded filename
 function getPeriodFile(period, hour){
-  // Exact names as uploaded in Supabase
-  if(period==='subah')   return 'subah_'+hour;      // subah_1 to subah_12
-  if(period==='dopahar') return 'Dophar_'+hour;     // Dophar_1 to Dophar_4
-  if(period==='sham')    return 'shaam_'+hour;      // shaam_1 to shaam_4
+  if(period==='subah')   return 'subah_'+hour;       // subah_1 to subah_12
+  if(period==='dopahar'){
+    if(hour===12) return 'subah_12';                 // noon → subah_12 (Dophar_12 not uploaded)
+    return 'Dophar_'+hour;                           // Dophar_1 to Dophar_4
+  }
+  if(period==='sham')    return 'shaam_'+hour;       // shaam_1 to shaam_4
   if(period==='raat'){
-    // Raat_1=7pm, Raat_2=8pm... Raat_6=12am → map hour to 1-6
     const raatMap={7:1,8:2,9:3,10:4,11:5,12:6,0:6};
     return 'Raat_'+(raatMap[hour]||1);
   }
@@ -3007,7 +3008,6 @@ function buildTimeSegments(timeStr, isStart){
     urls.push(BASE+'Time/hour_'+hour12+'.mp3');
   }
   if(m>0) urls.push(BASE+'Time/min_'+m+'.mp3');
-  console.log('Time segments:', isStart?'START':'END', timeStr, '→', urls.map(u=>u.split('/').pop()));
   return urls;
 }
 
@@ -3056,11 +3056,7 @@ function getPanchangTimes(){
   const rahuEl=document.getElementById('rahuTime');
   const shubhStr=shubhEl?shubhEl.textContent:'';
   const rahuStr=rahuEl?rahuEl.textContent:'';
-  console.log('Shubh samay raw:', shubhStr);
-  console.log('Rahu kaal raw:', rahuStr);
-  const sp=parsePanchangTime(shubhStr)||def.shubh;
-  const rp=parsePanchangTime(rahuStr)||def.rahu;
-  console.log('Parsed shubh:', sp, 'Parsed rahu:', rp);
+
   return {
     shubh: parsePanchangTime(shubhStr)||def.shubh,
     rahu:  parsePanchangTime(rahuStr)||def.rahu
