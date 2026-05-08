@@ -3082,7 +3082,7 @@ async function playPanchang(){
       if(stopped){resolve();return;}
       const a=new Audio(url);
       currentAudio=a;
-      a.onended=()=>setTimeout(resolve,80);
+      a.onended=()=>setTimeout(resolve,30);
       a.onerror=resolve; // skip missing files silently
       a.play().catch(resolve);
     });
@@ -3549,6 +3549,15 @@ function continueSadhana(){
   const done = document.getElementById('sadJDone');
   if(done) done.style.display = 'none';
 
+  // Play sadhana chant audio on loop
+  const sadKey = s.key || 'vivah';
+  const sadAudioUrl = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/sadhana_chants/'+sadKey+'.mp3';
+  if(window._sadChantAudio){ window._sadChantAudio.pause(); window._sadChantAudio=null; }
+  window._sadChantAudio = new Audio(sadAudioUrl);
+  window._sadChantAudio.loop = true;
+  window._sadChantAudio.volume = 0.40;
+  window._sadChantAudio.play().catch(()=>{});
+
   // Show screen (full screen overlay feel)
   document.querySelectorAll('.scr').forEach(el=>el.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('on'));
@@ -3726,6 +3735,7 @@ function sadJContinue(){
   const ring=document.getElementById('sadJRing');if(ring){ring.style.animation='none';ring.style.stroke='url(#sadGrad)';}
 }
 function exitSadhanaJap(){
+  if(window._sadChantAudio){window._sadChantAudio.pause();window._sadChantAudio=null;}
   document.body.classList.remove('sadhana-mode');
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
