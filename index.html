@@ -3580,6 +3580,16 @@ function sadJTap(){
   else if(left<=5)    navigator.vibrate&&navigator.vibrate([20+((5-left)*8),10,20+((5-left)*8)]);
   else                navigator.vibrate&&navigator.vibrate(15);
 
+  // ── PLAY MANTRA ON TAP ──
+  if(window._sadChantUrl){
+    try{
+      if(window._sadChantAudio){window._sadChantAudio.pause();window._sadChantAudio.currentTime=0;}
+      window._sadChantAudio=new Audio(window._sadChantUrl);
+      window._sadChantAudio.volume=0.90;
+      window._sadChantAudio.play().catch(()=>{});
+    }catch(e){}
+  }
+
   // ── PROGRESSIVE TICK SOUND ──
   try{
     const ac=new(window.AudioContext||window.webkitAudioContext)();
