@@ -1449,7 +1449,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="lh-play">▶</div>
           </div>
           <div class="lh-preview">
-            <p id="preview">"आज <em id="pvDeity">लक्ष्मी जी</em> का दिन है — शुभ समय <em id="pvTime">6:00–7:30</em> तक है..."</p>
+            <p id="preview"><span id="pvPre">"आज </span><em id="pvDeity">लक्ष्मी जी</em><span id="pvMid"> का दिन है — शुभ समय </span><em id="pvTime">6:00–7:30</em><span id="pvEnd"> तक है..."</span></p>
           </div>
         </div>
 
@@ -1596,7 +1596,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
         <!-- 2. Mantra card -->
         <div class="po-jap-card">
-          <div class="po-sec-label">🕉️ मंत्र</div>
+          <div class="po-sec-label" id="poMantraLbl">🕉️ मंत्र</div>
           <div class="po-jap-mantra" id="poMantra">ॐ नमो नारायणाय</div>
           <div class="po-jap-en" id="poMantraEn">Om Namo Narayanaya</div>
         </div>
@@ -1606,7 +1606,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
         <!-- 3. How to card -->
         <div class="po-action-card">
-          <div class="po-sec-label">कैसे करें</div>
+          <div class="po-sec-label" id="poHowLbl">कैसे करें</div>
           <ul class="po-jap-steps" id="poSteps">
             <li>रोज सुबह या शाम शांत मन से जप करें</li>
             <li>108 बार (1 माला)</li>
@@ -1615,7 +1615,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
         <!-- Outside action -->
         <div class="po-action-card">
-          <div class="po-sec-label">🪔 बाहरी उपाय</div>
+          <div class="po-sec-label" id="poActionLbl">🪔 बाहरी उपाय</div>
           <ul class="po-action-list" id="poActions">
             <li>गुरुवार को मंदिर जाएं</li>
             <li>विष्णु जी को तुलसी अर्पित करें</li>
@@ -1762,16 +1762,16 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       <div class="dark-hdr" style="padding:16px 18px 12px;">
         <div class="dh-row">
           <div style="width:34px;"></div>
-          <div class="dh-title">साधना<small>My Sadhana</small></div>
+          <div class="dh-title" id="sadPageTitle">साधना<small>My Sadhana</small></div>
           <div style="width:34px;"></div>
         </div>
       </div>
       <div style="flex:1;overflow-y:auto;padding:16px 14px 80px;scrollbar-width:none;" id="sadhanaBody">
         <div id="sadNone" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:14px;">
           <div style="font-size:48px;">📿</div>
-          <div style="font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);">कोई साधना नहीं</div>
-          <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:240px;">मार्गदर्शन में जाकर अपनी समस्या चुनें और साधना शुरू करें</div>
-          <button onclick="go('listen')" style="margin-top:8px;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border:none;border-radius:12px;padding:12px 24px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">🙏 साधना चुनें</button>
+          <div style="font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);" id="sadNoneTitle">कोई साधना नहीं</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.45);line-height:1.6;max-width:240px;" id="sadNoneDesc">मार्गदर्शन में जाकर अपनी समस्या चुनें और साधना शुरू करें</div>
+          <button onclick="go('listen')" style="margin-top:8px;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border:none;border-radius:12px;padding:12px 24px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;" id="sadNoneBtn">🙏 साधना चुनें</button>
         </div>
         <div id="sadActive" style="display:none;">
           <div class="sad-identity">
@@ -1782,31 +1782,31 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="sad-day-row">
               <div class="sad-day-big" id="sadDayNum">Day 1</div>
               <div class="sad-day-of" id="sadDayOf">/ 21</div>
-              <div class="sad-streak">🔥 <span id="sadStreak">0</span> दिन लगातार</div>
+              <div class="sad-streak">🔥 <span id="sadStreak">0</span><span id="sadStreakLbl"> दिन लगातार</span></div>
             </div>
             <div class="sad-bar-bg"><div class="sad-bar-fill" id="sadBarFill" style="width:5%;"></div></div>
             <div class="sad-bar-label" id="sadBarLabel">0% पूर्ण</div>
           </div>
           <div class="sad-today-card">
             <div class="sad-today-label" id="sadTodayLbl">आज का लक्ष्य</div>
-            <div class="sad-today-count"><span id="sadTodayDone">0</span><span class="sad-today-sep"> / </span><span>108</span><span class="sad-today-unit">जप</span></div>
+            <div class="sad-today-count"><span id="sadTodayDone">0</span><span class="sad-today-sep"> / </span><span>108</span><span class="sad-today-unit" id="sadTodayUnit">जप</span></div>
             <div class="sad-today-bar-bg"><div class="sad-today-bar" id="sadTodayBar" style="width:0%;"></div></div>
           </div>
           <div class="sad-motivation" id="sadMotivation">"श्रद्धा और निरंतरता — यही साधना की शक्ति है"</div>
           <div style="display:flex;justify-content:space-around;margin-bottom:14px;">
             <div style="text-align:center;">
               <div style="font-size:20px;font-weight:700;color:#fff;" id="sadLifetimeJap">0</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">कुल जप</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;" id="sadLblJap">कुल जप</div>
             </div>
             <div style="width:1px;background:rgba(212,168,67,0.15);"></div>
             <div style="text-align:center;">
               <div style="font-size:20px;font-weight:700;color:#fff;" id="sadTotalDays">0</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">कुल दिन</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;" id="sadLblDays">कुल दिन</div>
             </div>
             <div style="width:1px;background:rgba(212,168,67,0.15);"></div>
             <div style="text-align:center;">
               <div style="font-size:20px;font-weight:700;color:rgba(255,150,0,0.90);" id="sadBestStreak">0</div>
-              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">सर्वश्रेष्ठ</div>
+              <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;" id="sadLblBest">सर्वश्रेष्ठ</div>
             </div>
           </div>
           <button class="sad-continue-btn" id="sadContinueBtn" onclick="continueSadhana()">🙏 साधना जारी रखें</button>
@@ -2059,6 +2059,9 @@ function personalise(){
   document.getElementById('lhSub').textContent=H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English');
   document.getElementById('pvDeity').textContent=H?T.d_hi:T.d_en;
   document.getElementById('pvTime').textContent=T.good;
+  const pvPre=document.getElementById('pvPre');if(pvPre)pvPre.textContent=H?'"आज ':'"Today — ';
+  const pvMid=document.getElementById('pvMid');if(pvMid)pvMid.textContent=H?' का दिन है — शुभ समय ':'. Favorable time: ';
+  const pvEnd=document.getElementById('pvEnd');if(pvEnd)pvEnd.textContent=H?' तक है..."':' AM..."';
   // Times
   document.getElementById('goodLbl').textContent=H?'शुभ समय':'Good Time';
   document.getElementById('goodTime').textContent=T.good;
@@ -2620,7 +2623,7 @@ function toggleJap(){
   jPlay=!jPlay;
   const btn=document.getElementById('jplayBtn');
   document.getElementById('jplayIco').textContent='';
-  document.getElementById('jplayTxt').textContent=jPlay?(H?'⏸ रोकें':'⏸ Pause'):(H?'🙏 जाप शुरू करें':'🙏 Start Jap');
+  document.getElementById('jplayTxt').textContent=jPlay?(H?'⏸ रोकें':'⏸ Pause'):(H?'🙏 जाप शुरू करें':'🙏 Start Chanting');
   if(btn)btn.classList.toggle('playing',jPlay);
   const jbg=document.getElementById('jImgBg');if(jbg)jbg.classList.toggle('chanting',jPlay);
   if(jPlay){
@@ -2778,7 +2781,7 @@ function resetJap(){
   const btn=document.getElementById('jplayBtn');if(btn)btn.classList.remove('playing');
   document.getElementById('jNum').textContent='0';
   document.getElementById('jplayIco').textContent='';
-  document.getElementById('jplayTxt').textContent=H?'🙏  जाप शुरू करें':'🙏  Start Jap';
+  document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'🙏 Start Chanting';
   document.getElementById('jCountPill').textContent='0/108';
   document.getElementById('jdone').classList.remove('show');
   buildMala();
@@ -3176,46 +3179,62 @@ const PROB_CONTENT = {
   vivah: {
     title_hi: 'विवाह मार्गदर्शन', title_en: 'Marriage Guidance',
     understand: 'शादी में देरी कभी-कभी समय, परिस्थितियों या मानसिक तनाव के कारण होती है',
+    understand_en: 'Delays in marriage often arise from timing, circumstances, or mental stress. This practice helps bring clarity and positive energy.',
     mantra: 'ॐ नमो नारायणाय', mantra_en: 'Om Namo Narayanaya',
     steps: ['रोज सुबह या शाम शांत मन से जप करें', '108 बार (1 माला)'],
+    steps_en: ['Chant calmly every morning or evening', '108 times (1 mala)'],
     actions: ['गुरुवार को मंदिर जाएं', 'विष्णु जी को तुलसी अर्पित करें'],
-    duration: '21 दिन',
+    actions_en: ['Visit a temple on Thursdays', 'Offer tulsi leaves to Vishnu Ji'],
+    duration: '21 दिन', duration_en: '21 Days',
     why: 'यह मंत्र मन को शांत कर विवाह के मार्ग में आने वाली बाधाएं दूर करता है',
   },
   dhan: {
     title_hi: 'धन और करियर मार्गदर्शन', title_en: 'Money & Career Guidance',
     understand: 'पैसों की तंगी या करियर में रुकावट अक्सर सही दिशा और श्रद्धा की कमी से होती है',
+    understand_en: 'Financial struggles and career obstacles often reduce confidence and mental clarity. This sadhana helps attract focus, discipline, and prosperity.',
     mantra: 'ॐ श्रीं महालक्ष्म्यै नमः', mantra_en: 'Om Shreem Mahalakshmyai Namah',
     steps: ['शुक्रवार को विशेष जप करें', '108 बार रोज शाम करें'],
+    steps_en: ['Fridays are especially powerful for this chant', 'Chant 108 times daily in the evening'],
     actions: ['घर को सदा स्वच्छ रखें', 'शाम को दीपक जलाएं'],
-    duration: '21 दिन',
+    actions_en: ['Keep your surroundings clean and peaceful', 'Light a diya in the evening'],
+    duration: '21 दिन', duration_en: '21 Days',
     why: 'यह मंत्र बुद्धि और एकाग्रता को जागृत कर सफलता का मार्ग प्रशस्त करता है',
   },
   swasthya: {
     title_hi: 'स्वास्थ्य मार्गदर्शन', title_en: 'Health Guidance',
     understand: 'स्वास्थ्य समस्याएं शरीर और मन दोनों से जुड़ी होती हैं — भक्ति से मन शांत होता है',
+    understand_en: 'Health challenges affect both body and mind. This ancient mantra is known to support healing, strength, and mental peace.',
     mantra: 'ॐ त्र्यम्बकं यजामहे', mantra_en: 'Om Tryambakam Yajamahe',
     steps: ['सोमवार को विशेष जप करें', 'रोज सुबह 108 बार करें'],
+    steps_en: ['Mondays are especially powerful for this chant', 'Chant 108 times every morning'],
     actions: ['शिवलिंग पर जल और बेलपत्र चढ़ाएं', 'सात्विक भोजन लें'],
-    duration: '40 दिन',
+    actions_en: ['Offer water and bel leaves at a Shiva temple', 'Maintain a simple, wholesome diet'],
+    duration: '40 दिन', duration_en: '40 Days',
     why: 'महामृत्युंजय मंत्र रोग-मुक्ति और प्राण-शक्ति का सबसे शक्तिशाली स्रोत है',
   },
   vidya: {
     title_hi: 'पढ़ाई और एकाग्रता', title_en: 'Education & Focus',
     understand: 'एकाग्रता और स्मरण शक्ति श्रद्धा और नियमित अभ्यास से बढ़ती है',
+    understand_en: 'Focus and memory improve through devotion and consistent practice. This mantra is dedicated to Saraswati, goddess of wisdom.',
     mantra: 'ॐ ऐं सरस्वत्यै नमः', mantra_en: 'Om Aim Saraswatyai Namah',
     steps: ['रोज सुबह पढ़ाई से पहले जप करें', '108 बार या कम से कम 21 बार'],
+    steps_en: ['Chant every morning before studying', '108 times, or at least 21 times'],
     actions: ['किताबों का सम्मान करें', 'बुधवार को सरस्वती पूजा करें'],
-    duration: '21 दिन',
+    actions_en: ['Treat books and knowledge with respect', 'Observe Saraswati puja on Wednesdays'],
+    duration: '21 दिन', duration_en: '21 Days',
     why: 'यह मंत्र घर में सकारात्मक ऊर्जा और प्रेम का संचार करता है',
   },
   ghar: {
     title_hi: 'गृह शांति मार्गदर्शन', title_en: 'Home & Relationships',
     understand: 'घर में शांति तब आती है जब हर सदस्य प्रेम और श्रद्धा से जीता है',
+    understand_en: 'A peaceful home flourishes when each member lives with love and gratitude. This practice brings harmony and positive energy.',
     mantra: 'ॐ नमो नारायणाय', mantra_en: 'Om Namo Narayanaya',
     steps: ['रोज शाम परिवार के साथ जप करें', '108 बार मिलकर करें'],
+    steps_en: ['Chant together as a family each evening', '108 times together'],
     actions: ['हर शाम घर में दीपक जलाएं', 'गुरुवार को विष्णु पूजा करें'],
-    duration: '21 दिन',
+    actions_en: ['Light a diya at home each evening', 'Offer prayers on Thursdays'],
+    duration: '21 दिन', duration_en: '21 Days',
+    why_en: 'This mantra channels divine energy to bring peace, love, and balance into the home.',
   },
 };
 
@@ -3229,26 +3248,36 @@ function openProblem(key) {
   document.getElementById('poDeity').textContent = H ? p.title_en : p.title_hi;
 
   // Understanding
-  document.getElementById('poUnderstand').textContent = p.understand;
+  document.getElementById('poUnderstand').textContent = H ? p.understand : (p.understand_en||p.understand);
 
   // Mantra
   document.getElementById('poMantra').textContent = p.mantra;
   document.getElementById('poMantraEn').textContent = p.mantra_en;
 
   // Steps
-  document.getElementById('poSteps').innerHTML = p.steps.map(s=>`<li>${s}</li>`).join('');
+  const steps = H ? p.steps : (p.steps_en||p.steps);
+  document.getElementById('poSteps').innerHTML = steps.map(s=>`<li>${s}</li>`).join('');
 
   // Actions
-  document.getElementById('poActions').innerHTML = p.actions.map(a=>`<li>${a}</li>`).join('');
+  const actions = H ? p.actions : (p.actions_en||p.actions);
+  document.getElementById('poActions').innerHTML = actions.map(a=>`<li>${a}</li>`).join('');
 
   // Duration
-  document.getElementById('poDuration').innerHTML = `⏱️ अवधि: <strong>${p.duration}</strong>`;
-  const mc=document.getElementById('poMicrocopy');
-  if(mc) mc.textContent=`यह एक ${p.duration} की साधना है — रोज़ पूरा करना आवश्यक है`;
+  document.getElementById('poDuration').innerHTML = H
+    ? `⏱️ अवधि: <strong>${p.duration}</strong>`
+    : `⏱️ Duration: <strong>${p.duration_en||p.duration}</strong>`;
+  // microcopy set below
   const whyEl=document.getElementById('poWhy');
-  if(whyEl) whyEl.textContent=p.why||'यह मंत्र मन को शांत कर समस्या के मूल तक पहुँचता है';
+  if(whyEl) whyEl.textContent=H?(p.why||'यह मंत्र मन को शांत कर समस्या के मूल तक पहुँचता है'):(p.why_en||'This mantra brings calm and clarity to the root of the challenge.');
 
   // Scroll to top + show
+  // Section labels
+  const ml=document.getElementById('poMantraLbl');if(ml)ml.innerHTML=H?'🕉️ मंत्र':'🕉️ Mantra';
+  const hl=document.getElementById('poHowLbl');if(hl)hl.textContent=H?'कैसे करें':'How to Practice';
+  const al=document.getElementById('poActionLbl');if(al)al.innerHTML=H?'🪔 बाहरी उपाय':'🪔 Supportive Practices';
+  // Microcopy & button
+  const mc=document.getElementById('poMicrocopy');if(mc)mc.textContent=H?('यह एक '+p.duration+' की साधना है — रोज़ पूरा करना आवश्यक है'):('This is a '+(p.duration_en||p.duration)+' sadhana. Consistency is important.');
+  const sb=document.querySelector('.po-start-btn');if(sb)sb.textContent=H?'🙏 साधना शुरू करें':'🙏 Start Sadhana';
   document.querySelector('.po-body').scrollTop = 0;
   document.getElementById('probOverlay').classList.add('open');
 }
@@ -3281,7 +3310,7 @@ async function playPowerOfChant(){
   pocAudio.play().catch(()=>{pocPlaying=false;btn.textContent='▶';});
 }
 function personaliseMarg(){
-  document.getElementById('margTitle').innerHTML=H?'मार्गदर्शन<small>Margadarshan</small>':'Guidance<small>मार्गदर्शन</small>';
+  document.getElementById('margTitle').innerHTML=H?'मार्गदर्शन<small>MARGADARSHAN</small>':'Guidance';
   document.getElementById('margSub').textContent=H?'शिव की शरण में — हर समस्या का हल':"In Shiva Ji grace — solution to every problem";
   document.getElementById('pocTitle').textContent=H?'जाप की शक्ति — एक छोटा सा उदाहरण':'Power of Chanting — A Motivational Story';
   document.getElementById('pocSub').textContent=H?'1 मिनट सुनें — एक सरल सीख जो दिल को छू जाए':'Listen for 2 minutes — your mind will calm and your faith will grow';
@@ -3295,7 +3324,19 @@ function personaliseMarg(){
   }
   document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
   const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=H?'साधना':'Sadhana';
-  const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?"आज का लक्ष्य":"Today's Goal";
+  const stt=document.getElementById('sadTitle');if(stt)stt.innerHTML=H?'साधना<small>My Sadhana</small>':'My Sadhana';
+  const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=H?' दिन लगातार':' Day Streak';
+  const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?'आज का लक्ष्य':"Today's Goal";
+  const stu=document.getElementById('sadTodayUnit');if(stu)stu.textContent=H?'जप':'Chants';
+  const slj=document.getElementById('sadLblJap');if(slj)slj.textContent=H?'कुल जप':'Total Chants';
+  const sld=document.getElementById('sadLblDays');if(sld)sld.textContent=H?'कुल दिन':'Total Days';
+  const slb=document.getElementById('sadLblBest');if(slb)slb.textContent=H?'सर्वश्रेष्ठ':'Best Streak';
+  const scb=document.getElementById('sadContinueBtn');if(scb)scb.textContent=H?'🙏 साधना जारी रखें':'🙏 Continue Sadhana';
+  const sdb=document.getElementById('sadDoneBadge');if(sdb)sdb.textContent=H?'✨ आज की साधना पूर्ण':'✨ Today\'s Sadhana Complete';
+  const snt=document.getElementById('sadNoneTitle');if(snt)snt.textContent=H?'कोई साधना नहीं':'No Active Sadhana';
+  const snd=document.getElementById('sadNoneDesc');if(snd)snd.textContent=H?'मार्गदर्शन में जाकर अपनी समस्या चुनें और साधना शुरू करें':'Visit Guidance to choose your practice and begin your sadhana';
+  const snb=document.getElementById('sadNoneBtn');if(snb)snb.textContent=H?'🙏 साधना चुनें':'🙏 Choose Sadhana';
+  const spt=document.getElementById('sadPageTitle');if(spt)spt.innerHTML=H?'साधना<small>My Sadhana</small>':'My Sadhana';
 }
 
 // ── Wallpaper share ──
@@ -3333,7 +3374,7 @@ function startSadhana(key){
   saveSadhana(s);
   closeProblem();
   // Show success toast
-  showSadhanaToast('✨ आपकी साधना शुरू हो गई');
+  showSadhanaToast(H?'✨ आपकी साधना शुरू हो गई':'✨ Your Sadhana Has Started');
   setTimeout(()=>{ go('sadhana'); renderSadhana(); }, 800);
 }
 
@@ -3358,7 +3399,7 @@ function renderSadhana(){
   document.getElementById('sadDayOf').textContent = '/ ' + s.totalDays;
   document.getElementById('sadStreak').textContent = s.streak;
   document.getElementById('sadBarFill').style.width = Math.max(3,pct)+'%';
-  document.getElementById('sadBarLabel').textContent = pct+'% पूर्ण';
+  document.getElementById('sadBarLabel').textContent = pct+'%'+(H?' पूर्ण':' Complete');
   document.getElementById('sadTodayDone').textContent = s.todayCount;
   document.getElementById('sadTodayBar').style.width = todayPct+'%';
 
