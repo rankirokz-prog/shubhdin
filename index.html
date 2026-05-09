@@ -1703,7 +1703,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;">
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
           <div id="sadJCount" style="font-size:88px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;transition:transform 0.1s;">0</div>
-          <div style="font-size:20px;color:rgba(255,255,255,0.22);font-family:'Poppins',sans-serif;">/ 108</div>
+          <div style="font-size:20px;color:rgba(255,255,255,0.22);font-family:'Poppins',sans-serif;" id="sadJOf">/ 108</div>
         </div>
         <div id="sadJRemain2" style="font-size:13px;color:rgba(212,168,67,0.65);margin-bottom:16px;">शेष: 108</div>
 
@@ -1740,7 +1740,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       </div>
 
       <!-- Bottom -->
-      <div id="sadJBelowHint" style="font-size:13px;color:rgba(212,168,67,0.75);letter-spacing:0.5px;text-align:center;flex-shrink:0;padding:16px 0 4px;animation:sadIdleGlow2 1.8s ease-in-out infinite;">हर मंत्र के बाद टैप करें</div>
+      <div id="sadJBelowHint" style="font-size:13px;color:rgba(212,168,67,0.75);letter-spacing:0.5px;text-align:center;flex-shrink:0;padding:16px 0 4px;animation:sadIdleGlow2 1.8s ease-in-out infinite;" id="sadJBelowHint">Tap after each chant</div>
       <div style="width:100%;flex-shrink:0;padding:0 24px 44px;"></div>
 
       <!-- Completion overlay -->
@@ -1788,7 +1788,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="sad-bar-label" id="sadBarLabel">0% पूर्ण</div>
           </div>
           <div class="sad-today-card">
-            <div class="sad-today-label">आज का लक्ष्य</div>
+            <div class="sad-today-label" id="sadTodayLbl">आज का लक्ष्य</div>
             <div class="sad-today-count"><span id="sadTodayDone">0</span><span class="sad-today-sep"> / </span><span>108</span><span class="sad-today-unit">जप</span></div>
             <div class="sad-today-bar-bg"><div class="sad-today-bar" id="sadTodayBar" style="width:0%;"></div></div>
           </div>
@@ -1905,7 +1905,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
     <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🙏</span><span class="tab-label" id="tl2" style="font-size:7.5px;">मार्गदर्शन</span></div>
     <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">📅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
-    <div class="tab" id="tab-sadhana" onclick="go('sadhana')"><span class="tab-icon">📿</span><span class="tab-label" style="font-size:7.5px;">साधना</span>
+    <div class="tab" id="tab-sadhana" onclick="go('sadhana')"><span class="tab-icon">📿</span><span class="tab-label" style="font-size:7.5px;" id="tl-sadhana">साधना</span>
     </div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जाप</span></div>
   </div>
@@ -3294,6 +3294,8 @@ function personaliseMarg(){
     if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
   }
   document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
+  const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=H?'साधना':'Sadhana';
+  const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?"आज का लक्ष्य":"Today's Goal";
 }
 
 // ── Wallpaper share ──
@@ -3350,7 +3352,7 @@ function renderSadhana(){
   const todayPct = Math.round((s.todayCount/108)*100);
   const isDone = s.daysDone.includes(today);
 
-  document.getElementById('sadPurpose').textContent = s.title || 'मेरी साधना';
+  document.getElementById('sadPurpose').textContent = s.title || (H?'मेरी साधना':'My Sadhana');
   document.getElementById('sadMantra').textContent = s.mantra;
   document.getElementById('sadDayNum').textContent = 'Day ' + Math.min(dayNum, s.totalDays);
   document.getElementById('sadDayOf').textContent = '/ ' + s.totalDays;
@@ -3369,11 +3371,16 @@ function renderSadhana(){
   }
 
   // Motivation varies by day
-  const motivations = [
+  const motivations = H ? [
     '"श्रद्धा और निरंतरता — यही साधना की शक्ति है"',
     '"हर दिन एक कदम — मंजिल पास आती है"',
     '"साधना में विश्वास ही सबसे बड़ा बल है"',
     '"नियमितता ही सिद्धि का द्वार है"',
+  ] : [
+    '"Faith and consistency — this is the power of sadhana"',
+    '"One step each day — the goal comes closer"',
+    '"Belief in practice is the greatest strength"',
+    '"Regularity is the door to attainment"',
   ];
   document.getElementById('sadMotivation').textContent = motivations[s.daysDone.length % motivations.length];
   const ltj=document.getElementById('sadLifetimeJap'); if(ltj) ltj.textContent=(s.totalJap||0).toLocaleString('en-IN');
@@ -3399,7 +3406,7 @@ function completeSadhanaDay(){
 }
 
 function resetSadhana(){
-  if(!confirm('साधना रीसेट करें?')) return;
+  if(!confirm(H?'साधना रीसेट करें?':'Reset sadhana?')) return;
   localStorage.removeItem('shubhdin_sadhana');
   renderSadhana();
 }
@@ -3538,11 +3545,13 @@ function continueSadhana(){
   if(mEl) mEl.textContent = s.mantra || 'ॐ नमो नारायणाय';
 
   const bh=document.getElementById('sadJBelowHint');
-  if(bh){bh.style.display='block';bh.style.opacity='1';bh.style.animation='sadIdleGlow2 1.8s ease-in-out infinite';}
+  if(bh){bh.style.display='block';bh.style.opacity='1';bh.style.animation='sadIdleGlow2 1.8s ease-in-out infinite';bh.textContent=H?'हर मंत्र के बाद टैप करें':'Tap after each chant';}
   const th=document.getElementById('sadJTapHint');
   if(th){th.style.display='block';th.style.opacity='1';}
 
   // Update display
+  const ofEl=document.getElementById('sadJOf');
+  if(ofEl)ofEl.textContent=H?'/ 108':'/ 108';
   sadJUpdate();
 
   // Hide done overlay
@@ -3566,7 +3575,7 @@ function continueSadhana(){
   }, 2000);
   // Show it again for next entry
   const f=document.getElementById('sadJFocus');
-  if(f){ f.style.opacity='1'; f.textContent='✨ ध्यान से जप करें'; }
+  if(f){ f.style.opacity='1'; f.textContent=H?'✨ ध्यान से जप करें':'✨ Chant with focus'; }
 }
 
 function sadJTap(){
@@ -3664,7 +3673,14 @@ function sadJTap(){
       completeSadhanaDay();
       const sk=getSadhana();
       const strEl=document.getElementById('sadJDoneStreak');
-      if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+' दिन';
+      if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+(H?' दिन':' days');
+      const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=H?'✨ आपकी साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
+      const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?'आपने 108 जप पूरे किए 🙏':'You completed 108 chants 🙏';
+      const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=H?'आज का जप':'Today\'s chants';
+      const dkl=document.getElementById('sadDoneStreakLbl');if(dkl)dkl.textContent=H?'Streak':'Streak';
+      const drl=document.getElementById('sadDoneJrnLbl');if(drl)drl.textContent=H?'21-दिन यात्रा':'21-Day Journey';
+      const dbb=document.getElementById('sadDoneBackBtn');if(dbb)dbb.textContent=H?'🏠 साधना सहेजें और लौटें':'🏠 Save & Return';
+      const dmb=document.getElementById('sadDoneMoreBtn');if(dmb)dmb.textContent=H?'+ अधिक जप':'+  More Chants';
       const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
     },900);
   }
@@ -3679,7 +3695,7 @@ function sadJUpdate(){
   const r2=document.getElementById('sadJRemain2');
   if(r2){
     const rem=108-sadJCount;
-    r2.textContent='शेष: '+rem;
+    r2.textContent=(H?'शेष: ':'Left: ')+rem+(H?' जप':' japs');
     if(rem<=10){
       r2.style.fontSize='18px';
       r2.style.color='rgba(255,200,50,0.90)';
@@ -3718,7 +3734,7 @@ function sadJUpdate(){
   }
 
   // Mid-progress motivation
-  const msgs={27:'अच्छी शुरुआत 🙏',54:'आधा पूरा हो गया 🔥',81:'बस थोड़ा और ✨'};
+  const msgs=H?{27:'अच्छी शुरुआत 🙏',54:'आधा पूरा हो गया 🔥',81:'बस थोड़ा और ✨'}:{27:'Good start 🙏',54:'Halfway there 🔥',81:'Almost done ✨'};
   const motivEl=document.getElementById('sadJFocus');
   if(msgs[sadJCount]&&motivEl){motivEl.style.opacity='1';motivEl.textContent=msgs[sadJCount];setTimeout(()=>motivEl.style.opacity='0',2000);}
 }
