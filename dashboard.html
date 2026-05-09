@@ -1449,7 +1449,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="lh-play">▶</div>
           </div>
           <div class="lh-preview">
-            <p id="preview">"<em id="pvName">Ravi Ji</em>, आज <em id="pvDeity">लक्ष्मी जी</em> का दिन है — शुभ समय <em id="pvTime">6:00–7:30</em> तक है..."</p>
+            <p id="preview">"आज <em id="pvDeity">लक्ष्मी जी</em> का दिन है — शुभ समय <em id="pvTime">6:00–7:30</em> तक है..."</p>
           </div>
         </div>
 
@@ -1703,7 +1703,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;">
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;">
           <div id="sadJCount" style="font-size:88px;font-weight:800;color:#fff;line-height:1;font-family:'Poppins',sans-serif;transition:transform 0.1s;">0</div>
-          <div style="font-size:20px;color:rgba(255,255,255,0.22);font-family:'Poppins',sans-serif;">/ 108</div>
+          <div style="font-size:20px;color:rgba(255,255,255,0.22);font-family:'Poppins',sans-serif;" id="sadJOf">/ 108</div>
         </div>
         <div id="sadJRemain2" style="font-size:13px;color:rgba(212,168,67,0.65);margin-bottom:16px;">शेष: 108</div>
 
@@ -1740,7 +1740,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       </div>
 
       <!-- Bottom -->
-      <div id="sadJBelowHint" style="font-size:13px;color:rgba(212,168,67,0.75);letter-spacing:0.5px;text-align:center;flex-shrink:0;padding:16px 0 4px;animation:sadIdleGlow2 1.8s ease-in-out infinite;">हर मंत्र के बाद टैप करें</div>
+      
       <div style="width:100%;flex-shrink:0;padding:0 24px 44px;"></div>
 
       <!-- Completion overlay -->
@@ -1788,7 +1788,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="sad-bar-label" id="sadBarLabel">0% पूर्ण</div>
           </div>
           <div class="sad-today-card">
-            <div class="sad-today-label">आज का लक्ष्य</div>
+            <div class="sad-today-label" id="sadTodayLbl">आज का लक्ष्य</div>
             <div class="sad-today-count"><span id="sadTodayDone">0</span><span class="sad-today-sep"> / </span><span>108</span><span class="sad-today-unit">जप</span></div>
             <div class="sad-today-bar-bg"><div class="sad-today-bar" id="sadTodayBar" style="width:0%;"></div></div>
           </div>
@@ -1905,7 +1905,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
     <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🙏</span><span class="tab-label" id="tl2" style="font-size:7.5px;">मार्गदर्शन</span></div>
     <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">📅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
-    <div class="tab" id="tab-sadhana" onclick="go('sadhana')"><span class="tab-icon">📿</span><span class="tab-label" style="font-size:7.5px;">साधना</span>
+    <div class="tab" id="tab-sadhana" onclick="go('sadhana')"><span class="tab-icon">📿</span><span class="tab-label" style="font-size:7.5px;" id="tl-sadhana">साधना</span>
     </div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जाप</span></div>
   </div>
@@ -2040,7 +2040,9 @@ function personalise(){
   document.getElementById('datePill').textContent=H?dn_h[dow]+' • '+now.getDate()+' अप्रैल':dn_e[dow]+' • '+now.toLocaleDateString('en',{day:'numeric',month:'short'});
   // Greeting
   document.getElementById('greetTime').textContent=greetMsg();
-  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  const rawName = name.charAt(0).toUpperCase() + name.slice(1);
+  // Transliterate to Hindi if H mode
+  const displayName = rawName; // name already translated at registration
   document.getElementById('greetName').textContent=displayName+(H?' जी 🙏':' 🙏');
 
   // Chips
@@ -2055,7 +2057,6 @@ function personalise(){
   document.getElementById('lhTag').textContent=H?'✨ आज का पंचांग — आपके लिए':"✨ Today's Panchang — For you";
   document.getElementById('lhTitle').textContent=H?'दैनिक पंचांग सुनें':'Listen to Daily Panchang';
   document.getElementById('lhSub').textContent=H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English');
-  document.getElementById('pvName').textContent=name.charAt(0).toUpperCase()+name.slice(1)+(H?' जी':'');
   document.getElementById('pvDeity').textContent=H?T.d_hi:T.d_en;
   document.getElementById('pvTime').textContent=T.good;
   // Times
@@ -2963,13 +2964,188 @@ function getNameUrl(){
   const nk=(U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
   return nk?'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/names/'+nk+'.mp3':null;
 }
+// ── Modular Audio Stitching System ──
+const BASE = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/';
+function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+
+
+// Map period+hour to exact uploaded filename
+function getPeriodFile(period, hour){
+  if(period==='subah')   return 'subah_'+hour;       // subah_1 to subah_12
+  if(period==='dopahar'){
+    if(hour===12) return 'subah_12';                 // noon → subah_12 (Dophar_12 not uploaded)
+    return 'Dophar_'+hour;                           // Dophar_1 to Dophar_4
+  }
+  if(period==='sham')    return 'shaam_'+hour;       // shaam_1 to shaam_4
+  if(period==='raat'){
+    const raatMap={7:1,8:2,9:3,10:4,11:5,12:6,0:6};
+    return 'Raat_'+(raatMap[hour]||1);
+  }
+  return 'subah_'+hour;
+}
+
+// Determine period from 24hr hour
+function getPeriod(h){
+  if(h>=5&&h<12)  return 'subah';
+  if(h>=12&&h<16) return 'dopahar';
+  if(h>=16&&h<20) return 'sham';
+  return 'raat';
+}
+
+// Build time audio segments: returns array of URLs
+function buildTimeSegments(timeStr, isStart){
+  if(!timeStr) return [];
+  const [hStr,mStr]=timeStr.split(':');
+  const h=parseInt(hStr), m=parseInt(mStr);
+  const period=getPeriod(h);
+  const hour12=h>12?h-12:(h===0?12:h);
+  const urls=[];
+  if(isStart){
+    const fname=getPeriodFile(period, hour12);
+    urls.push(BASE+'Time/'+fname+'.mp3');
+  } else {
+    urls.push(BASE+'Time/hour_'+hour12+'.mp3');
+  }
+  if(m>0) urls.push(BASE+'Time/min_'+m+'.mp3');
+  return urls;
+}
+
+// Determine if day is good or careful from panchang data
+function getDayType(){
+  const pd=window._panchangData;
+  if(!pd) return 'good';
+  const yoga=(pd.yoga||pd.yog||'').toLowerCase();
+  const badYogas=['vyatipat','vaidhriti','vishkambha','parigha','shool','gand','atigand','vajra'];
+  if(badYogas.some(b=>yoga.includes(b))) return 'careful';
+  return 'good';
+}
+
+// Determine chant type for today's deity
+function getChantType(){
+  const day=new Date().getDay();
+  // Long chants: Shiva (Mon=1), Lakshmi (Fri=5)
+  const longChantDays=[1,5];
+  return longChantDays.includes(day)?'time':'count';
+}
+
+// Get shubh/rahu times from stored data
+function parsePanchangTime(str){
+  if(!str||str.length<5) return null;
+  // Match times like "8:15", "10:30", "8:15 AM", "08:15:00"
+  str=str.replace(/[–—]/g,'-'); // normalize dashes
+  const timeRe=/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/gi;
+  const matches=[...str.matchAll(timeRe)];
+  if(matches.length<2) return null;
+  const toHH=(h,m,ampm)=>{
+    h=parseInt(h); m=parseInt(m);
+    if(ampm&&ampm.toUpperCase()==='PM'&&h<12) h+=12;
+    if(ampm&&ampm.toUpperCase()==='AM'&&h===12) h=0;
+    return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+  };
+  return {
+    start:toHH(matches[0][1],matches[0][2],matches[0][3]),
+    end:toHH(matches[1][1],matches[1][2],matches[1][3])
+  };
+}
+
+function getPanchangTimes(){
+  const def={shubh:{start:'08:00',end:'09:30'},rahu:{start:'13:30',end:'15:00'}};
+  // Read directly from DOM — always available after fetchPanchang
+  const shubhEl=document.getElementById('goodTime');
+  const rahuEl=document.getElementById('rahuTime');
+  const shubhStr=shubhEl?shubhEl.textContent:'';
+  const rahuStr=rahuEl?rahuEl.textContent:'';
+
+  return {
+    shubh: parsePanchangTime(shubhStr)||def.shubh,
+    rahu:  parsePanchangTime(rahuStr)||def.rahu
+  };
+}
+
 async function playPanchang(){
-  const mpBtn=document.getElementById('mpBtn'),mpWaves=document.getElementById('mpWaves'),mpTitle=document.getElementById('mpTitle');
-  if(currentAudio&&!currentAudio.paused){currentAudio.pause();if(mpBtn)mpBtn.textContent='▶';if(mpWaves)mpWaves.classList.remove('on');return;}
-  if(mpBtn)mpBtn.textContent='⏸';if(mpWaves)mpWaves.classList.add('on');
-  async function playAudio(url){return new Promise(resolve=>{const a=new Audio(url);currentAudio=a;a.onended=resolve;a.onerror=resolve;a.play().catch(resolve);});}
-  try{const nu=getNameUrl();if(nu)await playAudio(nu);await playAudio(getScriptUrl());}catch(e){}
-  if(mpBtn)mpBtn.textContent='▶';if(mpWaves)mpWaves.classList.remove('on');
+  const mpBtn=document.getElementById('mpBtn'),mpWaves=document.getElementById('mpWaves');
+  // Toggle pause
+  if(currentAudio&&!currentAudio.paused){
+    currentAudio.pause();
+    if(mpBtn)mpBtn.textContent='▶';
+    if(mpWaves)mpWaves.classList.remove('on');
+    return;
+  }
+  if(mpBtn)mpBtn.textContent='⏸';
+  if(mpWaves)mpWaves.classList.add('on');
+
+  // Sequential player with 200ms pause between clips
+  let stopped=false;
+  async function playOne(url){
+    return new Promise(resolve=>{
+      if(stopped){resolve();return;}
+      const a=new Audio(url);
+      currentAudio=a;
+      a.onended=()=>setTimeout(resolve,30);
+      a.onerror=resolve; // skip missing files silently
+      a.play().catch(resolve);
+    });
+  }
+  async function playList(urls){
+    for(const u of urls){ if(stopped)break; await playOne(u); }
+  }
+
+  // Build playlist
+  const dayType=getDayType();
+  const chantType=getChantType();
+  const times=getPanchangTimes();
+  const useRashi=Math.random()<0.15; // 15% rashi
+  const useNakshatra=Math.random()<0.15; // 15% nakshatra
+
+  const playlist=[];
+
+  // 1. GREETING
+  playlist.push(BASE+'greetings/'+rnd(['name_1','name_2','name_3'])+'.mp3');
+  const nameUrl=getNameUrl();
+  if(nameUrl) playlist.push(nameUrl);
+
+  // 2. DAY CONTEXT
+  if(useRashi){
+    playlist.push(BASE+'day_context/'+rnd(dayType==='good'?['day_rashi_good_1','day_rashi_good_2']:['day_rashi_careful_1','day_rashi_careful_2'])+'.mp3');
+  } else if(useNakshatra){
+    playlist.push(BASE+'day_context/'+rnd(dayType==='good'?['day_nakshatra_good_1','day_nakshatra_good_2']:['day_nakshatra_careful_1','day_nakshatra_careful_2'])+'.mp3');
+  } else {
+    playlist.push(BASE+'day_context/'+rnd(dayType==='good'?['day_good_1','day_good_2','day_good_3','day_good_4']:['day_careful_1','day_careful_2','day_careful_3','day_careful_4'])+'.mp3');
+  }
+
+  // 3. TIME BLOCK — Shubh samay
+  playlist.push(BASE+'Time/'+rnd(['time_intro_1','time_intro_2'])+'.mp3');
+  playlist.push(...buildTimeSegments(times.shubh.start,true));
+  playlist.push(BASE+'Time/se.mp3');
+  playlist.push(...buildTimeSegments(times.shubh.end,false));
+  playlist.push(BASE+'Time/tak_rahega.mp3');
+
+  // Rahu kaal
+  playlist.push(BASE+'Time/'+rnd(['time_careful_1','time_careful_2'])+'.mp3');
+  playlist.push(...buildTimeSegments(times.rahu.start,true));
+  playlist.push(BASE+'Time/se.mp3');
+  playlist.push(...buildTimeSegments(times.rahu.end,false));
+  playlist.push(BASE+'Time/tak_rahega.mp3');
+
+  // 4. HUMAN TOUCH
+  playlist.push(BASE+'human_touch/'+rnd(dayType==='good'?['good_1','good_2','good_3','good_4']:['careful_1','careful_2','careful_3','careful_4'])+'.mp3');
+
+  // 5. JAP SUGGESTION
+  if(chantType==='count'){
+    playlist.push(BASE+'jap_suggestions/'+rnd(['jap_1','jap_3','jap_8'])+'.mp3');
+  } else {
+    playlist.push(BASE+'jap_suggestions/'+rnd(['jap_4','jap_5','jap_6','jap_7'])+'.mp3');
+  }
+
+  // 6. CLOSING
+  playlist.push(BASE+'closings/closing_'+Math.ceil(Math.random()*7)+'.mp3');
+
+  // Play!
+  try{ await playList(playlist); }catch(e){}
+  stopped=true;
+  if(mpBtn)mpBtn.textContent='▶';
+  if(mpWaves)mpWaves.classList.remove('on');
 }
 async function ensureNameAudio(){
   if(!U.name)return;const nu=getNameUrl();if(!nu)return;
@@ -3118,6 +3294,8 @@ function personaliseMarg(){
     if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
   }
   document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
+  const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=H?'साधना':'Sadhana';
+  const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?"आज का लक्ष्य":"Today's Goal";
 }
 
 // ── Wallpaper share ──
@@ -3174,7 +3352,7 @@ function renderSadhana(){
   const todayPct = Math.round((s.todayCount/108)*100);
   const isDone = s.daysDone.includes(today);
 
-  document.getElementById('sadPurpose').textContent = s.title || 'मेरी साधना';
+  document.getElementById('sadPurpose').textContent = s.title || (H?'मेरी साधना':'My Sadhana');
   document.getElementById('sadMantra').textContent = s.mantra;
   document.getElementById('sadDayNum').textContent = 'Day ' + Math.min(dayNum, s.totalDays);
   document.getElementById('sadDayOf').textContent = '/ ' + s.totalDays;
@@ -3193,11 +3371,16 @@ function renderSadhana(){
   }
 
   // Motivation varies by day
-  const motivations = [
+  const motivations = H ? [
     '"श्रद्धा और निरंतरता — यही साधना की शक्ति है"',
     '"हर दिन एक कदम — मंजिल पास आती है"',
     '"साधना में विश्वास ही सबसे बड़ा बल है"',
     '"नियमितता ही सिद्धि का द्वार है"',
+  ] : [
+    '"Faith and consistency — this is the power of sadhana"',
+    '"One step each day — the goal comes closer"',
+    '"Belief in practice is the greatest strength"',
+    '"Regularity is the door to attainment"',
   ];
   document.getElementById('sadMotivation').textContent = motivations[s.daysDone.length % motivations.length];
   const ltj=document.getElementById('sadLifetimeJap'); if(ltj) ltj.textContent=(s.totalJap||0).toLocaleString('en-IN');
@@ -3223,7 +3406,7 @@ function completeSadhanaDay(){
 }
 
 function resetSadhana(){
-  if(!confirm('साधना रीसेट करें?')) return;
+  if(!confirm(H?'साधना रीसेट करें?':'Reset sadhana?')) return;
   localStorage.removeItem('shubhdin_sadhana');
   renderSadhana();
 }
@@ -3362,16 +3545,22 @@ function continueSadhana(){
   if(mEl) mEl.textContent = s.mantra || 'ॐ नमो नारायणाय';
 
   const bh=document.getElementById('sadJBelowHint');
-  if(bh){bh.style.display='block';bh.style.opacity='1';bh.style.animation='sadIdleGlow2 1.8s ease-in-out infinite';}
+  if(bh){bh.style.display='block';bh.style.opacity='1';bh.style.animation='sadIdleGlow2 1.8s ease-in-out infinite';bh.textContent=H?'हर मंत्र के बाद टैप करें':'Tap after each chant';}
   const th=document.getElementById('sadJTapHint');
   if(th){th.style.display='block';th.style.opacity='1';}
 
   // Update display
+  const ofEl=document.getElementById('sadJOf');
+  if(ofEl)ofEl.textContent=H?'/ 108':'/ 108';
   sadJUpdate();
 
   // Hide done overlay
   const done = document.getElementById('sadJDone');
   if(done) done.style.display = 'none';
+
+  // Store chant URL for per-tap playback
+  const sadKey = s.key || 'vivah';
+  window._sadChantUrl = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/sadhana_chants/'+sadKey+'.mp3';
 
   // Show screen (full screen overlay feel)
   document.querySelectorAll('.scr').forEach(el=>el.classList.remove('on'));
@@ -3386,7 +3575,7 @@ function continueSadhana(){
   }, 2000);
   // Show it again for next entry
   const f=document.getElementById('sadJFocus');
-  if(f){ f.style.opacity='1'; f.textContent='✨ ध्यान से जप करें'; }
+  if(f){ f.style.opacity='1'; f.textContent=H?'✨ ध्यान से जप करें':'✨ Chant with focus'; }
 }
 
 function sadJTap(){
@@ -3399,6 +3588,16 @@ function sadJTap(){
   if(sadJCount===108) navigator.vibrate&&navigator.vibrate([100,40,100,40,150]);
   else if(left<=5)    navigator.vibrate&&navigator.vibrate([20+((5-left)*8),10,20+((5-left)*8)]);
   else                navigator.vibrate&&navigator.vibrate(15);
+
+  // ── PLAY MANTRA ON TAP ──
+  if(window._sadChantUrl){
+    try{
+      if(window._sadChantAudio){window._sadChantAudio.pause();window._sadChantAudio.currentTime=0;}
+      window._sadChantAudio=new Audio(window._sadChantUrl);
+      window._sadChantAudio.volume=0.90;
+      window._sadChantAudio.play().catch(()=>{});
+    }catch(e){}
+  }
 
   // ── PROGRESSIVE TICK SOUND ──
   try{
@@ -3474,7 +3673,14 @@ function sadJTap(){
       completeSadhanaDay();
       const sk=getSadhana();
       const strEl=document.getElementById('sadJDoneStreak');
-      if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+' दिन';
+      if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+(H?' दिन':' days');
+      const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=H?'✨ आपकी साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
+      const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?'आपने 108 जप पूरे किए 🙏':'You completed 108 chants 🙏';
+      const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=H?'आज का जप':'Today\'s chants';
+      const dkl=document.getElementById('sadDoneStreakLbl');if(dkl)dkl.textContent=H?'Streak':'Streak';
+      const drl=document.getElementById('sadDoneJrnLbl');if(drl)drl.textContent=H?'21-दिन यात्रा':'21-Day Journey';
+      const dbb=document.getElementById('sadDoneBackBtn');if(dbb)dbb.textContent=H?'🏠 साधना सहेजें और लौटें':'🏠 Save & Return';
+      const dmb=document.getElementById('sadDoneMoreBtn');if(dmb)dmb.textContent=H?'+ अधिक जप':'+  More Chants';
       const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
     },900);
   }
@@ -3489,7 +3695,7 @@ function sadJUpdate(){
   const r2=document.getElementById('sadJRemain2');
   if(r2){
     const rem=108-sadJCount;
-    r2.textContent='शेष: '+rem;
+    r2.textContent=(H?'शेष: ':'Left: ')+rem+(H?' जप':' japs');
     if(rem<=10){
       r2.style.fontSize='18px';
       r2.style.color='rgba(255,200,50,0.90)';
@@ -3528,7 +3734,7 @@ function sadJUpdate(){
   }
 
   // Mid-progress motivation
-  const msgs={27:'अच्छी शुरुआत 🙏',54:'आधा पूरा हो गया 🔥',81:'बस थोड़ा और ✨'};
+  const msgs=H?{27:'अच्छी शुरुआत 🙏',54:'आधा पूरा हो गया 🔥',81:'बस थोड़ा और ✨'}:{27:'Good start 🙏',54:'Halfway there 🔥',81:'Almost done ✨'};
   const motivEl=document.getElementById('sadJFocus');
   if(msgs[sadJCount]&&motivEl){motivEl.style.opacity='1';motivEl.textContent=msgs[sadJCount];setTimeout(()=>motivEl.style.opacity='0',2000);}
 }
@@ -3557,6 +3763,7 @@ function exitSadhanaJap(){
   document.getElementById('tab-sadhana').classList.add('on');
   renderSadhana();
 }
+
 // ── Toast ──
 function showToast(){
   if(localStorage.getItem('shubhdin_toast'))return;
@@ -3573,6 +3780,7 @@ async function fetchPanchang(){
     const city=(U.city||'default').toLowerCase().replace(/\s+/g,'');
     const json=await(await fetch('/api/panchang?city='+city)).json();
     if(!json.data)return;const p=json.data;
+    window._panchangData=p; // store for audio stitching
     if(p.abhijit_muhurta){document.getElementById('goodTime').textContent=p.abhijit_muhurta;}
     if(p.rahu_kaal){document.getElementById('avoidTime').textContent=p.rahu_kaal;document.getElementById('rahuTime').textContent=p.rahu_kaal;}
     if(p.tithi){document.getElementById('tithiVal').textContent=p.tithi;document.getElementById('tv').textContent=p.tithi;}
