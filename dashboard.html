@@ -2931,6 +2931,7 @@ function go(tab){
   if(scr){scr.classList.add('on');scr.scrollTop=0;}
   if(tb)tb.classList.add('on');
   if(tab!=='listen')pauseAudio();
+  if(tab!=='sadhana-jap'&&window._sadChantAudio){window._sadChantAudio.pause();window._sadChantAudio=null;}
   if(tab==='sadhana')renderSadhana();
 }
 
@@ -3720,8 +3721,12 @@ function sadJTap(){
       const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=H?'आज का जप':'Today\'s chants';
       const dkl=document.getElementById('sadDoneStreakLbl');if(dkl)dkl.textContent=H?'Streak':'Streak';
       const drl=document.getElementById('sadDoneJrnLbl');if(drl)drl.textContent=H?'21-दिन यात्रा':'21-Day Journey';
-      const dbb=document.getElementById('sadDoneBackBtn');if(dbb)dbb.textContent=H?'🏠 साधना सहेजें और लौटें':'🏠 Save & Return';
-      const dmb=document.getElementById('sadDoneMoreBtn');if(dmb)dmb.textContent=H?'+ अधिक जप':'+  More Chants';
+      const dbb=document.getElementById('sadDoneBackBtn');if(dbb)dbb.textContent=H?'🏠 साधना सहेजें और लौटें':'🏠 Return to Sadhana';
+      const dmb=document.getElementById('sadDoneMoreBtn');if(dmb)dmb.textContent=H?'+ अधिक जप':'➡ Chant More';
+      const dmtl=document.getElementById('sadDoneMainTitle');if(dmtl)dmtl.textContent=H?'आज का जप पूर्ण हुआ':'Sadhana Complete';
+      const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=H?'108 जप पूरे हुए 🔥':'108 Chants Completed 🔥';
+      const dvow=document.getElementById('sadDoneVow');if(dvow)dvow.textContent=H?"आज का संकल्प सफल हुआ 🕉️":"You completed today's spiritual goal 🕉️";
+      const dbl=document.getElementById('sadDoneBlessing');if(dbl)dbl.textContent=H?'ईश्वर की कृपा आप पर बनी रहे 🙏':'May divine grace be with you 🙏';
       const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
     },900);
   }
@@ -3797,6 +3802,7 @@ function sadJContinue(){
   const ring=document.getElementById('sadJRing');if(ring){ring.style.animation='none';ring.style.stroke='url(#sadGrad)';}
 }
 function exitSadhanaJap(){
+  if(window._sadChantAudio){window._sadChantAudio.pause();window._sadChantAudio=null;}
   document.body.classList.remove('sadhana-mode');
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
