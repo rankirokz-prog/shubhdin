@@ -1889,7 +1889,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <div class="jdsc-top" id="jdscTop">🙏 आज 108 बार राम नाम जप किया</div>
           <div class="jdsc-mantra" id="jdscMantra">श्री राम जय राम जय जय राम</div>
           <div class="jdsc-app">shubhdin.app</div>
-          <button class="jdsc-btn" onclick="shareJap()">📤 अपनों के साथ साझा करें</button>
+          <button class="jdsc-btn" onclick="shareJap()" id="jdShareBtn">📤 अपनों के साथ साझा करें</button>
         </div>
 
         <button class="jd-btn" onclick="resetJap()" id="jdBtn">एक और माला करें 🙏</button>
@@ -2047,6 +2047,7 @@ function personalise(){
 
   // Chips
   document.getElementById('rl').textContent=H?'राशि':'Rashi';
+  const jsb=document.getElementById('jdShareBtn');if(jsb)jsb.textContent=H?'📤 अपनों के साथ साझा करें':'📤 Share with Loved Ones';
   document.getElementById('ri').textContent=R.i;
   document.getElementById('rv').textContent=H?R.h:R.e;
   document.getElementById('tl').textContent=H?'तिथि':'Tithi';
@@ -3712,17 +3713,24 @@ function sadJTap(){
     setTimeout(()=>{
       const done=document.getElementById('sadJDone');
       if(done)done.style.display='flex';
+      // Translate completion page NOW
+      const sd1=document.getElementById('sdLine1');if(sd1)sd1.textContent=H?'✨ साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
+      const sd2=document.getElementById('sdLine2');if(sd2)sd2.textContent=H?'108 जप पूरे हुए':'108 Chants Completed';
+      const sd3=document.getElementById('sdLine3');if(sd3)sd3.textContent=H?'आपने आज का संकल्प पूरा किया 🙏':"You completed today's chanting goal 🙏";
+      const sdSt=document.getElementById('sadJStreakShow');if(sdSt)sdSt.textContent=H?'🔥 साधना जारी है':'🔥 Practice Continues';
+      const sdMr=document.getElementById('sdBtnMore');if(sdMr)sdMr.textContent=H?'🔁 अधिक जप करें':'➡ Chant More';
+      const sdBk=document.getElementById('sdBtnBack');if(sdBk)sdBk.textContent=H?'🏠 साधना पर लौटें':'🏠 Return to Sadhana';
       completeSadhanaDay();
       const sk=getSadhana();
       const strEl=document.getElementById('sadJDoneStreak');
       if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+(H?' दिन':' days');
       // Translate completion page
-      const sd1=document.getElementById('sdLine1');if(sd1)sd1.textContent=H?'✨ साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
-      const sd2=document.getElementById('sdLine2');if(sd2)sd2.textContent=H?'108 जप पूरे हुए':'108 Chants Completed';
-      const sd3=document.getElementById('sdLine3');if(sd3)sd3.textContent=H?"आपने आज का संकल्प पूरा किया 🙏":"You completed today's chanting goal 🙏";
-      const sdStreak=document.getElementById('sadJStreakShow');if(sdStreak)sdStreak.textContent=H?'🔥 साधना जारी है':'🔥 Practice Continues';
-      const sdMore=document.getElementById('sdBtnMore');if(sdMore)sdMore.textContent=H?'🔁 अधिक जप करें':'➡ Chant More';
-      const sdBack=document.getElementById('sdBtnBack');if(sdBack)sdBack.textContent=H?'🏠 साधना पर लौटें':'🏠 Return to Sadhana';
+      document.getElementById('sdLine1')?.textContent==='';if(document.getElementById('sdLine1'))document.getElementById('sdLine1').textContent=H?'✨ साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
+      if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=H?'108 जप पूरे हुए':'108 Chants Completed';
+      if(document.getElementById('sdLine3'))document.getElementById('sdLine3').textContent=H?"आपने आज का संकल्प पूरा किया 🙏":"You completed today's chanting goal 🙏";
+      if(document.getElementById('sadJStreakShow'))document.getElementById('sadJStreakShow').textContent=H?'🔥 साधना जारी है':'🔥 Practice Continues';
+      if(document.getElementById('sdBtnMore'))document.getElementById('sdBtnMore').textContent=H?'🔁 अधिक जप करें':'➡ Chant More';
+      if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=H?'🏠 साधना पर लौटें':'🏠 Return to Sadhana';
       const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=H?'✨ आपकी साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
       const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?'आपने 108 जप पूरे किए 🙏':'You completed 108 chants 🙏';
       const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=H?'आज का जप':'Today\'s chants';
