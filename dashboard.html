@@ -2399,8 +2399,8 @@ function updateJ(){
   for(let i=0;i<DOTS;i++){
     const d=document.getElementById('jmd'+i);if(!d)continue;
     const wasDone=d.classList.contains('done');
-    const nowDone=jCount>=(i+1)*4;
-    const isCur=jCount>i*4&&!nowDone;
+    const nowDone=jCount>=(i+1);
+    const isCur=jCount===i&&jCount<TOTAL;
     d.className='jmd'+(nowDone?' done':isCur?' cur':'');
     // Pulse current active dot continuously
     if(isCur){
