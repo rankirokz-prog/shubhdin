@@ -3087,7 +3087,7 @@ async function playPanchang(){
       if(stopped){resolve();return;}
       const a=new Audio(url);
       currentAudio=a;
-      a.onended=()=>setTimeout(resolve,30);
+      a.onended=()=>setTimeout(resolve,0);
       a.onerror=resolve; // skip missing files silently
       a.play().catch(resolve);
     });
@@ -3600,6 +3600,7 @@ function continueSadhana(){
   // Set dynamic target from saved sadhana
   // Get target from saved sadhana OR look up from PROB_CONTENT
   window._sadTarget = s.targetCount || (PROB_CONTENT[s.key]&&PROB_CONTENT[s.key].count) || 28;
+  const _bh=document.getElementById('sadJBelowHint');if(_bh){_bh.style.display='block';_bh.style.opacity='1';_bh.textContent=H?'हर जाप के बाद टैप करें':'Tap after each chant';}
   const totEl=document.getElementById('sadJTotal');if(totEl)totEl.textContent='/ '+(window._sadTarget);
 
   // Set mantra from sadhana data
