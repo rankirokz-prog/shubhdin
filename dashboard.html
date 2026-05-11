@@ -1789,7 +1789,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           </div>
           <div class="sad-today-card">
             <div class="sad-today-label" id="sadTodayLbl">आज का लक्ष्य</div>
-            <div class="sad-today-count"><span id="sadTodayDone">0</span><span class="sad-today-sep"> / </span><span>28</span><span class="sad-today-unit" id="sadTodayUnit">जप</span></div>
+            <div class="sad-today-count"><span id="sadTodayDone">0</span><span class="sad-today-sep"> / </span><span id="sadTodayTarget">28</span><span class="sad-today-unit" id="sadTodayUnit">जप</span></div>
             <div class="sad-today-bar-bg"><div class="sad-today-bar" id="sadTodayBar" style="width:0%;"></div></div>
           </div>
           <div class="sad-motivation" id="sadMotivation">"श्रद्धा और निरंतरता — यही साधना की शक्ति है"</div>
@@ -3417,6 +3417,7 @@ function renderSadhana(){
   document.getElementById('sadBarFill').style.width = Math.max(3,pct)+'%';
   document.getElementById('sadBarLabel').textContent = pct+'%'+(H?' पूर्ण':' Complete');
   document.getElementById('sadTodayDone').textContent = s.todayCount;
+  const tgtEl=document.getElementById('sadTodayTarget');if(tgtEl)tgtEl.textContent=s.targetCount||28;
   document.getElementById('sadTodayBar').style.width = todayPct+'%';
 
   const btn = document.getElementById('sadContinueBtn');
@@ -3745,20 +3746,20 @@ function sadJTap(){
       if(strEl&&sk)strEl.textContent='🔥 '+sk.streak+(H?' दिन':' days');
       // Translate completion page
       document.getElementById('sdLine1')?.textContent==='';if(document.getElementById('sdLine1'))document.getElementById('sdLine1').textContent=H?'✨ साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
-      if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=H?'28 जप पूरे हुए':'28 Chants Completed';
+      if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=H?((window._sadTarget||28)+' जप पूरे हुए'):((window._sadTarget||28)+' Chants Completed');
       if(document.getElementById('sdLine3'))document.getElementById('sdLine3').textContent=H?"आपने आज का संकल्प पूरा किया 🙏":"You completed today's chanting goal 🙏";
       if(document.getElementById('sadJStreakShow'))document.getElementById('sadJStreakShow').textContent=H?'🔥 साधना जारी है':'🔥 Practice Continues';
       if(document.getElementById('sdBtnMore'))document.getElementById('sdBtnMore').textContent=H?'🔁 अधिक जप करें':'➡ Chant More';
       if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=H?'🏠 साधना पर लौटें':'🏠 Return to Sadhana';
       const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=H?'✨ आपकी साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
-      const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?'आपने 28 जप पूरे किए 🙏':'You completed 28 chants 🙏';
+      const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?('आपने '+(window._sadTarget||28)+' जप पूरे किए 🙏'):('You completed '+(window._sadTarget||28)+' chants 🙏');
       const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=H?'आज का जप':'Today\'s chants';
       const dkl=document.getElementById('sadDoneStreakLbl');if(dkl)dkl.textContent=H?'Streak':'Streak';
       const drl=document.getElementById('sadDoneJrnLbl');if(drl)drl.textContent=H?'21-दिन यात्रा':'21-Day Journey';
       const dbb=document.getElementById('sadDoneBackBtn');if(dbb)dbb.textContent=H?'🏠 साधना सहेजें और लौटें':'🏠 Return to Sadhana';
       const dmb=document.getElementById('sadDoneMoreBtn');if(dmb)dmb.textContent=H?'+ अधिक जप':'➡ Chant More';
       const dmtl=document.getElementById('sadDoneMainTitle');if(dmtl)dmtl.textContent=H?'आज का जप पूर्ण हुआ':'Sadhana Complete';
-      const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=H?'28 जप पूरे हुए 🔥':'28 Chants Completed 🔥';
+      const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=H?((window._sadTarget||28)+' जप पूरे हुए 🔥'):((window._sadTarget||28)+' Chants Completed 🔥');
       const dvow=document.getElementById('sadDoneVow');if(dvow)dvow.textContent=H?"आज का संकल्प सफल हुआ 🕉️":"You completed today's spiritual goal 🕉️";
       const dbl=document.getElementById('sadDoneBlessing');if(dbl)dbl.textContent=H?'ईश्वर की कृपा आप पर बनी रहे 🙏':'May divine grace be with you 🙏';
       const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
@@ -3816,7 +3817,7 @@ function sadJUpdate(){
   // Remaining under count
   const r2=document.getElementById('sadJRemain2');
   if(r2){
-    const rem=28-sadJCount;
+    const rem=(window._sadTarget||28)-sadJCount;
     r2.textContent=(H?'शेष: ':'Left: ')+rem+(H?' जप':' japs');
     if(rem<=10){
       r2.style.fontSize='18px';
