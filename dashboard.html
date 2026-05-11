@@ -3382,7 +3382,7 @@ function startSadhana(key){
   const today = new Date().toISOString().slice(0,10);
   const s = {
     key, title: p.title_hi, mantra: p.mantra,
-    totalDays: parseInt(p.duration)||21,
+    totalDays: parseInt((p.duration||'21'))||21,
     targetCount: p.count||28,
     startDate: today, daysDone: [], streak: 0,
     todayCount: 0, todayDate: today,
@@ -3597,7 +3597,8 @@ function continueSadhana(){
   if(!s) return;
   sadJCount = s.todayCount || 0;
   // Set dynamic target from saved sadhana
-  window._sadTarget = s.targetCount || 28;
+  // Get target from saved sadhana OR look up from PROB_CONTENT
+  window._sadTarget = s.targetCount || (PROB_CONTENT[s.key]&&PROB_CONTENT[s.key].count) || 28;
   const totEl=document.getElementById('sadJTotal');if(totEl)totEl.textContent='/ '+(window._sadTarget);
 
   // Set mantra from sadhana data
