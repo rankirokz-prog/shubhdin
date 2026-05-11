@@ -3188,7 +3188,7 @@ const PROB_CONTENT = {
     steps_en: ['Chant calmly every morning or evening', 'Chant 108 times daily', 'Sit in a peaceful place with focus and positivity', 'Best practiced after bath'],
     actions: ['देवी पार्वती को सफेद पुष्प अर्पित करें', 'शुक्रवार को घी का दीपक जलाएं', 'संभव हो तो शिव–पार्वती मंदिर जाएं', 'सकारात्मक सोच और धैर्य बनाए रखें'],
     actions_en: ['Offer white flowers to Goddess Parvati', 'Light a ghee lamp on Fridays', 'Visit Shiva–Parvati temple when possible', 'Maintain patience and positive thoughts'],
-    count: 108, duration: '21 दिन', duration_en: '21 Days',
+    count: 27, duration: '21 दिन', duration_en: '21 Days',
     why: 'यह मंत्र देवी पार्वती के योगिनी स्वरूप का आह्वान करता है, जो प्रेम, आकर्षण, भावनात्मक जुड़ाव और वैवाहिक सामंजस्य प्रदान करने में सहायक माना जाता है।',
     why_en: 'This mantra invokes Goddess Parvati in her divine Yogini form to bring attraction, emotional connection, harmony, and positive relationship energy.',
   },
@@ -3611,7 +3611,7 @@ function continueSadhana(){
 
   // Update display
   const ofEl=document.getElementById('sadJOf');
-  if(ofEl)ofEl.textContent=H?'/ 28':'/ 28';
+  if(ofEl)ofEl.textContent='/ '+(window._sadTarget||28);
   sadJUpdate();
 
   // Hide done overlay
@@ -3642,7 +3642,8 @@ function sadJTap(){
   if(sadJCount>=(window._sadTarget||28))return;
   sadJCount++;
 
-  const left=28-sadJCount;
+  const _tgt=window._sadTarget||28;
+  const left=_tgt-sadJCount;
 
   // ── PROGRESSIVE VIBRATION ──
   if(sadJCount===28) navigator.vibrate&&navigator.vibrate([100,40,100,40,150]);
@@ -3684,7 +3685,7 @@ function sadJTap(){
       glow=`0 0 ${60+(5-left)*15}px rgba(255,215,0,${intensity}),0 0 ${90+(5-left)*20}px rgba(255,107,26,${intensity*0.6})`;
     } else glow='0 0 50px rgba(255,107,26,0.55),0 0 80px rgba(212,168,67,0.25)';
     b.style.boxShadow=glow;
-    const dur=sadJCount===28?800:left<=5?350:200;
+    const dur=sadJCount===_tgt?800:left<=5?350:200;
     setTimeout(()=>{if(sadJCount<28)b.style.boxShadow='';},dur);
   }
 
@@ -3765,7 +3766,49 @@ function sadJTap(){
 }
 
 
+function buildMalaDots(){
+  const canvas=document.getElementById('sjCanvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const _tgt2=window._sadTarget||28;
+  const W=220,H=220,cx=110,cy=110,R=100;
+  ctx.clearRect(0,0,W,H);
+  // Background ring
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(212,168,67,0.20)';ctx.lineWidth=4;ctx.stroke();
+  // Progress arc
+  if(sadJCount>0){
+    const pct=sadJCount/_tgt2;
+    const grd=ctx.createLinearGradient(cx-R,cy,cx+R,cy);
+    grd.addColorStop(0,'#FF6B1A');grd.addColorStop(1,'#D4A843');
+    ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+(Math.PI*2*pct));
+    ctx.strokeStyle=grd;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();
+  }
+  // Dots
+  const total=_tgt2;
+  const activeBead=sadJCount>0?sadJCount-1:0;
+  for(let i=0;i<total;i++){
+    const angle=((i/total)*Math.PI*2)-(Math.PI/2);
+    const x=cx+R*Math.cos(angle);
+    const y=cy+R*Math.sin(angle);
+    const filled=sadJCount>(i);
+    const isActive=(i===activeBead&&sadJCount<_tgt2&&sadJCount>0);
+    if(isActive){
+      ctx.shadowColor='rgba(255,215,0,0.80)';ctx.shadowBlur=10;
+      ctx.beginPath();ctx.arc(x,y,5.5,0,Math.PI*2);
+      ctx.fillStyle='#FFD700';ctx.fill();ctx.shadowBlur=0;
+    } else if(filled){
+      ctx.shadowColor='rgba(212,168,67,0.50)';ctx.shadowBlur=6;
+      ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
+      ctx.fillStyle='#D4A843';ctx.fill();ctx.shadowBlur=0;
+    } else {
+      ctx.beginPath();ctx.arc(x,y,2.5,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.12)';ctx.fill();
+    }
+  }
+}
+
 function sadJUpdate(){
+  const _tgt=window._sadTarget||28;
   // Count
   const cEl=document.getElementById('sadJCount');
   if(cEl){cEl.textContent=sadJCount;cEl.style.transform='scale(1.18)';setTimeout(()=>cEl.style.transform='scale(1)',100);}
@@ -3791,7 +3834,7 @@ function sadJUpdate(){
   const pct=sadJCount/28;
   if(ring){
     ring.style.strokeDashoffset=597-(597*pct);
-    if(sadJCount>=100) ring.style.animation='ringPulse 0.8s ease-in-out infinite';
+    if(sadJCount>=Math.floor(_tgt*0.9)) ring.style.animation='ringPulse 0.8s ease-in-out infinite';
     else ring.style.animation='none';
   }
   if(dot){
