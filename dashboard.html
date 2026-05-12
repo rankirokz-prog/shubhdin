@@ -3080,25 +3080,43 @@ async function playPanchang(){
   if(mpBtn)mpBtn.textContent='⏸';
   if(mpWaves)mpWaves.classList.add('on');
 
-  // Sequential player with 200ms pause between clips
   let stopped=false;
-  async function playOne(url, nextUrl){
-    return new Promise(resolve=>{
-      if(stopped){resolve();return;}
-      const a=new Audio(url);
-      currentAudio=a;
-      // Pre-load next clip while this one plays
-      if(nextUrl){ const pre=new Audio(nextUrl); pre.preload='auto'; }
-      a.onended=resolve; // 0ms gap
-      a.onerror=resolve;
-      a.play().catch(resolve);
-    });
-  }
+  const AC=new(window.AudioContext||window.webkitAudioContext)();
+
+  // Fetch and decode all clips in parallel, then play gaplessly
   async function playList(urls){
-    for(let i=0;i<urls.length;i++){
-      if(stopped)break;
-      await playOne(urls[i], urls[i+1]);
+    // Fetch all simultaneously
+    const buffers=await Promise.all(urls.map(async url=>{
+      try{
+        const r=await fetch(url);
+        if(!r.ok)return null;
+        const ab=await r.arrayBuffer();
+        return await AC.decodeAudioData(ab);
+      }catch(e){return null;}
+    }));
+
+    // Schedule back-to-back with zero gap
+    let startTime=AC.currentTime+0.05;
+    const sources=[];
+    for(let i=0;i<buffers.length;i++){
+      const buf=buffers[i];
+      if(!buf)continue;
+      const src=AC.createBufferSource();
+      src.buffer=buf;
+      src.connect(AC.destination);
+      src.start(startTime);
+      startTime+=buf.duration;
+      sources.push(src);
     }
+
+    // Wait until all done
+    return new Promise(resolve=>{
+      if(sources.length===0){resolve();return;}
+      const last=sources[sources.length-1];
+      last.onended=resolve;
+      // Fallback timeout
+      setTimeout(resolve,(startTime-AC.currentTime+0.5)*1000);
+    });
   }
 
   // Build playlist
