@@ -669,8 +669,16 @@
   }
 
   // ── Enter app ──
-  function enterApp() {
+  async function enterApp() {
     localStorage.setItem('shubhdin_user', JSON.stringify({...user, lang, setupDone:true}));
+    // Generate name audio via ElevenLabs (fire and forget — don't block redirect)
+    try {
+      const nameForAudio = user.name || '';
+      if(nameForAudio) {
+        fetch('/api/generate-name?name=' + encodeURIComponent(nameForAudio))
+          .catch(()=>{}); // don't block on failure
+      }
+    } catch(e) {}
     window.location.href = 'dashboard.html';
   }
 
