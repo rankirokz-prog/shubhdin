@@ -3157,12 +3157,26 @@ async function playPanchang(){
     // Get all buffers (from cache or fetch)
     const buffers = await Promise.all(urls.map(u => _getBuffer(u, AC)));
 
-    // Schedule back-to-back with zero gap
-    let startTime = AC.currentTime + 0.08;
+    // Connectors play with zero gap, sentences get natural pause
+    const connectors = ['se.mp3','tak_rahega.mp3','min_'];
+    function isConnector(url){
+      return connectors.some(c => url && url.includes(c));
+    }
+    function isSentenceStart(url, prevUrl){
+      // New sentence if: day_context, human_touch, jap_suggestion, closing, greeting, time_intro, time_careful
+      const sentenceStarters = ['day_context','human_touch','jap_suggestion','closing','greetings','time_intro','time_careful','day_good','day_careful','day_rashi','day_nakshatra'];
+      return sentenceStarters.some(s => url && url.includes(s));
+    }
+
+    let startTime = AC.currentTime + 0.1;
     const sources = [];
     for(let i=0;i<buffers.length;i++){
       const buf = buffers[i];
       if(!buf) continue;
+      // Add natural gap before sentence starters
+      if(i > 0 && isSentenceStart(urls[i], urls[i-1])){
+        startTime += 0.35; // 350ms between sentences
+      }
       const src = AC.createBufferSource();
       src.buffer = buf;
       src.connect(AC.destination);
