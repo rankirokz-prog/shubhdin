@@ -3082,18 +3082,23 @@ async function playPanchang(){
 
   // Sequential player with 200ms pause between clips
   let stopped=false;
-  async function playOne(url){
+  async function playOne(url, nextUrl){
     return new Promise(resolve=>{
       if(stopped){resolve();return;}
       const a=new Audio(url);
       currentAudio=a;
-      a.onended=()=>setTimeout(resolve,0);
-      a.onerror=resolve; // skip missing files silently
+      // Pre-load next clip while this one plays
+      if(nextUrl){ const pre=new Audio(nextUrl); pre.preload='auto'; }
+      a.onended=resolve; // 0ms gap
+      a.onerror=resolve;
       a.play().catch(resolve);
     });
   }
   async function playList(urls){
-    for(const u of urls){ if(stopped)break; await playOne(u); }
+    for(let i=0;i<urls.length;i++){
+      if(stopped)break;
+      await playOne(urls[i], urls[i+1]);
+    }
   }
 
   // Build playlist
@@ -3149,8 +3154,20 @@ async function playPanchang(){
   // Play!
   try{ await playList(playlist); }catch(e){}
   stopped=true;
+  // Auto-close mini player when done
   if(mpBtn)mpBtn.textContent='▶';
   if(mpWaves)mpWaves.classList.remove('on');
+  const mp=document.getElementById('miniPlayer');
+  if(mp){
+    mp.style.opacity='0';
+    mp.style.transform='translateY(10px)';
+    setTimeout(()=>{
+      mp.style.display='none';
+      mp.style.opacity='';
+      mp.style.transform='';
+      mp.classList.remove('open');
+    },600);
+  }
 }
 async function ensureNameAudio(){
   if(!U.name)return;const nu=getNameUrl();if(!nu)return;
