@@ -2973,6 +2973,74 @@ function getNameUrl(){
 const BASE = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/';
 function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
+// Audio cache — pre-decoded AudioBuffers
+const _audioCache = {};
+async function _getBuffer(url, ac){
+  if(_audioCache[url]) return _audioCache[url];
+  try{
+    const r = await fetch(url);
+    if(!r.ok) return null;
+    const ab = await r.arrayBuffer();
+    const buf = await ac.decodeAudioData(ab);
+    // Trim silence from start and end (threshold: 0.01)
+    const trimmed = _trimSilence(buf, ac, 0.008);
+    _audioCache[url] = trimmed;
+    return trimmed;
+  }catch(e){ return null; }
+}
+
+function _trimSilence(buf, ac, threshold){
+  const ch = buf.getChannelData(0);
+  let start = 0, end = ch.length - 1;
+  // Find first non-silent sample
+  while(start < ch.length && Math.abs(ch[start]) < threshold) start++;
+  // Find last non-silent sample  
+  while(end > start && Math.abs(ch[end]) < threshold) end--;
+  // Keep small natural breath (100 samples ≈ 2ms at 48kHz)
+  start = Math.max(0, start - 100);
+  end = Math.min(ch.length - 1, end + 300);
+  const len = end - start + 1;
+  if(len <= 0) return buf;
+  const trimmed = ac.createBuffer(buf.numberOfChannels, len, buf.sampleRate);
+  for(let c = 0; c < buf.numberOfChannels; c++){
+    trimmed.copyToChannel(buf.getChannelData(c).slice(start, end+1), c);
+  }
+  return trimmed;
+}
+
+// Pre-warm cache for today's panchang audio
+function prewarmAudio(){
+  try{
+    const ac = new(window.AudioContext||window.webkitAudioContext)();
+    const times = getPanchangTimes();
+    const urls = [
+      BASE+'greetings/name_1.mp3',
+      BASE+'greetings/name_2.mp3',
+      BASE+'greetings/name_3.mp3',
+      BASE+'Time/se.mp3',
+      BASE+'Time/tak_rahega.mp3',
+      BASE+'Time/time_intro_1.mp3',
+      BASE+'Time/time_intro_2.mp3',
+      BASE+'Time/time_careful_1.mp3',
+      BASE+'Time/time_careful_2.mp3',
+    ];
+    // Add today's time files
+    if(times.shubh){
+      urls.push(...buildTimeSegments(times.shubh.start,true));
+      urls.push(...buildTimeSegments(times.shubh.end,false));
+    }
+    if(times.rahu){
+      urls.push(...buildTimeSegments(times.rahu.start,true));
+      urls.push(...buildTimeSegments(times.rahu.end,false));
+    }
+    // Add name file
+    const nu = getNameUrl();
+    if(nu) urls.push(nu);
+    // Fetch all in background
+    urls.forEach(u => { if(u) _getBuffer(u, ac).catch(()=>{}); });
+  }catch(e){}
+}
+
 
 
 // Map period+hour to exact uploaded filename
@@ -3082,40 +3150,31 @@ async function playPanchang(){
 
   let stopped=false;
   const AC=new(window.AudioContext||window.webkitAudioContext)();
+  // Resume context if suspended (iOS)
+  if(AC.state==='suspended') AC.resume();
 
-  // Fetch and decode all clips in parallel, then play gaplessly
   async function playList(urls){
-    // Fetch all simultaneously
-    const buffers=await Promise.all(urls.map(async url=>{
-      try{
-        const r=await fetch(url);
-        if(!r.ok)return null;
-        const ab=await r.arrayBuffer();
-        return await AC.decodeAudioData(ab);
-      }catch(e){return null;}
-    }));
+    // Get all buffers (from cache or fetch)
+    const buffers = await Promise.all(urls.map(u => _getBuffer(u, AC)));
 
     // Schedule back-to-back with zero gap
-    let startTime=AC.currentTime+0.05;
-    const sources=[];
+    let startTime = AC.currentTime + 0.08;
+    const sources = [];
     for(let i=0;i<buffers.length;i++){
-      const buf=buffers[i];
-      if(!buf)continue;
-      const src=AC.createBufferSource();
-      src.buffer=buf;
+      const buf = buffers[i];
+      if(!buf) continue;
+      const src = AC.createBufferSource();
+      src.buffer = buf;
       src.connect(AC.destination);
       src.start(startTime);
-      startTime+=buf.duration;
+      startTime += buf.duration;
       sources.push(src);
     }
 
-    // Wait until all done
     return new Promise(resolve=>{
       if(sources.length===0){resolve();return;}
-      const last=sources[sources.length-1];
-      last.onended=resolve;
-      // Fallback timeout
-      setTimeout(resolve,(startTime-AC.currentTime+0.5)*1000);
+      sources[sources.length-1].onended = resolve;
+      setTimeout(resolve, (startTime - AC.currentTime + 1) * 1000);
     });
   }
 
@@ -3941,6 +4000,7 @@ async function fetchPanchang(){
     const json=await(await fetch('/api/panchang?city='+city)).json();
     if(!json.data)return;const p=json.data;
     window._panchangData=p; // store for audio stitching
+    setTimeout(prewarmAudio, 1000); // pre-load audio in background
     if(p.abhijit_muhurta){document.getElementById('goodTime').textContent=p.abhijit_muhurta;}
     if(p.rahu_kaal){document.getElementById('avoidTime').textContent=p.rahu_kaal;document.getElementById('rahuTime').textContent=p.rahu_kaal;}
     if(p.tithi){document.getElementById('tithiVal').textContent=p.tithi;document.getElementById('tv').textContent=p.tithi;}
