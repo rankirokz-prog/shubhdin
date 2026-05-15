@@ -3232,12 +3232,10 @@ async function playPanchang(){
   // 4. HUMAN TOUCH
   playlist.push(BASE+'human_touch/'+rnd(dayType==='good'?['good_1','good_2','good_3','good_4']:['careful_1','careful_2','careful_3','careful_4'])+'.mp3');
 
-  // 5. JAP SUGGESTION
-  if(chantType==='count'){
-    playlist.push(BASE+'jap_suggestions/'+rnd(['jap_1','jap_3','jap_8'])+'.mp3');
-  } else {
-    playlist.push(BASE+'jap_suggestions/'+rnd(['jap_4','jap_5','jap_6','jap_7'])+'.mp3');
-  }
+  // 5. JAP SUGGESTION — deity-specific
+  const _deityMap={0:'surya',1:'shiva',2:'hanuman',3:'ganesh',4:'rama',5:'lakshmi',6:'shani'};
+  const _deityKey=_deityMap[new Date().getDay()]||'shiva';
+  playlist.push(BASE+'jap_suggestions/'+_deityKey+'_jap_suggestion_'+rnd([1,2])+'.mp3');
 
   // 6. CLOSING
   playlist.push(BASE+'closings/closing_'+Math.ceil(Math.random()*7)+'.mp3');
