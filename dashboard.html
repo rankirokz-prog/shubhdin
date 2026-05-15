@@ -114,32 +114,52 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .jthumb{
   border-radius:20px;overflow:hidden;cursor:pointer;
   transition:transform 0.2s;position:relative;
-  min-height:130px;display:flex;flex-direction:column;justify-content:flex-end;
+  min-height:130px;display:flex;align-items:stretch;
   border:1px solid rgba(212,168,67,0.18);
+  background:#1A0800;
 }
 .jthumb:active{transform:scale(0.98);}
-.jt-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A0800,#3D1A05,#2C1208);}
+.jt-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A0800 0%,#2C1208 60%,#3D1A05 100%);}
 .jt-deity{display:none;}
+/* Right-side deity column */
 .jt-deity-img-wrap{
-  position:absolute;right:0;top:0;bottom:0;width:55%;
-  pointer-events:none;overflow:hidden;
-}
-.jt-deity-img{
-  position:absolute;right:-10px;top:50%;transform:translateY(-50%);
-  height:125%;width:auto;object-fit:cover;object-position:top center;
-  opacity:0.42;filter:brightness(1.25) saturate(1.3) contrast(1.05);
-  mask-image:linear-gradient(to left,rgba(0,0,0,1.0) 0%,rgba(0,0,0,0.75) 40%,rgba(0,0,0,0.15) 75%,transparent 100%);
-  -webkit-mask-image:linear-gradient(to left,rgba(0,0,0,1.0) 0%,rgba(0,0,0,0.75) 40%,rgba(0,0,0,0.15) 75%,transparent 100%);
-}
-/* Golden glow behind deity */
-.jt-deity-img-wrap::after{
-  content:'';position:absolute;right:10%;top:20%;
-  width:65%;height:50%;border-radius:50%;
-  background:radial-gradient(ellipse,rgba(212,168,67,0.22) 0%,rgba(255,180,80,0.08) 50%,transparent 75%);
+  position:absolute;right:0;top:0;bottom:0;width:48%;
   pointer-events:none;
 }
-.jt-overlay{position:absolute;bottom:0;left:0;right:0;height:100%;
-  background:linear-gradient(to right,rgba(13,5,0,0.98) 0%,rgba(13,5,0,0.85) 45%,rgba(13,5,0,0.20) 100%);}
+.jt-deity-img{
+  position:absolute;right:0;top:0;bottom:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:top center;
+  opacity:0.45;
+  filter:brightness(1.30) saturate(1.25) contrast(1.08);
+  mask-image:linear-gradient(to left,
+    rgba(0,0,0,0.95) 0%,
+    rgba(0,0,0,0.90) 35%,
+    rgba(0,0,0,0.40) 65%,
+    transparent 100%);
+  -webkit-mask-image:linear-gradient(to left,
+    rgba(0,0,0,0.95) 0%,
+    rgba(0,0,0,0.90) 35%,
+    rgba(0,0,0,0.40) 65%,
+    transparent 100%);
+}
+/* Warm halo at face/top area */
+.jt-deity-img-wrap::before{
+  content:'';position:absolute;right:5%;top:5%;
+  width:75%;height:45%;border-radius:50%;z-index:1;
+  background:radial-gradient(ellipse,rgba(255,190,80,0.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+/* Text protection gradient */
+.jt-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to right,
+    rgba(13,5,0,1.0) 0%,
+    rgba(13,5,0,0.95) 35%,
+    rgba(13,5,0,0.60) 55%,
+    rgba(13,5,0,0.10) 100%);
+}
+.jt-content{position:relative;z-index:2;padding:16px 16px;flex:1;display:flex;flex-direction:column;justify-content:space-between;max-width:62%;}
 .jt-content{position:relative;z-index:2;padding:14px 16px;}
 .jt-tag{font-size:9px;color:rgba(255,107,26,0.75);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;}
 .jt-hook{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:#fff;line-height:1.3;margin-bottom:4px;}
@@ -700,32 +720,52 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .jthumb{
   border-radius:20px;overflow:hidden;cursor:pointer;
   transition:transform 0.2s;position:relative;
-  min-height:130px;display:flex;flex-direction:column;justify-content:flex-end;
+  min-height:130px;display:flex;align-items:stretch;
   border:1px solid rgba(212,168,67,0.18);
+  background:#1A0800;
 }
 .jthumb:active{transform:scale(0.98);}
-.jt-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A0800,#3D1A05,#2C1208);}
+.jt-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A0800 0%,#2C1208 60%,#3D1A05 100%);}
 .jt-deity{display:none;}
+/* Right-side deity column */
 .jt-deity-img-wrap{
-  position:absolute;right:0;top:0;bottom:0;width:55%;
-  pointer-events:none;overflow:hidden;
-}
-.jt-deity-img{
-  position:absolute;right:-10px;top:50%;transform:translateY(-50%);
-  height:125%;width:auto;object-fit:cover;object-position:top center;
-  opacity:0.42;filter:brightness(1.25) saturate(1.3) contrast(1.05);
-  mask-image:linear-gradient(to left,rgba(0,0,0,1.0) 0%,rgba(0,0,0,0.75) 40%,rgba(0,0,0,0.15) 75%,transparent 100%);
-  -webkit-mask-image:linear-gradient(to left,rgba(0,0,0,1.0) 0%,rgba(0,0,0,0.75) 40%,rgba(0,0,0,0.15) 75%,transparent 100%);
-}
-/* Golden glow behind deity */
-.jt-deity-img-wrap::after{
-  content:'';position:absolute;right:10%;top:20%;
-  width:65%;height:50%;border-radius:50%;
-  background:radial-gradient(ellipse,rgba(212,168,67,0.22) 0%,rgba(255,180,80,0.08) 50%,transparent 75%);
+  position:absolute;right:0;top:0;bottom:0;width:48%;
   pointer-events:none;
 }
-.jt-overlay{position:absolute;bottom:0;left:0;right:0;height:100%;
-  background:linear-gradient(to right,rgba(13,5,0,0.98) 0%,rgba(13,5,0,0.85) 45%,rgba(13,5,0,0.20) 100%);}
+.jt-deity-img{
+  position:absolute;right:0;top:0;bottom:0;
+  width:100%;height:100%;
+  object-fit:cover;object-position:top center;
+  opacity:0.45;
+  filter:brightness(1.30) saturate(1.25) contrast(1.08);
+  mask-image:linear-gradient(to left,
+    rgba(0,0,0,0.95) 0%,
+    rgba(0,0,0,0.90) 35%,
+    rgba(0,0,0,0.40) 65%,
+    transparent 100%);
+  -webkit-mask-image:linear-gradient(to left,
+    rgba(0,0,0,0.95) 0%,
+    rgba(0,0,0,0.90) 35%,
+    rgba(0,0,0,0.40) 65%,
+    transparent 100%);
+}
+/* Warm halo at face/top area */
+.jt-deity-img-wrap::before{
+  content:'';position:absolute;right:5%;top:5%;
+  width:75%;height:45%;border-radius:50%;z-index:1;
+  background:radial-gradient(ellipse,rgba(255,190,80,0.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+/* Text protection gradient */
+.jt-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to right,
+    rgba(13,5,0,1.0) 0%,
+    rgba(13,5,0,0.95) 35%,
+    rgba(13,5,0,0.60) 55%,
+    rgba(13,5,0,0.10) 100%);
+}
+.jt-content{position:relative;z-index:2;padding:16px 16px;flex:1;display:flex;flex-direction:column;justify-content:space-between;max-width:62%;}
 .jt-content{position:relative;z-index:2;padding:14px 16px;}
 .jt-tag{font-size:9px;color:rgba(255,107,26,0.75);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;}
 .jt-hook{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:#fff;line-height:1.3;margin-bottom:4px;}
@@ -1894,6 +1934,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div class="j-counter">
           <div class="j-count-num" id="jNum">0</div>
           <div class="j-count-of" id="jOf">of 28</div>
+        <div id="jTapHint" style="font-size:11px;color:rgba(212,168,67,0.50);letter-spacing:1px;text-align:center;margin-top:4px;">जप करने के लिए टैप करें</div>
         </div>
 
         <!-- Mala dots -->
@@ -2089,6 +2130,7 @@ function personalise(){
 
   // Chips
   document.getElementById('rl').textContent=H?'राशि':'Rashi';
+  const jth=document.getElementById('jTapHint');if(jth)jth.textContent=H?'जप करने के लिए टैप करें':'Tap to Jap';
   const jsb=document.getElementById('jdShareBtn');if(jsb)jsb.textContent=H?'📤 अपनों के साथ साझा करें':'📤 Share with Loved Ones';
   document.getElementById('ri').textContent=R.i;
   document.getElementById('rv').textContent=H?R.h:R.e;
