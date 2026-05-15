@@ -119,8 +119,27 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 .jthumb:active{transform:scale(0.98);}
 .jt-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A0800,#3D1A05,#2C1208);}
-.jt-deity{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:95px;opacity:0.16;pointer-events:none;}
-.jt-overlay{position:absolute;bottom:0;left:0;right:0;height:80%;background:linear-gradient(0deg,rgba(13,5,0,0.95) 0%,rgba(13,5,0,0.55) 65%,transparent 100%);}
+.jt-deity{display:none;}
+.jt-deity-img-wrap{
+  position:absolute;right:0;top:0;bottom:0;width:55%;
+  pointer-events:none;overflow:hidden;
+}
+.jt-deity-img{
+  position:absolute;right:-10px;top:50%;transform:translateY(-50%);
+  height:125%;width:auto;object-fit:cover;object-position:top center;
+  opacity:0.30;filter:brightness(1.1) saturate(1.2);
+  mask-image:linear-gradient(to left,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.6) 50%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to left,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.6) 50%,transparent 100%);
+}
+/* Golden glow behind deity */
+.jt-deity-img-wrap::after{
+  content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:80%;height:80%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(212,168,67,0.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+.jt-overlay{position:absolute;bottom:0;left:0;right:0;height:100%;
+  background:linear-gradient(to right,rgba(13,5,0,0.98) 0%,rgba(13,5,0,0.85) 45%,rgba(13,5,0,0.20) 100%);}
 .jt-content{position:relative;z-index:2;padding:14px 16px;}
 .jt-tag{font-size:9px;color:rgba(255,107,26,0.75);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;}
 .jt-hook{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:#fff;line-height:1.3;margin-bottom:4px;}
@@ -686,8 +705,27 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 .jthumb:active{transform:scale(0.98);}
 .jt-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A0800,#3D1A05,#2C1208);}
-.jt-deity{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:95px;opacity:0.16;pointer-events:none;}
-.jt-overlay{position:absolute;bottom:0;left:0;right:0;height:80%;background:linear-gradient(0deg,rgba(13,5,0,0.95) 0%,rgba(13,5,0,0.55) 65%,transparent 100%);}
+.jt-deity{display:none;}
+.jt-deity-img-wrap{
+  position:absolute;right:0;top:0;bottom:0;width:55%;
+  pointer-events:none;overflow:hidden;
+}
+.jt-deity-img{
+  position:absolute;right:-10px;top:50%;transform:translateY(-50%);
+  height:125%;width:auto;object-fit:cover;object-position:top center;
+  opacity:0.30;filter:brightness(1.1) saturate(1.2);
+  mask-image:linear-gradient(to left,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.6) 50%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to left,rgba(0,0,0,0.9) 0%,rgba(0,0,0,0.6) 50%,transparent 100%);
+}
+/* Golden glow behind deity */
+.jt-deity-img-wrap::after{
+  content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:80%;height:80%;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(212,168,67,0.18) 0%,transparent 70%);
+  pointer-events:none;
+}
+.jt-overlay{position:absolute;bottom:0;left:0;right:0;height:100%;
+  background:linear-gradient(to right,rgba(13,5,0,0.98) 0%,rgba(13,5,0,0.85) 45%,rgba(13,5,0,0.20) 100%);}
 .jt-content{position:relative;z-index:2;padding:14px 16px;}
 .jt-tag{font-size:9px;color:rgba(255,107,26,0.75);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:5px;}
 .jt-hook{font-family:'Tiro Devanagari Hindi',serif;font-size:16px;color:#fff;line-height:1.3;margin-bottom:4px;}
@@ -1472,7 +1510,11 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <!-- Japa thumbnail card -->
         <div class="jthumb" id="jtCard" onclick="goJap()">
           <div class="jt-bg" id="jtBg"></div>
-          <div class="jt-deity" id="jtDeity">🌸</div>
+          <!-- Deity image right side -->
+          <div class="jt-deity-img-wrap">
+            <img class="jt-deity-img" id="jtDeityImg" src="" alt="" />
+          </div>
+          <div class="jt-deity" id="jtDeity" style="display:none">🌸</div>
           <div class="jt-overlay"></div>
           <div class="jt-content">
             <div class="jt-tag" id="jtTag">🪔 आज की साधना</div>
@@ -2072,6 +2114,8 @@ function personalise(){
   document.getElementById('avoidSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new work';
   // Japa thumbnail
   document.getElementById('jtDeity').textContent=T.ico;
+  const dimg=document.getElementById('jtDeityImg');
+  if(dimg){dimg.src=T.img||'';}
   document.getElementById('jtTag').textContent=isShravan()
     ?(H?'🎧 श्रवण जप — लक्ष्मी अष्टोत्तर':'🎧 Shravana Jap — Lakshmi Ashtottara')
     :(H?'🪔 आज की साधना':'🪔 Today\'s Sadhana');
