@@ -1783,6 +1783,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
       <!-- Bottom -->
       
+      <div id="sadJBelowHint" style="font-size:13px;color:rgba(212,168,67,0.70);letter-spacing:0.5px;text-align:center;flex-shrink:0;padding:12px 0 4px;animation:sadIdleGlow2 1.8s ease-in-out infinite;">हर जप के लिए टैप करें</div>
       <div style="width:100%;flex-shrink:0;padding:0 24px 44px;"></div>
 
       <!-- Completion overlay -->
@@ -2249,7 +2250,7 @@ function getNames(d){ const dm=DAY_MODE[d!=null?d:new Date().getDay()]; return d
 function getTS(d){ const dm=DAY_MODE[d!=null?d:new Date().getDay()]; return dm&&dm.ts?window[dm.ts]:null; }
 
 // ── JAPA ──
-const TOTAL=28,DOTS=27;
+const TOTAL=28,DOTS=28;
 let jCount=0,jPlay=false,jTimer=null,wordTimer=null,jChantAudio=null,currentWordIdx=0;
 const CHANT_MAP={0:'surya_chant',1:'shiva_chant',2:'hanuman_chant',3:'ganesh_chant',4:'rama_chant',5:'lakshmi_chant',6:'shani_chant'};
 
@@ -3005,14 +3006,6 @@ function mpPrev(){mpStop();}function mpNext(){mpStop();}
 function mpSeek(e){}
 
 // ── AUDIO SYSTEM ──
-let currentAudio=null;
-function getScriptVersion(){return Math.floor(Date.now()/(7*24*60*60*1000))%2===0?'a':'b';}
-function getDayKey(){return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];}
-function getScriptUrl(){return 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/scripts/'+getDayKey()+'_'+getScriptVersion()+'.mp3';}
-function getNameUrl(){
-  const nk=(U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
-  return nk?'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/names/'+nk+'.mp3':null;
-}
 // ── Modular Audio Stitching System ──
 const BASE = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/';
 function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
