@@ -2119,8 +2119,7 @@ function personalise(){
   document.getElementById('jtTag').textContent=isShravan()
     ?(H?'🎧 श्रवण जप — लक्ष्मी अष्टोत्तर':'🎧 Shravana Jap — Lakshmi Ashtottara')
     :(H?'🪔 आज की साधना':'🪔 Today\'s Sadhana');
-  const jtBg=document.getElementById('jtBg');
-  if(jtBg&&T.img){jtBg.style.cssText=`position:absolute;inset:0;background:url('${T.img}') center top/cover;opacity:0.30;`;}
+  // jtBg: keep dark gradient only, no deity image (deity shown on right via jtDeityImg)
   document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
   document.getElementById('jtBenefit').textContent=isShravan()
     ?(H?'🎧 108 नाम • 4 मिनट':'🎧 108 names • 4 minutes')
