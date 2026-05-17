@@ -1162,6 +1162,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .sadhana-mode .tabbar{display:none!important;}
 .sadhana-mode .mp-handle,.sadhana-mode .mp-fab{display:none!important;}
 .tabbar{flex-shrink:0;height:60px;background:#fff;border-top:1px solid rgba(212,168,67,0.10);display:flex;align-items:center;justify-content:space-around;padding:0 8px 4px;box-shadow:0 -3px 14px rgba(0,0,0,0.04);z-index:30;position:relative;}
+#tab-sadhana{display:none;} /* hidden until sadhana started */
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 4px 0;border-radius:10px;}
 .tab:active{background:rgba(212,168,67,0.06);}
 .tab-icon{font-size:18px;line-height:1;}
@@ -3497,6 +3498,7 @@ function startSadhana(key){
   closeProblem();
   // Show success toast
   showSadhanaToast(H?'✨ आपकी साधना शुरू हो गई':'✨ Your Sadhana Has Started');
+  updateSadhanaTab();
   setTimeout(()=>{ go('sadhana'); renderSadhana(); }, 800);
 }
 
@@ -3573,6 +3575,7 @@ function resetSadhana(){
   if(!confirm(H?'साधना रीसेट करें?':'Reset sadhana?')) return;
   localStorage.removeItem('shubhdin_sadhana');
   renderSadhana();
+  updateSadhanaTab();
 }
 
 function showSadhanaToast(msg){
@@ -4023,7 +4026,22 @@ async function fetchPanchang(){
 // ── Init ──
 const mpEl=document.getElementById('miniPlayer');
 mpEl.style.display='none';mpEl.classList.remove('open');
+// ── Sadhana tab visibility ──
+function updateSadhanaTab(){
+  const s = getSadhana();
+  const tab = document.getElementById('tab-sadhana');
+  if(!tab) return;
+  if(s){
+    tab.style.display = '';   // show
+  } else {
+    tab.style.display = 'none'; // hide
+    // If currently on sadhana screen, redirect to listen
+    if(document.getElementById('scr-sadhana')?.classList.contains('on')) go('listen');
+  }
+}
+
 setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
+updateSadhanaTab();
 setTimeout(()=>{
   const wp=document.getElementById('wallpaper');
   wp.style.opacity='0';wp.style.pointerEvents='none';wp.style.display='none';
