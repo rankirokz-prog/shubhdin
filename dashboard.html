@@ -121,22 +121,23 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .jt-bg{position:absolute;inset:0;background:linear-gradient(135deg,#1A0800,#3D1A05,#2C1208);}
 .jt-deity{display:none;}
 .jt-deity-img-wrap{
-  position:absolute;right:0;top:0;bottom:0;width:38%;
+  position:absolute;right:0;top:0;bottom:0;width:32%;
   pointer-events:none;overflow:hidden;
 }
 .jt-deity-img{
   position:absolute;right:-10px;top:50%;transform:translateY(-50%);
   height:125%;width:auto;object-fit:cover;object-position:top center;
-  opacity:0.72;
-  filter:brightness(1.55) saturate(1.45) contrast(1.12);
-  mask-image:linear-gradient(to left,rgba(0,0,0,1) 0%,rgba(0,0,0,0.85) 25%,rgba(0,0,0,0.30) 55%,transparent 85%);
-  -webkit-mask-image:linear-gradient(to left,rgba(0,0,0,1) 0%,rgba(0,0,0,0.85) 25%,rgba(0,0,0,0.30) 55%,transparent 85%);
+  opacity:0.65;
+  filter:brightness(1.45) saturate(1.40) contrast(1.08);
+  mask-image:linear-gradient(to left,rgba(0,0,0,0.95) 0%,rgba(0,0,0,0.70) 30%,transparent 80%),linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 40%,rgba(0,0,0,0.50) 70%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to left,rgba(0,0,0,0.95) 0%,rgba(0,0,0,0.70) 30%,transparent 80%),linear-gradient(to bottom,rgba(0,0,0,1) 0%,rgba(0,0,0,1) 40%,rgba(0,0,0,0.50) 70%,transparent 100%);
+  -webkit-mask-composite:source-in;mask-composite:intersect;
 }
 /* Golden glow behind deity */
 .jt-deity-img-wrap::after{
   content:'';position:absolute;right:5%;top:5%;
-  width:80%;height:55%;border-radius:50%;
-  background:radial-gradient(ellipse at 55% 30%,rgba(255,200,60,0.50) 0%,rgba(255,140,30,0.25) 35%,rgba(212,168,67,0.10) 60%,transparent 80%);
+  width:90%;height:45%;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 20%,rgba(255,210,70,0.45) 0%,rgba(255,160,40,0.20) 35%,transparent 65%);
   pointer-events:none;z-index:1;
 }
 .jt-overlay{position:absolute;bottom:0;left:0;right:0;height:100%;
