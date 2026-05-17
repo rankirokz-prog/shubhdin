@@ -1738,8 +1738,8 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       </div>
 
       <!-- Bottom -->
-      
-      <div style="width:100%;flex-shrink:0;padding:0 24px 44px;"></div>
+      <div id="sadJTapHint" style="font-size:11px;color:rgba(212,168,67,0.50);letter-spacing:0.8px;text-align:center;flex-shrink:0;padding:14px 0 0;">हर जाप के लिए टैप करें</div>
+      <div style="width:100%;flex-shrink:0;padding:0 24px 36px;"></div>
 
       <!-- Completion overlay -->
       <div id="sadJDone" style="display:none;position:absolute;inset:0;background:rgba(10,3,0,0.97);z-index:20;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:32px;">
@@ -3448,6 +3448,7 @@ function personaliseMarg(){
   const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=H?' दिन लगातार':' Day Streak';
   const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?'आज का लक्ष्य':"Today's Goal";
   const stu=document.getElementById('sadTodayUnit');if(stu)stu.textContent=H?'जप':'Chants';
+  const sth=document.getElementById('sadJTapHint');if(sth)sth.textContent=H?'हर जाप के लिए टैप करें':'Tap for every jap';
   const slj=document.getElementById('sadLblJap');if(slj)slj.textContent=H?'कुल जप':'Total Chants';
   const sld=document.getElementById('sadLblDays');if(sld)sld.textContent=H?'कुल दिन':'Total Days';
   const slb=document.getElementById('sadLblBest');if(slb)slb.textContent=H?'सर्वश्रेष्ठ':'Best Streak';
