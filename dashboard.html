@@ -2042,7 +2042,10 @@ function personalise(){
   const df_e=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
   // Nav
-  document.getElementById('datePill').textContent=H?dn_h[dow]+' • '+now.getDate()+' अप्रैल':dn_e[dow]+' • '+now.toLocaleDateString('en',{day:'numeric',month:'short'});
+  const months_hi=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
+  document.getElementById('datePill').textContent=H
+    ? dn_h[dow]+' • '+now.getDate()+' '+months_hi[now.getMonth()]
+    : dn_e[dow]+' • '+now.toLocaleDateString('en',{day:'numeric',month:'short'});
   // Greeting
   document.getElementById('greetTime').textContent=greetMsg();
   const rawName = name.charAt(0).toUpperCase() + name.slice(1);
@@ -2100,7 +2103,7 @@ function personalise(){
   // Listen screen
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
-  document.getElementById('phDate').textContent=now.toLocaleDateString('en',{day:'numeric',month:'short'});
+  document.getElementById('phDate').textContent=H?(now.getDate()+' '+months_hi[now.getMonth()]):now.toLocaleDateString('en',{day:'numeric',month:'short'});
   // आज का सार — yoga + tithi + day based dynamic logic
   const saarTitle=document.getElementById('asTitle');
   const saarSub=document.getElementById('asSub');
@@ -2190,7 +2193,7 @@ function personalise(){
   // Tab bar
   document.getElementById('tl1').textContent=H?'होम':'Home';
   document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
-  document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
+  document.getElementById('tl3').textContent=H?'पंचांग • '+now.getDate():'Panch • '+now.getDate();
   document.getElementById('tl4').textContent=H?'जाप':'Jap';
 }
 
