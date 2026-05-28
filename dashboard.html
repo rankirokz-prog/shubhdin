@@ -1909,7 +1909,15 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   <div class="tabbar">
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
     <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🙏</span><span class="tab-label" id="tl2" style="font-size:7.5px;">मार्गदर्शन</span></div>
-    <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">📅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
+    <div class="tab" id="tab-panchang" onclick="go('panchang')">
+  <span class="tab-icon">
+    <span id="calIcon" style="display:inline-flex;flex-direction:column;align-items:center;width:22px;height:22px;background:#fff;border-radius:4px;border:1.5px solid rgba(212,168,67,0.60);overflow:hidden;line-height:1;">
+      <span style="width:100%;background:var(--saffron);font-size:5px;color:#fff;text-align:center;padding:1px 0;font-weight:700;letter-spacing:0.3px;" id="calMonth">MAY</span>
+      <span style="font-size:11px;font-weight:800;color:#1A0A00;line-height:1.3;" id="calDay">28</span>
+    </span>
+  </span>
+  <span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span>
+</div>
     <div class="tab" id="tab-sadhana" onclick="go('sadhana')"><span class="tab-icon">📿</span><span class="tab-label" style="font-size:7.5px;" id="tl-sadhana">साधना</span>
     </div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जाप</span></div>
@@ -2194,6 +2202,9 @@ function personalise(){
   document.getElementById('tl1').textContent=H?'होम':'Home';
   document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
   document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
+  const _ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const calM=document.getElementById('calMonth');if(calM)calM.textContent=_ms[now.getMonth()];
+  const calD=document.getElementById('calDay');if(calD)calD.textContent=now.getDate();
   document.getElementById('tl4').textContent=H?'जाप':'Jap';
 }
 
