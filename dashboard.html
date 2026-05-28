@@ -4020,12 +4020,50 @@ async function fetchPanchang(){
     const city=(U.city||'default').toLowerCase().replace(/\s+/g,'');
     const json=await(await fetch('/api/panchang?city='+city)).json();
     if(!json.data)return;const p=json.data;
-    window._panchangData=p; // store for audio stitching
-    setTimeout(prewarmAudio, 1000); // pre-load audio in background
-    if(p.abhijit_muhurta){document.getElementById('goodTime').textContent=p.abhijit_muhurta;}
-    if(p.rahu_kaal){document.getElementById('avoidTime').textContent=p.rahu_kaal;document.getElementById('rahuTime').textContent=p.rahu_kaal;}
-    if(p.tithi){document.getElementById('tithiVal').textContent=p.tithi;document.getElementById('tv').textContent=p.tithi;}
-    if(p.nakshatra)document.getElementById('nakVal2').textContent=p.nakshatra;
+    window._panchangData=p;
+    setTimeout(prewarmAudio, 1000);
+
+    // ── Tithi ──
+    if(p.tithi){
+      document.getElementById('tithiVal').textContent=p.tithi;
+      document.getElementById('tv').textContent=p.tithi;
+    }
+    // ── Nakshatra ──
+    if(p.nakshatra){
+      document.getElementById('nakVal2').textContent=p.nakshatra;
+      document.getElementById('nv').textContent=p.nakshatra;
+    }
+    // ── Yoga ──
+    if(p.yoga){
+      const yogaEl=document.querySelector('.c4 .pval');
+      if(yogaEl) yogaEl.textContent=p.yoga;
+    }
+    // ── Karana ──
+    if(p.karana){
+      const karEl=document.querySelector('.c5 div:nth-child(2)');
+      if(karEl) karEl.innerHTML=p.karana;
+    }
+    // ── Sunrise / Sunset ──
+    if(p.sunrise){
+      const srEl=document.querySelector('.sun-bar .si:nth-child(1) .si-t');
+      if(srEl) srEl.textContent=p.sunrise;
+    }
+    if(p.sunset){
+      const ssEl=document.querySelector('.sun-bar .si:nth-child(5) .si-t');
+      if(ssEl) ssEl.textContent=p.sunset;
+    }
+    // ── Rahu Kaal ──
+    if(p.rahu_kaal){
+      document.getElementById('avoidTime').textContent=p.rahu_kaal;
+      document.getElementById('rahuTime').textContent=p.rahu_kaal;
+    }
+    // ── Abhijit Muhurta (shubh time) ──
+    if(p.abhijit_muhurta){
+      document.getElementById('goodTime').textContent=p.abhijit_muhurta;
+      // Update abhijit card on panchang screen too
+      const abEl=document.querySelector('.ab-time strong');
+      if(abEl) abEl.textContent=p.abhijit_muhurta;
+    }
   }catch(e){console.log('Panchang unavailable');}
 }
 
