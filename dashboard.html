@@ -4209,6 +4209,7 @@ function saveSettings(){
   u.name = newName;
   u.lang = _settLang;
   u.city = newCity;
+  if(window._selectedCityLat){ u.city_lat = window._selectedCityLat; u.city_lon = window._selectedCityLon; }
   u.dob  = newDob;
   u.tob  = newTob;
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
@@ -4235,9 +4236,8 @@ async function fetchBirthChart(){
   if(u.birth_cache_key === cacheKey && u.nakshatra) return;
 
   try{
-    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===(u.city||'delhi').toLowerCase());
-    const lat = cityObj?cityObj.lat:28.6139;
-    const lon = cityObj?cityObj.lon:77.2090;
+    const lat = u.city_lat || 28.6139;
+    const lon = u.city_lon || 77.2090;
     const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&lat=${lat}&lon=${lon}`);
     const data = await res.json();
     if(!data.success) return;
@@ -4280,65 +4280,43 @@ function loadBirthCache(){
 }
 
 
-// ── CITY DATA ──
-const INDIAN_CITIES = [
-  {n:'Agra',lat:27.1767,lon:78.0081},{n:'Ahmedabad',lat:23.0225,lon:72.5714},
-  {n:'Ajmer',lat:26.4521,lon:74.6391},{n:'Allahabad',lat:25.4358,lon:81.8463},
-  {n:'Amritsar',lat:31.6340,lon:74.8723},{n:'Aurangabad',lat:19.8762,lon:75.3433},
-  {n:'Bangalore',lat:12.9716,lon:77.5946},{n:'Bhopal',lat:23.2599,lon:77.4126},
-  {n:'Bhubaneswar',lat:20.2961,lon:85.8245},{n:'Chandigarh',lat:30.7333,lon:76.7794},
-  {n:'Chennai',lat:13.0827,lon:80.2707},{n:'Coimbatore',lat:11.0168,lon:76.9558},
-  {n:'Cuttack',lat:20.4625,lon:85.8830},{n:'Dehradun',lat:30.3165,lon:78.0322},
-  {n:'Delhi',lat:28.6139,lon:77.2090},{n:'Dhanbad',lat:23.7957,lon:86.4304},
-  {n:'Eluru',lat:16.7107,lon:81.0952},{n:'Faridabad',lat:28.4089,lon:77.3178},
-  {n:'Ghaziabad',lat:28.6692,lon:77.4538},{n:'Guntur',lat:16.3067,lon:80.4365},
-  {n:'Gurgaon',lat:28.4595,lon:77.0266},{n:'Guwahati',lat:26.1445,lon:91.7362},
-  {n:'Gwalior',lat:26.2183,lon:78.1828},{n:'Hubballi',lat:15.3647,lon:75.1240},
-  {n:'Hyderabad',lat:17.3850,lon:78.4867},{n:'Indore',lat:22.7196,lon:75.8577},
-  {n:'Jabalpur',lat:23.1815,lon:79.9864},{n:'Jaipur',lat:26.9124,lon:75.7873},
-  {n:'Jalandhar',lat:31.3260,lon:75.5762},{n:'Jammu',lat:32.7266,lon:74.8570},
-  {n:'Jamshedpur',lat:22.8046,lon:86.2029},{n:'Jodhpur',lat:26.2389,lon:73.0243},
-  {n:'Kakinada',lat:16.9891,lon:82.2475},{n:'Kanpur',lat:26.4499,lon:80.3319},
-  {n:'Kochi',lat:9.9312,lon:76.2673},{n:'Kolkata',lat:22.5726,lon:88.3639},
-  {n:'Kozhikode',lat:11.2588,lon:75.7804},{n:'Kurnool',lat:15.8281,lon:78.0373},
-  {n:'Ludhiana',lat:30.9010,lon:75.8573},{n:'Lucknow',lat:26.8467,lon:80.9462},
-  {n:'Madurai',lat:9.9252,lon:78.1198},{n:'Mangalore',lat:12.9141,lon:74.8560},
-  {n:'Meerut',lat:28.9845,lon:77.7064},{n:'Mumbai',lat:19.0760,lon:72.8777},
-  {n:'Mysore',lat:12.2958,lon:76.6394},{n:'Nagpur',lat:21.1458,lon:79.0882},
-  {n:'Nashik',lat:19.9975,lon:73.7898},{n:'Nellore',lat:14.4426,lon:79.9865},
-  {n:'Noida',lat:28.5355,lon:77.3910},{n:'Patna',lat:25.5941,lon:85.1376},
-  {n:'Puducherry',lat:11.9416,lon:79.8083},{n:'Pune',lat:18.5204,lon:73.8567},
-  {n:'Raipur',lat:21.2514,lon:81.6296},{n:'Rajkot',lat:22.3039,lon:70.8022},
-  {n:'Ranchi',lat:23.3441,lon:85.3096},{n:'Salem',lat:11.6643,lon:78.1460},
-  {n:'Siliguri',lat:26.7271,lon:88.3953},{n:'Srinagar',lat:34.0837,lon:74.7973},
-  {n:'Surat',lat:21.1702,lon:72.8311},{n:'Tirupati',lat:13.6288,lon:79.4192},
-  {n:'Tirupur',lat:11.1085,lon:77.3411},{n:'Tiruvallur',lat:13.1437,lon:79.9080},
-  {n:'Trivandrum',lat:8.5241,lon:76.9366},{n:'Vadodara',lat:22.3072,lon:73.1812},
-  {n:'Varanasi',lat:25.3176,lon:82.9739},{n:'Vijayawada',lat:16.5062,lon:80.6480},
-  {n:'Visakhapatnam',lat:17.6868,lon:83.2185},{n:'Warangal',lat:17.9689,lon:79.5941},
-];
+// ── CITY SEARCH via OpenStreetMap (free, all India cities/villages) ──
+let _citySearchTimer = null;
 
 function filterCities(q){
   const dd = document.getElementById('cityDropdown');
   if(!q || q.length < 2){ dd.style.display='none'; return; }
-  const matches = INDIAN_CITIES.filter(c => c.n.toLowerCase().startsWith(q.toLowerCase())).slice(0,8);
-  if(!matches.length){ dd.style.display='none'; return; }
-  dd.innerHTML = matches.map(c =>
-    `<div onclick="selectCity('${c.n}',${c.lat},${c.lon})" style="padding:10px 14px;color:rgba(255,255,255,0.80);font-size:14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(212,168,67,0.10)'" onmouseout="this.style.background=''">${c.n}</div>`
-  ).join('');
+  clearTimeout(_citySearchTimer);
+  dd.innerHTML = '<div style="padding:10px 14px;color:rgba(255,255,255,0.40);font-size:13px;">Searching...</div>';
   dd.style.display='block';
+  _citySearchTimer = setTimeout(async ()=>{
+    try{
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=in&limit=6&format=json&addressdetails=1`;
+      const res = await fetch(url, { headers:{ 'Accept-Language':'en' } });
+      const results = await res.json();
+      if(!results.length){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">No results</div>'; return; }
+      dd.innerHTML = results.map(r => {
+        const label = r.display_name.split(',').slice(0,3).join(', ');
+        return `<div onclick="selectCity('${r.display_name.split(',')[0].trim()}',${r.lat},${r.lon})"
+          style="padding:10px 14px;color:rgba(255,255,255,0.80);font-size:13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);line-height:1.4;"
+          onmouseover="this.style.background='rgba(212,168,67,0.10)'"
+          onmouseout="this.style.background=''">
+          <div style="font-weight:600;">${r.display_name.split(',')[0].trim()}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">${r.display_name.split(',').slice(1,3).join(',').trim()}</div>
+        </div>`;
+      }).join('');
+    }catch(e){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">Search failed</div>'; }
+  }, 400);
 }
 
 function selectCity(name, lat, lon){
   document.getElementById('settCityInput').value = name;
   document.getElementById('settCity').value = name.toLowerCase();
-  // Store coords for Prokerala
-  window._selectedCityLat = lat;
-  window._selectedCityLon = lon;
+  window._selectedCityLat = parseFloat(lat);
+  window._selectedCityLon = parseFloat(lon);
   document.getElementById('cityDropdown').style.display='none';
 }
 
-// Close dropdown on outside click
 document.addEventListener('click', function(e){
   if(!e.target.closest('#settCityInput') && !e.target.closest('#cityDropdown')){
     const dd = document.getElementById('cityDropdown');
@@ -4475,6 +4453,7 @@ function saveSettings(){
   u.name = newName;
   u.lang = _settLang;
   u.city = newCity;
+  if(window._selectedCityLat){ u.city_lat = window._selectedCityLat; u.city_lon = window._selectedCityLon; }
   u.dob  = newDob;
   u.tob  = newTob;
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
@@ -4501,9 +4480,8 @@ async function fetchBirthChart(){
   if(u.birth_cache_key === cacheKey && u.nakshatra) return;
 
   try{
-    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===(u.city||'delhi').toLowerCase());
-    const lat = cityObj?cityObj.lat:28.6139;
-    const lon = cityObj?cityObj.lon:77.2090;
+    const lat = u.city_lat || 28.6139;
+    const lon = u.city_lon || 77.2090;
     const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&lat=${lat}&lon=${lon}`);
     const data = await res.json();
     if(!data.success) return;
@@ -4546,65 +4524,43 @@ function loadBirthCache(){
 }
 
 
-// ── CITY DATA ──
-const INDIAN_CITIES = [
-  {n:'Agra',lat:27.1767,lon:78.0081},{n:'Ahmedabad',lat:23.0225,lon:72.5714},
-  {n:'Ajmer',lat:26.4521,lon:74.6391},{n:'Allahabad',lat:25.4358,lon:81.8463},
-  {n:'Amritsar',lat:31.6340,lon:74.8723},{n:'Aurangabad',lat:19.8762,lon:75.3433},
-  {n:'Bangalore',lat:12.9716,lon:77.5946},{n:'Bhopal',lat:23.2599,lon:77.4126},
-  {n:'Bhubaneswar',lat:20.2961,lon:85.8245},{n:'Chandigarh',lat:30.7333,lon:76.7794},
-  {n:'Chennai',lat:13.0827,lon:80.2707},{n:'Coimbatore',lat:11.0168,lon:76.9558},
-  {n:'Cuttack',lat:20.4625,lon:85.8830},{n:'Dehradun',lat:30.3165,lon:78.0322},
-  {n:'Delhi',lat:28.6139,lon:77.2090},{n:'Dhanbad',lat:23.7957,lon:86.4304},
-  {n:'Eluru',lat:16.7107,lon:81.0952},{n:'Faridabad',lat:28.4089,lon:77.3178},
-  {n:'Ghaziabad',lat:28.6692,lon:77.4538},{n:'Guntur',lat:16.3067,lon:80.4365},
-  {n:'Gurgaon',lat:28.4595,lon:77.0266},{n:'Guwahati',lat:26.1445,lon:91.7362},
-  {n:'Gwalior',lat:26.2183,lon:78.1828},{n:'Hubballi',lat:15.3647,lon:75.1240},
-  {n:'Hyderabad',lat:17.3850,lon:78.4867},{n:'Indore',lat:22.7196,lon:75.8577},
-  {n:'Jabalpur',lat:23.1815,lon:79.9864},{n:'Jaipur',lat:26.9124,lon:75.7873},
-  {n:'Jalandhar',lat:31.3260,lon:75.5762},{n:'Jammu',lat:32.7266,lon:74.8570},
-  {n:'Jamshedpur',lat:22.8046,lon:86.2029},{n:'Jodhpur',lat:26.2389,lon:73.0243},
-  {n:'Kakinada',lat:16.9891,lon:82.2475},{n:'Kanpur',lat:26.4499,lon:80.3319},
-  {n:'Kochi',lat:9.9312,lon:76.2673},{n:'Kolkata',lat:22.5726,lon:88.3639},
-  {n:'Kozhikode',lat:11.2588,lon:75.7804},{n:'Kurnool',lat:15.8281,lon:78.0373},
-  {n:'Ludhiana',lat:30.9010,lon:75.8573},{n:'Lucknow',lat:26.8467,lon:80.9462},
-  {n:'Madurai',lat:9.9252,lon:78.1198},{n:'Mangalore',lat:12.9141,lon:74.8560},
-  {n:'Meerut',lat:28.9845,lon:77.7064},{n:'Mumbai',lat:19.0760,lon:72.8777},
-  {n:'Mysore',lat:12.2958,lon:76.6394},{n:'Nagpur',lat:21.1458,lon:79.0882},
-  {n:'Nashik',lat:19.9975,lon:73.7898},{n:'Nellore',lat:14.4426,lon:79.9865},
-  {n:'Noida',lat:28.5355,lon:77.3910},{n:'Patna',lat:25.5941,lon:85.1376},
-  {n:'Puducherry',lat:11.9416,lon:79.8083},{n:'Pune',lat:18.5204,lon:73.8567},
-  {n:'Raipur',lat:21.2514,lon:81.6296},{n:'Rajkot',lat:22.3039,lon:70.8022},
-  {n:'Ranchi',lat:23.3441,lon:85.3096},{n:'Salem',lat:11.6643,lon:78.1460},
-  {n:'Siliguri',lat:26.7271,lon:88.3953},{n:'Srinagar',lat:34.0837,lon:74.7973},
-  {n:'Surat',lat:21.1702,lon:72.8311},{n:'Tirupati',lat:13.6288,lon:79.4192},
-  {n:'Tirupur',lat:11.1085,lon:77.3411},{n:'Tiruvallur',lat:13.1437,lon:79.9080},
-  {n:'Trivandrum',lat:8.5241,lon:76.9366},{n:'Vadodara',lat:22.3072,lon:73.1812},
-  {n:'Varanasi',lat:25.3176,lon:82.9739},{n:'Vijayawada',lat:16.5062,lon:80.6480},
-  {n:'Visakhapatnam',lat:17.6868,lon:83.2185},{n:'Warangal',lat:17.9689,lon:79.5941},
-];
+// ── CITY SEARCH via OpenStreetMap (free, all India cities/villages) ──
+let _citySearchTimer = null;
 
 function filterCities(q){
   const dd = document.getElementById('cityDropdown');
   if(!q || q.length < 2){ dd.style.display='none'; return; }
-  const matches = INDIAN_CITIES.filter(c => c.n.toLowerCase().startsWith(q.toLowerCase())).slice(0,8);
-  if(!matches.length){ dd.style.display='none'; return; }
-  dd.innerHTML = matches.map(c =>
-    `<div onclick="selectCity('${c.n}',${c.lat},${c.lon})" style="padding:10px 14px;color:rgba(255,255,255,0.80);font-size:14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(212,168,67,0.10)'" onmouseout="this.style.background=''">${c.n}</div>`
-  ).join('');
+  clearTimeout(_citySearchTimer);
+  dd.innerHTML = '<div style="padding:10px 14px;color:rgba(255,255,255,0.40);font-size:13px;">Searching...</div>';
   dd.style.display='block';
+  _citySearchTimer = setTimeout(async ()=>{
+    try{
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=in&limit=6&format=json&addressdetails=1`;
+      const res = await fetch(url, { headers:{ 'Accept-Language':'en' } });
+      const results = await res.json();
+      if(!results.length){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">No results</div>'; return; }
+      dd.innerHTML = results.map(r => {
+        const label = r.display_name.split(',').slice(0,3).join(', ');
+        return `<div onclick="selectCity('${r.display_name.split(',')[0].trim()}',${r.lat},${r.lon})"
+          style="padding:10px 14px;color:rgba(255,255,255,0.80);font-size:13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);line-height:1.4;"
+          onmouseover="this.style.background='rgba(212,168,67,0.10)'"
+          onmouseout="this.style.background=''">
+          <div style="font-weight:600;">${r.display_name.split(',')[0].trim()}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:2px;">${r.display_name.split(',').slice(1,3).join(',').trim()}</div>
+        </div>`;
+      }).join('');
+    }catch(e){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">Search failed</div>'; }
+  }, 400);
 }
 
 function selectCity(name, lat, lon){
   document.getElementById('settCityInput').value = name;
   document.getElementById('settCity').value = name.toLowerCase();
-  // Store coords for Prokerala
-  window._selectedCityLat = lat;
-  window._selectedCityLon = lon;
+  window._selectedCityLat = parseFloat(lat);
+  window._selectedCityLon = parseFloat(lon);
   document.getElementById('cityDropdown').style.display='none';
 }
 
-// Close dropdown on outside click
 document.addEventListener('click', function(e){
   if(!e.target.closest('#settCityInput') && !e.target.closest('#cityDropdown')){
     const dd = document.getElementById('cityDropdown');
