@@ -147,16 +147,18 @@ async function fetchFromAPI(city, dateObj) {
     const raw = await apiRes.json();
     console.log('API success, tithi:', raw.tithi?.name);
 
-    const tithi     = raw.tithi?.name     || 'द्वितीया';
-    const nakshatra = raw.nakshatra?.name || 'अनुराधा';
-    const yoga      = raw.yoga?.[1]?.name || raw.yoga?.[0]?.name || 'शुभ';
-    const karana    = raw.karana?.[2]?.name || raw.karana?.[1]?.name || 'बव';
+    const tithi          = raw.tithi?.name          || '';
+    const tithi_paksha   = raw.tithi?.paksha?.paksha  || '';
+    const nakshatra      = raw.nakshatra?.name       || '';
+    const nakshatra_ruler= raw.nakshatra?.lord        || '';
+    const yoga           = raw.yoga?.[1]?.name || raw.yoga?.[0]?.name || '';
+    const karana         = raw.karana?.[2]?.name || raw.karana?.[1]?.name || '';
     const sunrise   = raw.sun_rise        || '06:08';
     const sunset    = raw.sun_set         || '18:34';
 
     return {
       city: city.name,
-      tithi, nakshatra, yoga, karana,
+      tithi, tithi_paksha, nakshatra, nakshatra_ruler, yoga, karana,
       sunrise, sunset,
       rahu_kaal:       calcRahuKaal(sunrise, dow),
       abhijit_muhurta: calcAbhijit(sunrise, sunset),
