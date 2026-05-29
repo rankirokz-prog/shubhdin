@@ -4137,6 +4137,7 @@ function updateSadhanaTab(){
 
 setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
 updateSadhanaTab();
+loadBirthCache();
 setTimeout(()=>{
   const wp=document.getElementById('wallpaper');
   wp.style.opacity='0';wp.style.pointerEvents='none';wp.style.display='none';
@@ -4213,9 +4214,64 @@ function saveSettings(){
   if(nameChanged && newName){
     fetch('/api/generate-name?name='+encodeURIComponent(newName)).catch(()=>{});
   }
+  // Clear birth cache so it refetches with new DOB/TOB
+  u.birth_cache_key = '';
+  localStorage.setItem('shubhdin_user', JSON.stringify(u));
   closeSettings();
-  // Reload page to apply all changes
   window.location.reload();
+}
+
+
+// ── PROKERALA BIRTH CHART ──
+async function fetchBirthChart(){
+  const u = {};
+  try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
+  if(!u.dob || !u.tob) return; // need both DOB and TOB
+
+  // Don't refetch if already have data and DOB/TOB unchanged
+  const cacheKey = u.dob+'_'+u.tob+'_'+(u.city||'delhi');
+  if(u.birth_cache_key === cacheKey && u.nakshatra) return;
+
+  try{
+    const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&city=${u.city||'delhi'}`);
+    const data = await res.json();
+    if(!data.success) return;
+
+    // Save to localStorage
+    u.nakshatra      = data.nakshatra;
+    u.nakshatra_pada = data.nakshatra_pada;
+    u.rashi          = data.rashi;
+    u.lagna          = data.lagna;
+    u.birth_cache_key = cacheKey;
+    localStorage.setItem('shubhdin_user', JSON.stringify(u));
+
+    // Update UI
+    updateBirthChips(data);
+  }catch(e){ console.log('Birth chart error:', e); }
+}
+
+function updateBirthChips(data){
+  // Home chips
+  const rv = document.getElementById('rv');
+  if(rv && data.rashi) rv.textContent = data.rashi;
+
+  const nv = document.getElementById('nv');
+  if(nv && data.nakshatra) nv.textContent = data.nakshatra + (data.nakshatra_pada ? ' (P'+data.nakshatra_pada+')':'');
+
+  // Panchang page - update nakshatra ruler row if exists
+  const nakVal2 = document.getElementById('nakVal2');
+  if(nakVal2 && data.nakshatra) nakVal2.textContent = data.nakshatra;
+}
+
+// Load from cache if already fetched
+function loadBirthCache(){
+  const u = {};
+  try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
+  if(u.nakshatra || u.rashi){
+    updateBirthChips({ rashi: u.rashi, nakshatra: u.nakshatra, nakshatra_pada: u.nakshatra_pada });
+  }
+  // Fetch fresh if TOB is set but no cache yet
+  if(u.tob) fetchBirthChart();
 }
 
 </script>
@@ -4352,9 +4408,64 @@ function saveSettings(){
   if(nameChanged && newName){
     fetch('/api/generate-name?name='+encodeURIComponent(newName)).catch(()=>{});
   }
+  // Clear birth cache so it refetches with new DOB/TOB
+  u.birth_cache_key = '';
+  localStorage.setItem('shubhdin_user', JSON.stringify(u));
   closeSettings();
-  // Reload page to apply all changes
   window.location.reload();
+}
+
+
+// ── PROKERALA BIRTH CHART ──
+async function fetchBirthChart(){
+  const u = {};
+  try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
+  if(!u.dob || !u.tob) return; // need both DOB and TOB
+
+  // Don't refetch if already have data and DOB/TOB unchanged
+  const cacheKey = u.dob+'_'+u.tob+'_'+(u.city||'delhi');
+  if(u.birth_cache_key === cacheKey && u.nakshatra) return;
+
+  try{
+    const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&city=${u.city||'delhi'}`);
+    const data = await res.json();
+    if(!data.success) return;
+
+    // Save to localStorage
+    u.nakshatra      = data.nakshatra;
+    u.nakshatra_pada = data.nakshatra_pada;
+    u.rashi          = data.rashi;
+    u.lagna          = data.lagna;
+    u.birth_cache_key = cacheKey;
+    localStorage.setItem('shubhdin_user', JSON.stringify(u));
+
+    // Update UI
+    updateBirthChips(data);
+  }catch(e){ console.log('Birth chart error:', e); }
+}
+
+function updateBirthChips(data){
+  // Home chips
+  const rv = document.getElementById('rv');
+  if(rv && data.rashi) rv.textContent = data.rashi;
+
+  const nv = document.getElementById('nv');
+  if(nv && data.nakshatra) nv.textContent = data.nakshatra + (data.nakshatra_pada ? ' (P'+data.nakshatra_pada+')':'');
+
+  // Panchang page - update nakshatra ruler row if exists
+  const nakVal2 = document.getElementById('nakVal2');
+  if(nakVal2 && data.nakshatra) nakVal2.textContent = data.nakshatra;
+}
+
+// Load from cache if already fetched
+function loadBirthCache(){
+  const u = {};
+  try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
+  if(u.nakshatra || u.rashi){
+    updateBirthChips({ rashi: u.rashi, nakshatra: u.nakshatra, nakshatra_pada: u.nakshatra_pada });
+  }
+  // Fetch fresh if TOB is set but no cache yet
+  if(u.tob) fetchBirthChart();
 }
 
 </script>
