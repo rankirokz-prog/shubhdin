@@ -4157,10 +4157,7 @@ function openSettings(){
   document.getElementById('settTob').value  = u.tob  || '';
   const city = (u.city||'delhi').toLowerCase();
   const cityInput = document.getElementById('settCityInput');
-  if(cityInput){
-    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===city);
-    cityInput.value = cityObj ? cityObj.n : (u.city||'Delhi');
-  }
+  if(cityInput) cityInput.value = u.city || '';
   document.getElementById('settCity').value = city;
   settSelectLang(_settLang);
   // Translate labels
@@ -4401,10 +4398,7 @@ function openSettings(){
   document.getElementById('settTob').value  = u.tob  || '';
   const city = (u.city||'delhi').toLowerCase();
   const cityInput = document.getElementById('settCityInput');
-  if(cityInput){
-    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===city);
-    cityInput.value = cityObj ? cityObj.n : (u.city||'Delhi');
-  }
+  if(cityInput) cityInput.value = u.city || '';
   document.getElementById('settCity').value = city;
   settSelectLang(_settLang);
   // Translate labels
