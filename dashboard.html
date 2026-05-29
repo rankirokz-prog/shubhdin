@@ -4156,10 +4156,12 @@ function openSettings(){
   document.getElementById('settDob').value  = u.dob  || '';
   document.getElementById('settTob').value  = u.tob  || '';
   const city = (u.city||'delhi').toLowerCase();
-  const sel = document.getElementById('settCity');
-  for(let i=0;i<sel.options.length;i++){
-    if(sel.options[i].value===city){ sel.selectedIndex=i; break; }
+  const cityInput = document.getElementById('settCityInput');
+  if(cityInput){
+    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===city);
+    cityInput.value = cityObj ? cityObj.n : (u.city||'Delhi');
   }
+  document.getElementById('settCity').value = city;
   settSelectLang(_settLang);
   // Translate labels
   const H2 = _settLang==='hi';
@@ -4233,7 +4235,10 @@ async function fetchBirthChart(){
   if(u.birth_cache_key === cacheKey && u.nakshatra) return;
 
   try{
-    const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&city=${u.city||'delhi'}`);
+    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===(u.city||'delhi').toLowerCase());
+    const lat = cityObj?cityObj.lat:28.6139;
+    const lon = cityObj?cityObj.lon:77.2090;
+    const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&lat=${lat}&lon=${lon}`);
     const data = await res.json();
     if(!data.success) return;
 
@@ -4273,6 +4278,73 @@ function loadBirthCache(){
   // Fetch fresh if TOB is set but no cache yet
   if(u.tob) fetchBirthChart();
 }
+
+
+// ── CITY DATA ──
+const INDIAN_CITIES = [
+  {n:'Agra',lat:27.1767,lon:78.0081},{n:'Ahmedabad',lat:23.0225,lon:72.5714},
+  {n:'Ajmer',lat:26.4521,lon:74.6391},{n:'Allahabad',lat:25.4358,lon:81.8463},
+  {n:'Amritsar',lat:31.6340,lon:74.8723},{n:'Aurangabad',lat:19.8762,lon:75.3433},
+  {n:'Bangalore',lat:12.9716,lon:77.5946},{n:'Bhopal',lat:23.2599,lon:77.4126},
+  {n:'Bhubaneswar',lat:20.2961,lon:85.8245},{n:'Chandigarh',lat:30.7333,lon:76.7794},
+  {n:'Chennai',lat:13.0827,lon:80.2707},{n:'Coimbatore',lat:11.0168,lon:76.9558},
+  {n:'Cuttack',lat:20.4625,lon:85.8830},{n:'Dehradun',lat:30.3165,lon:78.0322},
+  {n:'Delhi',lat:28.6139,lon:77.2090},{n:'Dhanbad',lat:23.7957,lon:86.4304},
+  {n:'Eluru',lat:16.7107,lon:81.0952},{n:'Faridabad',lat:28.4089,lon:77.3178},
+  {n:'Ghaziabad',lat:28.6692,lon:77.4538},{n:'Guntur',lat:16.3067,lon:80.4365},
+  {n:'Gurgaon',lat:28.4595,lon:77.0266},{n:'Guwahati',lat:26.1445,lon:91.7362},
+  {n:'Gwalior',lat:26.2183,lon:78.1828},{n:'Hubballi',lat:15.3647,lon:75.1240},
+  {n:'Hyderabad',lat:17.3850,lon:78.4867},{n:'Indore',lat:22.7196,lon:75.8577},
+  {n:'Jabalpur',lat:23.1815,lon:79.9864},{n:'Jaipur',lat:26.9124,lon:75.7873},
+  {n:'Jalandhar',lat:31.3260,lon:75.5762},{n:'Jammu',lat:32.7266,lon:74.8570},
+  {n:'Jamshedpur',lat:22.8046,lon:86.2029},{n:'Jodhpur',lat:26.2389,lon:73.0243},
+  {n:'Kakinada',lat:16.9891,lon:82.2475},{n:'Kanpur',lat:26.4499,lon:80.3319},
+  {n:'Kochi',lat:9.9312,lon:76.2673},{n:'Kolkata',lat:22.5726,lon:88.3639},
+  {n:'Kozhikode',lat:11.2588,lon:75.7804},{n:'Kurnool',lat:15.8281,lon:78.0373},
+  {n:'Ludhiana',lat:30.9010,lon:75.8573},{n:'Lucknow',lat:26.8467,lon:80.9462},
+  {n:'Madurai',lat:9.9252,lon:78.1198},{n:'Mangalore',lat:12.9141,lon:74.8560},
+  {n:'Meerut',lat:28.9845,lon:77.7064},{n:'Mumbai',lat:19.0760,lon:72.8777},
+  {n:'Mysore',lat:12.2958,lon:76.6394},{n:'Nagpur',lat:21.1458,lon:79.0882},
+  {n:'Nashik',lat:19.9975,lon:73.7898},{n:'Nellore',lat:14.4426,lon:79.9865},
+  {n:'Noida',lat:28.5355,lon:77.3910},{n:'Patna',lat:25.5941,lon:85.1376},
+  {n:'Puducherry',lat:11.9416,lon:79.8083},{n:'Pune',lat:18.5204,lon:73.8567},
+  {n:'Raipur',lat:21.2514,lon:81.6296},{n:'Rajkot',lat:22.3039,lon:70.8022},
+  {n:'Ranchi',lat:23.3441,lon:85.3096},{n:'Salem',lat:11.6643,lon:78.1460},
+  {n:'Siliguri',lat:26.7271,lon:88.3953},{n:'Srinagar',lat:34.0837,lon:74.7973},
+  {n:'Surat',lat:21.1702,lon:72.8311},{n:'Tirupati',lat:13.6288,lon:79.4192},
+  {n:'Tirupur',lat:11.1085,lon:77.3411},{n:'Tiruvallur',lat:13.1437,lon:79.9080},
+  {n:'Trivandrum',lat:8.5241,lon:76.9366},{n:'Vadodara',lat:22.3072,lon:73.1812},
+  {n:'Varanasi',lat:25.3176,lon:82.9739},{n:'Vijayawada',lat:16.5062,lon:80.6480},
+  {n:'Visakhapatnam',lat:17.6868,lon:83.2185},{n:'Warangal',lat:17.9689,lon:79.5941},
+];
+
+function filterCities(q){
+  const dd = document.getElementById('cityDropdown');
+  if(!q || q.length < 2){ dd.style.display='none'; return; }
+  const matches = INDIAN_CITIES.filter(c => c.n.toLowerCase().startsWith(q.toLowerCase())).slice(0,8);
+  if(!matches.length){ dd.style.display='none'; return; }
+  dd.innerHTML = matches.map(c =>
+    `<div onclick="selectCity('${c.n}',${c.lat},${c.lon})" style="padding:10px 14px;color:rgba(255,255,255,0.80);font-size:14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(212,168,67,0.10)'" onmouseout="this.style.background=''">${c.n}</div>`
+  ).join('');
+  dd.style.display='block';
+}
+
+function selectCity(name, lat, lon){
+  document.getElementById('settCityInput').value = name;
+  document.getElementById('settCity').value = name.toLowerCase();
+  // Store coords for Prokerala
+  window._selectedCityLat = lat;
+  window._selectedCityLon = lon;
+  document.getElementById('cityDropdown').style.display='none';
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#settCityInput') && !e.target.closest('#cityDropdown')){
+    const dd = document.getElementById('cityDropdown');
+    if(dd) dd.style.display='none';
+  }
+});
 
 </script>
 
@@ -4350,10 +4422,12 @@ function openSettings(){
   document.getElementById('settDob').value  = u.dob  || '';
   document.getElementById('settTob').value  = u.tob  || '';
   const city = (u.city||'delhi').toLowerCase();
-  const sel = document.getElementById('settCity');
-  for(let i=0;i<sel.options.length;i++){
-    if(sel.options[i].value===city){ sel.selectedIndex=i; break; }
+  const cityInput = document.getElementById('settCityInput');
+  if(cityInput){
+    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===city);
+    cityInput.value = cityObj ? cityObj.n : (u.city||'Delhi');
   }
+  document.getElementById('settCity').value = city;
   settSelectLang(_settLang);
   // Translate labels
   const H2 = _settLang==='hi';
@@ -4427,7 +4501,10 @@ async function fetchBirthChart(){
   if(u.birth_cache_key === cacheKey && u.nakshatra) return;
 
   try{
-    const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&city=${u.city||'delhi'}`);
+    const cityObj = INDIAN_CITIES.find(c=>c.n.toLowerCase()===(u.city||'delhi').toLowerCase());
+    const lat = cityObj?cityObj.lat:28.6139;
+    const lon = cityObj?cityObj.lon:77.2090;
+    const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&lat=${lat}&lon=${lon}`);
     const data = await res.json();
     if(!data.success) return;
 
@@ -4467,6 +4544,73 @@ function loadBirthCache(){
   // Fetch fresh if TOB is set but no cache yet
   if(u.tob) fetchBirthChart();
 }
+
+
+// ── CITY DATA ──
+const INDIAN_CITIES = [
+  {n:'Agra',lat:27.1767,lon:78.0081},{n:'Ahmedabad',lat:23.0225,lon:72.5714},
+  {n:'Ajmer',lat:26.4521,lon:74.6391},{n:'Allahabad',lat:25.4358,lon:81.8463},
+  {n:'Amritsar',lat:31.6340,lon:74.8723},{n:'Aurangabad',lat:19.8762,lon:75.3433},
+  {n:'Bangalore',lat:12.9716,lon:77.5946},{n:'Bhopal',lat:23.2599,lon:77.4126},
+  {n:'Bhubaneswar',lat:20.2961,lon:85.8245},{n:'Chandigarh',lat:30.7333,lon:76.7794},
+  {n:'Chennai',lat:13.0827,lon:80.2707},{n:'Coimbatore',lat:11.0168,lon:76.9558},
+  {n:'Cuttack',lat:20.4625,lon:85.8830},{n:'Dehradun',lat:30.3165,lon:78.0322},
+  {n:'Delhi',lat:28.6139,lon:77.2090},{n:'Dhanbad',lat:23.7957,lon:86.4304},
+  {n:'Eluru',lat:16.7107,lon:81.0952},{n:'Faridabad',lat:28.4089,lon:77.3178},
+  {n:'Ghaziabad',lat:28.6692,lon:77.4538},{n:'Guntur',lat:16.3067,lon:80.4365},
+  {n:'Gurgaon',lat:28.4595,lon:77.0266},{n:'Guwahati',lat:26.1445,lon:91.7362},
+  {n:'Gwalior',lat:26.2183,lon:78.1828},{n:'Hubballi',lat:15.3647,lon:75.1240},
+  {n:'Hyderabad',lat:17.3850,lon:78.4867},{n:'Indore',lat:22.7196,lon:75.8577},
+  {n:'Jabalpur',lat:23.1815,lon:79.9864},{n:'Jaipur',lat:26.9124,lon:75.7873},
+  {n:'Jalandhar',lat:31.3260,lon:75.5762},{n:'Jammu',lat:32.7266,lon:74.8570},
+  {n:'Jamshedpur',lat:22.8046,lon:86.2029},{n:'Jodhpur',lat:26.2389,lon:73.0243},
+  {n:'Kakinada',lat:16.9891,lon:82.2475},{n:'Kanpur',lat:26.4499,lon:80.3319},
+  {n:'Kochi',lat:9.9312,lon:76.2673},{n:'Kolkata',lat:22.5726,lon:88.3639},
+  {n:'Kozhikode',lat:11.2588,lon:75.7804},{n:'Kurnool',lat:15.8281,lon:78.0373},
+  {n:'Ludhiana',lat:30.9010,lon:75.8573},{n:'Lucknow',lat:26.8467,lon:80.9462},
+  {n:'Madurai',lat:9.9252,lon:78.1198},{n:'Mangalore',lat:12.9141,lon:74.8560},
+  {n:'Meerut',lat:28.9845,lon:77.7064},{n:'Mumbai',lat:19.0760,lon:72.8777},
+  {n:'Mysore',lat:12.2958,lon:76.6394},{n:'Nagpur',lat:21.1458,lon:79.0882},
+  {n:'Nashik',lat:19.9975,lon:73.7898},{n:'Nellore',lat:14.4426,lon:79.9865},
+  {n:'Noida',lat:28.5355,lon:77.3910},{n:'Patna',lat:25.5941,lon:85.1376},
+  {n:'Puducherry',lat:11.9416,lon:79.8083},{n:'Pune',lat:18.5204,lon:73.8567},
+  {n:'Raipur',lat:21.2514,lon:81.6296},{n:'Rajkot',lat:22.3039,lon:70.8022},
+  {n:'Ranchi',lat:23.3441,lon:85.3096},{n:'Salem',lat:11.6643,lon:78.1460},
+  {n:'Siliguri',lat:26.7271,lon:88.3953},{n:'Srinagar',lat:34.0837,lon:74.7973},
+  {n:'Surat',lat:21.1702,lon:72.8311},{n:'Tirupati',lat:13.6288,lon:79.4192},
+  {n:'Tirupur',lat:11.1085,lon:77.3411},{n:'Tiruvallur',lat:13.1437,lon:79.9080},
+  {n:'Trivandrum',lat:8.5241,lon:76.9366},{n:'Vadodara',lat:22.3072,lon:73.1812},
+  {n:'Varanasi',lat:25.3176,lon:82.9739},{n:'Vijayawada',lat:16.5062,lon:80.6480},
+  {n:'Visakhapatnam',lat:17.6868,lon:83.2185},{n:'Warangal',lat:17.9689,lon:79.5941},
+];
+
+function filterCities(q){
+  const dd = document.getElementById('cityDropdown');
+  if(!q || q.length < 2){ dd.style.display='none'; return; }
+  const matches = INDIAN_CITIES.filter(c => c.n.toLowerCase().startsWith(q.toLowerCase())).slice(0,8);
+  if(!matches.length){ dd.style.display='none'; return; }
+  dd.innerHTML = matches.map(c =>
+    `<div onclick="selectCity('${c.n}',${c.lat},${c.lon})" style="padding:10px 14px;color:rgba(255,255,255,0.80);font-size:14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);" onmouseover="this.style.background='rgba(212,168,67,0.10)'" onmouseout="this.style.background=''">${c.n}</div>`
+  ).join('');
+  dd.style.display='block';
+}
+
+function selectCity(name, lat, lon){
+  document.getElementById('settCityInput').value = name;
+  document.getElementById('settCity').value = name.toLowerCase();
+  // Store coords for Prokerala
+  window._selectedCityLat = lat;
+  window._selectedCityLon = lon;
+  document.getElementById('cityDropdown').style.display='none';
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', function(e){
+  if(!e.target.closest('#settCityInput') && !e.target.closest('#cityDropdown')){
+    const dd = document.getElementById('cityDropdown');
+    if(dd) dd.style.display='none';
+  }
+});
 
 </script>
 
@@ -4509,20 +4653,13 @@ function loadBirthCache(){
     </div>
 
     <!-- City -->
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.14);border-radius:16px;padding:12px 14px;">
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.14);border-radius:16px;padding:12px 14px;position:relative;">
       <div id="settCityLbl" style="font-size:10px;color:rgba(212,168,67,0.55);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:10px;">📍 शहर / City</div>
-      <select id="settCity" style="width:100%;background:#1A0800;border:1px solid rgba(212,168,67,0.20);border-radius:10px;padding:10px 12px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;outline:none;appearance:none;">
-        <option value="delhi">Delhi</option>
-        <option value="mumbai">Mumbai</option>
-        <option value="hyderabad">Hyderabad</option>
-        <option value="bangalore">Bangalore</option>
-        <option value="eluru">Eluru</option>
-        <option value="vijayawada">Vijayawada</option>
-        <option value="visakhapatnam">Visakhapatnam</option>
-        <option value="chennai">Chennai</option>
-        <option value="kolkata">Kolkata</option>
-        <option value="lucknow">Lucknow</option>
-      </select>
+      <input id="settCityInput" type="text" autocomplete="off"
+        style="width:100%;background:#1A0800;border:1px solid rgba(212,168,67,0.20);border-radius:10px;padding:10px 12px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;outline:none;"
+        placeholder="Type your city..." oninput="filterCities(this.value)" />
+      <input type="hidden" id="settCity" value="delhi" />
+      <div id="cityDropdown" style="display:none;position:absolute;left:14px;right:14px;top:100%;background:#1A0800;border:1px solid rgba(212,168,67,0.25);border-radius:10px;max-height:180px;overflow-y:auto;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
     </div>
 
     <!-- DOB + TOB -->
