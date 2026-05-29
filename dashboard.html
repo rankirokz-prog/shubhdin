@@ -4023,7 +4023,8 @@ function showToast(){
 async function fetchPanchang(){
   try{
     const city=(U.city||'default').toLowerCase().replace(/\s+/g,'');
-    const json=await(await fetch('/api/panchang?city='+city)).json();
+    const tob=U.tob?'&tob='+encodeURIComponent(U.tob):'';
+    const json=await(await fetch('/api/panchang?city='+city+tob)).json();
     if(!json.data)return;const p=json.data;
     window._panchangData=p;
     setTimeout(prewarmAudio, 1000);
@@ -4107,6 +4108,7 @@ function openSettings(){
   _settLang = u.lang || 'hi';
   document.getElementById('settName').value = u.name || '';
   document.getElementById('settDob').value  = u.dob  || '';
+  document.getElementById('settTob').value  = u.tob  || '';
   const city = (u.city||'delhi').toLowerCase();
   const sel = document.getElementById('settCity');
   for(let i=0;i<sel.options.length;i++){
@@ -4121,6 +4123,8 @@ function openSettings(){
   document.getElementById('settCityLbl').textContent = H2?'📍 शहर':'📍 City';
   document.getElementById('settDobNote').textContent = H2?'राशि की सटीक जानकारी के लिए':'For accurate Rashi calculation';
   document.getElementById('settDobLbl').textContent  = H2?'🗓️ जन्म तिथि':'🗓️ Date of Birth';
+  document.getElementById('settTobLbl').textContent  = H2?'🕐 जन्म समय':'🕐 Time of Birth';
+  document.getElementById('settTobNote').textContent = H2?'लग्न की सटीक जानकारी के लिए':'For accurate Lagna calculation';
   // Show overlay
   const ov = document.getElementById('settingsOverlay');
   ov.style.display='flex';
@@ -4148,6 +4152,7 @@ function saveSettings(){
   const newName = document.getElementById('settName').value.trim();
   const newCity = document.getElementById('settCity').value;
   const newDob  = document.getElementById('settDob').value;
+  const newTob  = document.getElementById('settTob').value;
   if(!newName){ alert(_settLang==='hi'?'नाम खाली नहीं हो सकता':'Name cannot be empty'); return; }
   // Update localStorage
   let u = {};
@@ -4157,6 +4162,7 @@ function saveSettings(){
   u.lang = _settLang;
   u.city = newCity;
   u.dob  = newDob;
+  u.tob  = newTob;
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
   // Regenerate name audio if name changed
   if(nameChanged && newName){
@@ -4241,6 +4247,7 @@ function openSettings(){
   _settLang = u.lang || 'hi';
   document.getElementById('settName').value = u.name || '';
   document.getElementById('settDob').value  = u.dob  || '';
+  document.getElementById('settTob').value  = u.tob  || '';
   const city = (u.city||'delhi').toLowerCase();
   const sel = document.getElementById('settCity');
   for(let i=0;i<sel.options.length;i++){
@@ -4255,6 +4262,8 @@ function openSettings(){
   document.getElementById('settCityLbl').textContent = H2?'📍 शहर':'📍 City';
   document.getElementById('settDobNote').textContent = H2?'राशि की सटीक जानकारी के लिए':'For accurate Rashi calculation';
   document.getElementById('settDobLbl').textContent  = H2?'🗓️ जन्म तिथि':'🗓️ Date of Birth';
+  document.getElementById('settTobLbl').textContent  = H2?'🕐 जन्म समय':'🕐 Time of Birth';
+  document.getElementById('settTobNote').textContent = H2?'लग्न की सटीक जानकारी के लिए':'For accurate Lagna calculation';
   // Show overlay
   const ov = document.getElementById('settingsOverlay');
   ov.style.display='flex';
@@ -4282,6 +4291,7 @@ function saveSettings(){
   const newName = document.getElementById('settName').value.trim();
   const newCity = document.getElementById('settCity').value;
   const newDob  = document.getElementById('settDob').value;
+  const newTob  = document.getElementById('settTob').value;
   if(!newName){ alert(_settLang==='hi'?'नाम खाली नहीं हो सकता':'Name cannot be empty'); return; }
   // Update localStorage
   let u = {};
@@ -4291,6 +4301,7 @@ function saveSettings(){
   u.lang = _settLang;
   u.city = newCity;
   u.dob  = newDob;
+  u.tob  = newTob;
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
   // Regenerate name audio if name changed
   if(nameChanged && newName){
@@ -4358,11 +4369,14 @@ function saveSettings(){
       </select>
     </div>
 
-    <!-- DOB -->
+    <!-- DOB + TOB -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.14);border-radius:16px;padding:12px 14px;">
       <div id="settDobLbl" style="font-size:10px;color:rgba(212,168,67,0.55);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">🗓️ जन्म तिथि / Date of Birth</div>
       <div id="settDobNote" style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px;">राशि की सटीक जानकारी के लिए</div>
-      <input id="settDob" type="date" style="width:100%;background:#1A0800;border:1px solid rgba(212,168,67,0.20);border-radius:10px;padding:10px 12px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;outline:none;color-scheme:dark;" />
+      <input id="settDob" type="date" style="width:100%;background:#1A0800;border:1px solid rgba(212,168,67,0.20);border-radius:10px;padding:10px 12px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;outline:none;color-scheme:dark;margin-bottom:10px;" />
+      <div id="settTobLbl" style="font-size:10px;color:rgba(212,168,67,0.55);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:4px;">🕐 जन्म समय / Time of Birth</div>
+      <div id="settTobNote" style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px;">लग्न की सटीक जानकारी के लिए</div>
+      <input id="settTob" type="time" style="width:100%;background:#1A0800;border:1px solid rgba(212,168,67,0.20);border-radius:10px;padding:10px 12px;color:#fff;font-family:'Poppins',sans-serif;font-size:14px;outline:none;color-scheme:dark;" />
     </div>
 
     <!-- Save button -->
