@@ -1671,10 +1671,10 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div class="psec" id="ps1">📿 पाँच तत्व</div>
         <div class="pg">
           <div class="pc c1"><div class="plabel" id="varLbl">वार</div><div class="pval" id="varVal">शुक्रवार</div><div class="psub2" id="varSub">माँ लक्ष्मी का दिन</div></div>
-          <div class="pc c2"><div class="plabel" id="tithiLbl">तिथि</div><div class="pval" id="tithiVal">द्वितीया</div><div class="psub2">चैत्र शुक्ल</div><div class="pend">समाप्त: 11:42 PM</div></div>
-          <div class="pc c3"><div class="plabel" id="nakLbl2">नक्षत्र</div><div class="pval" id="nakVal2">अनुराधा</div><div class="psub2">शनि स्वामी</div><div class="pend">समाप्त: 5:18 PM</div></div>
-          <div class="pc c4"><div class="plabel" id="yogLbl">योग</div><div class="pval">शुभ</div><div class="psub2">उत्तम दिन</div></div>
-          <div class="pc c5 pf" style="padding:8px 12px;"><div class="plabel" id="karLbl">करण</div><div style="font-size:13px;font-weight:600;color:var(--dark);margin-top:2px;">बव → बालव <span style="font-size:10px;font-weight:400;color:rgba(26,10,0,0.40);">(11:42 PM तक)</span></div></div>
+          <div class="pc c2"><div class="plabel" id="tithiLbl">तिथि</div><div class="pval" id="tithiVal">–</div><div class="psub2" id="tithiPaksha">–</div><div class="pend" id="tithiEnd">–</div></div>
+          <div class="pc c3"><div class="plabel" id="nakLbl2">नक्षत्र</div><div class="pval" id="nakVal2">–</div><div class="psub2" id="nakRuler">–</div><div class="pend" id="nakEnd">–</div></div>
+          <div class="pc c4"><div class="plabel" id="yogLbl">योग</div><div class="pval" id="yogVal">–</div><div class="psub2" id="yogSub">–</div></div>
+          <div class="pc c5 pf" style="padding:8px 12px;"><div class="plabel" id="karLbl">करण</div><div id="karVal" style="font-size:13px;font-weight:600;color:var(--dark);margin-top:2px;">–</div></div>
         </div>
         <div class="psec" id="ps2">⚠️ अशुभ समय</div>
         <div class="krow">
@@ -2060,9 +2060,9 @@ function personalise(){
   document.getElementById('ri').textContent=R.i;
   document.getElementById('rv').textContent=H?R.h:R.e;
   document.getElementById('tl').textContent=H?'तिथि':'Tithi';
-  document.getElementById('tv').textContent=H?'द्वितीया':'Dvitiya';
+  // tv updated by fetchPanchang from API
   document.getElementById('nl').textContent=H?'नक्षत्र':'Nakshatra';
-  document.getElementById('nv').textContent=H?R.nh:R.ne;
+  // nv updated by fetchPanchang from API (today's nakshatra)
   // Listen hero
   document.getElementById('lhTag').textContent=H?'✨ आज का पंचांग — आपके लिए':"✨ Today's Panchang — For you";
   document.getElementById('lhTitle').textContent=H?'दैनिक पंचांग सुनें':'Listen to Daily Panchang';
@@ -2172,6 +2172,9 @@ function personalise(){
   document.getElementById('gulLbl').textContent=H?'गुलिक काल':'Gulika Kaal';
   document.getElementById('gulSub').textContent=H?'महत्वपूर्ण कार्य टालें':'Postpone important work';
   document.getElementById('ps3').textContent=H?'✨ शुभ समय':'✨ Auspicious Time';
+  document.getElementById('yogLbl').textContent=H?'योग':'Yoga';
+  document.getElementById('karLbl').textContent=H?'करण':'Karana';
+  document.getElementById('yogSub').textContent=H?'उत्तम दिन':'Auspicious day';
   document.getElementById('abTitle').textContent=H?'अभिजित मुहूर्त':'Abhijit Muhurta';
   document.getElementById('abDesc').textContent=H?'सबसे शुभ — नए काम शुरू करें':'Most auspicious — start new work';
   document.getElementById('abSub').textContent=H?'दोपहर':'Afternoon';
@@ -4033,21 +4036,25 @@ async function fetchPanchang(){
     if(p.tithi){
       document.getElementById('tithiVal').textContent=p.tithi;
       document.getElementById('tv').textContent=p.tithi;
+      const tp=document.getElementById('tithiPaksha');if(tp)tp.textContent=p.tithi_paksha||'';
+      const te=document.getElementById('tithiEnd');if(te)te.textContent=p.tithi_end?'Ends: '+p.tithi_end:'';
     }
     // ── Nakshatra ──
     if(p.nakshatra){
       document.getElementById('nakVal2').textContent=p.nakshatra;
       document.getElementById('nv').textContent=p.nakshatra;
+      const nr=document.getElementById('nakRuler');if(nr)nr.textContent=p.nakshatra_ruler||'';
+      const ne=document.getElementById('nakEnd');if(ne)ne.textContent=p.nakshatra_end?'Ends: '+p.nakshatra_end:'';
     }
     // ── Yoga ──
     if(p.yoga){
-      const yogaEl=document.querySelector('.c4 .pval');
+      const yogaEl=document.getElementById('yogVal');
       if(yogaEl) yogaEl.textContent=p.yoga;
     }
     // ── Karana ──
     if(p.karana){
-      const karEl=document.querySelector('.c5 div:nth-child(2)');
-      if(karEl) karEl.innerHTML=p.karana;
+      const karEl=document.getElementById('karVal');
+      if(karEl) karEl.textContent=p.karana;
     }
     // ── Sunrise / Sunset ──
     if(p.sunrise){
