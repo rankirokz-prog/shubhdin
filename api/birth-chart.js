@@ -5,10 +5,10 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
-  const { dob, tob, city } = req.query;
+  const { dob, tob, lat, lon } = req.query;
 
-  if (!dob || !tob) {
-    return res.status(400).json({ error: 'dob and tob required' });
+  if (!dob || !tob || !lat || !lon) {
+    return res.status(400).json({ error: 'dob, tob, lat, lon required' });
   }
 
   const clientId     = process.env.PROKERALA_CLIENT_ID;
@@ -37,32 +37,16 @@ export default async function handler(req, res) {
 
     const token = tokenData.access_token;
 
-    // City coordinates map (same cities as panchang)
-    const CITY_COORDS = {
-      delhi:          { lat: 28.6139, lon: 77.2090 },
-      mumbai:         { lat: 19.0760, lon: 72.8777 },
-      hyderabad:      { lat: 17.3850, lon: 78.4867 },
-      bangalore:      { lat: 12.9716, lon: 77.5946 },
-      eluru:          { lat: 16.7107, lon: 81.0952 },
-      vijayawada:     { lat: 16.5062, lon: 80.6480 },
-      visakhapatnam:  { lat: 17.6868, lon: 83.2185 },
-      chennai:        { lat: 13.0827, lon: 80.2707 },
-      kolkata:        { lat: 22.5726, lon: 88.3639 },
-      lucknow:        { lat: 26.8467, lon: 80.9462 },
-    };
-
-    const coords = CITY_COORDS[(city||'delhi').toLowerCase()] || CITY_COORDS.delhi;
-
-    // Format datetime: YYYY-MM-DDTHH:MM:SS+05:30
+    // Use exact coordinates from frontend
     const datetime = `${dob}T${tob}:00+05:30`;
 
     // Step 2: Get birth details (Nakshatra, Rashi, Lagna)
     const birthRes = await fetch(
       `https://api.prokerala.com/v2/astrology/birth-details?` +
       new URLSearchParams({
-        ayanamsa:  1,  // Lahiri (standard for Vedic)
-        coordinates: `${coords.lat},${coords.lon}`,
-        datetime:  datetime,
+        ayanamsa:    1,
+        coordinates: `${lat},${lon}`,
+        datetime:    datetime,
       }),
       {
         headers: {
