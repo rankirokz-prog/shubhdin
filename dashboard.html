@@ -1949,6 +1949,39 @@ if(!U.setupDone){window.location.href='index.html';}
 
 const lang=U.lang||'hi';
 const H=lang==='hi';
+
+// ── Panchang Translation Maps (Hindi → English) ──
+const TITHI_MAP={
+  'प्रतिपदा':'Pratipada','द्वितीया':'Dwitiya','तृतीया':'Tritiya','चतुर्थी':'Chaturthi',
+  'पंचमी':'Panchami','षष्ठी':'Shashthi','सप्तमी':'Saptami','अष्टमी':'Ashtami',
+  'नवमी':'Navami','दशमी':'Dashami','एकादशी':'Ekadashi','द्वादशी':'Dwadashi',
+  'त्रयोदशी':'Trayodashi','चतुर्दशी':'Chaturdashi','पूर्णिमा':'Purnima','अमावस्या':'Amavasya',
+};
+const NAK_MAP={
+  'अश्विनी':'Ashwini','भरणी':'Bharani','कृत्तिका':'Krittika','रोहिणी':'Rohini',
+  'मृगशिरा':'Mrigashira','आर्द्रा':'Ardra','पुनर्वसु':'Punarvasu','पुष्य':'Pushya',
+  'अश्लेषा':'Ashlesha','मघा':'Magha','पूर्वाफाल्गुनी':'Purva Phalguni',
+  'उत्तराफाल्गुनी':'Uttara Phalguni','हस्त':'Hasta','चित्रा':'Chitra',
+  'स्वाति':'Swati','विशाखा':'Vishakha','अनुराधा':'Anuradha','ज्येष्ठा':'Jyeshtha',
+  'मूल':'Mula','पूर्वाषाढा':'Purva Ashadha','उत्तराषाढा':'Uttara Ashadha',
+  'श्रवण':'Shravana','धनिष्ठा':'Dhanishtha','शतभिषा':'Shatabhisha',
+  'पूर्वाभाद्रपद':'Purva Bhadrapada','उत्तराभाद्रपद':'Uttara Bhadrapada','रेवती':'Revati',
+};
+const YOGA_MAP={
+  'विष्कम्भ':'Vishkambha','प्रीति':'Preeti','आयुष्मान':'Ayushman','सौभाग्य':'Saubhagya',
+  'शोभन':'Shobhana','अतिगण्ड':'Atiganda','सुकर्मा':'Sukarma','धृति':'Dhriti',
+  'शूल':'Shula','गण्ड':'Ganda','वृद्धि':'Vriddhi','ध्रुव':'Dhruva','व्याघात':'Vyaghata',
+  'हर्षण':'Harshana','वज्र':'Vajra','सिद्धि':'Siddhi','व्यतीपात':'Vyatipata',
+  'वरीयान':'Variyana','परिघ':'Parigha','शिव':'Shiva','सिद्ध':'Siddha',
+  'साध्य':'Sadhya','शुभ':'Shubha','शुक्ल':'Shukla','ब्रह्म':'Brahma',
+  'इन्द्र':'Indra','वैधृति':'Vaidhrita',
+};
+const KAR_MAP={
+  'बव':'Bava','बालव':'Balava','कौलव':'Kaulava','तैतिल':'Taitila','गर':'Gara',
+  'वणिज':'Vanija','विष्टि':'Vishti','शकुनि':'Shakuni','चतुष्पाद':'Chatushpada',
+  'नाग':'Naga','किंस्तुघ्न':'Kinstughna',
+};
+function panTr(val, map){ if(!val)return val; return (!H&&map[val])?map[val]:val; }
 const name=U.name||(H?'मित्र':'Friend');
 
 // ── Day config ──
@@ -4034,27 +4067,29 @@ async function fetchPanchang(){
 
     // ── Tithi ──
     if(p.tithi){
-      document.getElementById('tithiVal').textContent=p.tithi;
-      document.getElementById('tv').textContent=p.tithi;
+      const _tithi=panTr(p.tithi,TITHI_MAP);
+      document.getElementById('tithiVal').textContent=_tithi;
+      document.getElementById('tv').textContent=_tithi;
       const tp=document.getElementById('tithiPaksha');if(tp)tp.textContent=p.tithi_paksha||'';
       const te=document.getElementById('tithiEnd');if(te)te.textContent=p.tithi_end?'Ends: '+p.tithi_end:'';
     }
     // ── Nakshatra ──
     if(p.nakshatra){
-      document.getElementById('nakVal2').textContent=p.nakshatra;
-      document.getElementById('nv').textContent=p.nakshatra;
+      const _nak=panTr(p.nakshatra,NAK_MAP);
+      document.getElementById('nakVal2').textContent=_nak;
+      document.getElementById('nv').textContent=_nak;
       const nr=document.getElementById('nakRuler');if(nr)nr.textContent=p.nakshatra_ruler||'';
       const ne=document.getElementById('nakEnd');if(ne)ne.textContent=p.nakshatra_end?'Ends: '+p.nakshatra_end:'';
     }
     // ── Yoga ──
     if(p.yoga){
       const yogaEl=document.getElementById('yogVal');
-      if(yogaEl) yogaEl.textContent=p.yoga;
+      if(yogaEl) yogaEl.textContent=panTr(p.yoga,YOGA_MAP);
     }
     // ── Karana ──
     if(p.karana){
       const karEl=document.getElementById('karVal');
-      if(karEl) karEl.textContent=p.karana;
+      if(karEl) karEl.textContent=panTr(p.karana,KAR_MAP);
     }
     // ── Sunrise / Sunset ──
     if(p.sunrise){
