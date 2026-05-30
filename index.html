@@ -537,31 +537,23 @@
         fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
           .then(r=>r.json())
           .then(d => {
-            const city  = d.address?.city || d.address?.town || d.address?.village || '';
+            const city  = d.address?.city || d.address?.town || d.address?.village || d.address?.county || '';
             const state = d.address?.state || '';
-            if (city) document.getElementById('userCity').value = city;
-            const sm = {'Andhra Pradesh':'AP','Telangana':'TS','Maharashtra':'MH','Delhi':'DL','Karnataka':'KA','Tamil Nadu':'TN','Gujarat':'GJ','Rajasthan':'RJ','Uttar Pradesh':'UP','Madhya Pradesh':'MP','West Bengal':'WB','Kerala':'KL','Punjab':'PB','Haryana':'HR','Bihar':'BR','Odisha':'OD'};
-            document.getElementById('userState').value = sm[state] || 'Other';
-            user.city = city; user.state = sm[state] || 'Other';
-
-            // Set state dropdown and trigger city filter
-            document.getElementById('userState').value = sm[state] || 'Other';
-            onStateChange();
-
-            // Set city in filtered dropdown
-            setTimeout(() => {
-              const citySelect = document.getElementById('userCity');
-              for (let opt of citySelect.options) {
-                if (opt.value === city) { opt.selected = true; break; }
-              }
-              validateStep4();
-            }, 100);
-
+            const lat   = pos.coords.latitude;
+            const lon   = pos.coords.longitude;
+            if(city){
+              document.getElementById('userCityInput').value = city;
+              document.getElementById('userCity').value = city;
+              user.city     = city;
+              user.city_lat = lat;
+              user.city_lon = lon;
+            }
             const lf = document.getElementById('locFound');
             document.getElementById('locTxt').textContent = (lang==='hi'?'मिला: ':'Found: ') + city + (state?', '+state:'');
             lf.classList.add('show');
             document.getElementById('gpsBtn').style.display='none';
             document.getElementById('orDiv').style.display='none';
+            validateStep4();
           }).catch(resetGPS);
       }, resetGPS
     );
