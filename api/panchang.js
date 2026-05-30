@@ -190,8 +190,9 @@ function getFallback(dateObj) {
   return {
     date: formatDate(dateObj), city: 'India',
     tithi: 'द्वितीया', nakshatra: 'अनुराधा', yoga: 'शुभ', karana: 'बव',
-    sunrise: '06:08', sunset: '18:34',
+    sunrise: '06:08', sunset: '18:34', moonrise: '07:22',
     rahu_kaal: RAHU_HRS[dow], abhijit_muhurta: '11:48–12:36',
+    gulika: calcGulika('06:08', dow),
     updated_at: new Date().toISOString()
   };
 }
