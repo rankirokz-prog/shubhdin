@@ -300,39 +300,17 @@
     </button>
     <div class="loc-found" id="locFound">✅ <span id="locTxt">लोकेशन मिली!</span></div>
 
-    <div class="or-div" id="orDiv"><span>या मैन्युअल भरें</span></div>
+    <div class="or-div" id="orDiv"><span>या खोजें</span></div>
 
-    <!-- STATE FIRST -->
-    <div class="field">
-      <div class="field-top"><label id="stateLabel">राज्य</label></div>
-      <select id="userState" onchange="onStateChange()">
-        <option value="" id="stateOpt">चुनें</option>
-        <option value="AP">Andhra Pradesh</option>
-        <option value="TS">Telangana</option>
-        <option value="MH">Maharashtra</option>
-        <option value="DL">Delhi</option>
-        <option value="KA">Karnataka</option>
-        <option value="TN">Tamil Nadu</option>
-        <option value="GJ">Gujarat</option>
-        <option value="RJ">Rajasthan</option>
-        <option value="UP">Uttar Pradesh</option>
-        <option value="MP">Madhya Pradesh</option>
-        <option value="WB">West Bengal</option>
-        <option value="KL">Kerala</option>
-        <option value="PB">Punjab</option>
-        <option value="HR">Haryana</option>
-        <option value="BR">Bihar</option>
-        <option value="OD">Odisha</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-
-    <!-- CITY FILTERED BY STATE -->
-    <div class="field" id="cityWrap" style="opacity:0.35;pointer-events:none;">
-      <div class="field-top"><label id="cityLabel">शहर</label></div>
-      <select id="userCity" onchange="validateStep4()">
-        <option value="" id="cityOpt">पहले राज्य चुनें</option>
-      </select>
+    <!-- CITY SEARCH -->
+    <div class="field" style="position:relative;">
+      <div class="field-top"><label id="cityLabel">शहर / City</label></div>
+      <input id="userCityInput" type="text" autocomplete="off"
+        style="width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(212,168,67,0.25);background:rgba(255,255,255,0.06);color:#fff;font-family:'Poppins',sans-serif;font-size:14px;outline:none;"
+        placeholder="Narasapuram, Delhi, Mumbai..."
+        oninput="searchCity(this.value)" />
+      <input type="hidden" id="userCity" value="" />
+      <div id="cityResults" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:200px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div>
     </div>
 
     <button class="btn-cta" id="btn4" onclick="goStep(5)" disabled><span id="cta4">मेरी यात्रा शुरू करें</span> 🙏</button>
@@ -718,6 +696,54 @@
     document.getElementById('langScreen').style.display = 'block';
     document.getElementById('mainCard').classList.remove('show');
   });
+
+let _cityTimer = null;
+function searchCity(q){
+  const dd = document.getElementById('cityResults');
+  document.getElementById('userCity').value = '';
+  validateStep4();
+  if(!q || q.length < 2){ dd.style.display='none'; return; }
+  clearTimeout(_cityTimer);
+  dd.innerHTML = '<div style="padding:10px 14px;color:rgba(255,255,255,0.40);font-size:13px;">Searching...</div>';
+  dd.style.display='block';
+  _cityTimer = setTimeout(async ()=>{
+    try{
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=in&limit=6&format=json`;
+      const res = await fetch(url, {headers:{'Accept-Language':'en'}});
+      const results = await res.json();
+      if(!results.length){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">No results found</div>'; return; }
+      dd.innerHTML = results.map(r => {
+        const name = r.display_name.split(',')[0].trim();
+        const sub  = r.display_name.split(',').slice(1,3).join(',').trim();
+        return `<div onclick="pickCity('${name}',${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\'")}')"
+          style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);"
+          onmouseover="this.style.background='rgba(212,168,67,0.10)'"
+          onmouseout="this.style.background=''">
+          <div style="font-size:14px;color:#fff;font-weight:600;">${name}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.40);margin-top:2px;">${sub}</div>
+        </div>`;
+      }).join('');
+    }catch(e){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">Search failed</div>'; }
+  }, 400);
+}
+
+function pickCity(name, lat, lon, full){
+  document.getElementById('userCityInput').value = name;
+  document.getElementById('userCity').value = name;
+  document.getElementById('cityResults').style.display='none';
+  // Store coords for panchang + birth chart
+  user.city = name;
+  user.city_lat = parseFloat(lat);
+  user.city_lon = parseFloat(lon);
+  validateStep4();
+}
+
+function validateStep4(){
+  const city = document.getElementById('userCity').value;
+  const btn = document.getElementById('btn4');
+  if(btn) btn.disabled = !city;
+}
+
 </script>
 
 <script>
