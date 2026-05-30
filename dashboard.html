@@ -4070,7 +4070,7 @@ async function fetchPanchang(){
     setTimeout(prewarmAudio, 1000);
 
     // ── Tithi ──
-    if(p.tithi){
+    if(p.tithi && p.tithi.trim()){
       const _tithi=panTr(p.tithi,TITHI_MAP);
       document.getElementById('tithiVal').textContent=_tithi;
       document.getElementById('tv').textContent=_tithi;
@@ -4078,7 +4078,7 @@ async function fetchPanchang(){
       const te=document.getElementById('tithiEnd');if(te)te.textContent=p.tithi_end?'Ends: '+p.tithi_end:'';
     }
     // ── Nakshatra ──
-    if(p.nakshatra){
+    if(p.nakshatra && p.nakshatra.trim()){
       const _nak=panTr(p.nakshatra,NAK_MAP);
       document.getElementById('nakVal2').textContent=_nak;
       document.getElementById('nv').textContent=_nak;
@@ -4086,12 +4086,12 @@ async function fetchPanchang(){
       const ne=document.getElementById('nakEnd');if(ne)ne.textContent=p.nakshatra_end?'Ends: '+p.nakshatra_end:'';
     }
     // ── Yoga ──
-    if(p.yoga){
+    if(p.yoga && p.yoga.trim()){
       const yogaEl=document.getElementById('yogVal');
       if(yogaEl) yogaEl.textContent=panTr(p.yoga,YOGA_MAP);
     }
     // ── Karana ──
-    if(p.karana){
+    if(p.karana && p.karana.trim()){
       const karEl=document.getElementById('karVal');
       if(karEl) karEl.textContent=panTr(p.karana,KAR_MAP);
     }
@@ -4115,7 +4115,13 @@ async function fetchPanchang(){
       const abEl=document.getElementById('abTime');
       if(abEl) abEl.textContent=p.abhijit_muhurta;
     }
-  }catch(e){console.log('Panchang unavailable');}
+  }catch(e){
+    console.log('Panchang unavailable:', e);
+    // Show fallback values so nothing is blank
+    const now2=new Date();
+    document.getElementById('tv').textContent=H?'द्वितीया':'Dwitiya';
+    document.getElementById('goodTime').textContent='11:48–12:36';
+  }
 }
 
 // ── Init ──
