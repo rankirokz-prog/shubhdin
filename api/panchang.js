@@ -155,11 +155,13 @@ async function fetchFromAPI(city, dateObj) {
     const karana         = raw.karana?.[2]?.name || raw.karana?.[1]?.name || '';
     const sunrise   = raw.sun_rise        || '06:08';
     const sunset    = raw.sun_set         || '18:34';
+    const moonrise  = raw.moon_rise       || '';
+    const gulika    = calcGulika(sunrise, dow);
 
     return {
       city: city.name,
       tithi, tithi_paksha, nakshatra, nakshatra_ruler, yoga, karana,
-      sunrise, sunset,
+      sunrise, sunset, moonrise, gulika,
       rahu_kaal:       calcRahuKaal(sunrise, dow),
       abhijit_muhurta: calcAbhijit(sunrise, sunset),
       updated_at: new Date().toISOString()
@@ -198,6 +200,18 @@ function formatDate(d) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
 }
 
+
+// Gulika Kaal calculation (similar to Rahu Kaal)
+function calcGulika(sunrise, dow){
+  // Gulika slots by day: Sun=6, Mon=5, Tue=4, Wed=3, Thu=2, Fri=1, Sat=0
+  const slots = [6,5,4,3,2,1,0];
+  const slot = slots[dow];
+  const [h,m] = sunrise.split(':').map(Number);
+  const startMins = h*60 + m + slot*90;
+  const endMins   = startMins + 90;
+  const fmt = n => `${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
+  return `${fmt(startMins)}–${fmt(endMins)}`;
+}
 function calcRahuKaal(sunrise, dow) {
   try {
     const [h, m] = sunrise.split(':').map(Number);
