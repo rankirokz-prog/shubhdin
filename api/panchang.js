@@ -53,8 +53,8 @@ export default async function handler(req, res) {
           await storeInSupabase(ck, tomorrowStr, d2, supabaseUrl, supabaseKey);
         } catch(e) { console.error(`City ${ck} tomorrow failed:`, e.message); }
       }
-      // Cleanup old rows
-      await fetch(`${supabaseUrl}/rest/v1/panchang_today?date=lt.${yesterdayStr}`, {
+      // Cleanup ALL old rows to force fresh data
+      await fetch(`${supabaseUrl}/rest/v1/panchang_today?date=lt.${tomorrowStr}`, {
         method: 'DELETE',
         headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
       });
