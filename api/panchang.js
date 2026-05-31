@@ -61,8 +61,13 @@ export default async function handler(req, res) {
       return res.status(200).json({ success: true, message: `Cron done for ${allCities.length} cities` });
     }
 
+    // Debug: skip Supabase, go straight to live API
+    if(req.query.debug==='1'){
+      const liveDebug = await fetchFromAPI(city, ist, res, req);
+      return; // fetchFromAPI handles response in debug mode
+    }
     // ── NORMAL: try Supabase today → yesterday → live ──
-    if (supabaseUrl && supabaseKey) {
+    if (supabaseUrl && supabaseKey && req.query.live !== '1') {
       for (const dateStr of [todayStr, yesterdayStr]) {
         try {
           const dbRes = await fetch(
@@ -146,8 +151,8 @@ async function fetchFromAPI(city, dateObj) {
 
     const raw = await apiRes.json();
     // Debug mode - return raw API response
-    if(req && req.query && req.query.debug==='1'){
-      return res.status(200).json({ debug: true, raw });
+    if(typeof req !== 'undefined' && req.query && req.query.debug==='1'){
+      return res.status(200).json({ debug: true, raw_keys: Object.keys(raw), raw });
     }
     console.log('API success, tithi:', raw.tithi?.name, 'yoga:', raw.yoga, 'nakshatra:', raw.nakshatra?.name);
 
