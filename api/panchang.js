@@ -145,7 +145,11 @@ async function fetchFromAPI(city, dateObj) {
     }
 
     const raw = await apiRes.json();
-    console.log('API success, tithi:', raw.tithi?.name);
+    // Debug mode - return raw API response
+    if(req && req.query && req.query.debug==='1'){
+      return res.status(200).json({ debug: true, raw });
+    }
+    console.log('API success, tithi:', raw.tithi?.name, 'yoga:', raw.yoga, 'nakshatra:', raw.nakshatra?.name);
 
     const tithi          = raw.tithi?.name          || '';
     const tithi_paksha   = raw.tithi?.paksha?.paksha  || '';
