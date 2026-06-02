@@ -109,89 +109,72 @@ export default async function handler(req, res) {
 // ── Fetch panchang from API ──
 // FIXED: field names are "date" and "config" per official API docs
 async function fetchFromAPI(city, dateObj) {
-  const apiKey = process.env.ASTROLOGY_API_KEY;
-  if (!apiKey) throw new Error('ASTROLOGY_API_KEY not set in Vercel env vars');
+  const clientId     = process.env.PROKERALA_CLIENT_ID;
+  const clientSecret = process.env.PROKERALA_CLIENT_SECRET;
+  if(!clientId || !clientSecret) throw new Error('Prokerala credentials not set');
 
-  const year  = dateObj.getUTCFullYear();
-  const month = dateObj.getUTCMonth() + 1;
-  const date  = dateObj.getUTCDate();   // ← "date" not "day"
-  const dow   = dateObj.getUTCDay();
+  const dow = dateObj.getUTCDay();
 
-  // EXACTLY matching freeastrologyapi.com official docs format
-  const body = {
-    year,
-    month,
-    date,                                // ← correct field name
-    hours: 6,
-    minutes: 0,
-    seconds: 0,
-    latitude: city.lat,
-    longitude: city.lng,
-    timezone: city.tz,
-    config: {                            // ← "config" not "settings"
-      observation_point: 'topocentric',
-      ayanamsha: 'lahiri'
-    }
+  // Step 1: Get token
+  const tokenRes = await fetch('https://api.prokerala.com/token', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    body: new URLSearchParams({grant_type:'client_credentials',client_id:clientId,client_secret:clientSecret})
+  });
+  const tokenData = await tokenRes.json();
+  if(!tokenData.access_token) throw new Error('Prokerala token failed');
+
+  // Step 2: Get panchang
+  const datetime = `${dateObj.getUTCFullYear()}-${String(dateObj.getUTCMonth()+1).padStart(2,'0')}-${String(dateObj.getUTCDate()).padStart(2,'0')}T06:00:00+05:30`;
+  const params = new URLSearchParams({
+    ayanamsa: 1,
+    coordinates: `${city.lat},${city.lng}`,
+    datetime,
+    la: 'en'
+  });
+
+  const panRes = await fetch(`https://api.prokerala.com/v2/astrology/panchang?${params}`, {
+    headers: { Authorization: `Bearer ${tokenData.access_token}`, Accept: 'application/json' }
+  });
+  const panData = await panRes.json();
+  if(!panRes.ok) throw new Error('Prokerala panchang failed: ' + JSON.stringify(panData));
+
+  const d = panData.data;
+
+  function fmtTime(t){ if(!t)return ''; const p=t.split(':'); return p[0].padStart(2,'0')+':'+p[1].padStart(2,'0'); }
+
+  const sunrise  = fmtTime(d.sunrise)  || '06:08';
+  const sunset   = fmtTime(d.sunset)   || '18:34';
+  const moonrise = fmtTime(d.moonrise) || '';
+
+  const tithi     = d.tithi?.[0]?.name           || '';
+  const tithi_paksha = d.tithi?.[0]?.paksha?.name || '';
+  const nakshatra    = d.nakshatra?.[0]?.name     || '';
+  const nakshatra_ruler = d.nakshatra?.[0]?.lord?.name || '';
+  const yoga      = d.yoga?.[0]?.name             || '';
+  const karana    = d.karana?.[0]?.name           || '';
+
+  // Rahu kaal from API or calculate
+  let rahu_kaal = '';
+  if(d.rahu_kaal) rahu_kaal = fmtTime(d.rahu_kaal.start)+'–'+fmtTime(d.rahu_kaal.end);
+  else rahu_kaal = calcRahuKaal(sunrise, dow);
+
+  // Abhijit muhurta
+  let abhijit = '';
+  if(d.abhijit_muhurta) abhijit = fmtTime(d.abhijit_muhurta.start)+'–'+fmtTime(d.abhijit_muhurta.end);
+  else abhijit = calcAbhijit(sunrise, sunset);
+
+  return {
+    city: city.name,
+    tithi, tithi_paksha, nakshatra, nakshatra_ruler, yoga, karana,
+    sunrise, sunset, moonrise,
+    gulika: calcGulika(sunrise, dow),
+    rahu_kaal: rahu_kaal,
+    abhijit_muhurta: abhijit,
+    updated_at: new Date().toISOString()
   };
-
-  console.log('API Key present:', !!process.env.ASTROLOGY_API_KEY);
-  console.log('API Key length:', (process.env.ASTROLOGY_API_KEY||'').length);
-  console.log('Calling API for:', city.name, year, month, date);
-  console.log('Request body:', JSON.stringify(body));
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-  try {
-    const apiRes = await fetch('https://json.freeastrologyapi.com/complete-panchang', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
-
-    clearTimeout(timeout);
-
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      throw new Error(`API returned ${apiRes.status}: ${errText}`);
-    }
-
-    const raw = await apiRes.json();
-    // Debug mode - return raw API response
-    if(typeof req !== 'undefined' && req.query && req.query.debug==='1'){
-      return res.status(200).json({ debug: true, raw_keys: Object.keys(raw), raw });
-    }
-    console.log('API success, tithi:', raw.tithi?.name, 'yoga:', raw.yoga, 'nakshatra:', raw.nakshatra?.name);
-
-    const tithi          = raw.tithi?.name                     || '';
-    const tithi_paksha   = raw.tithi?.paksha                   || '';
-    const nakshatra      = raw.nakshatra?.name                 || '';
-    const nakshatra_ruler= raw.nakshatra?.lord?.name           || '';
-    const yoga           = raw.yoga?.['1']?.name || raw.yoga?.['2']?.name || '';
-    const karana         = raw.karana?.['1']?.name || raw.karana?.['2']?.name || '';
-    // Format sunrise/sunset from "6:21:37" to "06:21"
-    function fmtTime(t){ if(!t)return ''; const p=t.split(':'); return p[0].padStart(2,'0')+':'+p[1].padStart(2,'0'); }
-    const sunrise   = fmtTime(raw.sun_rise)   || '06:08';
-    const sunset    = fmtTime(raw.sun_set)    || '18:34';
-    const moonrise  = fmtTime(raw.moon_rise)  || '';
-    const gulika    = calcGulika(sunrise, dow);
-
-    return {
-      city: city.name,
-      tithi, tithi_paksha, nakshatra, nakshatra_ruler, yoga, karana,
-      sunrise, sunset, moonrise, gulika,
-      rahu_kaal:       calcRahuKaal(sunrise, dow),
-      abhijit_muhurta: calcAbhijit(sunrise, sunset),
-      updated_at: new Date().toISOString()
-    };
-  } finally {
-    clearTimeout(timeout);
-  }
 }
+
 
 // ── Store in Supabase ──
 async function storeInSupabase(cityKey, date, data, url, key) {
