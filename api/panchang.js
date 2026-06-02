@@ -24,13 +24,18 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store, no-cache');
 
-  // RAW TEST MODE - show what's in Supabase right now
+  // RAW TEST MODE - call Prokerala directly and return raw response
   if(req.query.raw === '1'){
-    const sUrl = process.env.SUPABASE_URL;
-    const sKey = process.env.SUPABASE_SERVICE_KEY;
-    const r = await fetch(`${sUrl}/rest/v1/panchang_today?city_key=eq.eluru&limit=1`,{headers:{'apikey':sKey,'Authorization':'Bearer '+sKey}});
-    const rows = await r.json();
-    return res.status(200).json({supabase_row: rows[0]});
+    const clientId = process.env.PROKERALA_CLIENT_ID;
+    const clientSecret = process.env.PROKERALA_CLIENT_SECRET;
+    const tokenRes = await fetch('https://api.prokerala.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'client_credentials',client_id:clientId,client_secret:clientSecret})});
+    const tokenData = await tokenRes.json();
+    const token = tokenData.access_token;
+    const datetime = new Date().toISOString().split('T')[0]+'T06:00:00+05:30';
+    const params = new URLSearchParams({ayanamsa:1,coordinates:'16.71,81.10',datetime,la:'en'});
+    const panRes = await fetch(`https://api.prokerala.com/v2/astrology/panchang?${params}`,{headers:{Authorization:`Bearer ${token}`,Accept:'application/json'}});
+    const panData = await panRes.json();
+    return res.status(200).json({keys: panData.data ? Object.keys(panData.data) : [], data: panData});
   }
 
   const cityKey = (req.query.city || 'default').toLowerCase().replace(/\s+/g, '');
