@@ -24,15 +24,13 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store, no-cache');
 
-  // RAW TEST MODE - bypass everything, call API directly
+  // RAW TEST MODE - show what's in Supabase right now
   if(req.query.raw === '1'){
-    const apiKey = process.env.ASTROLOGY_API_KEY;
-    const now = new Date();
-    const ist = new Date(now.getTime() + 5.5*60*60*1000);
-    const body = { year: ist.getUTCFullYear(), month: ist.getUTCMonth()+1, date: ist.getUTCDate(), hours:6, minutes:0, seconds:0, latitude:16.71, longitude:81.10, timezone:5.5, config:{observation_point:'topocentric',ayanamsha:'lahiri'} };
-    const r = await fetch('https://json.freeastrologyapi.com/complete-panchang',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey},body:JSON.stringify(body)});
-    const raw = await r.json();
-    return res.status(200).json({status: r.status, body_sent: body, raw_response: raw});
+    const sUrl = process.env.SUPABASE_URL;
+    const sKey = process.env.SUPABASE_SERVICE_KEY;
+    const r = await fetch(`${sUrl}/rest/v1/panchang_today?city_key=eq.eluru&limit=1`,{headers:{'apikey':sKey,'Authorization':'Bearer '+sKey}});
+    const rows = await r.json();
+    return res.status(200).json({supabase_row: rows[0]});
   }
 
   const cityKey = (req.query.city || 'default').toLowerCase().replace(/\s+/g, '');
