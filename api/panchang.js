@@ -141,7 +141,18 @@ async function fetchFromAPI(city, dateObj) {
 
   const d = panData.data;
 
-  function fmtTime(t){ if(!t)return ''; const p=t.split(':'); return p[0].padStart(2,'0')+':'+p[1].padStart(2,'0'); }
+  function fmtTime(t){
+    if(!t) return '';
+    // Handle ISO datetime: "2026-06-02T05:35:00+05:30"
+    if(t.includes('T')){
+      const timePart = t.split('T')[1]; // "05:35:00+05:30"
+      const p = timePart.split(':');
+      return p[0].padStart(2,'0')+':'+p[1].padStart(2,'0');
+    }
+    // Handle "HH:MM:SS" or "H:MM:SS"
+    const p = t.split(':');
+    return p[0].padStart(2,'0')+':'+p[1].padStart(2,'0');
+  }
 
   const sunrise  = fmtTime(d.sunrise)  || '06:08';
   const sunset   = fmtTime(d.sunset)   || '18:34';
@@ -156,12 +167,12 @@ async function fetchFromAPI(city, dateObj) {
 
   // Rahu kaal from API or calculate
   let rahu_kaal = '';
-  if(d.rahu_kaal) rahu_kaal = fmtTime(d.rahu_kaal.start)+'–'+fmtTime(d.rahu_kaal.end);
+  if(d.rahu_kaal && d.rahu_kaal.start) rahu_kaal = fmtTime(d.rahu_kaal.start)+'–'+fmtTime(d.rahu_kaal.end);
   else rahu_kaal = calcRahuKaal(sunrise, dow);
 
   // Abhijit muhurta
   let abhijit = '';
-  if(d.abhijit_muhurta) abhijit = fmtTime(d.abhijit_muhurta.start)+'–'+fmtTime(d.abhijit_muhurta.end);
+  if(d.abhijit_muhurta && d.abhijit_muhurta.start) abhijit = fmtTime(d.abhijit_muhurta.start)+'–'+fmtTime(d.abhijit_muhurta.end);
   else abhijit = calcAbhijit(sunrise, sunset);
 
   return {
