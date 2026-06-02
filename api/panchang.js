@@ -156,15 +156,17 @@ async function fetchFromAPI(city, dateObj) {
     }
     console.log('API success, tithi:', raw.tithi?.name, 'yoga:', raw.yoga, 'nakshatra:', raw.nakshatra?.name);
 
-    const tithi          = raw.tithi?.name          || '';
-    const tithi_paksha   = raw.tithi?.paksha?.paksha  || '';
-    const nakshatra      = raw.nakshatra?.name       || '';
-    const nakshatra_ruler= raw.nakshatra?.lord        || '';
-    const yoga           = raw.yoga?.[1]?.name || raw.yoga?.[0]?.name || '';
-    const karana         = raw.karana?.[2]?.name || raw.karana?.[1]?.name || '';
-    const sunrise   = raw.sun_rise        || '06:08';
-    const sunset    = raw.sun_set         || '18:34';
-    const moonrise  = raw.moon_rise       || '';
+    const tithi          = raw.tithi?.name                     || '';
+    const tithi_paksha   = raw.tithi?.paksha                   || '';
+    const nakshatra      = raw.nakshatra?.name                 || '';
+    const nakshatra_ruler= raw.nakshatra?.lord?.name           || '';
+    const yoga           = raw.yoga?.['1']?.name || raw.yoga?.['2']?.name || '';
+    const karana         = raw.karana?.['1']?.name || raw.karana?.['2']?.name || '';
+    // Format sunrise/sunset from "6:21:37" to "06:21"
+    function fmtTime(t){ if(!t)return ''; const p=t.split(':'); return p[0].padStart(2,'0')+':'+p[1].padStart(2,'0'); }
+    const sunrise   = fmtTime(raw.sun_rise)   || '06:08';
+    const sunset    = fmtTime(raw.sun_set)    || '18:34';
+    const moonrise  = fmtTime(raw.moon_rise)  || '';
     const gulika    = calcGulika(sunrise, dow);
 
     return {
