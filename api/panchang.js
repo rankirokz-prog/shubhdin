@@ -154,7 +154,7 @@ async function fetchFromAPI(city, dateObj) {
 
   const sunrise  = fmtTime(d.sunrise)  || '06:08';
   const sunset   = fmtTime(d.sunset)   || '18:34';
-  const moonrise = fmtTime(d.moonrise) || '';
+  const moonrise = fmtTime(d.moonrise || d.moon_rise || d.moonRise) || '';
 
   const tithi     = d.tithi?.[0]?.name           || '';
   const tithi_paksha = d.tithi?.[0]?.paksha?.name || '';
