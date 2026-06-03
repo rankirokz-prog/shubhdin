@@ -1967,13 +1967,17 @@ const NAK_MAP={
   'श्रवण':'Shravana','धनिष्ठा':'Dhanishtha','शतभिषा':'Shatabhisha',
   'पूर्वाभाद्रपद':'Purva Bhadrapada','उत्तराभाद्रपद':'Uttara Bhadrapada','रेवती':'Revati',
 };
+const PAKSHA_MAP={
+  'Shukla Paksha':'शुक्ल पक्ष','Krishna Paksha':'कृष्ण पक्ष',
+  'शुक्ल पक्ष':'Shukla Paksha','कृष्ण पक्ष':'Krishna Paksha'
+};
 const YOGA_MAP={
   'विष्कम्भ':'Vishkambha','प्रीति':'Preeti','आयुष्मान':'Ayushman','सौभाग्य':'Saubhagya',
   'शोभन':'Shobhana','अतिगण्ड':'Atiganda','सुकर्मा':'Sukarma','धृति':'Dhriti',
   'शूल':'Shula','गण्ड':'Ganda','वृद्धि':'Vriddhi','ध्रुव':'Dhruva','व्याघात':'Vyaghata',
-  'हर्षण':'Harshana','वज्र':'Vajra','सिद्धि':'Siddhi','व्यतीपात':'Vyatipata',
+  'हर्षण':'Harshana','वज्र':'Vajra','सिद्धि':'Siddhi','Siddhi':'सिद्धि','व्यतीपात':'Vyatipata',
   'वरीयान':'Variyana','परिघ':'Parigha','शिव':'Shiva','सिद्ध':'Siddha',
-  'साध्य':'Sadhya','शुभ':'Shubha','शुक्ल':'Shukla','ब्रह्म':'Brahma',
+  'साध्य':'Sadhya','शुभ':'Shubha','Subha':'शुभ','Shubha':'शुभ','शुक्ल':'Shukla','Sukla':'शुक्ल','Shukla':'शुक्ल','ब्रह्म':'Brahma',
   'इन्द्र':'Indra','वैधृति':'Vaidhrita',
 };
 const KAR_MAP={
@@ -4089,7 +4093,7 @@ async function fetchPanchang(){
       const _tithi=panTr(p.tithi,TITHI_MAP);
       document.getElementById('tithiVal').textContent=_tithi;
       document.getElementById('tv').textContent=_tithi;
-      const tp=document.getElementById('tithiPaksha');if(tp)tp.textContent=p.tithi_paksha||'';
+      const tp=document.getElementById('tithiPaksha');if(tp)tp.textContent=H?(PAKSHA_MAP[p.tithi_paksha]||p.tithi_paksha||''):(p.tithi_paksha||'');
       const te=document.getElementById('tithiEnd');if(te)te.textContent=p.tithi_end?'Ends: '+p.tithi_end:'';
     }
     // ── Nakshatra ──
