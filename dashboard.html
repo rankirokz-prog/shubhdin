@@ -4114,25 +4114,33 @@ async function fetchPanchang(){
     }
     // ── Abhijit Muhurta (shubh time) ──
     if(p.abhijit_muhurta){
-      // Check overlap with Rahu Kaal
-      const toMins = t => { const [h,m]=t.split(':').map(Number); return h*60+m; };
-      let showGoodTime = true;
-      if(p.rahu_kaal && p.abhijit_muhurta){
+      document.getElementById('goodTime').textContent=p.abhijit_muhurta;
+      const abEl=document.getElementById('abTime');
+      if(abEl) abEl.textContent=p.abhijit_muhurta;
+      // Check overlap with Rahu Kaal — show warning, keep time visible
+      if(p.rahu_kaal){
         try{
-          const [rs,re] = p.rahu_kaal.split('–').map(toMins);
-          const [as,ae] = p.abhijit_muhurta.split('–').map(toMins);
-          if(as < re && ae > rs){ // overlap
-            showGoodTime = false;
-            document.getElementById('goodTime').textContent = H?'आज उपलब्ध नहीं':'Not available today';
-            const abEl=document.getElementById('abTime');
-            if(abEl) abEl.textContent = H?'राहु काल के कारण अनुपलब्ध':'Cancelled due to Rahu Kaal';
+          const toMins = t => { const [h,m]=t.split('–')[0].split(':').map(Number); return h*60+m; };
+          const toMinsEnd = t => { const [h,m]=t.split('–')[1].split(':').map(Number); return h*60+m; };
+          const rs=toMins(p.rahu_kaal), re=toMinsEnd(p.rahu_kaal);
+          const as=toMins(p.abhijit_muhurta), ae=toMinsEnd(p.abhijit_muhurta);
+          if(as < re && ae > rs){
+            // Overlap — show warning below goodTime on home
+            const goodCard=document.getElementById('goodTime')?.closest('.gc-card,.time-card,.shubh-card,div');
+            const warn=document.createElement('div');
+            warn.id='abhijitWarn';
+            warn.style.cssText='font-size:10px;color:rgba(255,180,50,0.75);margin-top:4px;letter-spacing:0.3px;';
+            warn.textContent=H?'⚠️ राहु काल से प्रभावित':'⚠️ Overlaps with Rahu Kaal';
+            const existing=document.getElementById('abhijitWarn');
+            if(!existing){
+              const gt=document.getElementById('goodTime');
+              if(gt && gt.parentNode) gt.parentNode.appendChild(warn);
+            }
+            // Also update abhijit card description
+            const abDesc=document.getElementById('abDesc');
+            if(abDesc) abDesc.innerHTML=(H?'⚠️ अभिजीत मुहूर्त राहु काल से प्रभावित है':'⚠️ Abhijit Muhurta overlaps with Rahu Kaal')+'<br><small style="opacity:0.6">'+(H?'सावधानी से उपयोग करें':'Use with caution')+'</small>';
           }
         }catch(e){}
-      }
-      if(showGoodTime){
-        document.getElementById('goodTime').textContent=p.abhijit_muhurta;
-        const abEl=document.getElementById('abTime');
-        if(abEl) abEl.textContent=p.abhijit_muhurta;
       }
     }
     // ── Moonrise ──
