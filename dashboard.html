@@ -1981,7 +1981,19 @@ const KAR_MAP={
   'वणिज':'Vanija','विष्टि':'Vishti','शकुनि':'Shakuni','चतुष्पाद':'Chatushpada',
   'नाग':'Naga','किंस्तुघ्न':'Kinstughna',
 };
-function panTr(val, map){ if(!val)return val; return (!H&&map[val])?map[val]:val; }
+// Build reverse map automatically (English→Hindi)
+function makeRevMap(map){ const r={}; for(const [hi,en] of Object.entries(map)) r[en]=hi; return r; }
+const TITHI_RMAP=makeRevMap(TITHI_MAP);
+const NAK_RMAP=makeRevMap(NAK_MAP);
+const YOGA_RMAP=makeRevMap(YOGA_MAP);
+const KAR_RMAP=makeRevMap(KAR_MAP);
+
+function panTr(val, map){
+  if(!val) return val;
+  if(!H) return map[val]||val;        // Hindi→English
+  const rmap = makeRevMap(map);
+  return rmap[val]||val;              // English→Hindi
+}
 const name=U.name||(H?'मित्र':'Friend');
 
 // ── Day config ──
@@ -4085,7 +4097,9 @@ async function fetchPanchang(){
       const _nak=panTr(p.nakshatra,NAK_MAP);
       document.getElementById('nakVal2').textContent=_nak;
       document.getElementById('nv').textContent=_nak;
-      const nr=document.getElementById('nakRuler');if(nr)nr.textContent=p.nakshatra_ruler||'';
+      const PLANET_HI={'Sun':'सूर्य','Moon':'चन्द्र','Mars':'मंगल','Mercury':'बुध','Jupiter':'गुरु','Venus':'शुक्र','Saturn':'शनि','Rahu':'राहु','Ketu':'केतु'};
+      const nr=document.getElementById('nakRuler');
+      if(nr) nr.textContent=H?(PLANET_HI[p.nakshatra_ruler]||p.nakshatra_ruler||''):(p.nakshatra_ruler||'');
       const ne=document.getElementById('nakEnd');if(ne)ne.textContent=p.nakshatra_end?'Ends: '+p.nakshatra_end:'';
     }
     // ── Yoga ──
