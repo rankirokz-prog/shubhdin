@@ -34,7 +34,9 @@ export default async function handler(req, res) {
   }
 
   const cityKey = (req.query.city || 'default').toLowerCase().replace(/\s+/g, '');
-  const city    = CITIES[cityKey] || CITIES.default;
+  const city    = CITIES[cityKey] || 
+    Object.entries(CITIES).find(([k])=>cityKey.startsWith(k)||k.startsWith(cityKey.split(',')[0].trim()))?.[1] ||
+    CITIES.default;
   const isCron  = req.headers['x-vercel-cron'] === '1' || req.query.cron === '1';
 
   const now = new Date();
@@ -111,7 +113,11 @@ export default async function handler(req, res) {
     }
 
     // ── Live API fetch ──
-    const liveData = await fetchFromAPI(city, ist);
+    const liveClientId = process.env.PROKERALA_CLIENT_ID;
+    const liveClientSecret = process.env.PROKERALA_CLIENT_SECRET;
+    const liveTokRes = await fetch('https://api.prokerala.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({grant_type:'client_credentials',client_id:liveClientId,client_secret:liveClientSecret})});
+    const liveTokData = await liveTokRes.json();
+    const liveData = await fetchFromAPI(city, ist, liveTokData.access_token);
     if (supabaseUrl && supabaseKey) {
       await storeInSupabase(cityKey, todayStr, liveData, supabaseUrl, supabaseKey);
     }
