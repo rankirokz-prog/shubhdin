@@ -4114,9 +4114,26 @@ async function fetchPanchang(){
     }
     // ── Abhijit Muhurta (shubh time) ──
     if(p.abhijit_muhurta){
-      document.getElementById('goodTime').textContent=p.abhijit_muhurta;
-      const abEl=document.getElementById('abTime');
-      if(abEl) abEl.textContent=p.abhijit_muhurta;
+      // Check overlap with Rahu Kaal
+      const toMins = t => { const [h,m]=t.split(':').map(Number); return h*60+m; };
+      let showGoodTime = true;
+      if(p.rahu_kaal && p.abhijit_muhurta){
+        try{
+          const [rs,re] = p.rahu_kaal.split('–').map(toMins);
+          const [as,ae] = p.abhijit_muhurta.split('–').map(toMins);
+          if(as < re && ae > rs){ // overlap
+            showGoodTime = false;
+            document.getElementById('goodTime').textContent = H?'आज उपलब्ध नहीं':'Not available today';
+            const abEl=document.getElementById('abTime');
+            if(abEl) abEl.textContent = H?'राहु काल के कारण अनुपलब्ध':'Cancelled due to Rahu Kaal';
+          }
+        }catch(e){}
+      }
+      if(showGoodTime){
+        document.getElementById('goodTime').textContent=p.abhijit_muhurta;
+        const abEl=document.getElementById('abTime');
+        if(abEl) abEl.textContent=p.abhijit_muhurta;
+      }
     }
     // ── Moonrise ──
     if(p.moonrise){
