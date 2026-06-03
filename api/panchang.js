@@ -54,11 +54,31 @@ export default async function handler(req, res) {
   try {
     // ── CRON: store today + tomorrow for all cities ──
     if (isCron && supabaseUrl && supabaseKey) {
-      const allCities = Object.keys(CITIES).filter(k => k !== 'default');
+      // Get ONE token for all cities
+      const clientId     = process.env.PROKERALA_CLIENT_ID;
+      const clientSecret = process.env.PROKERALA_CLIENT_SECRET;
+      const tokenRes = await fetch('https://api.prokerala.com/token', {
+        method: 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({grant_type:'client_credentials',client_id:clientId,client_secret:clientSecret})
+      });
+      const tokenData = await tokenRes.json();
+      if(!tokenData.access_token) throw new Error('Token failed: '+JSON.stringify(tokenData));
+      const sharedToken = tokenData.access_token;
+
+      // Split cities into 2 batches to avoid Vercel timeout
+      // batch=1 (default): first 5 cities, batch=2: next 5
+      const allKeys = Object.keys(CITIES).filter(k => k !== 'default');
+      const batch = parseInt(req.query.batch||'1');
+      const batchSize = 4;
+      const start = (batch-1)*batchSize;
+      const allCities = allKeys.slice(start, start+batchSize);
       for (const ck of allCities) {
         const c = CITIES[ck];
+        // Delay 13s between cities to stay under 5 req/60s limit
+        if(allCities.indexOf(ck) > 0) await new Promise(r => setTimeout(r, 13000));
         try {
-          const d1 = await fetchFromAPI(c, ist);
+          const d1 = await fetchFromAPI(c, ist, sharedToken);
           await storeInSupabase(ck, todayStr, d1, supabaseUrl, supabaseKey);
         } catch(e) { console.error(`City ${ck} today failed:`, e.message); }
         try {
@@ -111,22 +131,10 @@ export default async function handler(req, res) {
 
 // ── Fetch panchang from API ──
 // FIXED: field names are "date" and "config" per official API docs
-async function fetchFromAPI(city, dateObj) {
-  const clientId     = process.env.PROKERALA_CLIENT_ID;
-  const clientSecret = process.env.PROKERALA_CLIENT_SECRET;
-  if(!clientId || !clientSecret) throw new Error('Prokerala credentials not set');
-
+async function fetchFromAPI(city, dateObj, token) {
   const dow = dateObj.getUTCDay();
 
-  // Step 1: Get token
-  const tokenRes = await fetch('https://api.prokerala.com/token', {
-    method: 'POST',
-    headers: {'Content-Type':'application/x-www-form-urlencoded'},
-    body: new URLSearchParams({grant_type:'client_credentials',client_id:clientId,client_secret:clientSecret})
-  });
-  const tokenData = await tokenRes.json();
-  if(!tokenData.access_token) throw new Error('Prokerala token failed');
-
+  // Use passed token
   // Step 2: Get panchang
   const datetime = `${dateObj.getUTCFullYear()}-${String(dateObj.getUTCMonth()+1).padStart(2,'0')}-${String(dateObj.getUTCDate()).padStart(2,'0')}T06:00:00+05:30`;
   const params = new URLSearchParams({
@@ -137,7 +145,7 @@ async function fetchFromAPI(city, dateObj) {
   });
 
   const panRes = await fetch(`https://api.prokerala.com/v2/astrology/panchang?${params}`, {
-    headers: { Authorization: `Bearer ${tokenData.access_token}`, Accept: 'application/json' }
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
   });
   const panData = await panRes.json();
   if(!panRes.ok) throw new Error('Prokerala panchang failed: ' + JSON.stringify(panData));
