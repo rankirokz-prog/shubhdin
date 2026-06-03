@@ -4303,7 +4303,8 @@ function saveSettings(){
 async function fetchBirthChart(){
   const u = {};
   try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
-  if(!u.dob || !u.tob) return; // need both DOB and TOB
+  if(!u.dob) return; // need at least DOB
+  if(!u.tob) u.tob = '12:00'; // default noon if no birth time
 
   // Don't refetch if already have data and DOB/TOB unchanged
   const cacheKey = u.dob+'_'+u.tob+'_'+(u.city||'delhi');
@@ -4349,8 +4350,8 @@ function loadBirthCache(){
   if(u.nakshatra || u.rashi){
     updateBirthChips({ rashi: u.rashi, nakshatra: u.nakshatra, nakshatra_pada: u.nakshatra_pada });
   }
-  // Fetch fresh if TOB is set but no cache yet
-  if(u.tob) fetchBirthChart();
+  // Fetch fresh if DOB is set
+  if(u.dob) fetchBirthChart();
 }
 
 
@@ -4544,7 +4545,8 @@ function saveSettings(){
 async function fetchBirthChart(){
   const u = {};
   try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
-  if(!u.dob || !u.tob) return; // need both DOB and TOB
+  if(!u.dob) return; // need at least DOB
+  if(!u.tob) u.tob = '12:00'; // default noon if no birth time
 
   // Don't refetch if already have data and DOB/TOB unchanged
   const cacheKey = u.dob+'_'+u.tob+'_'+(u.city||'delhi');
@@ -4590,8 +4592,8 @@ function loadBirthCache(){
   if(u.nakshatra || u.rashi){
     updateBirthChips({ rashi: u.rashi, nakshatra: u.nakshatra, nakshatra_pada: u.nakshatra_pada });
   }
-  // Fetch fresh if TOB is set but no cache yet
-  if(u.tob) fetchBirthChart();
+  // Fetch fresh if DOB is set
+  if(u.dob) fetchBirthChart();
 }
 
 
