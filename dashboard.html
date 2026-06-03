@@ -4118,6 +4118,16 @@ async function fetchPanchang(){
       const abEl=document.getElementById('abTime');
       if(abEl) abEl.textContent=p.abhijit_muhurta;
     }
+    // ── Moonrise ──
+    if(p.moonrise){
+      const mrEl=document.getElementById('moonTime');
+      if(mrEl) mrEl.textContent=p.moonrise;
+    }
+    // ── Gulika Kaal ──
+    if(p.gulika){
+      const gulEl=document.getElementById('gulTime');
+      if(gulEl) gulEl.textContent=p.gulika;
+    }
   }catch(e){
     console.log('Panchang unavailable:', e);
     // Show fallback values so nothing is blank
