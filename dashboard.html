@@ -2005,10 +2005,13 @@ const KAR_RMAP=makeRevMap(KAR_MAP);
 
 function panTr(val, map){
   if(!val) return val;
-  if(!H) return map[val]||val;
-  // Hindi mode: try reverse map first, then YOGA_EN_HI for yoga values
+  if(!H){
+    // English mode: Hindi→English. If already English, return as-is
+    return map[val] || val;
+  }
+  // Hindi mode: English→Hindi via YOGA_EN_HI or reverse map
   const rmap = makeRevMap(map);
-  return rmap[val] || YOGA_EN_HI[val] || val;
+  return YOGA_EN_HI[val] || rmap[val] || val;
 }
 const name=U.name||(H?'मित्र':'Friend');
 
