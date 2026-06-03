@@ -159,24 +159,19 @@ async function fetchFromAPI(city, dateObj) {
 
   const sunrise  = fmtTime(d.sunrise)  || '06:08';
   const sunset   = fmtTime(d.sunset)   || '18:34';
-  const moonrise = fmtTime(d.moonrise || d.moon_rise || d.moonRise) || '';
+  const moonrise = d.moonrise ? fmtTime(d.moonrise) : '';
 
-  const tithi     = d.tithi?.[0]?.name           || '';
-  const tithi_paksha = d.tithi?.[0]?.paksha?.name || '';
-  const nakshatra    = d.nakshatra?.[0]?.name     || '';
-  const nakshatra_ruler = d.nakshatra?.[0]?.lord?.name || '';
-  const yoga      = d.yoga?.[0]?.name             || '';
-  const karana    = d.karana?.[0]?.name           || '';
+  // Parse fields from actual Prokerala response structure
+  const tithi          = d.tithi?.[0]?.name                || '';
+  const tithi_paksha   = d.tithi?.[0]?.paksha              || '';
+  const nakshatra      = d.nakshatra?.[0]?.name            || '';
+  const nakshatra_ruler= d.nakshatra?.[0]?.lord?.name      || '';
+  const yoga           = d.yoga?.[0]?.name                 || '';
+  const karana         = d.karana?.[0]?.name               || '';
 
-  // Rahu kaal from API or calculate
-  let rahu_kaal = '';
-  if(d.rahu_kaal && d.rahu_kaal.start) rahu_kaal = fmtTime(d.rahu_kaal.start)+'–'+fmtTime(d.rahu_kaal.end);
-  else rahu_kaal = calcRahuKaal(sunrise, dow);
-
-  // Abhijit muhurta
-  let abhijit = '';
-  if(d.abhijit_muhurta && d.abhijit_muhurta.start) abhijit = fmtTime(d.abhijit_muhurta.start)+'–'+fmtTime(d.abhijit_muhurta.end);
-  else abhijit = calcAbhijit(sunrise, sunset);
+  // Prokerala does NOT return rahu_kaal or gulika — calculate both
+  const rahu_kaal = calcRahuKaal(sunrise, dow);
+  const abhijit   = calcAbhijit(sunrise, sunset);
 
   return {
     city: city.name,
