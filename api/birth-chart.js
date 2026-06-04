@@ -65,11 +65,12 @@ export default async function handler(req, res) {
     const d = birthData.data;
 
     return res.json({
-      success: true,
-      nakshatra:      d.nakshatra?.name       || '',
-      nakshatra_pada: d.nakshatra?.pada        || '',
-      rashi:          d.rashi?.name            || '',
-      lagna:          d.ascendant?.name        || '',
+      success:        true,
+      nakshatra:      d.nakshatra?.name        || '',
+      nakshatra_pada: d.nakshatra?.pada         || '',
+      rashi:          d.chandra_rasi?.name     || '', // Moon sign = Janma Rashi
+      surya_rashi:    d.soorya_rasi?.name      || '', // Sun sign
+      lagna:          d.lagna?.name            || '', // not in birth-details endpoint
       birth_chart:    d,
     });
 
