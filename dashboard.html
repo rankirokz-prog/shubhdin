@@ -4115,7 +4115,7 @@ async function fetchPanchang(){
     if(p.nakshatra){
       const _nak=panTr(p.nakshatra,NAK_MAP);
       document.getElementById('nakVal2').textContent=_nak;
-      document.getElementById('nv').textContent=_nak;
+      // nv (home chip) = birth nakshatra only — NOT overwritten here
       const PLANET_HI={'Sun':'सूर्य','Moon':'चन्द्र','Mars':'मंगल','Mercury':'बुध','Jupiter':'गुरु','Venus':'शुक्र','Saturn':'शनि','Rahu':'राहु','Ketu':'केतु'};
       const nr=document.getElementById('nakRuler');
       if(nr) nr.textContent=H?(PLANET_HI[p.nakshatra_ruler]||p.nakshatra_ruler||''):(p.nakshatra_ruler||'');
