@@ -24,15 +24,6 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cache-Control', 'no-store, no-cache');
 
-  // RAW TEST MODE - show Supabase row
-  if(req.query.raw === '1'){
-    const sUrl = process.env.SUPABASE_URL;
-    const sKey = process.env.SUPABASE_SERVICE_KEY;
-    const r = await fetch(`${sUrl}/rest/v1/panchang_today?city_key=eq.eluru&limit=1`,{headers:{'apikey':sKey,'Authorization':'Bearer '+sKey}});
-    const rows = await r.json();
-    return res.status(200).json({row: rows[0]});
-  }
-
   const cityKey = (req.query.city || 'default').toLowerCase().replace(/\s+/g, '');
   const city    = CITIES[cityKey] || 
     Object.entries(CITIES).find(([k])=>cityKey.startsWith(k)||k.startsWith(cityKey.split(',')[0].trim()))?.[1] ||
@@ -91,13 +82,8 @@ export default async function handler(req, res) {
       });
     }
 
-    // Debug: skip Supabase, go straight to live API
-    if(req.query.debug==='1'){
-      const liveDebug = await fetchFromAPI(city, ist, res, req);
-      return; // fetchFromAPI handles response in debug mode
-    }
     // ── NORMAL: try Supabase today → yesterday → live ──
-    if (supabaseUrl && supabaseKey && req.query.live !== '1') {
+    if (supabaseUrl && supabaseKey) {
       for (const dateStr of [todayStr, yesterdayStr]) {
         try {
           const dbRes = await fetch(
