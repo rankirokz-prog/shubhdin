@@ -4212,6 +4212,9 @@ function updateSadhanaTab(){
   }
 }
 
+// Clear old birth cache if rashi is empty (old wrong field name)
+const _u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+if(_u.birth_cache_key && !_u.rashi){ _u.birth_cache_key=''; localStorage.setItem('shubhdin_user',JSON.stringify(_u)); }
 setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
 updateSadhanaTab();
 loadBirthCache();
