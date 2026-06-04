@@ -4097,9 +4097,6 @@ async function fetchPanchang(){
     const tob=U.tob?'&tob='+encodeURIComponent(U.tob):'';
     const json=await(await fetch('/api/panchang?city='+city+tob)).json();
     if(!json||!json.data){console.log('Panchang no data:', json);return;}const p=json.data;
-    console.log('Panchang data:', p);
-    // If key fields missing, data is stale - force refetch
-    if(!p.tithi && !p.yoga){ console.log('Stale data, needs refresh'); }
     window._panchangData=p;
     setTimeout(prewarmAudio, 1000);
 
