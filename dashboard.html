@@ -1876,7 +1876,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <button class="j-reset-btn" onclick="resetJap()">↺</button>
         </div>
         <div id="jContBtn" style="margin-top:10px;text-align:center;">
-          <button onclick="startContinuousJap()" style="background:none;border:1px solid rgba(212,168,67,0.30);border-radius:20px;padding:7px 20px;color:rgba(212,168,67,0.65);font-family:'Poppins',sans-serif;font-size:12px;cursor:pointer;letter-spacing:0.5px;">
+          <button onclick="startContinuousJap()" style="background:none;border:1px solid rgba(212,168,67,0.30);border-radius:20px;padding:7px 20px;color:rgba(212,168,67,0.82);font-family:'Poppins',sans-serif;font-size:12px;cursor:pointer;letter-spacing:0.5px;">
             🔁 <span id="jContTxt">निरंतर सुनें</span>
           </button>
         </div>
@@ -2259,6 +2259,8 @@ function personalise(){
   // Japa screen — new immersive design
   const jCT = document.getElementById('jContTxt');
   if(jCT) jCT.textContent = H?'निरंतर सुनें':'Listen Continuously';
+  const jpt = document.getElementById('jplayTxt');
+  if(jpt && !jPlay) jpt.textContent = H?'🙏 जाप शुरू करें':'🙏 Start Chanting';
   const jfl = document.getElementById('jFocusLine');
   if(jfl) jfl.textContent = H ? 'मन को शांत करें… श्रद्धा से जाप करें' : 'Focus your mind… chant with devotion';
   const jImgBg = document.getElementById('jImgBg');
@@ -4458,8 +4460,20 @@ function startContinuousJap(){
     if(!_contActive) return;
     _contJapAudio = new Audio(url);
     _contJapAudio.play().catch(()=>{});
-    _contJapAudio.onended = () => { if(_contActive) loopPlay(); };
+    // Wire up mantra highlight — same as regular jap
+    _contJapAudio.addEventListener('canplay', ()=>{
+      jChantAudio = _contJapAudio; // let startWordHighlight use it
+      startWordHighlight();
+    }, {once:true});
+    _contJapAudio.onended = () => {
+      if(_contActive){
+        stopWordHighlight();
+        loopPlay(); // restart loop
+      }
+    };
   }
+  // Rebuild mantra display before starting
+  buildMantra();
   loopPlay();
 
   // Translate stop button
@@ -4770,8 +4784,20 @@ function startContinuousJap(){
     if(!_contActive) return;
     _contJapAudio = new Audio(url);
     _contJapAudio.play().catch(()=>{});
-    _contJapAudio.onended = () => { if(_contActive) loopPlay(); };
+    // Wire up mantra highlight — same as regular jap
+    _contJapAudio.addEventListener('canplay', ()=>{
+      jChantAudio = _contJapAudio; // let startWordHighlight use it
+      startWordHighlight();
+    }, {once:true});
+    _contJapAudio.onended = () => {
+      if(_contActive){
+        stopWordHighlight();
+        loopPlay(); // restart loop
+      }
+    };
   }
+  // Rebuild mantra display before starting
+  buildMantra();
   loopPlay();
 
   // Translate stop button
