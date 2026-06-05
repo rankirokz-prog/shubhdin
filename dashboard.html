@@ -4456,24 +4456,58 @@ function startContinuousJap(){
   if(!chantKey){ stopContinuousJap(); return; }
   const url = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
 
+  // Build mantra display first
+  buildMantra();
+
+  function contHighlight(audio){
+    const dow2 = new Date().getDay();
+    const words = MANTRA_WORDS[dow2] || ['ॐ','नमः'];
+    const timestamps = MANTRA_TIMESTAMPS[dow2];
+    let lastIdx = -1;
+
+    function getIdx(ct, dur){
+      if(timestamps && timestamps.length === words.length){
+        let idx = 0;
+        for(let i=0;i<timestamps.length;i++){
+          if(ct + SYNC_OFFSET >= timestamps[i]) idx=i; else break;
+        }
+        return idx;
+      }
+      return Math.min(Math.floor((ct/dur)*words.length), words.length-1);
+    }
+
+    function raf(){
+      if(!_contActive || !audio) return;
+      const dur = audio.duration;
+      if(!dur || isNaN(dur)){ requestAnimationFrame(raf); return; }
+      const idx = getIdx(audio.currentTime, dur);
+      if(idx !== lastIdx){
+        // dim previous
+        if(lastIdx >= 0){
+          const prev = document.getElementById('jw'+lastIdx);
+          if(prev){ animateWord(prev,'trail'); setTimeout(()=>{if(prev)animateWord(prev,'idle');},350); }
+        }
+        lastIdx = idx;
+        const cur = document.getElementById('jw'+idx);
+        if(cur) animateWord(cur, idx===words.length-1?'last':'active');
+        if(navigator.vibrate) navigator.vibrate(12);
+      }
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  }
+
   function loopPlay(){
     if(!_contActive) return;
+    // Reset all word highlights to idle
+    const w = MANTRA_WORDS[new Date().getDay()]||[];
+    w.forEach((_,i)=>{ const el=document.getElementById('jw'+i); if(el) animateWord(el,'idle'); });
+
     _contJapAudio = new Audio(url);
     _contJapAudio.play().catch(()=>{});
-    // Wire up mantra highlight — same as regular jap
-    _contJapAudio.addEventListener('canplay', ()=>{
-      jChantAudio = _contJapAudio; // let startWordHighlight use it
-      startWordHighlight();
-    }, {once:true});
-    _contJapAudio.onended = () => {
-      if(_contActive){
-        stopWordHighlight();
-        loopPlay(); // restart loop
-      }
-    };
+    _contJapAudio.addEventListener('canplay', ()=>{ contHighlight(_contJapAudio); }, {once:true});
+    _contJapAudio.onended = ()=>{ if(_contActive) loopPlay(); };
   }
-  // Rebuild mantra display before starting
-  buildMantra();
   loopPlay();
 
   // Translate stop button
@@ -4780,24 +4814,58 @@ function startContinuousJap(){
   if(!chantKey){ stopContinuousJap(); return; }
   const url = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
 
+  // Build mantra display first
+  buildMantra();
+
+  function contHighlight(audio){
+    const dow2 = new Date().getDay();
+    const words = MANTRA_WORDS[dow2] || ['ॐ','नमः'];
+    const timestamps = MANTRA_TIMESTAMPS[dow2];
+    let lastIdx = -1;
+
+    function getIdx(ct, dur){
+      if(timestamps && timestamps.length === words.length){
+        let idx = 0;
+        for(let i=0;i<timestamps.length;i++){
+          if(ct + SYNC_OFFSET >= timestamps[i]) idx=i; else break;
+        }
+        return idx;
+      }
+      return Math.min(Math.floor((ct/dur)*words.length), words.length-1);
+    }
+
+    function raf(){
+      if(!_contActive || !audio) return;
+      const dur = audio.duration;
+      if(!dur || isNaN(dur)){ requestAnimationFrame(raf); return; }
+      const idx = getIdx(audio.currentTime, dur);
+      if(idx !== lastIdx){
+        // dim previous
+        if(lastIdx >= 0){
+          const prev = document.getElementById('jw'+lastIdx);
+          if(prev){ animateWord(prev,'trail'); setTimeout(()=>{if(prev)animateWord(prev,'idle');},350); }
+        }
+        lastIdx = idx;
+        const cur = document.getElementById('jw'+idx);
+        if(cur) animateWord(cur, idx===words.length-1?'last':'active');
+        if(navigator.vibrate) navigator.vibrate(12);
+      }
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+  }
+
   function loopPlay(){
     if(!_contActive) return;
+    // Reset all word highlights to idle
+    const w = MANTRA_WORDS[new Date().getDay()]||[];
+    w.forEach((_,i)=>{ const el=document.getElementById('jw'+i); if(el) animateWord(el,'idle'); });
+
     _contJapAudio = new Audio(url);
     _contJapAudio.play().catch(()=>{});
-    // Wire up mantra highlight — same as regular jap
-    _contJapAudio.addEventListener('canplay', ()=>{
-      jChantAudio = _contJapAudio; // let startWordHighlight use it
-      startWordHighlight();
-    }, {once:true});
-    _contJapAudio.onended = () => {
-      if(_contActive){
-        stopWordHighlight();
-        loopPlay(); // restart loop
-      }
-    };
+    _contJapAudio.addEventListener('canplay', ()=>{ contHighlight(_contJapAudio); }, {once:true});
+    _contJapAudio.onended = ()=>{ if(_contActive) loopPlay(); };
   }
-  // Rebuild mantra display before starting
-  buildMantra();
   loopPlay();
 
   // Translate stop button
