@@ -2282,6 +2282,11 @@ function personalise(){
   document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
 
   document.getElementById('tl4').textContent=H?'जाप':'Jap';
+  // Friday: update jCountPill and jOf to show 108
+  const _pill=document.getElementById('jCountPill');
+  if(_pill) _pill.textContent=isShravan()?'0/108':'0/28';
+  const _jof=document.getElementById('jOf');
+  if(_jof) _jof.textContent=isShravan()?(H?'108 में से':'of 108'):(H?'28 में से':'of 28');
 }
 
 // ── Streak ──
