@@ -4434,89 +4434,63 @@ let _contJapAudio = null;
 let _contActive   = false;
 
 function startContinuousJap(){
-  // Stop regular jap if running
-  if(jPlay){ toggleJap(); }
+  if(jPlay) toggleJap(); // stop regular jap first
 
   _contActive = true;
-  // Hide counter, dots, count pill, regular button
-  document.getElementById('jCounter') && (document.getElementById('jCounter').style.opacity = '0');
-  document.querySelectorAll('.j-counter, .j-mala').forEach(el => el.style.opacity='0');
-  document.getElementById('jCountPill').style.opacity = '0';
-  document.getElementById('jContBtn').style.display  = 'none';
-  document.getElementById('jContStop').style.display = 'block';
-  document.getElementById('jplayBtn').style.opacity  = '0.15';
-  document.getElementById('jplayBtn').style.pointerEvents = 'none';
+  jPlay = true; // ← key: lets startWordHighlight() RAF loop run
 
-  // Show focus message
-  const fl = document.getElementById('jFocusLine');
-  if(fl){ fl.textContent = H ? '🔁 निरंतर जाप — मन को लगाएं' : '🔁 Continuous Chant — focus your mind'; fl.style.opacity = '1'; }
+  // Hide counter + dots, dim regular button
+  document.querySelectorAll('.j-counter,.j-mala').forEach(el=>el.style.opacity='0');
+  document.getElementById('jCountPill').style.opacity='0';
+  document.getElementById('jContBtn').style.display='none';
+  document.getElementById('jContStop').style.display='block';
+  document.getElementById('jplayBtn').style.opacity='0.15';
+  document.getElementById('jplayBtn').style.pointerEvents='none';
 
-  // Play loop
-  const chantKey = CHANT_MAP[dow];
-  if(!chantKey){ stopContinuousJap(); return; }
-  const url = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
+  const fl=document.getElementById('jFocusLine');
+  if(fl){fl.textContent=H?'🔁 निरंतर जाप — मन को लगाएं':'🔁 Continuous Chant — focus your mind';fl.style.opacity='1';}
 
-  // Build mantra display first
-  buildMantra();
+  const chantKey=CHANT_MAP[dow];
+  if(!chantKey){stopContinuousJap();return;}
+  const url='https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
 
-  function contHighlight(audio){
-    const dow2 = new Date().getDay();
-    const words = MANTRA_WORDS[dow2] || ['ॐ','नमः'];
-    const timestamps = MANTRA_TIMESTAMPS[dow2];
-    let lastIdx = -1;
-
-    function getIdx(ct, dur){
-      if(timestamps && timestamps.length === words.length){
-        let idx = 0;
-        for(let i=0;i<timestamps.length;i++){
-          if(ct + SYNC_OFFSET >= timestamps[i]) idx=i; else break;
-        }
-        return idx;
-      }
-      return Math.min(Math.floor((ct/dur)*words.length), words.length-1);
-    }
-
-    function raf(){
-      if(!_contActive || !audio) return;
-      const dur = audio.duration;
-      if(!dur || isNaN(dur)){ requestAnimationFrame(raf); return; }
-      const idx = getIdx(audio.currentTime, dur);
-      if(idx !== lastIdx){
-        // dim previous
-        if(lastIdx >= 0){
-          const prev = document.getElementById('jw'+lastIdx);
-          if(prev){ animateWord(prev,'trail'); setTimeout(()=>{if(prev)animateWord(prev,'idle');},350); }
-        }
-        lastIdx = idx;
-        const cur = document.getElementById('jw'+idx);
-        if(cur) animateWord(cur, idx===words.length-1?'last':'active');
-        if(navigator.vibrate) navigator.vibrate(12);
-      }
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-  }
-
-  function loopPlay(){
+  function contCycle(){
     if(!_contActive) return;
-    // Reset all word highlights to idle
-    const w = MANTRA_WORDS[new Date().getDay()]||[];
-    w.forEach((_,i)=>{ const el=document.getElementById('jw'+i); if(el) animateWord(el,'idle'); });
+    // Exact same pattern as playOneCycle — just no counting
+    jChantAudio = new Audio(url);
+    jChantAudio.play().catch(()=>{});
 
-    _contJapAudio = new Audio(url);
-    _contJapAudio.play().catch(()=>{});
-    _contJapAudio.addEventListener('canplay', ()=>{ contHighlight(_contJapAudio); }, {once:true});
-    _contJapAudio.onended = ()=>{ if(_contActive) loopPlay(); };
+    jChantAudio.addEventListener('canplay',()=>{
+      startWordHighlight(); // works because jPlay=true
+    },{once:true});
+    // Fallback
+    setTimeout(()=>{
+      if(_contActive&&jChantAudio&&!jChantAudio._onTimeUpdate) startWordHighlight();
+    },600);
+
+    jChantAudio.addEventListener('ended',()=>{
+      if(!_contActive) return;
+      // Cleanup refs
+      if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
+      if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+      jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
+      // Loop again — no count
+      contCycle();
+    },{once:true});
   }
-  loopPlay();
 
-  // Translate stop button
-  document.getElementById('jContStopTxt').textContent = H ? 'रोकें' : 'Stop';
+  buildMantra(); // show mantra words
+  contCycle();
 }
-
 function stopContinuousJap(){
   _contActive = false;
-  if(_contJapAudio){ _contJapAudio.pause(); _contJapAudio = null; }
+  jPlay = false; // restore jPlay so normal jap can work
+  if(jChantAudio){
+    if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
+    if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+    jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
+    jChantAudio.pause(); jChantAudio=null;
+  }
 
   // Restore UI
   document.querySelectorAll('.j-counter, .j-mala').forEach(el => el.style.opacity='1');
@@ -4792,89 +4766,63 @@ let _contJapAudio = null;
 let _contActive   = false;
 
 function startContinuousJap(){
-  // Stop regular jap if running
-  if(jPlay){ toggleJap(); }
+  if(jPlay) toggleJap(); // stop regular jap first
 
   _contActive = true;
-  // Hide counter, dots, count pill, regular button
-  document.getElementById('jCounter') && (document.getElementById('jCounter').style.opacity = '0');
-  document.querySelectorAll('.j-counter, .j-mala').forEach(el => el.style.opacity='0');
-  document.getElementById('jCountPill').style.opacity = '0';
-  document.getElementById('jContBtn').style.display  = 'none';
-  document.getElementById('jContStop').style.display = 'block';
-  document.getElementById('jplayBtn').style.opacity  = '0.15';
-  document.getElementById('jplayBtn').style.pointerEvents = 'none';
+  jPlay = true; // ← key: lets startWordHighlight() RAF loop run
 
-  // Show focus message
-  const fl = document.getElementById('jFocusLine');
-  if(fl){ fl.textContent = H ? '🔁 निरंतर जाप — मन को लगाएं' : '🔁 Continuous Chant — focus your mind'; fl.style.opacity = '1'; }
+  // Hide counter + dots, dim regular button
+  document.querySelectorAll('.j-counter,.j-mala').forEach(el=>el.style.opacity='0');
+  document.getElementById('jCountPill').style.opacity='0';
+  document.getElementById('jContBtn').style.display='none';
+  document.getElementById('jContStop').style.display='block';
+  document.getElementById('jplayBtn').style.opacity='0.15';
+  document.getElementById('jplayBtn').style.pointerEvents='none';
 
-  // Play loop
-  const chantKey = CHANT_MAP[dow];
-  if(!chantKey){ stopContinuousJap(); return; }
-  const url = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
+  const fl=document.getElementById('jFocusLine');
+  if(fl){fl.textContent=H?'🔁 निरंतर जाप — मन को लगाएं':'🔁 Continuous Chant — focus your mind';fl.style.opacity='1';}
 
-  // Build mantra display first
-  buildMantra();
+  const chantKey=CHANT_MAP[dow];
+  if(!chantKey){stopContinuousJap();return;}
+  const url='https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
 
-  function contHighlight(audio){
-    const dow2 = new Date().getDay();
-    const words = MANTRA_WORDS[dow2] || ['ॐ','नमः'];
-    const timestamps = MANTRA_TIMESTAMPS[dow2];
-    let lastIdx = -1;
-
-    function getIdx(ct, dur){
-      if(timestamps && timestamps.length === words.length){
-        let idx = 0;
-        for(let i=0;i<timestamps.length;i++){
-          if(ct + SYNC_OFFSET >= timestamps[i]) idx=i; else break;
-        }
-        return idx;
-      }
-      return Math.min(Math.floor((ct/dur)*words.length), words.length-1);
-    }
-
-    function raf(){
-      if(!_contActive || !audio) return;
-      const dur = audio.duration;
-      if(!dur || isNaN(dur)){ requestAnimationFrame(raf); return; }
-      const idx = getIdx(audio.currentTime, dur);
-      if(idx !== lastIdx){
-        // dim previous
-        if(lastIdx >= 0){
-          const prev = document.getElementById('jw'+lastIdx);
-          if(prev){ animateWord(prev,'trail'); setTimeout(()=>{if(prev)animateWord(prev,'idle');},350); }
-        }
-        lastIdx = idx;
-        const cur = document.getElementById('jw'+idx);
-        if(cur) animateWord(cur, idx===words.length-1?'last':'active');
-        if(navigator.vibrate) navigator.vibrate(12);
-      }
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-  }
-
-  function loopPlay(){
+  function contCycle(){
     if(!_contActive) return;
-    // Reset all word highlights to idle
-    const w = MANTRA_WORDS[new Date().getDay()]||[];
-    w.forEach((_,i)=>{ const el=document.getElementById('jw'+i); if(el) animateWord(el,'idle'); });
+    // Exact same pattern as playOneCycle — just no counting
+    jChantAudio = new Audio(url);
+    jChantAudio.play().catch(()=>{});
 
-    _contJapAudio = new Audio(url);
-    _contJapAudio.play().catch(()=>{});
-    _contJapAudio.addEventListener('canplay', ()=>{ contHighlight(_contJapAudio); }, {once:true});
-    _contJapAudio.onended = ()=>{ if(_contActive) loopPlay(); };
+    jChantAudio.addEventListener('canplay',()=>{
+      startWordHighlight(); // works because jPlay=true
+    },{once:true});
+    // Fallback
+    setTimeout(()=>{
+      if(_contActive&&jChantAudio&&!jChantAudio._onTimeUpdate) startWordHighlight();
+    },600);
+
+    jChantAudio.addEventListener('ended',()=>{
+      if(!_contActive) return;
+      // Cleanup refs
+      if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
+      if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+      jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
+      // Loop again — no count
+      contCycle();
+    },{once:true});
   }
-  loopPlay();
 
-  // Translate stop button
-  document.getElementById('jContStopTxt').textContent = H ? 'रोकें' : 'Stop';
+  buildMantra(); // show mantra words
+  contCycle();
 }
-
 function stopContinuousJap(){
   _contActive = false;
-  if(_contJapAudio){ _contJapAudio.pause(); _contJapAudio = null; }
+  jPlay = false; // restore jPlay so normal jap can work
+  if(jChantAudio){
+    if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
+    if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
+    jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
+    jChantAudio.pause(); jChantAudio=null;
+  }
 
   // Restore UI
   document.querySelectorAll('.j-counter, .j-mala').forEach(el => el.style.opacity='1');
