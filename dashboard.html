@@ -2270,7 +2270,7 @@ function personalise(){
   const jpill = document.getElementById('jPill');
   if(jpill) jpill.textContent = H?df_h[dow]:df_e[dow];
   const jgl2 = document.getElementById('jGoalLine');
-  if(jgl2) jgl2.textContent = H?'आज का लक्ष्य: 28 जाप':'Today\'s goal: 28 chants';
+  if(jgl2) jgl2.textContent = isShravan()?(H?'आज का लक्ष्य: 108 नाम':'Today\'s goal: 108 names'):(H?'आज का लक्ष्य: 28 जाप':'Today\'s goal: 28 chants');
   document.getElementById('jdTitle').textContent = H?'28 जाप पूर्ण! 🙏':'28 Chants Complete! 🙏';
   document.getElementById('jdSub').textContent = H?T.d_hi+' की कृपा आप पर सदा बनी रहे 🌸':'May '+T.d_en+'\'s blessings always be with you 🌸';
   document.getElementById('jdStreakLbl').textContent = H?'आपकी साधना यात्रा':'Your sadhana journey';
@@ -2504,7 +2504,7 @@ function updateJ(){
     }
     if(!wasDone && nowDone) dotPop(i);
   }
-  const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/28';
+  const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/'+(isShravan()?108:28);
   if(navigator.vibrate)navigator.vibrate(30);
   if(jCount>=TOTAL){
     // Continuous mode: silently loop without completion screen
@@ -2886,7 +2886,7 @@ function resetJap(){
   document.getElementById('jNum').textContent='0';
   document.getElementById('jplayIco').textContent='';
   document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'🙏 Start Chanting';
-  document.getElementById('jCountPill').textContent='0/28';
+  document.getElementById('jCountPill').textContent='0/'+(isShravan()?108:28);
   document.getElementById('jdone').classList.remove('show');
   buildMala();
   (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
