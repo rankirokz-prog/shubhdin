@@ -2507,6 +2507,13 @@ function updateJ(){
   const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/28';
   if(navigator.vibrate)navigator.vibrate(30);
   if(jCount>=TOTAL){
+    // Continuous mode: silently loop without completion screen
+    if(_contActive){
+      jCount=0;
+      for(let i=0;i<DOTS;i++){const d=document.getElementById('jmd'+i);if(d)d.className='jmd';}
+      if(navigator.vibrate)navigator.vibrate([30,20,30]);
+      return;
+    }
     clearInterval(jTimer);clearInterval(wordTimer);jPlay=false;
     if(jChantAudio){
       if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
@@ -4430,78 +4437,41 @@ function updateSettTob(){
 
 
 // ── CONTINUOUS JAP ──
-let _contJapAudio = null;
-let _contActive   = false;
+let _contActive = false;
 
 function startContinuousJap(){
-  if(jPlay) toggleJap(); // stop regular jap first
-
   _contActive = true;
-  jPlay = true; // ← key: lets startWordHighlight() RAF loop run
 
-  // Hide counter + dots, dim regular button
+  // Hide counter + dots, dim reset button
   document.querySelectorAll('.j-counter,.j-mala').forEach(el=>el.style.opacity='0');
   document.getElementById('jCountPill').style.opacity='0';
   document.getElementById('jContBtn').style.display='none';
   document.getElementById('jContStop').style.display='block';
-  document.getElementById('jplayBtn').style.opacity='0.15';
-  document.getElementById('jplayBtn').style.pointerEvents='none';
 
   const fl=document.getElementById('jFocusLine');
   if(fl){fl.textContent=H?'🔁 निरंतर जाप — मन को लगाएं':'🔁 Continuous Chant — focus your mind';fl.style.opacity='1';}
 
-  const chantKey=CHANT_MAP[dow];
-  if(!chantKey){stopContinuousJap();return;}
-  const url='https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
-
-  function contCycle(){
-    if(!_contActive) return;
-    // Exact same pattern as playOneCycle — just no counting
-    jChantAudio = new Audio(url);
-    jChantAudio.play().catch(()=>{});
-
-    jChantAudio.addEventListener('canplay',()=>{
-      startWordHighlight(); // works because jPlay=true
-    },{once:true});
-    // Fallback
-    setTimeout(()=>{
-      if(_contActive&&jChantAudio&&!jChantAudio._onTimeUpdate) startWordHighlight();
-    },600);
-
-    jChantAudio.addEventListener('ended',()=>{
-      if(!_contActive) return;
-      // Cleanup refs
-      if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
-      if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
-      jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
-      // Loop again — no count
-      contCycle();
-    },{once:true});
-  }
-
-  buildMantra(); // show mantra words
-  contCycle();
+  // Simply start normal jap — reuses all existing audio + highlight logic
+  if(!jPlay) toggleJap();
 }
+
 function stopContinuousJap(){
   _contActive = false;
-  jPlay = false; // restore jPlay so normal jap can work
-  if(jChantAudio){
-    if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
-    if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
-    jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
-    jChantAudio.pause(); jChantAudio=null;
-  }
+
+  // Stop jap
+  if(jPlay) toggleJap();
 
   // Restore UI
-  document.querySelectorAll('.j-counter, .j-mala').forEach(el => el.style.opacity='1');
-  document.getElementById('jCountPill').style.opacity = '1';
-  document.getElementById('jContBtn').style.display  = 'block';
-  document.getElementById('jContStop').style.display = 'none';
-  document.getElementById('jplayBtn').style.opacity  = '1';
-  document.getElementById('jplayBtn').style.pointerEvents = 'auto';
+  document.querySelectorAll('.j-counter,.j-mala').forEach(el=>el.style.opacity='1');
+  document.getElementById('jCountPill').style.opacity='1';
+  document.getElementById('jContBtn').style.display='block';
+  document.getElementById('jContStop').style.display='none';
 
-  const fl = document.getElementById('jFocusLine');
-  if(fl){ fl.textContent = H ? 'मन को शांत करें… श्रद्धा से जाप करें' : 'Focus your mind… chant with devotion'; fl.style.opacity='1'; }
+  // Reset count display
+  resetJap();
+
+  const fl=document.getElementById('jFocusLine');
+  if(fl){fl.textContent=H?'मन को शांत करें… श्रद्धा से जाप करें':'Focus your mind… chant with devotion';fl.style.opacity='1';}
 }
 
 </script>
@@ -4762,78 +4732,41 @@ function updateSettTob(){
 
 
 // ── CONTINUOUS JAP ──
-let _contJapAudio = null;
-let _contActive   = false;
+let _contActive = false;
 
 function startContinuousJap(){
-  if(jPlay) toggleJap(); // stop regular jap first
-
   _contActive = true;
-  jPlay = true; // ← key: lets startWordHighlight() RAF loop run
 
-  // Hide counter + dots, dim regular button
+  // Hide counter + dots, dim reset button
   document.querySelectorAll('.j-counter,.j-mala').forEach(el=>el.style.opacity='0');
   document.getElementById('jCountPill').style.opacity='0';
   document.getElementById('jContBtn').style.display='none';
   document.getElementById('jContStop').style.display='block';
-  document.getElementById('jplayBtn').style.opacity='0.15';
-  document.getElementById('jplayBtn').style.pointerEvents='none';
 
   const fl=document.getElementById('jFocusLine');
   if(fl){fl.textContent=H?'🔁 निरंतर जाप — मन को लगाएं':'🔁 Continuous Chant — focus your mind';fl.style.opacity='1';}
 
-  const chantKey=CHANT_MAP[dow];
-  if(!chantKey){stopContinuousJap();return;}
-  const url='https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3';
-
-  function contCycle(){
-    if(!_contActive) return;
-    // Exact same pattern as playOneCycle — just no counting
-    jChantAudio = new Audio(url);
-    jChantAudio.play().catch(()=>{});
-
-    jChantAudio.addEventListener('canplay',()=>{
-      startWordHighlight(); // works because jPlay=true
-    },{once:true});
-    // Fallback
-    setTimeout(()=>{
-      if(_contActive&&jChantAudio&&!jChantAudio._onTimeUpdate) startWordHighlight();
-    },600);
-
-    jChantAudio.addEventListener('ended',()=>{
-      if(!_contActive) return;
-      // Cleanup refs
-      if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
-      if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
-      jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
-      // Loop again — no count
-      contCycle();
-    },{once:true});
-  }
-
-  buildMantra(); // show mantra words
-  contCycle();
+  // Simply start normal jap — reuses all existing audio + highlight logic
+  if(!jPlay) toggleJap();
 }
+
 function stopContinuousJap(){
   _contActive = false;
-  jPlay = false; // restore jPlay so normal jap can work
-  if(jChantAudio){
-    if(jChantAudio._rafId) cancelAnimationFrame(jChantAudio._rafId);
-    if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
-    jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
-    jChantAudio.pause(); jChantAudio=null;
-  }
+
+  // Stop jap
+  if(jPlay) toggleJap();
 
   // Restore UI
-  document.querySelectorAll('.j-counter, .j-mala').forEach(el => el.style.opacity='1');
-  document.getElementById('jCountPill').style.opacity = '1';
-  document.getElementById('jContBtn').style.display  = 'block';
-  document.getElementById('jContStop').style.display = 'none';
-  document.getElementById('jplayBtn').style.opacity  = '1';
-  document.getElementById('jplayBtn').style.pointerEvents = 'auto';
+  document.querySelectorAll('.j-counter,.j-mala').forEach(el=>el.style.opacity='1');
+  document.getElementById('jCountPill').style.opacity='1';
+  document.getElementById('jContBtn').style.display='block';
+  document.getElementById('jContStop').style.display='none';
 
-  const fl = document.getElementById('jFocusLine');
-  if(fl){ fl.textContent = H ? 'मन को शांत करें… श्रद्धा से जाप करें' : 'Focus your mind… chant with devotion'; fl.style.opacity='1'; }
+  // Reset count display
+  resetJap();
+
+  const fl=document.getElementById('jFocusLine');
+  if(fl){fl.textContent=H?'मन को शांत करें… श्रद्धा से जाप करें':'Focus your mind… chant with devotion';fl.style.opacity='1';}
 }
 
 </script>
