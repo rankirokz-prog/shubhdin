@@ -3082,7 +3082,30 @@ function getNameUrl(){
 }
 // ── Modular Audio Stitching System ──
 const BASE = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/';
-function rnd(arr){return arr[Math.floor(Math.random()*arr.length)];}
+// Seeded random — same result on same day + same settings
+let _rndSeed = 0;
+function _seedRandom(seed){
+  let s = seed;
+  return function(){
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
+  };
+}
+let _rndFn = Math.random; // fallback
+function initDayRnd(){
+  const d = new Date();
+  const dateKey = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+  const settingsKey = (u.name||'')+(u.city||'')+(u.lang||'');
+  // Hash date + settings into a number
+  let hash = dateKey;
+  for(let i=0;i<settingsKey.length;i++){
+    hash = ((hash<<5)-hash)+settingsKey.charCodeAt(i);
+    hash = hash & hash;
+  }
+  _rndFn = _seedRandom(Math.abs(hash));
+}
+function rnd(arr){ return arr[Math.floor(_rndFn()*arr.length)]; }
 
 // Audio cache — pre-decoded AudioBuffers
 const _audioCache = {};
@@ -3200,7 +3223,7 @@ function getDayType(){
   const pd=window._panchangData;
   if(!pd) return 'good';
   const yoga=(pd.yoga||pd.yog||'').toLowerCase();
-  const badYogas=['vyatipat','vaidhriti','vishkambha','parigha','shool','gand','atigand','vajra'];
+  const badYogas=['vyatipat','vaidhrit','vishkambha','parigha','shul','shool','gand','atigand','vajra'];
   if(badYogas.some(b=>yoga.includes(b))) return 'careful';
   return 'good';
 }
@@ -3328,7 +3351,8 @@ async function playPanchang(){
     });
   }
 
-  // Build playlist
+  // Seed random for today — same playlist on same day + settings
+  initDayRnd();
   const dayType=getDayType();
   const chantType=getChantType();
   const times=getPanchangTimes();
