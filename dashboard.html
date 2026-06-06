@@ -4313,6 +4313,8 @@ if(_u.birth_cache_key && !_u.rashi){ _u.birth_cache_key=''; localStorage.setItem
 setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
 updateSadhanaTab();
 loadBirthCache();
+getOrCreateUID(); // ensure UID exists
+setTimeout(saveToCloud, 3000); // save after page loads
 setTimeout(()=>{
   const wp=document.getElementById('wallpaper');
   wp.style.opacity='0';wp.style.pointerEvents='none';wp.style.display='none';
@@ -4399,8 +4401,7 @@ function saveSettings(){
   // Clear birth cache so it refetches with new DOB/TOB
   u.birth_cache_key = '';
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
-  closeSettings();
-  window.location.reload();
+  saveToCloud().then(()=>{ closeSettings(); window.location.reload(); });
 }
 
 
@@ -4582,6 +4583,46 @@ function shareSadhana(){
     ?`🔥 मेरी साधना जारी है — Day ${dayNum}/${s.totalDays}\n\n${s.title||'साधना'}\n${s.mantra||''}\n\nश्रद्धा और निरंतरता 🙏`
     :`🔥 My sadhana continues — Day ${dayNum}/${s.totalDays}\n\n${(p.title_en||s.title||'Sadhana')}\n${s.mantra||''}\n\nFaith and consistency 🙏`;
   doShare(H?'शुभ दिन':'Shubh Din', text);
+}
+
+
+// ── CLOUD SAVE (Supabase anonymous profile) ──
+function getOrCreateUID(){
+  let uid = localStorage.getItem('shubhdin_uid');
+  if(!uid){
+    // Generate random UUID
+    uid = 'xxxx-xxxx-xxxx'.replace(/x/g, ()=>Math.random().toString(36)[2]);
+    localStorage.setItem('shubhdin_uid', uid);
+  }
+  return uid;
+}
+
+async function saveToCloud(){
+  try{
+    const uid = getOrCreateUID();
+    const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    const streak = JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');
+    const sadhana = JSON.parse(localStorage.getItem('shubhdin_sadhana')||'null');
+    await fetch('/api/save-user', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        uid,
+        name: u.name||'',
+        lang: u.lang||'hi',
+        city: u.city||'',
+        city_lat: u.city_lat||null,
+        city_lon: u.city_lon||null,
+        dob: u.dob||null,
+        tob: u.tob||null,
+        rashi: u.rashi||null,
+        nakshatra: u.nakshatra||null,
+        nakshatra_pada: u.nakshatra_pada||null,
+        sadhana: sadhana,
+        streak: streak.count||0,
+      })
+    });
+  }catch(e){} // silent — cloud save is best-effort
 }
 
 </script>
