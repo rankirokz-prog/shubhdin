@@ -17,7 +17,18 @@ export default async function handler(req, res) {
   if (!supabaseKey) return res.status(500).json({ error: 'Missing SUPABASE_SERVICE_KEY' });
 
   try {
-    // 1. Generate audio from ElevenLabs (Samisha)
+    const fileName = name.toLowerCase().replace(/[^a-z0-9]/gi, '_') + '.mp3';
+
+    // 1. CHECK if file already exists in Supabase — skip ElevenLabs if it does
+    const checkUrl = `${supabaseUrl}/storage/v1/object/info/shubhdin-audio/names/${fileName}`;
+    const checkRes = await fetch(checkUrl, {
+      headers: { 'Authorization': `Bearer ${supabaseKey}` }
+    });
+    if (checkRes.ok) {
+      return res.json({ success: true, file: `names/${fileName}`, cached: true });
+    }
+
+    // 2. Generate audio from ElevenLabs only if not cached
     const ttsRes = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
       {
@@ -42,7 +53,6 @@ export default async function handler(req, res) {
     const audioBuffer = await ttsRes.arrayBuffer();
 
     // 2. Upload to Supabase Storage using raw REST API (no SDK needed)
-    const fileName = name.toLowerCase().replace(/[^a-z0-9]/gi, '_') + '.mp3';
     const uploadUrl = `${supabaseUrl}/storage/v1/object/shubhdin-audio/names/${fileName}`;
 
     const uploadRes = await fetch(uploadUrl, {
