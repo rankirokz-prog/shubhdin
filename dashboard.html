@@ -2174,7 +2174,7 @@ function personalise(){
   document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
   document.getElementById('skSub').textContent=H?'आपकी साधना यात्रा':'Your sadhana journey';
   document.getElementById('skIco').textContent='🔥';
-  document.getElementById('skUnit').textContent=H?'28 जाप':'28 chants';
+  document.getElementById('skUnit').textContent=isShravan()?(H?'108 नाम':'108 names'):(H?'28 जाप':'28 chants');
   // Listen screen
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
@@ -3055,7 +3055,7 @@ function nextTr(){selTr(Math.min(3,curTr+1));}
 
 // ── Mini player ──
 let mpPlaying=false,mpProg=0,mpTimer=null,mpTr=0;
-let _panchangAC=null,_panchangStart=0,_panchangDur=0,_panchangTimer=null;
+let _panchangAC=null,_panchangStart=0,_panchangDur=0,_panchangTimer=null,_panchangElapsed=0,_panchangPlaylist=null;
 function openMini(){
   const mp=document.getElementById('miniPlayer');
   mp.style.display='block';mp.classList.add('open');
@@ -3067,7 +3067,7 @@ function closeMini(){
   mpStop();
 }
 function mpToggle(){mpPlaying=!mpPlaying;document.getElementById('mpBtn').textContent=mpPlaying?'⏸':'▶';document.getElementById('mpWaves').classList.toggle('on',mpPlaying);}
-function mpStop(){if(_panchangAC){try{_panchangAC.close();}catch(e){}; _panchangAC=null;}clearInterval(_panchangTimer);mpPlaying=false;const b=document.getElementById('mpBtn');if(b)b.textContent='▶';document.getElementById('mpWaves')?.classList.remove('on');clearInterval(mpTimer);const f=document.getElementById('mpFill');if(f)f.style.width='0%';document.getElementById('mpTime').textContent='0:00 / 0:00';}
+function mpStop(){if(_panchangAC){try{_panchangAC.close();}catch(e){}; _panchangAC=null;}clearInterval(_panchangTimer);_panchangElapsed=0;_panchangPlaylist=null;mpPlaying=false;const b=document.getElementById('mpBtn');if(b)b.textContent='▶';document.getElementById('mpWaves')?.classList.remove('on');clearInterval(mpTimer);const f=document.getElementById('mpFill');if(f)f.style.width='0%';document.getElementById('mpTime').textContent='0:00 / 0:00';}
 function mpPrev(){mpStop();}function mpNext(){mpStop();}
 function mpSeek(e){}
 
@@ -3249,15 +3249,15 @@ function getPanchangTimes(){
 
 async function playPanchang(){
   const mpBtn=document.getElementById('mpBtn'),mpWaves=document.getElementById('mpWaves');
-  // Stop any existing panchang audio first
+  // Stop any existing panchang audio first (pause - store elapsed)
   if(_panchangAC){
+    _panchangElapsed = _panchangAC.currentTime - _panchangStart; // save position
     try{_panchangAC.close();}catch(e){}
     _panchangAC=null;
     clearInterval(_panchangTimer);
     if(mpBtn)mpBtn.textContent='▶';
     if(mpWaves)mpWaves.classList.remove('on');
-    document.getElementById('mpTime').textContent='0:00 / 0:00';
-    return;
+    return; // keep elapsed + playlist for resume
   }
   if(mpBtn)mpBtn.textContent='⏸';
   if(mpWaves)mpWaves.classList.add('on');
@@ -3267,7 +3267,7 @@ async function playPanchang(){
   _panchangAC=AC; // store globally so we can stop it
   if(AC.state==='suspended') AC.resume();
 
-  async function playList(urls){
+  async function playList(urls, offsetSecs=0){
     // Get all buffers (from cache or fetch)
     const buffers = await Promise.all(urls.map(u => _getBuffer(u, AC)));
 
@@ -3285,19 +3285,34 @@ async function playPanchang(){
     let startTime = AC.currentTime + 0.1;
     const sources = [];
     let totalDur = 0;
+    let cumTime = 0; // cumulative time through playlist
     for(let i=0;i<buffers.length;i++){
       const buf = buffers[i];
       if(!buf) continue;
-      // Add natural gap before sentence starters
-      if(i > 0 && isSentenceStart(urls[i], urls[i-1])){
-        startTime += 0.35; // 350ms between sentences
+      const gap = (i>0 && isSentenceStart(urls[i],urls[i-1])) ? 0.35 : 0;
+      cumTime += gap;
+      const bufEnd = cumTime + buf.duration;
+      if(bufEnd <= offsetSecs){
+        // Already played — skip entirely
+        cumTime = bufEnd;
+        totalDur += buf.duration;
+        continue;
       }
+      if(gap > 0 && cumTime > offsetSecs) startTime += gap;
       const src = AC.createBufferSource();
       src.buffer = buf;
       src.connect(AC.destination);
-      src.start(startTime);
+      if(cumTime < offsetSecs){
+        // Partially played — start mid-buffer
+        const bufOffset = offsetSecs - cumTime;
+        src.start(startTime, bufOffset);
+        startTime += buf.duration - bufOffset;
+      } else {
+        src.start(startTime);
+        startTime += buf.duration;
+      }
+      cumTime = bufEnd;
       totalDur += buf.duration;
-      startTime += buf.duration;
       sources.push(src);
     }
 
@@ -3373,8 +3388,9 @@ async function playPanchang(){
     if(fill && _panchangDur>0) fill.style.width = Math.min(100,(elapsed/_panchangDur)*100)+'%';
   }, 500);
 
-  // Play!
-  try{ await playList(playlist); }catch(e){}
+  _panchangPlaylist = playlist; // store for resume
+  try{ await playList(playlist, _panchangElapsed); }catch(e){}
+  _panchangElapsed = 0; // reset after full play
   stopped=true;
   clearInterval(_panchangTimer);
   _panchangAC=null;
