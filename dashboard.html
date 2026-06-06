@@ -3377,16 +3377,20 @@ async function playPanchang(){
   playlist.push(BASE+'closings/closing_'+Math.ceil(Math.random()*7)+'.mp3');
 
   // Calculate total duration for progress bar
+  // Declare FIRST — used by timer and playList
+  const _startElapsed = _panchangElapsed; // how much already played
+  _panchangElapsed = 0; // reset now — pause during play will set correctly
+  const _thisAC = AC; // identity check
+
   _panchangDur = 0;
   _panchangStart = AC.currentTime;
-  _panchangResumeBase = _startElapsed; // store globally for pause handler
-  const _resumeOffset = _startElapsed;
+  _panchangResumeBase = _startElapsed; // for pause handler to accumulate correctly
 
-  // Start progress timer — offset by already-played time
+  // Start progress timer
   clearInterval(_panchangTimer);
   _panchangTimer = setInterval(()=>{
     if(!_panchangAC){ clearInterval(_panchangTimer); return; }
-    const elapsed = (_panchangAC.currentTime - _panchangStart) + _resumeOffset;
+    const elapsed = (_panchangAC.currentTime - _panchangStart) + _startElapsed;
     const fmt = s => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
     const durStr = _panchangDur>0 ? ' / '+fmt(_panchangDur) : '';
     document.getElementById('mpTime').textContent = fmt(Math.max(0,elapsed))+durStr;
@@ -3394,11 +3398,8 @@ async function playPanchang(){
     if(fill && _panchangDur>0) fill.style.width = Math.min(100,(elapsed/_panchangDur)*100)+'%';
   }, 500);
 
-  _panchangPlaylist = playlist; // store for resume
-  const _startElapsed = _panchangElapsed;
-  _panchangElapsed = 0; // reset NOW so pause during play sets correct new value
-  const _thisAC = AC; // identity check to prevent stale cleanup
-  try{ await playList(playlist, _startElapsed); }catch(e){}
+  _panchangPlaylist = playlist;
+  try{ await playList(playlist, _startElapsed); }catch(e){ console.log('playList err:',e); }
   // Only clean up if WE are still the active context (not replaced by new play)
   if(_panchangAC !== _thisAC) return;
   stopped=true;
