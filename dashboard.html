@@ -3040,6 +3040,7 @@ function go(tab){
   if(scr){scr.classList.add('on');scr.scrollTop=0;}
   if(tb)tb.classList.add('on');
   if(tab!=='jap'&&_contActive) stopContinuousJap();
+  if(tab==='jap'||tab==='panchang') mpStop(); // stop panchang when going to jap
   if(tab!=='listen')pauseAudio();
   if(tab!=='sadhana-jap'&&window._sadChantAudio){window._sadChantAudio.pause();window._sadChantAudio=null;}
   if(tab==='sadhana')renderSadhana();
@@ -3054,6 +3055,7 @@ function nextTr(){selTr(Math.min(3,curTr+1));}
 
 // ── Mini player ──
 let mpPlaying=false,mpProg=0,mpTimer=null,mpTr=0;
+let _panchangAC=null,_panchangStart=0,_panchangDur=0,_panchangTimer=null;
 function openMini(){
   const mp=document.getElementById('miniPlayer');
   mp.style.display='block';mp.classList.add('open');
@@ -3065,7 +3067,7 @@ function closeMini(){
   mpStop();
 }
 function mpToggle(){mpPlaying=!mpPlaying;document.getElementById('mpBtn').textContent=mpPlaying?'⏸':'▶';document.getElementById('mpWaves').classList.toggle('on',mpPlaying);}
-function mpStop(){mpPlaying=false;const b=document.getElementById('mpBtn');if(b)b.textContent='▶';document.getElementById('mpWaves')?.classList.remove('on');clearInterval(mpTimer);}
+function mpStop(){if(_panchangAC){try{_panchangAC.close();}catch(e){}; _panchangAC=null;}clearInterval(_panchangTimer);mpPlaying=false;const b=document.getElementById('mpBtn');if(b)b.textContent='▶';document.getElementById('mpWaves')?.classList.remove('on');clearInterval(mpTimer);const f=document.getElementById('mpFill');if(f)f.style.width='0%';document.getElementById('mpTime').textContent='0:00 / 0:00';}
 function mpPrev(){mpStop();}function mpNext(){mpStop();}
 function mpSeek(e){}
 
@@ -3247,11 +3249,14 @@ function getPanchangTimes(){
 
 async function playPanchang(){
   const mpBtn=document.getElementById('mpBtn'),mpWaves=document.getElementById('mpWaves');
-  // Toggle pause
-  if(currentAudio&&!currentAudio.paused){
-    currentAudio.pause();
+  // Stop any existing panchang audio first
+  if(_panchangAC){
+    try{_panchangAC.close();}catch(e){}
+    _panchangAC=null;
+    clearInterval(_panchangTimer);
     if(mpBtn)mpBtn.textContent='▶';
     if(mpWaves)mpWaves.classList.remove('on');
+    document.getElementById('mpTime').textContent='0:00 / 0:00';
     return;
   }
   if(mpBtn)mpBtn.textContent='⏸';
@@ -3259,7 +3264,7 @@ async function playPanchang(){
 
   let stopped=false;
   const AC=new(window.AudioContext||window.webkitAudioContext)();
-  // Resume context if suspended (iOS)
+  _panchangAC=AC; // store globally so we can stop it
   if(AC.state==='suspended') AC.resume();
 
   async function playList(urls){
@@ -3279,6 +3284,7 @@ async function playPanchang(){
 
     let startTime = AC.currentTime + 0.1;
     const sources = [];
+    let totalDur = 0;
     for(let i=0;i<buffers.length;i++){
       const buf = buffers[i];
       if(!buf) continue;
@@ -3290,10 +3296,12 @@ async function playPanchang(){
       src.buffer = buf;
       src.connect(AC.destination);
       src.start(startTime);
+      totalDur += buf.duration;
       startTime += buf.duration;
       sources.push(src);
     }
 
+    _panchangDur = totalDur; // update global for progress
     return new Promise(resolve=>{
       if(sources.length===0){resolve();return;}
       sources[sources.length-1].onended = resolve;
@@ -3349,10 +3357,27 @@ async function playPanchang(){
   // 6. CLOSING
   playlist.push(BASE+'closings/closing_'+Math.ceil(Math.random()*7)+'.mp3');
 
+  // Calculate total duration for progress bar
+  _panchangDur = 0;
+  _panchangStart = AC.currentTime;
+
+  // Start progress timer
+  clearInterval(_panchangTimer);
+  _panchangTimer = setInterval(()=>{
+    if(!_panchangAC){ clearInterval(_panchangTimer); return; }
+    const elapsed = _panchangAC.currentTime - _panchangStart;
+    const fmt = s => Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+    const durStr = _panchangDur>0 ? ' / '+fmt(_panchangDur) : '';
+    document.getElementById('mpTime').textContent = fmt(Math.max(0,elapsed))+durStr;
+    const fill = document.getElementById('mpFill');
+    if(fill && _panchangDur>0) fill.style.width = Math.min(100,(elapsed/_panchangDur)*100)+'%';
+  }, 500);
+
   // Play!
   try{ await playList(playlist); }catch(e){}
   stopped=true;
-  // Auto-close mini player when done
+  clearInterval(_panchangTimer);
+  _panchangAC=null;
   if(mpBtn)mpBtn.textContent='▶';
   if(mpWaves)mpWaves.classList.remove('on');
   const mp=document.getElementById('miniPlayer');
