@@ -1757,6 +1757,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <div id="sadJStreakShow" style="background:rgba(255,150,0,0.12);border:1px solid rgba(255,150,0,0.25);border-radius:12px;padding:10px 20px;font-size:14px;color:rgba(255,180,0,0.80);">🔥 साधना जारी है</div>
         <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px;">
           <button id="sdBtnMore" onclick="sadJContinueExtra()" style="width:100%;height:48px;border-radius:12px;border:1px solid rgba(212,168,67,0.30);background:rgba(255,255,255,0.04);color:rgba(212,168,67,0.80);font-family:'Poppins',sans-serif;font-size:14px;cursor:pointer;">🔁 अधिक जप करें</button>
+          <button onclick="shareSadhana()" style="width:100%;height:44px;border-radius:12px;border:1px solid rgba(212,168,67,0.30);background:rgba(255,255,255,0.04);color:rgba(212,168,67,0.80);font-family:'Poppins',sans-serif;font-size:14px;cursor:pointer;margin-bottom:8px;">📤 <span id="sdBtnShare">साझा करें</span></button>
           <button id="sdBtnBack" onclick="exitSadhanaJap()" style="width:100%;height:52px;border-radius:14px;border:none;background:linear-gradient(135deg,#FF6B1A,#D4A843);color:#fff;font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">🏠 साधना पर लौटें</button>
         </div>
       </div>
@@ -3002,32 +3003,19 @@ function startParticles(){
   draw();
 }
 
-// ── WhatsApp share ──
+// ── Jap share ──
 function shareJap(){
-  const T2=D[dow];
-  // Day-specific mantra short form for share
-  const mantras_hi={0:'ॐ सूर्याय नमः',1:'ॐ नमः शिवाय',2:'ॐ हनुमते नमः',3:'ॐ गं गणपतये नमः',4:'श्री राम जय राम',5:'ॐ महालक्ष्म्यै नमः',6:'ॐ शनैश्चराय नमः'};
-  const deity_type={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
-  const mantra=mantras_hi[dow]||'ॐ नमः';
-  const dtype=deity_type[dow]||T2.d_hi+' मंत्र';
-  const msg=H
-    ?`🙏 आज मैंने 28 बार ${dtype} का जप पूरा किया
-
-${mantra}
-
-मन शांत हो, बुद्धि प्रसन्न हो 🕉️
-
-shubhdin.app`
-    :`🙏 Today I completed 28 chants of ${T2.d_en} mantra
-
-${mantra}
-
-May your mind be at peace 🕉️
-
-shubhdin.app`;
-  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+  const mantras={0:'ॐ सूर्याय नमः',1:'ॐ नमः शिवाय',2:'ॐ हनुमते नमः',3:'ॐ गं गणपतये नमः',4:'श्री राम जय राम',5:'ॐ महालक्ष्म्यै नमः',6:'ॐ शनैश्चराय नमः'};
+  const dtype_hi={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी अष्टोत्तर',6:'शनि मंत्र'};
+  const dtype_en={0:'Surya Mantra',1:'Maha Mrityunjaya',2:'Hanuman Mantra',3:'Ganesh Mantra',4:'Ram Nam',5:'Lakshmi Ashtottara',6:'Shani Mantra'};
+  const isFri=isShravan();
+  const count=isFri?'108 नाम':'28 बार';
+  const count_en=isFri?'108 names':'28 chants';
+  const text=H
+    ?`🙏 आज मैंने ${count} ${dtype_hi[dow]} का जप किया\n\n${mantras[dow]}\n\nमन शांत हो, बुद्धि प्रसन्न हो 🕉️`
+    :`🙏 Today I completed ${count_en} of ${dtype_en[dow]}\n\n${mantras[dow]}\n\nMay your mind be at peace 🕉️`;
+  doShare(H?'शुभ दिन':'Shubh Din', text);
 }
-
 function goJap(){go('jap');setTimeout(()=>{if(!jPlay&&jCount===0)toggleJap();},300);}
 buildMantra();buildMala();
 
@@ -3648,8 +3636,14 @@ function personaliseMarg(){
 
 // ── Wallpaper share ──
 function shareWallpaper(){
-  const b=document.getElementById('wpShare');b.textContent='✅';setTimeout(()=>b.textContent='📤',1500);
-  if(navigator.share)navigator.share({title:'शुभ दिन',text:'🙏 '+(H?T.day_hi:T.day_en)+'\n\nshubhdin.app'});
+  const b=document.getElementById('wpShare');
+  b.textContent='✅';setTimeout(()=>b.textContent='📤',1500);
+  const shubhTime=document.getElementById('goodTime')?.textContent||'';
+  const tithi=document.getElementById('tv')?.textContent||'';
+  const text=H
+    ?`🌅 आज का शुभ दिन\nतिथि: ${tithi} | शुभ समय: ${shubhTime}\n\n${T.d_hi} का दिन — ${T.day_hi}\n🕉️ shubhdin.app`
+    :`🌅 Today\'s Shubh Din\nTithi: ${tithi} | Auspicious time: ${shubhTime}\n\n${T.d_en} Day — ${T.day_en}\n🕉️ shubhdin.app`;
+  doShare(H?'शुभ दिन':'Shubh Din', text);
 }
 
 
@@ -4553,6 +4547,40 @@ function stopContinuousJap(){
 
   const fl=document.getElementById('jFocusLine');
   if(fl){fl.textContent=H?'मन को शांत करें… श्रद्धा से जाप करें':'Focus your mind… chant with devotion';fl.style.opacity='1';}
+}
+
+
+// ── SMART SHARE (Web Share API — native sheet) ──
+function doShare(title, text){
+  if(navigator.share){
+    navigator.share({ title, text, url:'https://www.shubhdin.app' }).catch(()=>{});
+  } else {
+    // Fallback: copy to clipboard
+    navigator.clipboard?.writeText(text+'\n\nhttps://www.shubhdin.app').then(()=>{
+      showShareToast(H?'✅ कॉपी हो गया':'✅ Copied!');
+    }).catch(()=>{
+      window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+    });
+  }
+}
+function showShareToast(msg){
+  let t=document.getElementById('shareToast');
+  if(!t){t=document.createElement('div');t.id='shareToast';
+    t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,0.95);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;transition:opacity 0.4s;font-family:Poppins,sans-serif;';
+    document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2000);
+}
+
+// ── Sadhana share ──
+function shareSadhana(){
+  const s=getSadhana(); if(!s) return;
+  const p=PROB_CONTENT[s.key]||{};
+  const dayNum=s.daysDone.length;
+  const text=H
+    ?`🔥 मेरी साधना जारी है — Day ${dayNum}/${s.totalDays}\n\n${s.title||'साधना'}\n${s.mantra||''}\n\nश्रद्धा और निरंतरता 🙏`
+    :`🔥 My sadhana continues — Day ${dayNum}/${s.totalDays}\n\n${(p.title_en||s.title||'Sadhana')}\n${s.mantra||''}\n\nFaith and consistency 🙏`;
+  doShare(H?'शुभ दिन':'Shubh Din', text);
 }
 
 </script>
