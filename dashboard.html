@@ -3055,7 +3055,7 @@ function nextTr(){selTr(Math.min(3,curTr+1));}
 
 // ── Mini player ──
 let mpPlaying=false,mpProg=0,mpTimer=null,mpTr=0;
-let _panchangAC=null,_panchangStart=0,_panchangDur=0,_panchangTimer=null,_panchangElapsed=0,_panchangPlaylist=null,_panchangBusy=false;
+let _panchangAC=null,_panchangStart=0,_panchangDur=0,_panchangTimer=null,_panchangElapsed=0,_panchangPlaylist=null,_panchangBusy=false,_panchangResumeBase=0;
 function openMini(){
   const mp=document.getElementById('miniPlayer');
   mp.style.display='block';mp.classList.add('open');
@@ -3253,7 +3253,7 @@ async function playPanchang(){
   if(_panchangBusy) return;
   // Stop any existing panchang audio first (pause - store elapsed)
   if(_panchangAC){
-    _panchangElapsed = _panchangAC.currentTime - _panchangStart; // save position
+    _panchangElapsed = (_panchangAC.currentTime - _panchangStart) + _panchangResumeBase; // save TOTAL elapsed
     try{_panchangAC.close();}catch(e){}
     _panchangAC=null;
     clearInterval(_panchangTimer);
@@ -3379,7 +3379,8 @@ async function playPanchang(){
   // Calculate total duration for progress bar
   _panchangDur = 0;
   _panchangStart = AC.currentTime;
-  const _resumeOffset = _panchangElapsed; // how much was already played
+  _panchangResumeBase = _startElapsed; // store globally for pause handler
+  const _resumeOffset = _startElapsed;
 
   // Start progress timer — offset by already-played time
   clearInterval(_panchangTimer);
@@ -3395,8 +3396,11 @@ async function playPanchang(){
 
   _panchangPlaylist = playlist; // store for resume
   const _startElapsed = _panchangElapsed;
+  _panchangElapsed = 0; // reset NOW so pause during play sets correct new value
+  const _thisAC = AC; // identity check to prevent stale cleanup
   try{ await playList(playlist, _startElapsed); }catch(e){}
-  _panchangElapsed = 0; // reset only after full natural completion
+  // Only clean up if WE are still the active context (not replaced by new play)
+  if(_panchangAC !== _thisAC) return;
   stopped=true;
   clearInterval(_panchangTimer);
   _panchangAC=null;
