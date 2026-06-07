@@ -339,7 +339,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
 /* Nav bar */
 .jnav{
-  flex-shrink:0;padding:48px 18px 10px;
+  flex-shrink:0;padding:36px 14px 8px;
   display:flex;align-items:center;justify-content:space-between;
   position:relative;z-index:10;
 }
@@ -365,7 +365,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   position:relative;z-index:10;padding:0 24px;
-  gap:20px;
+  gap:12px;
 }
 
 /* Mantra display */
@@ -880,7 +880,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
 /* Nav bar */
 .jnav{
-  flex-shrink:0;padding:48px 18px 10px;
+  flex-shrink:0;padding:36px 14px 8px;
   display:flex;align-items:center;justify-content:space-between;
   position:relative;z-index:10;
 }
@@ -906,7 +906,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   position:relative;z-index:10;padding:0 24px;
-  gap:20px;
+  gap:12px;
 }
 
 /* Mantra display */
@@ -1834,15 +1834,17 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
       <!-- Nav -->
       <div class="jnav">
-        <button onclick="go('home')" style="position:absolute;left:14px;top:44px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;color:rgba(212,168,67,0.8);font-size:16px;cursor:pointer;z-index:10;">←</button>
-        <div class="j-pill" id="jPill">मंगलवार</div>
-        <div class="j-deity-name" id="jDeityName">श्री हनुमान<em>शक्ति और भक्ति</em></div>
+        <button onclick="go('home')" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;color:rgba(212,168,67,0.8);font-size:16px;cursor:pointer;flex-shrink:0;">←</button>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+          <div class="j-pill" id="jPill">मंगलवार</div>
+          <div class="j-deity-name" id="jDeityName">श्री हनुमान<em>शक्ति और भक्ति</em></div>
+        </div>
         <div class="j-pill" id="jCountPill">0/28</div>
       </div>
 
       <!-- Center: mantra + counter -->
       <!-- Friday श्रवण जप label -->
-      <div id="jShravan" style="display:none;font-size:11px;color:rgba(212,168,67,0.55);letter-spacing:1px;margin-top:-8px;margin-bottom:4px;text-align:center;">🎧 श्रवण जप</div>
+      <div id="jShravan" style="display:none;font-size:11px;color:rgba(212,168,67,0.55);letter-spacing:1px;margin-top:0;margin-bottom:2px;text-align:center;">🎧 श्रवण जप</div>
 
       <div class="j-center" onclick="(()=>{const b=document.getElementById('jplayBtn');if(b){b.style.opacity='1';clearTimeout(window._jBtnHide);if(jPlay){window._jBtnHide=setTimeout(()=>{if(b&&jPlay)b.style.opacity='0.20';},2000);}})();">
 
