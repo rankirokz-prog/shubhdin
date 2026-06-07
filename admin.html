@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShubhDin Admin</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Poppins:wght@400;500;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#080602;--surface:#100D08;--border:rgba(212,168,67,0.15);
+    --gold:#D4A843;--gold2:rgba(212,168,67,0.60);
+    --green:#4ADE80;--red:#F87171;--orange:#FB923C;--blue:#60A5FA;
+    --text:rgba(255,255,255,0.85);--muted:rgba(255,255,255,0.35);
+  }
+  body{background:var(--bg);color:var(--text);font-family:'Poppins',sans-serif;min-height:100vh;}
+
+  /* PIN SCREEN */
+  #pinScreen{
+    position:fixed;inset:0;background:var(--bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:100;gap:24px;
+  }
+  .pin-logo{font-size:48px;margin-bottom:8px;}
+  .pin-title{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--gold);letter-spacing:3px;}
+  .pin-sub{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+  .pin-dots{display:flex;gap:12px;margin:8px 0;}
+  .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--gold2);background:transparent;transition:background 0.2s;}
+  .pin-dot.filled{background:var(--gold);}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,72px);gap:10px;}
+  .pin-btn{
+    height:52px;border-radius:12px;border:1px solid var(--border);
+    background:rgba(255,255,255,0.04);color:var(--text);
+    font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;
+    cursor:pointer;transition:all 0.15s;
+  }
+  .pin-btn:active{background:rgba(212,168,67,0.15);border-color:var(--gold);}
+  .pin-btn.wide{grid-column:span 2;}
+  .pin-error{color:var(--red);font-size:12px;height:16px;font-family:'JetBrains Mono',monospace;}
+
+  /* DASHBOARD */
+  #dashboard{display:none;}
+  .header{
+    padding:20px 24px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(16,13,8,0.95);position:sticky;top:0;z-index:10;
+  }
+  .header-brand{display:flex;align-items:center;gap:10px;}
+  .header-brand .om{font-size:22px;}
+  .header-brand .name{font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--gold);font-weight:700;letter-spacing:2px;}
+  .header-brand .sub{font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:1px;}
+  .refresh-btn{
+    padding:7px 14px;border-radius:8px;border:1px solid var(--border);
+    background:transparent;color:var(--gold2);font-size:12px;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;letter-spacing:1px;transition:all 0.2s;
+  }
+  .refresh-btn:hover{background:rgba(212,168,67,0.08);color:var(--gold);}
+
+  .body{padding:20px;max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:20px;}
+
+  /* LAST UPDATED */
+  .last-updated{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-align:right;}
+
+  /* SECTION TITLE */
+  .section-title{font-size:10px;color:var(--gold2);letter-spacing:2px;text-transform:uppercase;font-weight:600;margin-bottom:10px;}
+
+  /* STATUS GRID */
+  .status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  @media(min-width:600px){.status-grid{grid-template-columns:repeat(4,1fr);}}
+
+  .stat-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:14px 16px;
+  }
+  .stat-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+  .stat-value{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--text);}
+  .stat-value.green{color:var(--green);}
+  .stat-value.red{color:var(--red);}
+  .stat-value.orange{color:var(--orange);}
+  .stat-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+
+  /* API STATUS CARDS */
+  .api-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+  @media(min-width:600px){.api-grid{grid-template-columns:repeat(3,1fr);}}
+
+  .api-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:14px 16px;
+  }
+  .api-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .status-dot.green{background:var(--green);box-shadow:0 0 6px var(--green);}
+  .status-dot.red{background:var(--red);box-shadow:0 0 6px var(--red);}
+  .status-dot.orange{background:var(--orange);}
+  .api-detail{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;line-height:1.8;}
+  .api-warn{font-size:10px;color:var(--orange);margin-top:6px;padding:4px 8px;background:rgba(251,146,60,0.08);border-radius:6px;}
+  .api-ok{font-size:10px;color:var(--green);margin-top:6px;}
+
+  /* PROGRESS BAR */
+  .prog-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:8px;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:2px;transition:width 0.6s ease;}
+  .prog-fill.safe{background:var(--green);}
+  .prog-fill.warn{background:var(--orange);}
+  .prog-fill.danger{background:var(--red);}
+
+  /* PANCHANG STATUS TABLE */
+  .city-table{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+  .city-table table{width:100%;border-collapse:collapse;}
+  .city-table th{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+  .city-table td{font-size:12px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,0.04);font-family:'JetBrains Mono',monospace;}
+  .city-table tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.5px;}
+  .badge.ok{background:rgba(74,222,128,0.12);color:var(--green);}
+  .badge.miss{background:rgba(248,113,113,0.12);color:var(--red);}
+  .badge.old{background:rgba(251,146,60,0.12);color:var(--orange);}
+
+  /* FEEDBACK LIST */
+  .feedback-list{display:flex;flex-direction:column;gap:8px;}
+  .fb-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+  .fb-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .fb-name{font-size:12px;font-weight:600;color:var(--gold);}
+  .fb-meta{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+  .fb-stars{font-size:12px;letter-spacing:1px;}
+  .fb-msg{font-size:13px;color:rgba(255,255,255,0.70);line-height:1.6;}
+  .fb-empty{text-align:center;padding:32px;color:var(--muted);font-size:13px;}
+
+  /* LOADING */
+  .loading{text-align:center;padding:40px;color:var(--muted);font-size:13px;font-family:'JetBrains Mono',monospace;}
+  @keyframes pulse{0%,100%{opacity:0.4;}50%{opacity:1;}}
+  .loading span{animation:pulse 1.4s infinite;}
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pinScreen">
+  <div class="pin-logo">🕉️</div>
+  <div class="pin-title">SHUBH DIN</div>
+  <div class="pin-sub">Admin Access</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-error" id="pinError"></div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinTap(1)">1</button>
+    <button class="pin-btn" onclick="pinTap(2)">2</button>
+    <button class="pin-btn" onclick="pinTap(3)">3</button>
+    <button class="pin-btn" onclick="pinTap(4)">4</button>
+    <button class="pin-btn" onclick="pinTap(5)">5</button>
+    <button class="pin-btn" onclick="pinTap(6)">6</button>
+    <button class="pin-btn" onclick="pinTap(7)">7</button>
+    <button class="pin-btn" onclick="pinTap(8)">8</button>
+    <button class="pin-btn" onclick="pinTap(9)">9</button>
+    <button class="pin-btn" onclick="pinTap(0)">0</button>
+    <button class="pin-btn" onclick="pinClear()">⌫</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="header">
+    <div class="header-brand">
+      <span class="om">🕉️</span>
+      <div>
+        <div class="name">SHUBH DIN</div>
+        <div class="sub">Admin Dashboard</div>
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="loadAll()">↻ REFRESH</button>
+  </div>
+
+  <div class="body">
+    <div class="last-updated" id="lastUpdated">Loading...</div>
+
+    <!-- USER STATS -->
+    <div>
+      <div class="section-title">📊 User Overview</div>
+      <div class="status-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value green" id="totalUsers">—</div>
+          <div class="stat-sub">Registered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Sadhanas</div>
+          <div class="stat-value" id="activeSadhanas">—</div>
+          <div class="stat-sub">In progress</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Feedbacks</div>
+          <div class="stat-value blue" id="feedbackCount">—</div>
+          <div class="stat-sub">Total received</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Cron Status</div>
+          <div class="stat-value" id="cronStatus">—</div>
+          <div class="stat-sub" id="cronAge">Last run</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API STATUS -->
+    <div>
+      <div class="section-title">⚡ Free Tier Monitor</div>
+      <div class="api-grid">
+
+        <!-- Prokerala -->
+        <div class="api-card">
+          <div class="api-name">
+            <div class="status-dot green" id="prokDot"></div>
+            Prokerala API
+          </div>
+          <div class="api-detail" id="prokDetail">
+            Plan: Free<br>
+            Panchang: 10 calls/day<br>
+            Birth chart: per user
+          </div>
+          <div class="prog-bar"><div class="prog-fill safe" id="prokBar" style="width:20%"></div></div>
+          <div class="api-ok" id="prokNote">✅ Panchang: fixed 10 calls/day regardless of users</div>
+        </div>
+
+        <!-- ElevenLabs -->
+        <div class="api-card">
+          <div class="api-name">
+            <div class="status-dot" id="elDot"></div>
+            ElevenLabs
+          </div>
+          <div class="api-detail" id="elDetail">
+            Plan: Free<br>
+            Limit: 10,000 chars/month<br>
+            Used: ~10 chars/user
+          </div>
+          <div class="prog-bar"><div class="prog-fill safe" id="elBar" style="width:0%"></div></div>
+          <div id="elNote" class="api-ok">✅ New users this month tracked below</div>
+        </div>
+
+        <!-- Supabase -->
+        <div class="api-card">
+          <div class="api-name">
+            <div class="status-dot green" id="sbDot"></div>
+            Supabase
+          </div>
+          <div class="api-detail" id="sbDetail">
+            Plan: Free<br>
+            Rows: checking...<br>
+            Storage: ~20KB panchang
+          </div>
+          <div class="prog-bar"><div class="prog-fill safe" id="sbBar" style="width:5%"></div></div>
+          <div class="api-ok">✅ Well within free tier</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PANCHANG CRON STATUS -->
+    <div>
+      <div class="section-title">🗓️ Panchang Data Status</div>
+      <div class="city-table">
+        <table>
+          <thead>
+            <tr>
+              <th>City</th>
+              <th>Status</th>
+              <th>Tithi</th>
+              <th>Nakshatra</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="cityRows">
+            <tr><td colspan="5" class="loading"><span>Loading city data...</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RECENT FEEDBACKS -->
+    <div>
+      <div class="section-title">💬 Recent Feedbacks</div>
+      <div class="feedback-list" id="feedbackList">
+        <div class="loading"><span>Loading feedbacks...</span></div>
+      </div>
+    </div>
+
+    <!-- UPGRADE GUIDE -->
+    <div>
+      <div class="section-title">🚀 Upgrade Triggers</div>
+      <div class="api-card" style="border-radius:14px;">
+        <div class="api-detail" style="line-height:2.2;">
+          <span style="color:var(--orange);">ElevenLabs</span> → Upgrade at <strong style="color:var(--text);">900 users</strong> (₹400/mo starter)<br>
+          <span style="color:var(--orange);">Prokerala</span> → Safe forever (10 calls/day fixed)<br>
+          <span style="color:var(--orange);">Supabase</span> → Upgrade at <strong style="color:var(--text);">5,000 DAU</strong> (~₹2,000/mo)<br>
+          <span style="color:var(--orange);">Vercel</span> → Upgrade at <strong style="color:var(--text);">100k visits/month</strong> ($20/mo)<br>
+          <span style="color:var(--orange);">Resend</span> → Upgrade at <strong style="color:var(--text);">3,000 feedbacks/month</strong> ($20/mo)
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://dulfiljhfchkccqwqniv.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNTEyNTYsImV4cCI6MjA1ODcyNzI1Nn0.Y3QOuJMqYNKRSBRHNVuJW6TKKhUCfVKwniKuWFKFpCU';
+
+// ── PIN ──
+let pinEntry = '';
+const CORRECT = '1734';
+
+function pinTap(n){
+  if(pinEntry.length >= 4) return;
+  pinEntry += n;
+  updateDots();
+  if(pinEntry.length === 4){
+    if(pinEntry === CORRECT){
+      document.getElementById('pinScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('pinError').textContent = 'Wrong PIN';
+      setTimeout(()=>{ pinEntry=''; updateDots(); document.getElementById('pinError').textContent=''; }, 1000);
+    }
+  }
+}
+function pinClear(){
+  pinEntry = pinEntry.slice(0,-1);
+  updateDots();
+  document.getElementById('pinError').textContent = '';
+}
+function updateDots(){
+  for(let i=0;i<4;i++){
+    document.getElementById('pd'+i).classList.toggle('filled', i < pinEntry.length);
+  }
+}
+
+// ── DATA FETCH ──
+async function sb(table, query=''){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+    headers:{ 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer '+SUPABASE_ANON }
+  });
+  return r.json();
+}
+
+async function loadAll(){
+  document.getElementById('lastUpdated').textContent = 'Refreshing...';
+  await Promise.all([ loadUsers(), loadPanchang(), loadFeedbacks() ]);
+  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+}
+
+async function loadUsers(){
+  try{
+    // Total users
+    const users = await sb('users', '?select=uid,sadhana,created_at');
+    document.getElementById('totalUsers').textContent = Array.isArray(users) ? users.length : '—';
+
+    // Active sadhanas
+    const active = Array.isArray(users) ? users.filter(u => u.sadhana && u.sadhana !== 'null').length : 0;
+    document.getElementById('activeSadhanas').textContent = active;
+
+    // ElevenLabs estimate (users * ~10 chars)
+    const total = Array.isArray(users) ? users.length : 0;
+    const elUsed = total * 10;
+    const elPct = Math.min(100, Math.round(elUsed / 10000 * 100));
+    document.getElementById('elDetail').innerHTML = `Plan: Free<br>Limit: 10,000 chars/month<br>Est. used: ~${elUsed.toLocaleString()} chars`;
+    document.getElementById('elBar').style.width = elPct + '%';
+    document.getElementById('elBar').className = 'prog-fill ' + (elPct > 80 ? 'danger' : elPct > 60 ? 'warn' : 'safe');
+    document.getElementById('elDot').className = 'status-dot ' + (elPct > 80 ? 'red' : 'green');
+    document.getElementById('elNote').textContent = elPct > 80
+      ? '⚠️ Approaching limit — upgrade soon!'
+      : `✅ ${10000-elUsed} chars remaining this month`;
+    document.getElementById('elNote').className = elPct > 80 ? 'api-warn' : 'api-ok';
+
+    // Supabase rows estimate
+    document.getElementById('sbDetail').innerHTML = `Plan: Free<br>Rows: ~${total + 20} (users + panchang)<br>Storage: minimal`;
+
+  } catch(e){
+    document.getElementById('totalUsers').textContent = 'ERR';
+  }
+}
+
+async function loadPanchang(){
+  try{
+    const rows = await sb('panchang_today', '?select=city_key,city,tithi,nakshatra,updated_at&order=city_key');
+    const cities = ['delhi','mumbai','hyderabad','bangalore','eluru','vijayawada','visakhapatnam','chennai','kolkata','lucknow'];
+    const now = new Date();
+
+    // Cron status based on most recent update
+    let latestUpdate = null;
+    if(Array.isArray(rows) && rows.length > 0){
+      latestUpdate = new Date(Math.max(...rows.map(r => new Date(r.updated_at))));
+    }
+
+    if(latestUpdate){
+      const hoursAgo = Math.round((now - latestUpdate) / 3600000);
+      const cronOk = hoursAgo < 25;
+      document.getElementById('cronStatus').textContent = cronOk ? '✅' : '❌';
+      document.getElementById('cronStatus').className = 'stat-value ' + (cronOk ? 'green' : 'red');
+      document.getElementById('cronAge').textContent = `${hoursAgo}h ago`;
+    } else {
+      document.getElementById('cronStatus').textContent = '❌';
+      document.getElementById('cronAge').textContent = 'Never ran';
+    }
+
+    // City rows
+    const tbody = document.getElementById('cityRows');
+    if(!Array.isArray(rows) || rows.length === 0){
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.3);padding:20px;">No panchang data found — run cron</td></tr>';
+      return;
+    }
+
+    const rowMap = {};
+    rows.forEach(r => rowMap[r.city_key] = r);
+
+    tbody.innerHTML = cities.map(ck => {
+      const r = rowMap[ck];
+      if(!r) return `<tr><td style="color:rgba(255,255,255,0.5)">${ck}</td><td><span class="badge miss">MISSING</span></td><td>—</td><td>—</td><td>—</td></tr>`;
+      const upd = new Date(r.updated_at);
+      const hrs = Math.round((now - upd)/3600000);
+      const badge = hrs > 25 ? 'badge old' : 'badge ok';
+      const status = hrs > 25 ? 'STALE' : 'LIVE';
+      const timeStr = hrs < 1 ? 'just now' : `${hrs}h ago`;
+      const tithi = r.tithi || '<span style="color:rgba(255,100,100,0.7)">BLANK</span>';
+      const nak = r.nakshatra || '<span style="color:rgba(255,100,100,0.7)">BLANK</span>';
+      return `<tr>
+        <td style="color:var(--gold)">${r.city||ck}</td>
+        <td><span class="${badge}">${status}</span></td>
+        <td>${tithi}</td>
+        <td>${nak}</td>
+        <td style="color:var(--muted)">${timeStr}</td>
+      </tr>`;
+    }).join('');
+
+  } catch(e){
+    document.getElementById('cityRows').innerHTML = '<tr><td colspan="5" style="color:var(--red);padding:16px;">Error loading panchang data</td></tr>';
+  }
+}
+
+async function loadFeedbacks(){
+  try{
+    const feedbacks = await sb('feedbacks', '?select=*&order=created_at.desc&limit=10');
+    document.getElementById('feedbackCount').textContent = Array.isArray(feedbacks) ? feedbacks.length : '—';
+    const list = document.getElementById('feedbackList');
+
+    if(!Array.isArray(feedbacks) || feedbacks.length === 0){
+      list.innerHTML = '<div class="fb-empty">No feedbacks yet 🙏</div>';
+      return;
+    }
+
+    list.innerHTML = feedbacks.map(f => {
+      const stars = f.rating ? '⭐'.repeat(f.rating) : '—';
+      const date = f.created_at ? new Date(f.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
+      return `<div class="fb-card">
+        <div class="fb-header">
+          <div>
+            <span class="fb-name">${f.name||'Anonymous'}</span>
+            <span class="fb-meta"> · ${f.city||'—'} · ${f.lang==='hi'?'Hindi':'English'}</span>
+          </div>
+          <div>
+            <span class="fb-stars">${stars}</span>
+            <span class="fb-meta"> ${date}</span>
+          </div>
+        </div>
+        <div class="fb-msg">${f.message||''}</div>
+      </div>`;
+    }).join('');
+
+  } catch(e){
+    document.getElementById('feedbackList').innerHTML = '<div class="fb-empty">Could not load feedbacks</div>';
+  }
+}
+
+// Keyboard support for PIN
+document.addEventListener('keydown', e => {
+  if(document.getElementById('pinScreen').style.display === 'none') return;
+  if(e.key >= '0' && e.key <= '9') pinTap(parseInt(e.key));
+  if(e.key === 'Backspace') pinClear();
+});
+</script>
+</body>
+</html>
