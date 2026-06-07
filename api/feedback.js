@@ -43,6 +43,18 @@ export default async function handler(req, res) {
     });
     const data = await r.json();
     if(!r.ok) return res.status(500).json({ error: data });
+
+    // Also store in Supabase for admin dashboard
+    await fetch(`${process.env.SUPABASE_URL}/rest/v1/feedbacks`, {
+      method: 'POST',
+      headers: {
+        'apikey': process.env.SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ name, city, lang, rating: rating||0, message, created_at: new Date().toISOString() })
+    }).catch(()=>{});
     return res.json({ success: true });
   } catch(e) {
     return res.status(500).json({ error: e.message });
