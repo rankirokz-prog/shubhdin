@@ -1511,7 +1511,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div style="font-size:26px;line-height:1;">📅</div>
             <div>
               <div id="calBtnTitle" style="font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:var(--gold);font-weight:600;">पंचांग कैलेंडर</div>
-              <div id="calBtnSub" style="font-size:10px;color:rgba(212,168,67,0.50);letter-spacing:0.5px;margin-top:2px;">त्योहार • चंद्र तिथि • मुहूर्त</div>
+              <div id="calBtnSub" style="font-size:10px;color:rgba(212,168,67,0.50);letter-spacing:0.5px;margin-top:2px;">त्योहार • चंद्र • पंचांग</div>
             </div>
           </div>
           <div style="color:rgba(212,168,67,0.40);font-size:18px;">›</div>
@@ -4807,7 +4807,7 @@ function openCalendar(){
   const bt=document.getElementById('calBtnTitle');
   const bs=document.getElementById('calBtnSub');
   if(bt) bt.textContent=H?'पंचांग कैलेंडर':'Panchang Calendar';
-  if(bs) bs.textContent=H?'त्योहार • चंद्र तिथि • मुहूर्त':'Festivals • Lunar Tithi • Muhurta';
+  if(bs) bs.textContent=H?'त्योहार • चंद्र • पंचांग':'Festivals • Moon • Panchang';
 }
 
 function closeCalendar(){
@@ -4857,7 +4857,7 @@ function renderCalendar(){
 
     // Cell border/bg
     let cellStyle = `min-height:70px;border-radius:10px;padding:4px;cursor:pointer;position:relative;transition:all 0.15s;`;
-    if(isToday) cellStyle += `background:rgba(212,168,67,0.12);border:1.5px solid rgba(212,168,67,0.60);`;
+    if(isToday) cellStyle += `background:rgba(212,168,67,0.12);border:1.5px solid rgba(212,168,67,0.70);box-shadow:0 0 10px rgba(212,168,67,0.25),inset 0 0 8px rgba(212,168,67,0.05);`;
     else if(isSelected) cellStyle += `background:rgba(212,168,67,0.08);border:1.5px solid rgba(212,168,67,0.35);`;
     else if(isMajor) cellStyle += `background:rgba(255,107,26,0.06);border:1px solid rgba(255,107,26,0.20);`;
     else cellStyle += `background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);`;
@@ -4870,7 +4870,7 @@ function renderCalendar(){
         <span style="font-size:13px;line-height:1;">${moon.e}</span>
       </div>
       <div style="font-size:7.5px;color:rgba(212,168,67,0.50);margin-top:2px;line-height:1.3;overflow:hidden;">${H?tithi.hi:tithi.en}</div>
-      ${festival?`<div style="font-size:11px;margin-top:3px;">${festival.i}</div>`:''}
+      ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}</div>`:''}
       ${isSpecial&&!festival?`<div style="width:4px;height:4px;border-radius:50%;background:rgba(212,168,67,0.50);margin-top:4px;"></div>`:''}
     </div>`;
   }
@@ -4890,6 +4890,17 @@ function selectCalDate(d){
   showCalDetail(new Date(_calYear, _calMonth, d));
 }
 
+
+function calSpiritualNote(phase, festival){
+  if(isAmavasya(phase)) return H?'🌑 पितरों का स्मरण करें':'🌑 Offer prayers to ancestors';
+  if(isPurnima(phase)) return H?'🌕 सत्यनारायण व्रत का दिन':'🌕 Auspicious for Satyanarayan Vrat';
+  if(isEkadashi(phase)) return H?'🙏 एकादशी व्रत — हरि का नाम लें':'🙏 Ekadashi — chant Hari Nam';
+  if(festival && festival.t==='major') return H?'✨ आज विशेष पूजा का दिन है':'✨ Auspicious for special prayers';
+  const d = new Date().getDay();
+  const hi=['☀️ सूर्यदेव की पूजा करें','🕉️ शिव की आराधना करें','🙏 हनुमान चालीसा पढ़ें','📿 गणेश मंत्र जप करें','🌸 विष्णु सहस्रनाम पाठ करें','🌺 माँ लक्ष्मी का ध्यान करें','🪔 शनिदेव को तेल चढ़ाएं'];
+  const en=['☀️ Offer prayers to Surya Dev','🕉️ Ideal day to worship Shiva','🙏 Recite Hanuman Chalisa','📿 Chant Ganesh mantra','🌸 Read Vishnu Sahasranama','🌺 Worship Maa Lakshmi','🪔 Offer oil to Shani Dev'];
+  return H ? hi[d] : en[d];
+}
 function showCalDetail(date){
   const phase = calMoonPhase(date);
   const moon = calMoonEmoji(phase);
@@ -4931,7 +4942,8 @@ function showCalDetail(date){
         <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">${tithi.paksha} ${H?'पक्ष':'Paksha'} • ${H?moon.h:moon.n}</div>
       </div>
     </div>
-    ${specialNote?`<div style="margin-top:8px;font-size:12px;color:rgba(212,168,67,0.70);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;">${specialNote}</div>`:''}
+    ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.70);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
+  <div style='margin-top:6px;font-size:11px;color:rgba(255,255,255,0.38);font-style:italic;'>${calSpiritualNote(phase,festival)||''}</div>
     ${festHtml}
   `;
 }
