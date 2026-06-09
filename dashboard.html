@@ -5202,8 +5202,8 @@ function showMuhuratDetail(type){
   const isShukla = phase < 14.77;
   const tith = calTithi(phase);
   const msgs = {
-    'Marriage Muhurta': H?`विवाह के लिए शुक्ल पक्ष, रोहिणी, मृगशिरा, उत्तरा नक्षत्र शुभ हैं। आज ${isShukla?'शुक्ल पक्ष है — शुभ समय है 🙏':'कृष्ण पक्ष है — पंडित जी से परामर्श लें'}`:`For marriage: Shukla Paksha + Rohini, Mrigashira, Uttara Nakshatras are auspicious. Today is ${isShukla?'Shukla Paksha — good time 🙏':'Krishna Paksha — consult a Pandit'}`,
-    'Griha Pravesh': H?`गृह प्रवेश के लिए शुक्ल पक्ष, रविवार, सोमवार, बुधवार शुभ। आज ${isShukla?'शुक्ल पक्ष है 🙏':'कृष्ण पक्ष — पंडित से पूछें'}`:`For Griha Pravesh: Shukla Paksha, Sunday/Monday/Wednesday preferred. Today ${isShukla?'is Shukla Paksha 🙏':'is Krishna Paksha — consult Pandit'}`,
+    'Marriage Muhurta': H?`विवाह के लिए शुक्ल पक्ष, रोहिणी, मृगशिरा, उत्तरा नक्षत्र शुभ हैं। आज ${isShukla?'शुक्ल पक्ष है — शुभ समय है 🙏':'कृष्ण पक्ष है — अगला शुक्ल पक्ष प्रतीक्षा करें 🙏'}`:`For marriage: Shukla Paksha + Rohini, Mrigashira, Uttara Nakshatras are ideal. Today is ${isShukla?'Shukla Paksha — good time 🙏':'Krishna Paksha — next Shukla Paksha will be auspicious 🙏'}`,
+    'Griha Pravesh': H?`गृह प्रवेश के लिए शुक्ल पक्ष, रविवार, सोमवार, बुधवार शुभ। आज ${isShukla?'शुक्ल पक्ष है — शुभ 🙏':'कृष्ण पक्ष है — अगले शुक्ल पक्ष में करें 🙏'}`:`For Griha Pravesh: Shukla Paksha + Sunday, Monday or Wednesday is ideal. Today ${isShukla?'is Shukla Paksha — auspicious 🙏':'is Krishna Paksha — plan for next Shukla Paksha 🙏'}`,
     'Vehicle Purchase': H?`वाहन खरीद के लिए उत्तरा, हस्त, अश्विनी नक्षत्र शुभ। राहु काल से बचें।`:`For vehicle: Uttara, Hasta, Ashwini Nakshatras are best. Avoid Rahu Kaal.`,
     'Business Start': H?`व्यापार के लिए अभिजित मुहूर्त सर्वश्रेष्ठ। लाभ चौघड़िया में शुरू करें।`:`For business: Abhijit Muhurta is best. Start during Labh Choghadiya.`,
   };
