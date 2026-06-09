@@ -4675,6 +4675,255 @@ async function submitFeedback(){
   }
 }
 
+
+// ══════════════════════════════
+//   CALENDAR ENGINE
+// ══════════════════════════════
+
+// Known new moon reference
+const _CAL_REF_NEW_MOON = new Date('2026-01-29T08:00:00Z');
+const _SYNODIC = 29.53058867;
+
+function calMoonPhase(date){
+  const diff = (date - _CAL_REF_NEW_MOON) / 86400000;
+  return (((diff % _SYNODIC) + _SYNODIC) % _SYNODIC);
+}
+
+function calMoonEmoji(phase){
+  if(phase < 1.2) return {e:'🌑',n:'Amavasya',h:'अमावस्या'};
+  if(phase < 4.4) return {e:'🌒',n:'Waxing Crescent',h:'शुक्ल पक्ष'};
+  if(phase < 8.1) return {e:'🌓',n:'First Quarter',h:'अष्टमी'};
+  if(phase < 12.4) return {e:'🌔',n:'Waxing Gibbous',h:'शुक्ल पक्ष'};
+  if(phase < 15.4) return {e:'🌕',n:'Purnima',h:'पूर्णिमा'};
+  if(phase < 19.3) return {e:'🌖',n:'Waning Gibbous',h:'कृष्ण पक्ष'};
+  if(phase < 23.2) return {e:'🌗',n:'Last Quarter',h:'अष्टमी'};
+  if(phase < 27.5) return {e:'🌘',n:'Waning Crescent',h:'कृष्ण पक्ष'};
+  return {e:'🌑',n:'Amavasya',h:'अमावस्या'};
+}
+
+function calTithi(phase){
+  const idx = Math.floor(phase / _SYNODIC * 30) % 30;
+  const TITHI_HI=['अमावस्या','प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','पूर्णिमा','प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी'];
+  const TITHI_EN=['Amavasya','Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Purnima','Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi'];
+  const paksha = idx < 15 ? (H?'शुक्ल':'Shukla') : (H?'कृष्ण':'Krishna');
+  return {hi:TITHI_HI[idx], en:TITHI_EN[idx], paksha};
+}
+
+// Hindu months (Vikram Samvat)
+const HINDU_MONTHS = ['चैत्र','वैशाख','ज्येष्ठ','आषाढ़','श्रावण','भाद्रपद','आश्विन','कार्तिक','मार्गशीर्ष','पौष','माघ','फाल्गुन'];
+
+function calHinduMonth(month, year){
+  // Approximate Hindu month based on Gregorian
+  const hIdx = ((month + 9) % 12);
+  const samvat = year + 56 + (month >= 4 ? 1 : 0);
+  return `${HINDU_MONTHS[hIdx]} | विक्रम संवत ${samvat}`;
+}
+
+// Festivals data 2025-2027
+const CAL_FESTIVALS = {
+  // 2025
+  '2025-10-02':{n:'Gandhi Jayanti',h:'गांधी जयंती',i:'🕊️',t:'national'},
+  '2025-10-02':{n:'Navratri Begins',h:'नवरात्रि',i:'🪔',t:'major'},
+  '2025-10-12':{n:'Dussehra',h:'दशहरा',i:'🏹',t:'major'},
+  '2025-10-20':{n:'Valmiki Jayanti',h:'वाल्मीकि जयंती',i:'📖',t:'festival'},
+  '2025-10-29':{n:'Dhanteras',h:'धनतेरस',i:'💰',t:'major'},
+  '2025-10-31':{n:'Diwali',h:'दीपावली',i:'🪔',t:'major'},
+  '2025-11-01':{n:'Govardhan Puja',h:'गोवर्धन पूजा',i:'🙏',t:'festival'},
+  '2025-11-02':{n:'Bhai Dooj',h:'भाई दूज',i:'❤️',t:'festival'},
+  '2025-11-05':{n:'Chhath Puja',h:'छठ पूजा',i:'☀️',t:'major'},
+  '2025-12-25':{n:'Christmas',h:'क्रिसमस',i:'⭐',t:'national'},
+  // 2026
+  '2026-01-13':{n:'Lohri',h:'लोहड़ी',i:'🔥',t:'festival'},
+  '2026-01-14':{n:'Makar Sankranti',h:'मकर संक्रांति',i:'☀️',t:'major'},
+  '2026-01-14':{n:'Pongal',h:'पोंगल',i:'🌾',t:'festival'},
+  '2026-01-26':{n:'Republic Day',h:'गणतंत्र दिवस',i:'🇮🇳',t:'national'},
+  '2026-02-11':{n:'Vasant Panchami',h:'वसंत पंचमी',i:'💛',t:'festival'},
+  '2026-02-17':{n:'Maha Shivratri',h:'महाशिवरात्रि',i:'🕉️',t:'major'},
+  '2026-03-03':{n:'Holi',h:'होली',i:'🎨',t:'major'},
+  '2026-03-02':{n:'Holika Dahan',h:'होलिका दहन',i:'🔥',t:'festival'},
+  '2026-03-19':{n:'Gudi Padwa',h:'गुड़ी पड़वा',i:'🎋',t:'festival'},
+  '2026-03-19':{n:'Ugadi',h:'उगादि',i:'🌿',t:'festival'},
+  '2026-03-29':{n:'Ram Navami',h:'राम नवमी',i:'🏹',t:'major'},
+  '2026-04-05':{n:'Hanuman Jayanti',h:'हनुमान जयंती',i:'🙏',t:'major'},
+  '2026-04-14':{n:'Dr. Ambedkar Jayanti',h:'अम्बेडकर जयंती',i:'📚',t:'national'},
+  '2026-04-14':{n:'Tamil New Year',h:'तमिल नव वर्ष',i:'🌟',t:'festival'},
+  '2026-05-01':{n:'Labour Day',h:'मजदूर दिवस',i:'⚒️',t:'national'},
+  '2026-05-12':{n:'Buddha Purnima',h:'बुद्ध पूर्णिमा',i:'☸️',t:'festival'},
+  '2026-06-11':{n:'Vat Savitri',h:'वट सावित्री',i:'🌿',t:'festival'},
+  '2026-06-20':{n:'Nirjala Ekadashi',h:'निर्जला एकादशी',i:'💧',t:'major'},
+  '2026-07-04':{n:'Rath Yatra',h:'रथ यात्रा',i:'🎡',t:'major'},
+  '2026-07-28':{n:'Guru Purnima',h:'गुरु पूर्णिमा',i:'🙏',t:'major'},
+  '2026-08-06':{n:'Nag Panchami',h:'नाग पंचमी',i:'🐍',t:'festival'},
+  '2026-08-09':{n:'Raksha Bandhan',h:'रक्षाबंधन',i:'🧵',t:'major'},
+  '2026-08-15':{n:'Independence Day',h:'स्वतंत्रता दिवस',i:'🇮🇳',t:'national'},
+  '2026-08-17':{n:'Janmashtami',h:'जन्माष्टमी',i:'🦚',t:'major'},
+  '2026-09-07':{n:'Ganesh Chaturthi',h:'गणेश चतुर्थी',i:'🐘',t:'major'},
+  '2026-10-02':{n:'Gandhi Jayanti',h:'गांधी जयंती',i:'🕊️',t:'national'},
+  '2026-10-08':{n:'Navratri Begins',h:'नवरात्रि आरंभ',i:'🪔',t:'major'},
+  '2026-10-17':{n:'Dussehra',h:'दशहरा',i:'🏹',t:'major'},
+  '2026-11-01':{n:'Diwali',h:'दीपावली',i:'🪔',t:'major'},
+  '2026-11-02':{n:'Govardhan Puja',h:'गोवर्धन पूजा',i:'🙏',t:'festival'},
+  '2026-11-03':{n:'Bhai Dooj',h:'भाई दूज',i:'❤️',t:'festival'},
+  '2026-11-08':{n:'Chhath Puja',h:'छठ पूजा',i:'☀️',t:'major'},
+  '2026-12-25':{n:'Christmas',h:'क्रिसमस',i:'⭐',t:'national'},
+  // 2027
+  '2027-01-14':{n:'Makar Sankranti',h:'मकर संक्रांति',i:'☀️',t:'major'},
+};
+
+// Ekadashis — every 15 days approx
+function isEkadashi(phase){
+  return Math.abs(phase - 10.7) < 0.8 || Math.abs(phase - 25.7) < 0.8;
+}
+function isAmavasya(phase){ return phase < 1.0 || phase > 28.8; }
+function isPurnima(phase){ return Math.abs(phase - 14.77) < 0.9; }
+
+// Calendar state
+let _calYear = new Date().getFullYear();
+let _calMonth = new Date().getMonth();
+let _calSelected = null;
+
+function openCalendar(){
+  const now = new Date();
+  _calYear = now.getFullYear();
+  _calMonth = now.getMonth();
+  _calSelected = now.getDate();
+  const ov = document.getElementById('calOverlay');
+  ov.style.display='flex';
+  renderCalendar();
+  showCalDetail(now);
+  // Translate button
+  const bt=document.getElementById('calBtnTitle');
+  const bs=document.getElementById('calBtnSub');
+  if(bt) bt.textContent=H?'पंचांग कैलेंडर':'Panchang Calendar';
+  if(bs) bs.textContent=H?'त्योहार • चंद्र तिथि • मुहूर्त':'Festivals • Lunar Tithi • Muhurta';
+}
+
+function closeCalendar(){
+  document.getElementById('calOverlay').style.display='none';
+}
+
+function calNav(dir){
+  _calMonth += dir;
+  if(_calMonth > 11){ _calMonth=0; _calYear++; }
+  if(_calMonth < 0){ _calMonth=11; _calYear--; }
+  _calSelected = null;
+  renderCalendar();
+  document.getElementById('calDetail').innerHTML = '';
+}
+
+function renderCalendar(){
+  const today = new Date();
+  const firstDay = new Date(_calYear, _calMonth, 1).getDay();
+  const daysInMonth = new Date(_calYear, _calMonth+1, 0).getDate();
+
+  // Month title
+  const MONTHS_HI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
+  const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthTitle').textContent = (H?MONTHS_HI[_calMonth]:MONTHS_EN[_calMonth])+' '+_calYear;
+  document.getElementById('calHinduMonth').textContent = calHinduMonth(_calMonth, _calYear);
+
+  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 0 8px;">';
+
+  // Empty cells before first day
+  for(let i=0;i<firstDay;i++){
+    html += '<div style="min-height:70px;"></div>';
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const date = new Date(_calYear, _calMonth, d);
+    const dateKey = `${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const phase = calMoonPhase(date);
+    const moon = calMoonEmoji(phase);
+    const tithi = calTithi(phase);
+    const festival = CAL_FESTIVALS[dateKey];
+    const isToday = d===today.getDate() && _calMonth===today.getMonth() && _calYear===today.getFullYear();
+    const isSelected = d===_calSelected;
+    const isSun = date.getDay()===0;
+    const isSat = date.getDay()===6;
+    const isSpecial = isAmavasya(phase)||isPurnima(phase)||isEkadashi(phase);
+    const isMajor = festival && festival.t==='major';
+
+    // Cell border/bg
+    let cellStyle = `min-height:70px;border-radius:10px;padding:4px;cursor:pointer;position:relative;transition:all 0.15s;`;
+    if(isToday) cellStyle += `background:rgba(212,168,67,0.12);border:1.5px solid rgba(212,168,67,0.60);`;
+    else if(isSelected) cellStyle += `background:rgba(212,168,67,0.08);border:1.5px solid rgba(212,168,67,0.35);`;
+    else if(isMajor) cellStyle += `background:rgba(255,107,26,0.06);border:1px solid rgba(255,107,26,0.20);`;
+    else cellStyle += `background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);`;
+
+    let dateColor = isToday ? 'var(--gold)' : isSun ? 'rgba(255,100,100,0.80)' : isSat ? 'rgba(212,168,67,0.60)' : 'rgba(255,255,255,0.75)';
+
+    html += `<div style="${cellStyle}" onclick="selectCalDate(${d})">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <span style="font-size:13px;font-weight:${isToday?'700':'500'};color:${dateColor};line-height:1;">${d}</span>
+        <span style="font-size:13px;line-height:1;">${moon.e}</span>
+      </div>
+      <div style="font-size:7.5px;color:rgba(212,168,67,0.50);margin-top:2px;line-height:1.3;overflow:hidden;">${H?tithi.hi:tithi.en}</div>
+      ${festival?`<div style="font-size:11px;margin-top:3px;">${festival.i}</div>`:''}
+      ${isSpecial&&!festival?`<div style="width:4px;height:4px;border-radius:50%;background:rgba(212,168,67,0.50);margin-top:4px;"></div>`:''}
+    </div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('calGrid').innerHTML = html;
+
+  // Show today's detail if current month
+  if(_calSelected && _calMonth===today.getMonth() && _calYear===today.getFullYear()){
+    showCalDetail(new Date(_calYear, _calMonth, _calSelected));
+  }
+}
+
+function selectCalDate(d){
+  _calSelected = d;
+  renderCalendar();
+  showCalDetail(new Date(_calYear, _calMonth, d));
+}
+
+function showCalDetail(date){
+  const phase = calMoonPhase(date);
+  const moon = calMoonEmoji(phase);
+  const tithi = calTithi(phase);
+  const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const festival = CAL_FESTIVALS[dateKey];
+  const DAYS_HI=['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
+  const DAYS_EN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONTHS_HI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
+  const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  const dayName = H?DAYS_HI[date.getDay()]:DAYS_EN[date.getDay()];
+  const monthName = H?MONTHS_HI[date.getMonth()]:MONTHS_EN[date.getMonth()];
+  const dateStr = H?`${dayName}, ${date.getDate()} ${monthName} ${date.getFullYear()}`:`${dayName}, ${monthName} ${date.getDate()}, ${date.getFullYear()}`;
+
+  let festHtml = '';
+  if(festival){
+    const fName = H ? festival.h : festival.n;
+    const fColor = festival.t==='major' ? 'rgba(255,140,30,0.85)' : festival.t==='national' ? 'rgba(100,180,255,0.85)' : 'rgba(212,168,67,0.75)';
+    festHtml = `<div style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(212,168,67,0.12);">
+      <span style="font-size:20px;">${festival.i}</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:${fColor};">${fName}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);">${festival.t==='major'?'Major Festival':festival.t==='national'?'National Holiday':'Festival'}</div>
+      </div>
+    </div>`;
+  }
+
+  const specialNote = isAmavasya(phase)?(H?'🌑 अमावस्या — पितृ तर्पण का दिन':'🌑 Amavasya — Day of ancestral worship'):
+    isPurnima(phase)?(H?'🌕 पूर्णिमा — व्रत का विशेष दिन':'🌕 Purnima — Auspicious for fasting'):
+    isEkadashi(phase)?(H?'🙏 एकादशी — व्रत एवं विष्णु पूजा':'🙏 Ekadashi — Fast & Vishnu Puja'):'';
+
+  document.getElementById('calDetail').innerHTML = `
+    <div style="font-size:11px;color:rgba(212,168,67,0.55);letter-spacing:0.5px;margin-bottom:6px;">${dateStr}</div>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <span style="font-size:36px;line-height:1;">${moon.e}</span>
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--gold);">${H?tithi.hi:tithi.en}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px;">${tithi.paksha} ${H?'पक्ष':'Paksha'} • ${H?moon.h:moon.n}</div>
+      </div>
+    </div>
+    ${specialNote?`<div style="margin-top:8px;font-size:12px;color:rgba(212,168,67,0.70);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;">${specialNote}</div>`:''}
+    ${festHtml}
+  `;
+}
+
 </script>
 
   <!-- ── SADHANA JAP OVERLAY (fixed, not a tab) ── -->
@@ -4832,6 +5081,45 @@ if('serviceWorker' in navigator){
     </button>
 
   </div>
+</div>
+
+
+<!-- ══════════════════════════════
+     CALENDAR OVERLAY
+══════════════════════════════ -->
+<div id="calOverlay" style="display:none;position:fixed;inset:0;z-index:90;background:#080300;flex-direction:column;overflow:hidden;">
+
+  <!-- Header -->
+  <div style="flex-shrink:0;background:linear-gradient(155deg,#0D0500,#1E0C00);border-bottom:1px solid rgba(212,168,67,0.12);padding:44px 18px 14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <button onclick="closeCalendar()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);border:none;color:rgba(212,168,67,0.80);font-size:18px;cursor:pointer;">←</button>
+      <div style="text-align:center;">
+        <div id="calMonthTitle" style="font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);font-weight:600;"></div>
+        <div id="calHinduMonth" style="font-size:10px;color:rgba(212,168,67,0.45);letter-spacing:0.5px;margin-top:2px;"></div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="calNav(-1)" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid rgba(212,168,67,0.15);color:rgba(212,168,67,0.70);font-size:16px;cursor:pointer;">‹</button>
+        <button onclick="calNav(1)" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);border:1px solid rgba(212,168,67,0.15);color:rgba(212,168,67,0.70);font-size:16px;cursor:pointer;">›</button>
+      </div>
+    </div>
+    <!-- Day headers -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;">
+      <div style="text-align:center;font-size:9px;color:rgba(255,80,80,0.60);font-weight:600;letter-spacing:0.5px;padding:4px 0;">SUN</div>
+      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">MON</div>
+      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">TUE</div>
+      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">WED</div>
+      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">THU</div>
+      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">FRI</div>
+      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">SAT</div>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div id="calGrid" style="flex:1;overflow-y:auto;padding:6px 8px 4px;-webkit-overflow-scrolling:touch;"></div>
+
+  <!-- Detail Panel -->
+  <div id="calDetail" style="flex-shrink:0;background:linear-gradient(0deg,#0D0500,#150800);border-top:1px solid rgba(212,168,67,0.15);padding:14px 18px 30px;min-height:110px;transition:all 0.3s ease;"></div>
+
 </div>
 
 </body>
