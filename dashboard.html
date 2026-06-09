@@ -1699,6 +1699,19 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <div class="ab-txt"><strong id="abTitle">अभिजित मुहूर्त</strong><span id="abDesc">सबसे शुभ — नए काम शुरू करें</span></div>
           <div class="ab-time"><strong id="abTime">–</strong><span id="abSub">दोपहर</span></div>
         </div>
+
+        <!-- ── CHOGHADIYA ── -->
+        <div class="psec" id="ps4">🕐 चौघड़िया</div>
+        <div id="chogGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
+
+        <!-- ── VRAT THIS WEEK ── -->
+        <div class="psec" id="ps5">🙏 इस सप्ताह के व्रत</div>
+        <div id="vratList" style="display:flex;flex-direction:column;gap:6px;"></div>
+
+        <!-- ── SHUBH MUHURAT OCCASIONS ── -->
+        <div class="psec" id="ps6">💍 शुभ मुहूर्त</div>
+        <div id="muhList" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+
       </div>
     </div>
 
@@ -2295,6 +2308,9 @@ function personalise(){
   document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
 
   document.getElementById('tl4').textContent=H?'जाप':'Jap';
+  const ps4=document.getElementById('ps4'); if(ps4) ps4.textContent=H?'🕐 चौघड़िया':'🕐 Choghadiya';
+  const ps5=document.getElementById('ps5'); if(ps5) ps5.textContent=H?'🙏 इस सप्ताह के व्रत':'🙏 Fasts This Week';
+  const ps6=document.getElementById('ps6'); if(ps6) ps6.textContent=H?'💍 शुभ मुहूर्त':'💍 Auspicious Muhurta';
   // Calendar button
   const _cbt=document.getElementById('calBtnTitle');
   if(_cbt) _cbt.textContent=H?'पंचांग कैलेंडर':'Panchang Calendar';
@@ -4242,6 +4258,15 @@ async function fetchPanchang(){
       const karEl=document.getElementById('karVal');
       if(karEl) karEl.textContent=panTr(p.karana,KAR_MAP);
     }
+    // ── Choghadiya (calculated from sunrise/sunset) ──
+    if(p.sunrise && p.sunset){
+      const dow2 = new Date().getDay();
+      renderChoghadiya(p.sunrise, p.sunset);
+    }
+    // ── Vrat this week ──
+    renderVrats();
+    // ── Muhurat occasions ──
+    renderMuhurat();
     // ── Sunrise / Sunset ──
     if(p.sunrise){
       const srEl=document.querySelector('.sun-bar .si:nth-child(1) .si-t');
@@ -4962,6 +4987,190 @@ function showCalDetail(date){
   <div style='margin-top:6px;font-size:11px;color:rgba(255,255,255,0.38);font-style:italic;'>${calSpiritualNote(phase,festival)||''}</div>
     ${festHtml}
   `;
+}
+
+
+// ══════════════════════════════
+//   CHOGHADIYA ENGINE
+// ══════════════════════════════
+const CHOG_NAMES_HI = ['अमृत','काल','शुभ','रोग','उद्वेग','चर','लाभ','उद्योग'];
+const CHOG_NAMES_EN = ['Amrit','Kaal','Shubh','Rog','Udveg','Char','Labh','Udyog'];
+// 0=Amrit,1=Kaal,2=Shubh,3=Rog,4=Udveg,5=Char,6=Labh,7=Udyog
+// quality: 2=best,1=good,0=neutral,-1=bad
+const CHOG_QUALITY = [2,  -1,  1,   -1,  -1,   0,    1,    0];
+const CHOG_COLOR   = ['#4ADE80','#F87171','#86EFAC','#F87171','#F87171','#93C5FD','#4ADE80','#93C5FD'];
+
+// Day start index per weekday (0=Sun)
+const CHOG_DAY_START = [4,0,3,6,2,5,1]; // Udveg,Amrit,Rog,Labh,Shubh,Char,Kaal
+// Night start index per weekday
+const CHOG_NIGHT_START = [2,5,1,7,0,3,6]; // Shubh,Char,Kaal,Udyog,Amrit,Rog,Labh
+
+function timeToMins(t){
+  if(!t||!t.includes(':'))return 0;
+  const [h,m]=t.split(':').map(Number);
+  return h*60+m;
+}
+function minsToTime(m){
+  const h=Math.floor(m/60)%24;
+  const mn=Math.floor(m%60);
+  return String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0');
+}
+
+function calcChoghadiya(sunrise, sunset, dow){
+  const sr = timeToMins(sunrise||'06:00');
+  const ss = timeToMins(sunset||'18:30');
+  const nextSr = sr + 1440; // next day sunrise approx
+  const daySlot = (ss - sr) / 8;
+  const nightSlot = (nextSr - ss) / 8;
+  const now = new Date();
+  const nowMins = now.getHours()*60 + now.getMinutes();
+
+  const day = [], night = [];
+  let dIdx = CHOG_DAY_START[dow];
+  let nIdx = CHOG_NIGHT_START[dow];
+  const SEQ = [0,6,1,7,3,2,4,5,0,6,1,7,3,2,4,5]; // rotating sequence
+
+  for(let i=0;i<8;i++){
+    const start = sr + i*daySlot;
+    const end   = start + daySlot;
+    const cIdx  = (dIdx + i) % 8;
+    const isCurrent = nowMins >= start && nowMins < end;
+    day.push({ name_hi:CHOG_NAMES_HI[cIdx], name_en:CHOG_NAMES_EN[cIdx],
+      time: minsToTime(start)+' – '+minsToTime(end),
+      q: CHOG_QUALITY[cIdx], color: CHOG_COLOR[cIdx], current: isCurrent });
+  }
+  for(let i=0;i<8;i++){
+    const start = ss + i*nightSlot;
+    const end   = start + nightSlot;
+    const cIdx  = (nIdx + i) % 8;
+    const isCurrent = nowMins >= start || nowMins < (sr + (i+1)*daySlot/8);
+    night.push({ name_hi:CHOG_NAMES_HI[cIdx], name_en:CHOG_NAMES_EN[cIdx],
+      time: minsToTime(start%1440)+' – '+minsToTime(end%1440),
+      q: CHOG_QUALITY[cIdx], color: CHOG_COLOR[cIdx], current: false });
+  }
+  return {day, night};
+}
+
+function renderChoghadiya(sunrise, sunset){
+  const dow = new Date().getDay();
+  const {day, night} = calcChoghadiya(sunrise, sunset, dow);
+  const grid = document.getElementById('chogGrid');
+  if(!grid) return;
+
+  const all = day; // show day choghadiya (8 slots in 4x2)
+  grid.innerHTML = all.map(c => {
+    const bg = c.current ? `background:${c.color}22;border:1.5px solid ${c.color};` : 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);';
+    const nameColor = c.current ? c.color : (c.q >= 1 ? 'rgba(74,222,128,0.80)' : c.q === 0 ? 'rgba(147,197,253,0.70)' : 'rgba(248,113,113,0.70)');
+    const dot = c.q >= 1 ? '✦' : c.q === 0 ? '◆' : '✕';
+    return `<div style="${bg}border-radius:10px;padding:8px 6px;text-align:center;">
+      <div style="font-size:9px;color:${nameColor};font-weight:700;letter-spacing:0.3px;">${dot} ${H?c.name_hi:c.name_en}</div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:3px;font-family:'Poppins',sans-serif;">${c.time}</div>
+      ${c.current?`<div style="font-size:7px;color:${c.color};margin-top:2px;font-weight:600;">${H?'अभी':'NOW'}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════
+//   VRAT ENGINE
+// ══════════════════════════════
+function getVratsThisWeek(){
+  const today = new Date();
+  const vrats = [];
+
+  for(let i=0;i<7;i++){
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dow = d.getDay();
+    const phase = calMoonPhase(d); // reuse calendar engine
+    const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const festival = CAL_FESTIVALS[dateKey];
+    const dayVrats = [];
+
+    // Weekly vrats
+    if(dow===1) dayVrats.push({h:'सोमवार व्रत',e:'Monday Fast',i:'🕉️'});
+    if(dow===2) dayVrats.push({h:'मंगलवार व्रत',e:'Tuesday Fast',i:'🙏'});
+    if(dow===4) dayVrats.push({h:'गुरुवार व्रत',e:'Thursday Fast',i:'🌸'});
+    if(dow===6) dayVrats.push({h:'शनिवार व्रत',e:'Saturday Fast',i:'🪔'});
+
+    // Tithi-based vrats
+    if(isEkadashi(phase)) dayVrats.push({h:'एकादशी व्रत',e:'Ekadashi Fast',i:'📿'});
+    if(isAmavasya(phase)) dayVrats.push({h:'अमावस्या',e:'Amavasya',i:'🌑'});
+    if(isPurnima(phase)) dayVrats.push({h:'पूर्णिमा व्रत',e:'Purnima Fast',i:'🌕'});
+    const t = calTithi(phase);
+    if(t.en==='Chaturthi') dayVrats.push({h:'संकष्टी चतुर्थी',e:'Sankashti Chaturthi',i:'🐘'});
+    if(t.en==='Pradosh' || Math.abs(phase-12.5)<0.7 || Math.abs(phase-27.3)<0.7) dayVrats.push({h:'प्रदोष व्रत',e:'Pradosh Vrat',i:'🕉️'});
+
+    if(festival) dayVrats.push({h:festival.h, e:festival.n, i:festival.i});
+
+    if(dayVrats.length > 0){
+      const DAYS_HI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
+      const DAYS_EN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const label = i===0 ? (H?'आज':'Today') : i===1 ? (H?'कल':'Tomorrow') : (H?DAYS_HI[dow]:DAYS_EN[dow]);
+      vrats.push({label, date:d.getDate(), dayVrats, isToday:i===0});
+    }
+  }
+  return vrats;
+}
+
+function renderVrats(){
+  const list = document.getElementById('vratList');
+  if(!list) return;
+  const vrats = getVratsThisWeek();
+  if(!vrats.length){ list.innerHTML=`<div style="font-size:12px;color:rgba(255,255,255,0.30);padding:8px;">${H?'इस सप्ताह कोई विशेष व्रत नहीं':'No special fasts this week'}</div>`; return; }
+
+  list.innerHTML = vrats.map(v => `
+    <div style="${v.isToday?'background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);':'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);'}border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+      <div style="text-align:center;flex-shrink:0;width:36px;">
+        <div style="font-size:18px;line-height:1;">${v.dayVrats[0].i}</div>
+        <div style="font-size:8px;color:${v.isToday?'var(--gold)':'rgba(255,255,255,0.35)'};margin-top:2px;font-weight:600;">${v.label}</div>
+      </div>
+      <div style="flex:1;">
+        ${v.dayVrats.map(vt=>`<div style="font-size:13px;color:rgba(255,255,255,0.80);font-weight:500;">${H?vt.h:vt.e}</div>`).join('')}
+      </div>
+      <div style="font-size:20px;color:rgba(255,255,255,0.15);font-weight:300;">${v.date}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════
+//   MUHURAT OCCASIONS
+// ══════════════════════════════
+function renderMuhurat(){
+  const muh = document.getElementById('muhList');
+  if(!muh) return;
+  const items = [
+    {i:'💍',h:'विवाह मुहूर्त',e:'Marriage Muhurta',sh:'शुभ नक्षत्र व तिथि देखें',se:'Check auspicious Nakshatra'},
+    {i:'🏠',h:'गृह प्रवेश',e:'Griha Pravesh',sh:'शुक्ल पक्ष श्रेष्ठ',se:'Shukla Paksha preferred'},
+    {i:'🚗',h:'वाहन खरीद',e:'Vehicle Purchase',sh:'उत्तरा नक्षत्र शुभ',se:'Uttara Nakshatra is best'},
+    {i:'💼',h:'व्यापार आरंभ',e:'Business Start',sh:'अभिजित मुहूर्त देखें',se:'Check Abhijit Muhurta'},
+  ];
+  const phase = calMoonPhase(new Date());
+  const isShukla = phase < 14.77;
+  const tith = calTithi(phase);
+
+  muh.innerHTML = items.map(m => {
+    const hint = isShukla ?
+      (H?'✅ शुक्ल पक्ष — शुभ समय':'✅ Shukla Paksha — Auspicious') :
+      (H?'⚠️ कृष्ण पक्ष — पंडित से पूछें':'⚠️ Krishna Paksha — Consult Pandit');
+    return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(212,168,67,0.12);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.e}')">
+      <div style="font-size:24px;margin-bottom:6px;">${m.i}</div>
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.80);">${H?m.h:m.e}</div>
+      <div style="font-size:9px;color:rgba(212,168,67,0.50);margin-top:4px;">${H?m.sh:m.se}</div>
+      <div style="font-size:8px;margin-top:6px;padding:3px 6px;border-radius:4px;background:${isShukla?'rgba(74,222,128,0.08)':'rgba(251,146,60,0.08)'};color:${isShukla?'rgba(74,222,128,0.70)':'rgba(251,146,60,0.70)'};">${hint}</div>
+    </div>`;
+  }).join('');
+}
+
+function showMuhuratDetail(type){
+  const phase = calMoonPhase(new Date());
+  const isShukla = phase < 14.77;
+  const tith = calTithi(phase);
+  const msgs = {
+    'Marriage Muhurta': H?`विवाह के लिए शुक्ल पक्ष, रोहिणी, मृगशिरा, उत्तरा नक्षत्र शुभ हैं। आज ${isShukla?'शुक्ल पक्ष है — शुभ समय है 🙏':'कृष्ण पक्ष है — पंडित जी से परामर्श लें'}`:`For marriage: Shukla Paksha + Rohini, Mrigashira, Uttara Nakshatras are auspicious. Today is ${isShukla?'Shukla Paksha — good time 🙏':'Krishna Paksha — consult a Pandit'}`,
+    'Griha Pravesh': H?`गृह प्रवेश के लिए शुक्ल पक्ष, रविवार, सोमवार, बुधवार शुभ। आज ${isShukla?'शुक्ल पक्ष है 🙏':'कृष्ण पक्ष — पंडित से पूछें'}`:`For Griha Pravesh: Shukla Paksha, Sunday/Monday/Wednesday preferred. Today ${isShukla?'is Shukla Paksha 🙏':'is Krishna Paksha — consult Pandit'}`,
+    'Vehicle Purchase': H?`वाहन खरीद के लिए उत्तरा, हस्त, अश्विनी नक्षत्र शुभ। राहु काल से बचें।`:`For vehicle: Uttara, Hasta, Ashwini Nakshatras are best. Avoid Rahu Kaal.`,
+    'Business Start': H?`व्यापार के लिए अभिजित मुहूर्त सर्वश्रेष्ठ। लाभ चौघड़िया में शुरू करें।`:`For business: Abhijit Muhurta is best. Start during Labh Choghadiya.`,
+  };
+  alert(msgs[type]||'');
 }
 
 </script>
