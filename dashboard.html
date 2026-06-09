@@ -4723,7 +4723,7 @@ async function submitFeedback(){
 // ══════════════════════════════
 
 // Known new moon reference
-const _CAL_REF_NEW_MOON = new Date('2026-01-29T08:00:00Z');
+const _CAL_REF_NEW_MOON = new Date('2026-01-18T19:52:00Z'); // NASA verified
 const _SYNODIC = 29.53058867;
 
 function calMoonPhase(date){
@@ -4808,6 +4808,33 @@ const CAL_FESTIVALS = {
   '2026-11-03':{n:'Bhai Dooj',h:'भाई दूज',i:'❤️',t:'festival'},
   '2026-11-08':{n:'Chhath Puja',h:'छठ पूजा',i:'☀️',t:'major'},
   '2026-12-25':{n:'Christmas',h:'क्रिसमस',i:'⭐',t:'national'},
+
+  // 2026 Ekadashis (exact dates)
+  '2026-01-03':{n:'Putrada Ekadashi',h:'पुत्रदा एकादशी',i:'🙏',t:'major'},
+  '2026-01-17':{n:'Shattila Ekadashi',h:'षट्तिला एकादशी',i:'🙏',t:'festival'},
+  '2026-02-01':{n:'Jaya Ekadashi',h:'जया एकादशी',i:'🙏',t:'major'},
+  '2026-02-16':{n:'Vijaya Ekadashi',h:'विजया एकादशी',i:'🙏',t:'festival'},
+  '2026-03-03':{n:'Amalaki Ekadashi',h:'आमलकी एकादशी',i:'🙏',t:'major'},
+  '2026-03-17':{n:'Papamochani Ekadashi',h:'पापमोचनी एकादशी',i:'🙏',t:'festival'},
+  '2026-04-02':{n:'Kamada Ekadashi',h:'कामदा एकादशी',i:'🙏',t:'major'},
+  '2026-04-16':{n:'Varuthini Ekadashi',h:'वरूथिनी एकादशी',i:'🙏',t:'festival'},
+  '2026-05-01':{n:'Mohini Ekadashi',h:'मोहिनी एकादशी',i:'🙏',t:'major'},
+  '2026-05-16':{n:'Apara Ekadashi',h:'अपरा एकादशी',i:'🙏',t:'festival'},
+  '2026-05-31':{n:'Nirjala Ekadashi',h:'निर्जला एकादशी',i:'💧',t:'major'},
+  '2026-06-14':{n:'Yogini Ekadashi',h:'योगिनी एकादशी',i:'🙏',t:'festival'},
+  '2026-06-29':{n:'Devshayani Ekadashi',h:'देवशयनी एकादशी',i:'🙏',t:'major'},
+  '2026-07-14':{n:'Kamika Ekadashi',h:'कामिका एकादशी',i:'🙏',t:'festival'},
+  '2026-07-29':{n:'Shravana Putrada',h:'श्रावण पुत्रदा',i:'🙏',t:'major'},
+  '2026-08-12':{n:'Aja Ekadashi',h:'अजा एकादशी',i:'🙏',t:'festival'},
+  '2026-08-28':{n:'Parsva Ekadashi',h:'पार्श्व एकादशी',i:'🙏',t:'major'},
+  '2026-09-11':{n:'Indira Ekadashi',h:'इंदिरा एकादशी',i:'🙏',t:'festival'},
+  '2026-09-26':{n:'Papankusha Ekadashi',h:'पापांकुशा एकादशी',i:'🙏',t:'major'},
+  '2026-10-10':{n:'Rama Ekadashi',h:'रमा एकादशी',i:'🙏',t:'festival'},
+  '2026-10-26':{n:'Haribodhini Ekadashi',h:'हरिबोधिनी एकादशी',i:'🙏',t:'major'},
+  '2026-11-09':{n:'Utpanna Ekadashi',h:'उत्पन्ना एकादशी',i:'🙏',t:'festival'},
+  '2026-11-24':{n:'Mokshada Ekadashi',h:'मोक्षदा एकादशी',i:'🙏',t:'major'},
+  '2026-12-09':{n:'Saphala Ekadashi',h:'सफला एकादशी',i:'🙏',t:'festival'},
+  '2026-12-24':{n:'Putrada Ekadashi',h:'पुत्रदा एकादशी',i:'🙏',t:'major'},
   // 2027
   '2027-01-14':{n:'Makar Sankranti',h:'मकर संक्रांति',i:'☀️',t:'major'},
 };
@@ -5000,10 +5027,25 @@ const CHOG_NAMES_EN = ['Amrit','Kaal','Shubh','Rog','Udveg','Char','Labh','Udyog
 const CHOG_QUALITY = [2,  -1,  1,   -1,  -1,   0,    1,    0];
 const CHOG_COLOR   = ['#4ADE80','#F87171','#86EFAC','#F87171','#F87171','#93C5FD','#4ADE80','#93C5FD'];
 
-// Day start index per weekday (0=Sun)
-const CHOG_DAY_START = [4,0,3,6,2,5,1]; // Udveg,Amrit,Rog,Labh,Shubh,Char,Kaal
-// Night start index per weekday
-const CHOG_NIGHT_START = [2,5,1,7,0,3,6]; // Shubh,Char,Kaal,Udyog,Amrit,Rog,Labh
+// Day Choghadiya sequence per weekday — hardcoded for accuracy (indices: 0=Amrit,1=Kaal,2=Shubh,3=Rog,4=Udveg,5=Char,6=Labh,7=Udyog)
+const DAY_CHOG = [
+  [4,5,6,0,1,2,3,7], // Sunday:    Udveg,Char,Labh,Amrit,Kaal,Shubh,Rog,Udyog
+  [0,1,2,3,7,4,5,6], // Monday:    Amrit,Kaal,Shubh,Rog,Udyog,Udveg,Char,Labh
+  [3,7,4,5,6,0,1,2], // Tuesday:   Rog,Udyog,Udveg,Char,Labh,Amrit,Kaal,Shubh
+  [6,0,1,2,3,7,4,5], // Wednesday: Labh,Amrit,Kaal,Shubh,Rog,Udyog,Udveg,Char
+  [2,3,7,4,5,6,0,1], // Thursday:  Shubh,Rog,Udyog,Udveg,Char,Labh,Amrit,Kaal
+  [5,6,0,1,2,3,7,4], // Friday:    Char,Labh,Amrit,Kaal,Shubh,Rog,Udyog,Udveg
+  [1,2,3,7,4,5,6,0], // Saturday:  Kaal,Shubh,Rog,Udyog,Udveg,Char,Labh,Amrit
+];
+const NIGHT_CHOG = [
+  [2,0,5,3,1,6,7,4], // Sunday:    Shubh,Amrit,Char,Rog,Kaal,Labh,Udyog,Udveg
+  [5,3,1,6,7,4,2,0], // Monday:    Char,Rog,Kaal,Labh,Udyog,Udveg,Shubh,Amrit
+  [1,6,7,4,2,0,5,3], // Tuesday:   Kaal,Labh,Udyog,Udveg,Shubh,Amrit,Char,Rog
+  [7,4,2,0,5,3,1,6], // Wednesday: Udyog,Udveg,Shubh,Amrit,Char,Rog,Kaal,Labh
+  [0,5,3,1,6,7,4,2], // Thursday:  Amrit,Char,Rog,Kaal,Labh,Udyog,Udveg,Shubh
+  [3,1,6,7,4,2,0,5], // Friday:    Rog,Kaal,Labh,Udyog,Udveg,Shubh,Amrit,Char
+  [6,7,4,2,0,5,3,1], // Saturday:  Labh,Udyog,Udveg,Shubh,Amrit,Char,Rog,Kaal
+];
 
 function timeToMins(t){
   if(!t||!t.includes(':'))return 0;
@@ -5026,14 +5068,10 @@ function calcChoghadiya(sunrise, sunset, dow){
   const nowMins = now.getHours()*60 + now.getMinutes();
 
   const day = [], night = [];
-  let dIdx = CHOG_DAY_START[dow];
-  let nIdx = CHOG_NIGHT_START[dow];
-  const SEQ = [0,6,1,7,3,2,4,5,0,6,1,7,3,2,4,5]; // rotating sequence
-
   for(let i=0;i<8;i++){
     const start = sr + i*daySlot;
     const end   = start + daySlot;
-    const cIdx  = (dIdx + i) % 8;
+    const cIdx  = DAY_CHOG[dow][i];
     const isCurrent = nowMins >= start && nowMins < end;
     day.push({ name_hi:CHOG_NAMES_HI[cIdx], name_en:CHOG_NAMES_EN[cIdx],
       time: minsToTime(start)+' – '+minsToTime(end),
@@ -5042,8 +5080,7 @@ function calcChoghadiya(sunrise, sunset, dow){
   for(let i=0;i<8;i++){
     const start = ss + i*nightSlot;
     const end   = start + nightSlot;
-    const cIdx  = (nIdx + i) % 8;
-    const isCurrent = nowMins >= start || nowMins < (sr + (i+1)*daySlot/8);
+    const cIdx  = NIGHT_CHOG[dow][i];
     night.push({ name_hi:CHOG_NAMES_HI[cIdx], name_en:CHOG_NAMES_EN[cIdx],
       time: minsToTime(start%1440)+' – '+minsToTime(end%1440),
       q: CHOG_QUALITY[cIdx], color: CHOG_COLOR[cIdx], current: false });
@@ -5098,7 +5135,7 @@ function getVratsThisWeek(){
     if(isPurnima(phase)) dayVrats.push({h:'पूर्णिमा व्रत',e:'Purnima Fast',i:'🌕'});
     const t = calTithi(phase);
     if(t.en==='Chaturthi') dayVrats.push({h:'संकष्टी चतुर्थी',e:'Sankashti Chaturthi',i:'🐘'});
-    if(t.en==='Pradosh' || Math.abs(phase-12.5)<0.7 || Math.abs(phase-27.3)<0.7) dayVrats.push({h:'प्रदोष व्रत',e:'Pradosh Vrat',i:'🕉️'});
+    if(Math.abs(phase-12.83)<0.85 || Math.abs(phase-27.63)<0.85) dayVrats.push({h:'प्रदोष व्रत',e:'Pradosh Vrat',i:'🕉️'});
 
     if(festival) dayVrats.push({h:festival.h, e:festival.n, i:festival.i});
 
