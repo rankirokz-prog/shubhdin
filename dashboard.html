@@ -5171,43 +5171,83 @@ function renderVrats(){
 // ══════════════════════════════
 //   MUHURAT OCCASIONS
 // ══════════════════════════════
+function muhuratStatus(key, phase, dow){
+  const isS = phase < 14.77;
+  const isAm = isAmavasya(phase);
+  const isEk = isEkadashi(phase);
+  const ti = Math.floor(phase / _SYNODIC * 30) % 30;
+  const badT = [7,13,22,28].includes(ti);
+  if(key==='marriage'){
+    if(isAm||badT)    return{s:'red',   lh:'🔴 आज उचित नहीं',  sh:'अमावस्या/चतुर्दशी — विवाह न करें',le:'🔴 Avoid today',      se:'Avoid Amavasya & Chaturdashi'};
+    if(isS&&!badT)    return{s:'green', lh:'🟢 आज शुभ है',      sh:'शुक्ल पक्ष — विवाह के लिए उत्तम',  le:'🟢 Good today',      se:'Shukla Paksha — auspicious'};
+                      return{s:'yellow',lh:'🟡 औसत दिन',        sh:'शुक्ल पक्ष में करना बेहतर',         le:'🟡 Average today',   se:'Shukla Paksha is more favourable'};
+  }
+  if(key==='griha'){
+    const gd=[1,3,4,5].includes(dow);
+    if(isAm||badT)    return{s:'red',   lh:'🔴 प्रतीक्षा करें', sh:'आज गृह प्रवेश के लिए अशुभ',         le:'🔴 Better to wait',  se:'Inauspicious tithi today'};
+    if(isS&&gd)       return{s:'green', lh:'🟢 शुभ मुहूर्त है',  sh:'शुक्ल पक्ष + शुभ वार',             le:'🟢 Good today',      se:'Shukla Paksha + auspicious day'};
+    if(isS)           return{s:'yellow',lh:'🟡 ठीक है',          sh:'शुक्ल पक्ष — वार और बेहतर हो सकता',le:'🟡 Average today',   se:'Shukla Paksha, weekday not ideal'};
+                      return{s:'red',   lh:'🔴 प्रतीक्षा करें', sh:'शुक्ल पक्ष में गृह प्रवेश करें',    le:'🔴 Better to wait',  se:'Best during Shukla Paksha'};
+  }
+  if(key==='vehicle'){
+    const gd=[2,3].includes(dow);
+    if(isAm)          return{s:'red',   lh:'🔴 आज टालें',       sh:'अमावस्या — वाहन न लें',              le:'🔴 Avoid today',     se:'Amavasya — not for vehicles'};
+    if(gd&&!badT)     return{s:'green', lh:'🟢 अच्छा दिन है',   sh:'मंगल/बुध वार — वाहन के लिए शुभ',   le:'🟢 Good today',      se:'Mars/Mercury day — good for vehicles'};
+    if(badT)          return{s:'yellow',lh:'🟡 सामान्य दिन',    sh:'राहु काल से बचें',                   le:'🟡 Average today',   se:'Avoid Rahu Kaal timing'};
+                      return{s:'yellow',lh:'🟡 ठीक-ठाक दिन',    sh:'उत्तरा/हस्त नक्षत्र देखें',         le:'🟡 Average today',   se:'Uttara or Hasta Nakshatra preferred'};
+  }
+  if(key==='business'){
+    if(isEk)          return{s:'red',   lh:'🔴 आज नहीं',        sh:'एकादशी — नया काम न शुरू करें',       le:'🔴 Not today',       se:'Ekadashi — avoid new beginnings'};
+    if(dow===3&&isS)  return{s:'green', lh:'🟢 बेहतरीन दिन',   sh:'बुधवार + शुक्ल पक्ष — उत्तम',        le:'🟢 Excellent today', se:'Wednesday + Shukla Paksha — ideal'};
+    if(dow===3||isS)  return{s:'yellow',lh:'🟡 ठीक है',          sh:'अभिजित मुहूर्त में शुरू करें',       le:'🟡 Average today',   se:'Start during Abhijit Muhurta'};
+                      return{s:'yellow',lh:'🟡 औसत दिन',        sh:'लाभ चौघड़िया में शुरू करें',         le:'🟡 Average today',   se:'Start during Labh Choghadiya'};
+  }
+  return{s:'yellow',lh:'🟡 औसत दिन',sh:'',le:'🟡 Average today',se:''};
+}
+
 function renderMuhurat(){
   const muh = document.getElementById('muhList');
   if(!muh) return;
-  const items = [
-    {i:'💍',h:'विवाह मुहूर्त',e:'Marriage Muhurta',sh:'शुभ नक्षत्र व तिथि देखें',se:'Check auspicious Nakshatra'},
-    {i:'🏠',h:'गृह प्रवेश',e:'Griha Pravesh',sh:'शुक्ल पक्ष श्रेष्ठ',se:'Shukla Paksha preferred'},
-    {i:'🚗',h:'वाहन खरीद',e:'Vehicle Purchase',sh:'उत्तरा नक्षत्र शुभ',se:'Uttara Nakshatra is best'},
-    {i:'💼',h:'व्यापार आरंभ',e:'Business Start',sh:'अभिजित मुहूर्त देखें',se:'Check Abhijit Muhurta'},
-  ];
   const phase = calMoonPhase(new Date());
-  const isShukla = phase < 14.77;
-  const tith = calTithi(phase);
-
+  const dow   = new Date().getDay();
+  const items = [
+    {i:'💍',h:'विवाह मुहूर्त',e:'Marriage',  key:'marriage'},
+    {i:'🏠',h:'गृह प्रवेश',   e:'Griha',     key:'griha'},
+    {i:'🚗',h:'वाहन खरीद',    e:'Vehicle',   key:'vehicle'},
+    {i:'💼',h:'व्यापार आरंभ', e:'Business',  key:'business'},
+  ];
+  const BG  ={green:'rgba(74,222,128,0.06)', yellow:'rgba(251,191,36,0.06)', red:'rgba(248,113,113,0.06)'};
+  const BRD ={green:'rgba(74,222,128,0.22)', yellow:'rgba(251,191,36,0.22)', red:'rgba(248,113,113,0.22)'};
+  const CLR ={green:'rgba(74,222,128,0.80)', yellow:'rgba(251,191,36,0.80)', red:'rgba(248,113,113,0.80)'};
   muh.innerHTML = items.map(m => {
-    const hint = isShukla ?
-      (H?'✅ शुक्ल पक्ष — शुभ समय':'✅ Shukla Paksha — Auspicious') :
-      (H?'🌙 कृष्ण पक्ष — अगला शुक्ल पक्ष उत्तम':'🌙 Krishna Paksha — Shukla Paksha is better');
-    return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(212,168,67,0.12);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.e}')">
-      <div style="font-size:24px;margin-bottom:6px;">${m.i}</div>
-      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.80);">${H?m.h:m.e}</div>
-      <div style="font-size:9px;color:rgba(212,168,67,0.50);margin-top:4px;">${H?m.sh:m.se}</div>
-      <div style="font-size:8px;margin-top:6px;padding:3px 6px;border-radius:4px;background:${isShukla?'rgba(74,222,128,0.08)':'rgba(251,146,60,0.08)'};color:${isShukla?'rgba(74,222,128,0.70)':'rgba(251,146,60,0.70)'};">${hint}</div>
+    const st = muhuratStatus(m.key, phase, dow);
+    return `<div style="background:${BG[st.s]};border:1px solid ${BRD[st.s]};border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
+      <div style="font-size:22px;margin-bottom:5px;">${m.i}</div>
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${H?m.h:m.e}</div>
+      <div style="font-size:11px;font-weight:700;color:${CLR[st.s]};">${H?st.lh:st.le}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.38);margin-top:3px;line-height:1.4;">${H?st.sh:st.se}</div>
     </div>`;
   }).join('');
 }
 
-function showMuhuratDetail(type){
+function showMuhuratDetail(key){
   const phase = calMoonPhase(new Date());
-  const isShukla = phase < 14.77;
-  const tith = calTithi(phase);
-  const msgs = {
-    'Marriage Muhurta': H?`विवाह के लिए शुक्ल पक्ष, रोहिणी, मृगशिरा, उत्तरा नक्षत्र शुभ हैं। आज ${isShukla?'शुक्ल पक्ष है — शुभ समय है 🙏':'कृष्ण पक्ष है — अगला शुक्ल पक्ष प्रतीक्षा करें 🙏'}`:`For marriage: Shukla Paksha + Rohini, Mrigashira, Uttara Nakshatras are ideal. Today is ${isShukla?'Shukla Paksha — good time 🙏':'Krishna Paksha — next Shukla Paksha will be auspicious 🙏'}`,
-    'Griha Pravesh': H?`गृह प्रवेश के लिए शुक्ल पक्ष, रविवार, सोमवार, बुधवार शुभ। आज ${isShukla?'शुक्ल पक्ष है — शुभ 🙏':'कृष्ण पक्ष है — अगले शुक्ल पक्ष में करें 🙏'}`:`For Griha Pravesh: Shukla Paksha + Sunday, Monday or Wednesday is ideal. Today ${isShukla?'is Shukla Paksha — auspicious 🙏':'is Krishna Paksha — plan for next Shukla Paksha 🙏'}`,
-    'Vehicle Purchase': H?`वाहन खरीद के लिए उत्तरा, हस्त, अश्विनी नक्षत्र शुभ। राहु काल से बचें।`:`For vehicle: Uttara, Hasta, Ashwini Nakshatras are best. Avoid Rahu Kaal.`,
-    'Business Start': H?`व्यापार के लिए अभिजित मुहूर्त सर्वश्रेष्ठ। लाभ चौघड़िया में शुरू करें।`:`For business: Abhijit Muhurta is best. Start during Labh Choghadiya.`,
+  const dow   = new Date().getDay();
+  const isS   = phase < 14.77;
+  const st    = muhuratStatus(key, phase, dow);
+  const details = {
+    marriage: H?`विवाह के लिए रोहिणी, मृगशिरा, उत्तरा नक्षत्र शुभ। ${isS?'आज शुक्ल पक्ष — शुभ 🙏':'अगले शुक्ल पक्ष में विचार करें 🙏'}`
+               :`Best Nakshatras: Rohini, Mrigashira, Uttara. ${isS?'Today is Shukla Paksha — auspicious 🙏':'Consider next Shukla Paksha 🙏'}`,
+    griha:    H?`गृह प्रवेश सोमवार, बुधवार, गुरुवार, शुक्रवार को शुभ। ${isS?'शुक्ल पक्ष — आगे बढ़ें 🙏':'अगले शुक्ल पक्ष की प्रतीक्षा करें'}`
+               :`Mon, Wed, Thu, Fri are ideal days. ${isS?'Shukla Paksha — go ahead 🙏':'Wait for next Shukla Paksha'}`,
+    vehicle:  H?`मंगलवार, बुधवार, उत्तरा/हस्त/अश्विनी नक्षत्र उत्तम। राहु काल से बचें।`
+               :`Tue & Wed ideal. Uttara, Hasta, Ashwini Nakshatras are best. Avoid Rahu Kaal.`,
+    business: H?`बुधवार सर्वश्रेष्ठ। अभिजित मुहूर्त या लाभ चौघड़िया में शुरू करें।`
+               :`Wednesday is best. Start during Abhijit Muhurta or Labh Choghadiya.`,
   };
-  alert(msgs[type]||'');
+  alert((H?'स्थिति: ':'Status: ')+(H?st.lh:st.le)+'
+
+'+(details[key]||''));
 }
 
 </script>
