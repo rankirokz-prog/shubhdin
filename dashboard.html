@@ -5187,7 +5187,7 @@ function renderMuhurat(){
   muh.innerHTML = items.map(m => {
     const hint = isShukla ?
       (H?'✅ शुक्ल पक्ष — शुभ समय':'✅ Shukla Paksha — Auspicious') :
-      (H?'⚠️ कृष्ण पक्ष — पंडित से पूछें':'⚠️ Krishna Paksha — Consult Pandit');
+      (H?'🌙 कृष्ण पक्ष — अगला शुक्ल पक्ष उत्तम':'🌙 Krishna Paksha — Shukla Paksha is better');
     return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(212,168,67,0.12);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.e}')">
       <div style="font-size:24px;margin-bottom:6px;">${m.i}</div>
       <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.80);">${H?m.h:m.e}</div>
