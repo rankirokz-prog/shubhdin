@@ -2295,6 +2295,11 @@ function personalise(){
   document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
 
   document.getElementById('tl4').textContent=H?'जाप':'Jap';
+  // Calendar button
+  const _cbt=document.getElementById('calBtnTitle');
+  if(_cbt) _cbt.textContent=H?'पंचांग कैलेंडर':'Panchang Calendar';
+  const _cbs=document.getElementById('calBtnSub');
+  if(_cbs) _cbs.textContent=H?'त्योहार • चंद्र • पंचांग':'Festivals • Moon • Panchang';
   // Friday: update jCountPill and jOf to show 108
   const _pill=document.getElementById('jCountPill');
   if(_pill) _pill.textContent=isShravan()?'0/108':'0/28';
@@ -4828,6 +4833,17 @@ function renderCalendar(){
   const firstDay = new Date(_calYear, _calMonth, 1).getDay();
   const daysInMonth = new Date(_calYear, _calMonth+1, 0).getDate();
 
+  // Day headers
+  const DAY_HDR = document.getElementById('calDayHdr');
+  if(DAY_HDR){
+    const dh_hi=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
+    const dh_en=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const labels = H ? dh_hi : dh_en;
+    DAY_HDR.innerHTML = labels.map((d,i)=>
+      `<div style="text-align:center;font-size:9px;color:${i===0?'rgba(255,80,80,0.60)':'rgba(212,168,67,0.40)'};font-weight:600;letter-spacing:0.5px;padding:4px 0;">${d}</div>`
+    ).join('');
+  }
+
   // Month title
   const MONTHS_HI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
   const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -5127,15 +5143,7 @@ if('serviceWorker' in navigator){
       </div>
     </div>
     <!-- Day headers -->
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;">
-      <div style="text-align:center;font-size:9px;color:rgba(255,80,80,0.60);font-weight:600;letter-spacing:0.5px;padding:4px 0;">SUN</div>
-      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">MON</div>
-      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">TUE</div>
-      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">WED</div>
-      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">THU</div>
-      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">FRI</div>
-      <div style="text-align:center;font-size:9px;color:rgba(212,168,67,0.40);font-weight:600;letter-spacing:0.5px;padding:4px 0;">SAT</div>
-    </div>
+    <div id="calDayHdr" style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;"></div>
   </div>
 
   <!-- Calendar Grid -->
