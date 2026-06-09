@@ -46,7 +46,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 @keyframes ptUp{0%{opacity:0;transform:translateY(0);}20%{opacity:0.4;transform:translateY(-18px);}100%{opacity:0;transform:translateY(-120px);}}
 
 /* ══ APP SHELL ══ */
-#app{flex:1;display:flex;flex-direction:column;position:relative;z-index:1;opacity:0;animation:show 0.5s ease 3.3s forwards;min-height:0;overflow:hidden;}
+#app{flex:1;display:flex;flex-direction:column;position:relative;z-index:101;opacity:0;animation:show 0.5s ease 3.3s forwards;min-height:0;overflow:hidden;}
 @keyframes show{to{opacity:1;}}
 
 /* ══ SCREENS ══ */
@@ -633,7 +633,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 @keyframes ptUp{0%{opacity:0;transform:translateY(0);}20%{opacity:0.4;transform:translateY(-18px);}100%{opacity:0;transform:translateY(-120px);}}
 
 /* ══ APP SHELL ══ */
-#app{flex:1;display:flex;flex-direction:column;position:relative;z-index:1;opacity:0;animation:show 0.5s ease 3.3s forwards;min-height:0;overflow:hidden;}
+#app{flex:1;display:flex;flex-direction:column;position:relative;z-index:101;opacity:0;animation:show 0.5s ease 3.3s forwards;min-height:0;overflow:hidden;}
 @keyframes show{to{opacity:1;}}
 
 /* ══ SCREENS ══ */
@@ -4258,15 +4258,12 @@ async function fetchPanchang(){
       const karEl=document.getElementById('karVal');
       if(karEl) karEl.textContent=panTr(p.karana,KAR_MAP);
     }
-    // ── Choghadiya (calculated from sunrise/sunset) ──
-    if(p.sunrise && p.sunset){
-      const dow2 = new Date().getDay();
-      renderChoghadiya(p.sunrise, p.sunset);
-    }
+    // ── Choghadiya ──
+    try{ if(p.sunrise && p.sunset) renderChoghadiya(p.sunrise, p.sunset); }catch(e){ console.log('Chog err:',e); }
     // ── Vrat this week ──
-    renderVrats();
-    // ── Muhurat occasions ──
-    renderMuhurat();
+    try{ renderVrats(); }catch(e){ console.log('Vrat err:',e); }
+    // ── Muhurat ──
+    try{ renderMuhurat(); }catch(e){ console.log('Muh err:',e); }
     // ── Sunrise / Sunset ──
     if(p.sunrise){
       const srEl=document.querySelector('.sun-bar .si:nth-child(1) .si-t');
