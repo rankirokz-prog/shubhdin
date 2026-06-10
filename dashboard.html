@@ -4723,11 +4723,23 @@ async function submitFeedback(){
 // ══════════════════════════════
 
 // Known new moon reference
-const _CAL_REF_NEW_MOON = new Date('2026-01-18T19:52:00Z'); // NASA verified
 const _SYNODIC = 29.53058867;
+// New moon anchors (NASA) — drift resets every lunation
+const _NEW_MOONS = [
+  '2025-09-21T19:54Z','2025-10-21T12:25Z','2025-11-20T06:47Z','2025-12-20T01:43Z',
+  '2026-01-18T19:52Z','2026-02-17T12:01Z','2026-03-19T01:23Z','2026-04-17T11:52Z',
+  '2026-05-16T20:01Z','2026-06-15T02:54Z','2026-07-14T09:04Z','2026-08-12T15:37Z',
+  '2026-09-10T23:27Z','2026-10-10T09:50Z','2026-11-08T23:02Z','2026-12-08T14:52Z',
+  '2027-01-07T08:24Z','2027-02-06T03:56Z','2027-03-07T21:29Z','2027-04-06T11:51Z'
+].map(s=>new Date(s));
 
 function calMoonPhase(date){
-  const diff = (date - _CAL_REF_NEW_MOON) / 86400000;
+  // Find most recent new moon anchor before date
+  let anchor = _NEW_MOONS[0];
+  for(const nm of _NEW_MOONS){
+    if(nm <= date) anchor = nm; else break;
+  }
+  const diff = (date - anchor) / 86400000;
   return (((diff % _SYNODIC) + _SYNODIC) % _SYNODIC);
 }
 
@@ -4744,9 +4756,10 @@ function calMoonEmoji(phase){
 }
 
 function calTithi(phase){
+  // Phase 0 = new moon moment = START of Shukla Pratipada
   const idx = Math.floor(phase / _SYNODIC * 30) % 30;
-  const TITHI_HI=['अमावस्या','प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','पूर्णिमा','प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी'];
-  const TITHI_EN=['Amavasya','Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Purnima','Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi'];
+  const TITHI_HI=['प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','पूर्णिमा','प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','अमावस्या'];
+  const TITHI_EN=['Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Purnima','Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Amavasya'];
   const paksha = idx < 15 ? (H?'शुक्ल':'Shukla') : (H?'कृष्ण':'Krishna');
   return {hi:TITHI_HI[idx], en:TITHI_EN[idx], paksha};
 }
@@ -4841,10 +4854,10 @@ const CAL_FESTIVALS = {
 
 // Ekadashis — every 15 days approx
 function isEkadashi(phase){
-  return Math.abs(phase - 10.7) < 0.8 || Math.abs(phase - 25.7) < 0.8;
+  return (phase >= 9.84 && phase < 10.83) || (phase >= 24.61 && phase < 25.60);
 }
-function isAmavasya(phase){ return phase < 1.0 || phase > 28.8; }
-function isPurnima(phase){ return Math.abs(phase - 14.77) < 0.9; }
+function isAmavasya(phase){ return phase > 28.55; }
+function isPurnima(phase){ return phase >= 13.78 && phase < 14.77; }
 
 // Calendar state
 let _calYear = new Date().getFullYear();
@@ -5208,13 +5221,11 @@ function muhuratStatus(key, phase, dow){
 
 function getNextGoodDates(key, count){
   count = count||3;
-  const REF = new Date('2026-01-18T19:52:00Z');
   const dates = [];
   const today = new Date();
   for(let i=1; i<=90 && dates.length < count; i++){
     const d = new Date(today.getTime() + i*86400000);
-    const diff = (d - REF) / 86400000;
-    const ph = ((diff % _SYNODIC) + _SYNODIC) % _SYNODIC;
+    const ph = calMoonPhase(d);
     if(muhuratStatus(key, ph, d.getDay()).s === 'green') dates.push(d);
   }
   const MEN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
