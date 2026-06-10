@@ -5177,32 +5177,49 @@ function muhuratStatus(key, phase, dow){
   const isEk = isEkadashi(phase);
   const ti = Math.floor(phase / _SYNODIC * 30) % 30;
   const badT = [7,13,22,28].includes(ti);
-  if(key==='marriage'){
-    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0909\u091a\u093f\u0924 \u0928\u0939\u0940\u0902',sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e/\u091a\u0924\u0941\u0930\u094d\u0926\u0936\u0940 \u2014 \u0935\u093f\u0935\u093e\u0939 \u0928 \u0915\u0930\u0947\u0902',le:'\ud83d\udd34 Avoid today',se:'Avoid Amavasya & Chaturdashi'};
-    if(isS&&!badT)   return{s:'green', lh:'\ud83d\udfe2 \u0906\u091c \u0936\u0941\u092d \u0939\u0948',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0935\u093f\u0935\u093e\u0939 \u0939\u0947\u0924\u0941 \u0909\u0924\u094d\u0924\u092e',le:'\ud83d\udfe2 Good today',se:'Shukla Paksha \u2014 auspicious'};
-                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u092c\u0947\u0939\u0924\u0930',le:'\ud83d\udfe1 Average today',se:'Shukla Paksha is more favourable'};
-  }
   if(key==='griha'){
     const gd=[1,3,4,5].includes(dow);
-    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902',sh:'\u0906\u091c \u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0905\u0936\u0941\u092d',le:'\ud83d\udd34 Better to wait',se:'Inauspicious tithi today'};
-    if(isS&&gd)      return{s:'green', lh:'\ud83d\udfe2 \u0936\u0941\u092d \u092e\u0941\u0939\u0942\u0930\u094d\u0924',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0936\u0941\u092d \u0935\u093e\u0930',le:'\ud83d\udfe2 Good today',se:'Shukla Paksha + good weekday'};
-    if(isS)          return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0935\u093e\u0930 \u0914\u0930 \u092c\u0947\u0939\u0924\u0930',le:'\ud83d\udfe1 Average today',se:'Weekday could be better'};
-                     return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0915\u0930\u0947\u0902',le:'\ud83d\udd34 Better to wait',se:'Best during Shukla Paksha'};
+    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0906\u091c \u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0905\u0936\u0941\u092d', le:'\ud83d\udd34 Better to wait', se:'Inauspicious tithi today'};
+    if(isS&&gd)      return{s:'green', lh:'\ud83d\udfe2 \u0906\u091c \u0936\u0941\u092d \u0939\u0948',       sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0936\u0941\u092d \u0935\u093e\u0930',      le:'\ud83d\udfe2 Good today',      se:'Shukla Paksha + good weekday'};
+    if(isS)          return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',                   sh:'\u0935\u093e\u0930 \u0914\u0930 \u092c\u0947\u0939\u0924\u0930 \u0939\u094b \u0938\u0915\u0924\u093e', le:'\ud83d\udfe1 Average today',   se:'Weekday could be better'};
+                     return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0915\u0930\u0947\u0902',     le:'\ud83d\udd34 Better to wait', se:'Best in Shukla Paksha'};
   }
   if(key==='vehicle'){
     const gd=[2,3].includes(dow);
-    if(isAm)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u091f\u093e\u0932\u0947\u0902',sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u2014 \u0935\u093e\u0939\u0928 \u0928 \u0932\u0947\u0902',le:'\ud83d\udd34 Avoid today',se:'Amavasya \u2014 not for vehicles'};
-    if(gd&&!badT)    return{s:'green', lh:'\ud83d\udfe2 \u0905\u091a\u094d\u091b\u093e \u0926\u093f\u0928 \u0939\u0948',sh:'\u092e\u0902\u0917\u0932/\u092c\u0941\u0927 \u0935\u093e\u0930 \u2014 \u0936\u0941\u092d',le:'\ud83d\udfe2 Good today',se:'Mars/Mercury day \u2014 good'};
-    if(badT)         return{s:'yellow',lh:'\ud83d\udfe1 \u0938\u093e\u092e\u093e\u0928\u094d\u092f \u0926\u093f\u0928',sh:'\u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Avoid Rahu Kaal'};
-                     return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915-\u0920\u093e\u0915',sh:'\u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0926\u0947\u0916\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Uttara/Hasta Nakshatra preferred'};
+    if(isAm)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u091f\u093e\u0932\u0947\u0902',       sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u2014 \u0935\u093e\u0939\u0928 \u0928 \u0932\u0947\u0902', le:'\ud83d\udd34 Avoid today',    se:'Amavasya \u2014 not for vehicles'};
+    if(gd&&!badT)    return{s:'green', lh:'\ud83d\udfe2 \u0905\u091a\u094d\u091b\u093e \u0926\u093f\u0928',  sh:'\u092e\u0902\u0917\u0932/\u092c\u0941\u0927 \u0935\u093e\u0930 \u2014 \u0936\u0941\u092d',              le:'\ud83d\udfe2 Good today',      se:'Mars/Mercury day \u2014 ideal'};
+    if(badT)         return{s:'yellow',lh:'\ud83d\udfe1 \u0938\u093e\u092e\u093e\u0928\u094d\u092f \u0926\u093f\u0928', sh:'\u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902',             le:'\ud83d\udfe1 Average today',   se:'Avoid Rahu Kaal'};
+                     return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915-\u0920\u093e\u0915',              sh:'\u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0926\u0947\u0916\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Uttara/Hasta Nakshatra preferred'};
   }
   if(key==='business'){
-    if(isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0928\u0939\u0940\u0902',sh:'\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928\u0939\u0940\u0902',le:'\ud83d\udd34 Not today',se:'Ekadashi \u2014 avoid new starts'};
-    if(dow===3&&isS) return{s:'green', lh:'\ud83d\udfe2 \u092c\u0947\u0939\u0924\u0930\u0940\u0928 \u0926\u093f\u0928',sh:'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937',le:'\ud83d\udfe2 Excellent today',se:'Wednesday + Shukla Paksha'};
-    if(dow===3||isS) return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',sh:'\u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Start during Abhijit Muhurta'};
-                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',sh:'\u0932\u093e\u092d \u091a\u094c\u0918\u0921\u093c\u093f\u092f\u093e \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Start during Labh Choghadiya'};
+    if(isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0928\u0939\u0940\u0902',              sh:'\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not today', se:'Ekadashi \u2014 avoid new starts'};
+    if(dow===3&&isS) return{s:'green', lh:'\ud83d\udfe2 \u092c\u0947\u0939\u0924\u0930\u0940\u0928 \u0926\u093f\u0928', sh:'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0909\u0924\u094d\u0924\u092e', le:'\ud83d\udfe2 Excellent today', se:'Wednesday + Shukla Paksha'};
+    if(dow===3||isS) return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',                    sh:'\u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Best in Abhijit Muhurta'};
+                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',               sh:'\u0932\u093e\u092d \u091a\u094c\u0918\u0921\u093c\u093f\u092f\u093e \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902',  le:'\ud83d\udfe1 Average today', se:'Best in Labh Choghadiya'};
+  }
+  if(key==='newstart'){
+    if(isAm||isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0909\u091a\u093f\u0924 \u0928\u0939\u0940\u0902', sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e/\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not ideal', se:'Amavasya/Ekadashi \u2014 avoid new starts'};
+    if(isS&&![0,6].includes(dow)) return{s:'green', lh:'\ud83d\udfe2 \u0936\u0941\u092d \u0906\u0930\u0902\u092d', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0938\u092a\u094d\u0924\u093e\u0939 \u0915\u093e \u0926\u093f\u0928', le:'\ud83d\udfe2 Good to start', se:'Shukla Paksha weekday \u2014 auspicious'};
+    if(isS)                return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',             sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u092e\u0902\u0917\u0932-\u0936\u0928\u093f \u091b\u094b\u0921\u093c\u0915\u0930', le:'\ud83d\udfe1 Average today', se:'Shukla Paksha \u2014 avoid Tue/Sat'};
+                           return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',       sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0928\u093e \u092c\u0947\u0939\u0924\u0930', le:'\ud83d\udfe1 Average today', se:'Better in Shukla Paksha'};
   }
   return{s:'yellow',lh:'\ud83d\udfe1',sh:'',le:'\ud83d\udfe1',se:''};
+}
+
+function getNextGoodDates(key, count){
+  count = count||3;
+  const REF = new Date('2026-01-18T19:52:00Z');
+  const dates = [];
+  const today = new Date();
+  for(let i=1; i<=90 && dates.length < count; i++){
+    const d = new Date(today.getTime() + i*86400000);
+    const diff = (d - REF) / 86400000;
+    const ph = ((diff % _SYNODIC) + _SYNODIC) % _SYNODIC;
+    if(muhuratStatus(key, ph, d.getDay()).s === 'green') dates.push(d);
+  }
+  const MEN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const MHI = ['\u091c\u0928','\u092b\u0930','\u092e\u093e\u0930','\u0905\u092a\u094d\u0930','\u092e\u0908','\u091c\u0942\u0928','\u091c\u0941\u0932','\u0905\u0917','\u0938\u093f\u0924','\u0905\u0915\u094d\u091f','\u0928\u0935','\u0926\u093f\u0938'];
+  return dates.map(d => H ? (d.getDate()+' '+MHI[d.getMonth()]) : (d.getDate()+' '+MEN[d.getMonth()]));
 }
 
 function renderMuhurat(){
@@ -5211,38 +5228,49 @@ function renderMuhurat(){
   const phase = calMoonPhase(new Date());
   const dow = new Date().getDay();
   const items = [
-    {i:'\ud83d\udc8d',h:'\u0935\u093f\u0935\u093e\u0939 \u092e\u0941\u0939\u0942\u0930\u094d\u0924',e:'Marriage',key:'marriage'},
-    {i:'\ud83c\udfe0',h:'\u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936',e:'Griha Pravesh',key:'griha'},
-    {i:'\ud83d\ude97',h:'\u0935\u093e\u0939\u0928 \u0916\u0930\u0940\u0926',e:'Vehicle',key:'vehicle'},
-    {i:'\ud83d\udcbc',h:'\u0935\u094d\u092f\u093e\u092a\u093e\u0930 \u0906\u0930\u0902\u092d',e:'Business',key:'business'},
+    {i:'\ud83c\udfe0',h:'\u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936',   e:'Griha Pravesh',  key:'griha'},
+    {i:'\ud83d\ude97',h:'\u0935\u093e\u0939\u0928 \u0916\u0930\u0940\u0926',          e:'Vehicle',        key:'vehicle'},
+    {i:'\ud83d\udcbc',h:'\u0935\u094d\u092f\u093e\u092a\u093e\u0930 \u0906\u0930\u0902\u092d', e:'Business', key:'business'},
+    {i:'\ud83d\udcdc',h:'\u0928\u092f\u093e \u0906\u0930\u0902\u092d',                 e:'New Beginning',  key:'newstart'},
   ];
-  const BG={green:'rgba(74,222,128,0.06)',yellow:'rgba(251,191,36,0.06)',red:'rgba(248,113,113,0.06)'};
-  const BR={green:'rgba(74,222,128,0.22)',yellow:'rgba(251,191,36,0.22)',red:'rgba(248,113,113,0.22)'};
-  const CL={green:'rgba(74,222,128,0.80)',yellow:'rgba(251,191,36,0.80)',red:'rgba(248,113,113,0.80)'};
+  const BG={green:'rgba(74,222,128,0.06)', yellow:'rgba(251,191,36,0.06)', red:'rgba(248,113,113,0.06)'};
+  const BR={green:'rgba(74,222,128,0.22)', yellow:'rgba(251,191,36,0.22)', red:'rgba(248,113,113,0.22)'};
+  const CL={green:'rgba(74,222,128,0.80)', yellow:'rgba(251,191,36,0.80)', red:'rgba(248,113,113,0.80)'};
   muh.innerHTML = items.map(m => {
     const st = muhuratStatus(m.key, phase, dow);
-    return `<div style="background:${BG[st.s]};border:1px solid ${BR[st.s]};border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
-      <div style="font-size:22px;margin-bottom:5px;">${m.i}</div>
-      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${H?m.h:m.e}</div>
-      <div style="font-size:11px;font-weight:700;color:${CL[st.s]};">${H?st.lh:st.le}</div>
-      <div style="font-size:9px;color:rgba(255,255,255,0.38);margin-top:3px;line-height:1.4;">${H?st.sh:st.se}</div>
+    const next = st.s!=='green' ? getNextGoodDates(m.key, 3) : [];
+    const nextHtml = next.length ? `<div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:5px;">${H?'\u0905\u0917\u0932\u0947:':'Next:'} <span style="color:rgba(212,168,67,0.60);">${next.join(' \u2022 ')}</span></div>` : '';
+    return `<div style="background:${BG[st.s]};border:1px solid ${BR[st.s]};border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
+      <div style="font-size:20px;margin-bottom:4px;">${m.i}</div>
+      <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${H?m.h:m.e}</div>
+      <div style="font-size:10px;font-weight:700;color:${CL[st.s]};">${H?st.lh:st.le}</div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.38);margin-top:2px;">${H?st.sh:st.se}</div>
+      ${nextHtml}
     </div>`;
   }).join('');
 }
-
 function showMuhuratDetail(key){
   const phase = calMoonPhase(new Date());
   const dow = new Date().getDay();
-  const isS = phase < 14.77;
   const st = muhuratStatus(key, phase, dow);
-  const details = {
-    marriage: H?`\u0935\u093f\u0935\u093e\u0939 \u0939\u0947\u0924\u0941 \u0930\u094b\u0939\u093f\u0923\u0940, \u092e\u0943\u0917\u0936\u093f\u0930\u093e, \u0909\u0924\u094d\u0924\u0930\u093e \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0936\u0941\u092d\u0964`:`Best Nakshatras: Rohini, Mrigashira, Uttara.`,
-    griha: H?`\u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0938\u094b\u092e, \u092c\u0941\u0927, \u0917\u0941\u0930\u0941, \u0936\u0941\u0915\u094d\u0930\u0935\u093e\u0930 \u0936\u0941\u092d\u0964`:`Mon, Wed, Thu, Fri are ideal days.`,
-    vehicle: H?`\u092e\u0902\u0917\u0932, \u092c\u0941\u0927\u0935\u093e\u0930 \u0914\u0930 \u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0909\u0924\u094d\u0924\u092e\u0964 \u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902\u0964`:`Tue & Wed ideal. Uttara/Hasta Nakshatra best. Avoid Rahu Kaal.`,
-    business: H?`\u092c\u0941\u0927\u0935\u093e\u0930 \u0938\u0930\u094d\u0935\u0936\u094d\u0930\u0947\u0937\u094d\u0920\u0964 \u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902\u0964`:`Wednesday is best. Start during Abhijit Muhurta.`,
+  const next = getNextGoodDates(key, 3);
+  const abhijit = document.getElementById('goodTime')?.textContent||'';
+  const nextLine = next.length ? (H?'\u0905\u0917\u0932\u0940 \u0936\u0941\u092d \u0924\u093e\u0930\u0940\u0916\u0947\u0902: ':'Next good dates: ')+next.join(' \u2022 ') : '';
+  const advice={
+    griha:    H?'\u0936\u0941\u092d \u0935\u093e\u0930: \u0938\u094b\u092e, \u092c\u0941\u0927, \u0917\u0941\u0930\u0941, \u0936\u0941\u0915\u094d\u0930\u0964 \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u0909\u0924\u094d\u0924\u092e\u0964':'Best days: Mon, Wed, Thu, Fri. Shukla Paksha preferred.',
+    vehicle:  H?'\u092e\u0902\u0917\u0932, \u092c\u0941\u0927\u0935\u093e\u0930 \u0914\u0930 \u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0909\u0924\u094d\u0924\u092e\u0964 \u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902\u0964':'Tue & Wed ideal. Uttara/Hasta best. Avoid Rahu Kaal.',
+    business: H?'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u0938\u0930\u094d\u0935\u0936\u094d\u0930\u0947\u0937\u094d\u0920\u0964 \u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902\u0964':'Wed + Shukla Paksha is best. Start in Abhijit Muhurta.',
+    newstart: H?'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u0915\u093e \u0938\u092a\u094d\u0924\u093e\u0939 \u0915\u093e \u0926\u093f\u0928 \u0936\u0941\u092d\u0964 \u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u0914\u0930 \u090f\u0915\u093e\u0926\u0936\u0940 \u0938\u0947 \u092c\u091a\u0947\u0902\u0964':'Shukla Paksha weekday is ideal. Avoid Amavasya & Ekadashi.',
   };
-  alert((H?'\u0938\u094d\u0925\u093f\u0924\u093f: ':'Status: ')+(H?st.lh:st.le)+'\n\n'+(details[key]||''));
+  const lines = [
+    (H?'\u0906\u091c: ':'Today: ')+(H?st.lh:st.le),
+    nextLine,
+    abhijit?(H?'\u0936\u0941\u092d \u0938\u092e\u092f: ':'Best time: ')+abhijit:'',
+    advice[key]||'',
+  ].filter(Boolean).join('\n\n');
+  alert(lines);
 }
+
 
 </script>
 
