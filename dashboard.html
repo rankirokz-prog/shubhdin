@@ -5249,7 +5249,7 @@ function renderMuhurat(){
   const CL={green:'rgba(74,222,128,0.80)', yellow:'rgba(251,191,36,0.80)', red:'rgba(248,113,113,0.80)'};
   muh.innerHTML = items.map(m => {
     const st = muhuratStatus(m.key, phase, dow);
-    const next = st.s!=='green' ? getNextGoodDates(m.key, 3) : [];
+    const next = getNextGoodDates(m.key, 3); // always show upcoming good dates
     const nextHtml = next.length ? `<div style="font-size:9px;color:rgba(255,255,255,0.35);margin-top:5px;">${H?'\u0905\u0917\u0932\u0947:':'Next:'} <span style="color:rgba(212,168,67,0.60);">${next.join(' \u2022 ')}</span></div>` : '';
     return `<div style="background:${BG[st.s]};border:1px solid ${BR[st.s]};border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
       <div style="font-size:20px;margin-bottom:4px;">${m.i}</div>
