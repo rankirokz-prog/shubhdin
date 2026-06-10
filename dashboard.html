@@ -5171,43 +5171,77 @@ function renderVrats(){
 // ══════════════════════════════
 //   MUHURAT OCCASIONS
 // ══════════════════════════════
+function muhuratStatus(key, phase, dow){
+  const isS = phase < 14.77;
+  const isAm = isAmavasya(phase);
+  const isEk = isEkadashi(phase);
+  const ti = Math.floor(phase / _SYNODIC * 30) % 30;
+  const badT = [7,13,22,28].includes(ti);
+  if(key==='marriage'){
+    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0909\u091a\u093f\u0924 \u0928\u0939\u0940\u0902',sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e/\u091a\u0924\u0941\u0930\u094d\u0926\u0936\u0940 \u2014 \u0935\u093f\u0935\u093e\u0939 \u0928 \u0915\u0930\u0947\u0902',le:'\ud83d\udd34 Avoid today',se:'Avoid Amavasya & Chaturdashi'};
+    if(isS&&!badT)   return{s:'green', lh:'\ud83d\udfe2 \u0906\u091c \u0936\u0941\u092d \u0939\u0948',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0935\u093f\u0935\u093e\u0939 \u0939\u0947\u0924\u0941 \u0909\u0924\u094d\u0924\u092e',le:'\ud83d\udfe2 Good today',se:'Shukla Paksha \u2014 auspicious'};
+                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u092c\u0947\u0939\u0924\u0930',le:'\ud83d\udfe1 Average today',se:'Shukla Paksha is more favourable'};
+  }
+  if(key==='griha'){
+    const gd=[1,3,4,5].includes(dow);
+    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902',sh:'\u0906\u091c \u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0905\u0936\u0941\u092d',le:'\ud83d\udd34 Better to wait',se:'Inauspicious tithi today'};
+    if(isS&&gd)      return{s:'green', lh:'\ud83d\udfe2 \u0936\u0941\u092d \u092e\u0941\u0939\u0942\u0930\u094d\u0924',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0936\u0941\u092d \u0935\u093e\u0930',le:'\ud83d\udfe2 Good today',se:'Shukla Paksha + good weekday'};
+    if(isS)          return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0935\u093e\u0930 \u0914\u0930 \u092c\u0947\u0939\u0924\u0930',le:'\ud83d\udfe1 Average today',se:'Weekday could be better'};
+                     return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902',sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0915\u0930\u0947\u0902',le:'\ud83d\udd34 Better to wait',se:'Best during Shukla Paksha'};
+  }
+  if(key==='vehicle'){
+    const gd=[2,3].includes(dow);
+    if(isAm)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u091f\u093e\u0932\u0947\u0902',sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u2014 \u0935\u093e\u0939\u0928 \u0928 \u0932\u0947\u0902',le:'\ud83d\udd34 Avoid today',se:'Amavasya \u2014 not for vehicles'};
+    if(gd&&!badT)    return{s:'green', lh:'\ud83d\udfe2 \u0905\u091a\u094d\u091b\u093e \u0926\u093f\u0928 \u0939\u0948',sh:'\u092e\u0902\u0917\u0932/\u092c\u0941\u0927 \u0935\u093e\u0930 \u2014 \u0936\u0941\u092d',le:'\ud83d\udfe2 Good today',se:'Mars/Mercury day \u2014 good'};
+    if(badT)         return{s:'yellow',lh:'\ud83d\udfe1 \u0938\u093e\u092e\u093e\u0928\u094d\u092f \u0926\u093f\u0928',sh:'\u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Avoid Rahu Kaal'};
+                     return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915-\u0920\u093e\u0915',sh:'\u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0926\u0947\u0916\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Uttara/Hasta Nakshatra preferred'};
+  }
+  if(key==='business'){
+    if(isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0928\u0939\u0940\u0902',sh:'\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928\u0939\u0940\u0902',le:'\ud83d\udd34 Not today',se:'Ekadashi \u2014 avoid new starts'};
+    if(dow===3&&isS) return{s:'green', lh:'\ud83d\udfe2 \u092c\u0947\u0939\u0924\u0930\u0940\u0928 \u0926\u093f\u0928',sh:'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937',le:'\ud83d\udfe2 Excellent today',se:'Wednesday + Shukla Paksha'};
+    if(dow===3||isS) return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',sh:'\u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Start during Abhijit Muhurta'};
+                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',sh:'\u0932\u093e\u092d \u091a\u094c\u0918\u0921\u093c\u093f\u092f\u093e \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902',le:'\ud83d\udfe1 Average today',se:'Start during Labh Choghadiya'};
+  }
+  return{s:'yellow',lh:'\ud83d\udfe1',sh:'',le:'\ud83d\udfe1',se:''};
+}
+
 function renderMuhurat(){
   const muh = document.getElementById('muhList');
   if(!muh) return;
-  const items = [
-    {i:'💍',h:'विवाह मुहूर्त',e:'Marriage Muhurta',sh:'शुभ नक्षत्र व तिथि देखें',se:'Check auspicious Nakshatra'},
-    {i:'🏠',h:'गृह प्रवेश',e:'Griha Pravesh',sh:'शुक्ल पक्ष श्रेष्ठ',se:'Shukla Paksha preferred'},
-    {i:'🚗',h:'वाहन खरीद',e:'Vehicle Purchase',sh:'उत्तरा नक्षत्र शुभ',se:'Uttara Nakshatra is best'},
-    {i:'💼',h:'व्यापार आरंभ',e:'Business Start',sh:'अभिजित मुहूर्त देखें',se:'Check Abhijit Muhurta'},
-  ];
   const phase = calMoonPhase(new Date());
-  const isShukla = phase < 14.77;
-  const tith = calTithi(phase);
-
+  const dow = new Date().getDay();
+  const items = [
+    {i:'\ud83d\udc8d',h:'\u0935\u093f\u0935\u093e\u0939 \u092e\u0941\u0939\u0942\u0930\u094d\u0924',e:'Marriage',key:'marriage'},
+    {i:'\ud83c\udfe0',h:'\u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936',e:'Griha Pravesh',key:'griha'},
+    {i:'\ud83d\ude97',h:'\u0935\u093e\u0939\u0928 \u0916\u0930\u0940\u0926',e:'Vehicle',key:'vehicle'},
+    {i:'\ud83d\udcbc',h:'\u0935\u094d\u092f\u093e\u092a\u093e\u0930 \u0906\u0930\u0902\u092d',e:'Business',key:'business'},
+  ];
+  const BG={green:'rgba(74,222,128,0.06)',yellow:'rgba(251,191,36,0.06)',red:'rgba(248,113,113,0.06)'};
+  const BR={green:'rgba(74,222,128,0.22)',yellow:'rgba(251,191,36,0.22)',red:'rgba(248,113,113,0.22)'};
+  const CL={green:'rgba(74,222,128,0.80)',yellow:'rgba(251,191,36,0.80)',red:'rgba(248,113,113,0.80)'};
   muh.innerHTML = items.map(m => {
-    const hint = isShukla ?
-      (H?'✅ शुक्ल पक्ष — शुभ समय':'✅ Shukla Paksha — Auspicious') :
-      (H?'🌙 कृष्ण पक्ष — अगला शुक्ल पक्ष उत्तम':'🌙 Krishna Paksha — Shukla Paksha is better');
-    return `<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(212,168,67,0.12);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.e}')">
-      <div style="font-size:24px;margin-bottom:6px;">${m.i}</div>
-      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.80);">${H?m.h:m.e}</div>
-      <div style="font-size:9px;color:rgba(212,168,67,0.50);margin-top:4px;">${H?m.sh:m.se}</div>
-      <div style="font-size:8px;margin-top:6px;padding:3px 6px;border-radius:4px;background:${isShukla?'rgba(74,222,128,0.08)':'rgba(251,146,60,0.08)'};color:${isShukla?'rgba(74,222,128,0.70)':'rgba(251,146,60,0.70)'};">${hint}</div>
+    const st = muhuratStatus(m.key, phase, dow);
+    return `<div style="background:${BG[st.s]};border:1px solid ${BR[st.s]};border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
+      <div style="font-size:22px;margin-bottom:5px;">${m.i}</div>
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${H?m.h:m.e}</div>
+      <div style="font-size:11px;font-weight:700;color:${CL[st.s]};">${H?st.lh:st.le}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,0.38);margin-top:3px;line-height:1.4;">${H?st.sh:st.se}</div>
     </div>`;
   }).join('');
 }
 
-function showMuhuratDetail(type){
+function showMuhuratDetail(key){
   const phase = calMoonPhase(new Date());
-  const isShukla = phase < 14.77;
-  const tith = calTithi(phase);
-  const msgs = {
-    'Marriage Muhurta': H?`विवाह के लिए शुक्ल पक्ष, रोहिणी, मृगशिरा, उत्तरा नक्षत्र शुभ हैं। आज ${isShukla?'शुक्ल पक्ष है — शुभ समय है 🙏':'कृष्ण पक्ष है — अगला शुक्ल पक्ष प्रतीक्षा करें 🙏'}`:`For marriage: Shukla Paksha + Rohini, Mrigashira, Uttara Nakshatras are ideal. Today is ${isShukla?'Shukla Paksha — good time 🙏':'Krishna Paksha — next Shukla Paksha will be auspicious 🙏'}`,
-    'Griha Pravesh': H?`गृह प्रवेश के लिए शुक्ल पक्ष, रविवार, सोमवार, बुधवार शुभ। आज ${isShukla?'शुक्ल पक्ष है — शुभ 🙏':'कृष्ण पक्ष है — अगले शुक्ल पक्ष में करें 🙏'}`:`For Griha Pravesh: Shukla Paksha + Sunday, Monday or Wednesday is ideal. Today ${isShukla?'is Shukla Paksha — auspicious 🙏':'is Krishna Paksha — plan for next Shukla Paksha 🙏'}`,
-    'Vehicle Purchase': H?`वाहन खरीद के लिए उत्तरा, हस्त, अश्विनी नक्षत्र शुभ। राहु काल से बचें।`:`For vehicle: Uttara, Hasta, Ashwini Nakshatras are best. Avoid Rahu Kaal.`,
-    'Business Start': H?`व्यापार के लिए अभिजित मुहूर्त सर्वश्रेष्ठ। लाभ चौघड़िया में शुरू करें।`:`For business: Abhijit Muhurta is best. Start during Labh Choghadiya.`,
+  const dow = new Date().getDay();
+  const isS = phase < 14.77;
+  const st = muhuratStatus(key, phase, dow);
+  const details = {
+    marriage: H?`\u0935\u093f\u0935\u093e\u0939 \u0939\u0947\u0924\u0941 \u0930\u094b\u0939\u093f\u0923\u0940, \u092e\u0943\u0917\u0936\u093f\u0930\u093e, \u0909\u0924\u094d\u0924\u0930\u093e \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0936\u0941\u092d\u0964`:`Best Nakshatras: Rohini, Mrigashira, Uttara.`,
+    griha: H?`\u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0938\u094b\u092e, \u092c\u0941\u0927, \u0917\u0941\u0930\u0941, \u0936\u0941\u0915\u094d\u0930\u0935\u093e\u0930 \u0936\u0941\u092d\u0964`:`Mon, Wed, Thu, Fri are ideal days.`,
+    vehicle: H?`\u092e\u0902\u0917\u0932, \u092c\u0941\u0927\u0935\u093e\u0930 \u0914\u0930 \u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0909\u0924\u094d\u0924\u092e\u0964 \u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902\u0964`:`Tue & Wed ideal. Uttara/Hasta Nakshatra best. Avoid Rahu Kaal.`,
+    business: H?`\u092c\u0941\u0927\u0935\u093e\u0930 \u0938\u0930\u094d\u0935\u0936\u094d\u0930\u0947\u0937\u094d\u0920\u0964 \u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902\u0964`:`Wednesday is best. Start during Abhijit Muhurta.`,
   };
-  alert(msgs[type]||'');
+  alert((H?'\u0938\u094d\u0925\u093f\u0924\u093f: ':'Status: ')+(H?st.lh:st.le)+'\n\n'+(details[key]||''));
 }
 
 </script>
