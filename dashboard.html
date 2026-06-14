@@ -1934,7 +1934,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           <button class="jdsc-btn" onclick="shareJap()" id="jdShareBtn">📤 अपनों के साथ साझा करें</button>
         </div>
 
-        <button class="jd-btn" onclick="resetJap()" id="jdBtn">एक और माला करें 🙏</button>
+        <button class="jd-btn" onclick="japAgain()" id="jdBtn">एक और माला करें 🙏</button>
 
       </div>
 
@@ -2772,6 +2772,24 @@ function toggleJap(){
   if(jPlay){
     const chantKey=CHANT_MAP[dow];
     if(chantKey){
+      // Request wake lock to prevent screen-off from stopping audio
+      if('wakeLock' in navigator){
+        navigator.wakeLock.request('screen').then(lock=>{
+          window._japWakeLock = lock;
+          lock.addEventListener('release', ()=>{ window._japWakeLock = null; });
+        }).catch(()=>{});
+      }
+      // Setup MediaSession for background audio (lockscreen controls)
+      if('mediaSession' in navigator){
+        const dn = T.d_en || 'Mantra';
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: dn+' Jap',
+          artist: 'Shubh Din',
+          album: 'Daily Sadhana',
+        });
+        navigator.mediaSession.setActionHandler('play', ()=>{ if(!jPlay) toggleJap(); });
+        navigator.mediaSession.setActionHandler('pause', ()=>{ if(jPlay) toggleJap(); });
+      }
       const isFriday = isShravan();
       function playOneCycle(){
         if(!jPlay)return;
@@ -2781,6 +2799,7 @@ function toggleJap(){
           buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः']);
         }
         jChantAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3');
+        jChantAudio.preload='auto'; jChantAudio.setAttribute('playsinline','true');
         // NO loop — count on onended
         jChantAudio.play().catch(e=>console.log('Chant:',e));
 
@@ -4225,7 +4244,11 @@ async function fetchPanchang(){
   try{
     const city=(U.city||'default').toLowerCase().replace(/\s+/g,'');
     const tob=U.tob?'&tob='+encodeURIComponent(U.tob):'';
-    const json=await(await fetch('/api/panchang?city='+city+tob)).json();
+    const apiUrl=(location.protocol==='https:'&&location.host)?('/api/panchang?city='+city+tob):('https://www.shubhdin.app/api/panchang?city='+city+tob);
+    const r=await fetch(apiUrl);
+    const ct=r.headers.get('content-type')||'';
+    if(!ct.includes('json')){console.log('Panchang: non-JSON response');return;}
+    const json=await r.json();
     if(!json||!json.data){console.log('Panchang no data:', json);return;}const p=json.data;
     window._panchangData=p;
     setTimeout(prewarmAudio, 1000);
@@ -4440,7 +4463,7 @@ function saveSettings(){
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
   // Regenerate name audio if name changed
   if(nameChanged && newName){
-    fetch('/api/generate-name?name='+encodeURIComponent(newName)).catch(()=>{});
+    fetch(((location.protocol==='https:'&&location.host)?'':'https://www.shubhdin.app')+'/api/generate-name?name='+encodeURIComponent(newName)).catch(()=>{});
   }
   // Clear birth cache so it refetches with new DOB/TOB
   u.birth_cache_key = '';
@@ -4647,7 +4670,7 @@ async function saveToCloud(){
     const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
     const streak = JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');
     const sadhana = JSON.parse(localStorage.getItem('shubhdin_sadhana')||'null');
-    await fetch('/api/save-user', {
+    await fetch((location.protocol==='https:'&&location.host)?'/api/save-user':'https://www.shubhdin.app/api/save-user', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -4692,7 +4715,7 @@ async function submitFeedback(){
   btn.disabled = true;
   try{
     const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
-    const r = await fetch('/api/feedback', {
+    const r = await fetch((location.protocol==='https:'&&location.host)?'/api/feedback':'https://www.shubhdin.app/api/feedback', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -5282,6 +5305,21 @@ function showMuhuratDetail(key){
   alert(lines);
 }
 
+
+
+function japAgain(){
+  // Hide completion screen
+  document.getElementById('jdone').classList.remove('show');
+  // Reset count and UI without affecting jPlay
+  jCount=0;
+  document.getElementById('jNum').textContent='0';
+  document.getElementById('jCountPill').textContent='0/'+(isShravan()?108:28);
+  buildMala();
+  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
+  // Ensure jPlay is false, then toggle to start
+  jPlay = false;
+  toggleJap();
+}
 
 </script>
 
