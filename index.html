@@ -542,7 +542,11 @@
   // ── Location ──
   function detectLoc() {
     document.getElementById('gpsTxt').textContent = lang==='hi' ? '⏳ ढूंढ रहे हैं...' : '⏳ Detecting...';
-    if (!navigator.geolocation) { resetGPS(); return; }
+    if (!navigator.geolocation) {
+      document.getElementById('gpsTxt').textContent = lang==='hi' ? '❌ GPS उपलब्ध नहीं' : '❌ GPS not available';
+      setTimeout(resetGPS, 2000);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       pos => {
         fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
@@ -565,8 +569,20 @@
             document.getElementById('gpsBtn').style.display='none';
             document.getElementById('orDiv').style.display='none';
             validateStep4();
-          }).catch(resetGPS);
-      }, resetGPS
+          }).catch(()=>{
+            document.getElementById('gpsTxt').textContent = lang==='hi' ? '❌ नहीं मिला, शहर खोजें' : '❌ Failed, search city';
+            setTimeout(resetGPS, 2500);
+          });
+      },
+      err => {
+        let msg;
+        if(err.code === 1) msg = lang==='hi' ? '❌ अनुमति दें या शहर खोजें' : '❌ Allow permission or search';
+        else if(err.code === 3) msg = lang==='hi' ? '⏱️ समय समाप्त, फिर कोशिश करें' : '⏱️ Timed out, try again';
+        else msg = lang==='hi' ? '❌ नहीं मिला, शहर खोजें' : '❌ Not found, search city';
+        document.getElementById('gpsTxt').textContent = msg;
+        setTimeout(resetGPS, 2500);
+      },
+      { enableHighAccuracy:true, timeout:10000, maximumAge:60000 }
     );
   }
   function resetGPS() { document.getElementById('gpsTxt').textContent = T[lang].gpsTxt; }
