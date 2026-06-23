@@ -123,10 +123,11 @@
   .field input,.field select{
     width:100%;height:50px;border-radius:13px;
     border:1.5px solid rgba(212,168,67,0.22);
-    background:#fff;padding:0 16px;
-    font-family:'Poppins',sans-serif;font-size:14px;color:var(--dark);
+    background:#1A0800;padding:0 16px;
+    font-family:'Poppins',sans-serif;font-size:14px;color:#fff;
     outline:none;transition:all 0.2s;-webkit-appearance:none;appearance:none;
   }
+  select option{ background:#1A0800; color:#fff; }
   .field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,0.10);}
   .field input::placeholder{color:rgba(26,10,0,0.25);}
   .field-hint{font-size:10px;color:rgba(26,10,0,0.30);margin-top:5px;padding-left:2px;}
@@ -183,6 +184,16 @@
 </style>
 </head>
 <body>
+
+<!-- Instant OM loading overlay -->
+<div id="omLoader" style="position:fixed;inset:0;z-index:9999;background:linear-gradient(155deg,#0D0500 0%,#2C1208 50%,#0D0500 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease;">
+  <div style="font-size:80px;color:#D4A843;text-shadow:0 0 30px rgba(212,168,67,0.5);animation:omPulse 2s ease-in-out infinite;">\u0950</div>
+  <div style="margin-top:20px;font-family:'Tiro Devanagari Hindi',serif;font-size:22px;color:#D4A843;letter-spacing:2px;">\u0936\u0941\u092d \u0926\u093f\u0928</div>
+  <div style="margin-top:6px;font-family:'Poppins',sans-serif;font-size:11px;color:rgba(212,168,67,0.55);letter-spacing:3px;text-transform:uppercase;">Shubh Din</div>
+</div>
+<style>
+@keyframes omPulse{0%,100%{transform:scale(1);opacity:0.85;}50%{transform:scale(1.08);opacity:1;}}
+</style>
 
 <!-- Particles -->
 <div class="pt" style="left:8%;bottom:18%;animation-duration:4s;animation-delay:0s;"></div>
@@ -770,6 +781,15 @@ function updateTOB(){
   if(h && m) document.getElementById('userTOB').value = h+':'+m;
   else document.getElementById('userTOB').value = '';
 }
+
+
+// Fade out OM loader when page ready
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    var ol = document.getElementById('omLoader');
+    if(ol){ ol.style.opacity='0'; setTimeout(function(){ ol.style.display='none'; }, 600); }
+  }, 800);
+});
 
 </script>
 
