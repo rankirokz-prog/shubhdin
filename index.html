@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>शुभ दिन — Shubh Din</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#D4A843">
+<meta name="theme-color" content="#0A0300">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ShubhDin">
@@ -13,7 +15,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  :root{--gold:#D4A843;--deep-gold:#B8860B;--saffron:#FF6B1A;--cream:#FFF8ED;--dark:#1A0A00;--sage:#4A7C59;color-scheme:dark;}
+  :root{--gold:#D4A843;--deep-gold:#B8860B;--saffron:#FF6B1A;--cream:#FFF8ED;--dark:#1A0A00;--sage:#4A7C59;color-scheme:dark only;}
+  html{color-scheme:dark only;}
+  @media(prefers-color-scheme:light){html,body{color-scheme:dark !important;}}
 
   body{
     min-height:100vh;
