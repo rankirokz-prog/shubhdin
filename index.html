@@ -126,14 +126,14 @@
   .field-opt{font-size:10px;color:rgba(26,10,0,0.28);font-style:italic;}
   .field input,.field select{
     width:100%;height:50px;border-radius:13px;
-    border:1.5px solid rgba(212,168,67,0.22);
-    background:rgba(255,255,255,0.06);padding:0 16px;
-    font-family:'Poppins',sans-serif;font-size:14px;color:#FFE8C8;
+    border:1.5px solid rgba(212,168,67,0.35);
+    background:rgba(255,255,255,0.65);padding:0 16px;
+    font-family:'Poppins',sans-serif;font-size:14px;color:#2C1208;
     outline:none;transition:all 0.2s;-webkit-appearance:none;appearance:none;
   }
   /* Dropdown list items need solid bg (browser renders the popup list separately) */
   .field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,0.10);}
-  .field input::placeholder{color:rgba(255,232,200,0.40);}
+  .field input::placeholder{color:rgba(44,18,8,0.40);}
   .field-hint{font-size:10px;color:rgba(26,10,0,0.30);margin-top:5px;padding-left:2px;}
 
   /* Name greeting */
@@ -147,12 +147,12 @@
     border:1.5px solid rgba(212,168,67,0.28);
     background:linear-gradient(135deg,rgba(212,168,67,0.07),rgba(255,107,26,0.04));
     font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;
-    color:var(--deep-gold);cursor:pointer;
+    color:#8B5A0B;cursor:pointer;
     display:flex;align-items:center;justify-content:center;gap:8px;
     margin-bottom:10px;transition:all 0.2s;
   }
   .loc-btn:active{background:rgba(212,168,67,0.12);}
-  .loc-found{background:rgba(74,124,89,0.12);border:1px solid rgba(74,124,89,0.30);border-radius:11px;padding:9px 13px;margin-bottom:10px;display:none;font-size:12px;color:#7DD89A;font-weight:600;}
+  .loc-found{background:rgba(74,124,89,0.12);border:1px solid rgba(74,124,89,0.30);border-radius:11px;padding:9px 13px;margin-bottom:10px;display:none;font-size:12px;color:#2E7D4F;font-weight:600;}
   .loc-found.show{display:flex;align-items:center;gap:8px;}
   .or-div{text-align:center;font-size:11px;color:rgba(26,10,0,0.25);margin:8px 0;display:flex;align-items:center;gap:8px;}
   .or-div::before,.or-div::after{content:'';flex:1;height:1px;background:rgba(26,10,0,0.08);}
@@ -186,8 +186,8 @@
   .ti-text{font-size:12px;color:var(--dark);line-height:1.5;}
   .ti-text strong{color:var(--saffron);}
 
-  #userDOB{color:#FFE8C8;}
-  #userDOB::-webkit-datetime-edit{color:#FFE8C8;}
+  #userDOB{color:#2C1208;}
+  #userDOB::-webkit-datetime-edit{color:#2C1208;}
   #userDOB::-webkit-calendar-picker-indicator{filter:invert(0.8) sepia(1) saturate(3) hue-rotate(5deg);}
 </style>
 </head>
@@ -288,12 +288,12 @@
         <span class="field-opt" id="tobOpt">वैकल्पिक</span>
       </div>
       <div style="display:flex;gap:10px;align-items:center;">
-        <select id="userTOB_h" onchange="updateTOB()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(212,168,67,0.25);background:rgba(255,255,255,0.06);color:#FFE8C8;font-family:'Poppins',sans-serif;font-size:16px;outline:none;appearance:none;text-align:center;">
+        <select id="userTOB_h" onchange="updateTOB()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(212,168,67,0.25);background:rgba(255,255,255,0.65);color:#2C1208;font-family:'Poppins',sans-serif;font-size:16px;outline:none;appearance:none;text-align:center;">
           <option value="">HH</option>
           <option value="00">00</option><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option>
         </select>
         <span style="color:rgba(212,168,67,0.6);font-size:20px;font-weight:600;">:</span>
-        <select id="userTOB_m" onchange="updateTOB()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(212,168,67,0.25);background:rgba(255,255,255,0.06);color:#FFE8C8;font-family:'Poppins',sans-serif;font-size:16px;outline:none;appearance:none;text-align:center;">
+        <select id="userTOB_m" onchange="updateTOB()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid rgba(212,168,67,0.25);background:rgba(255,255,255,0.65);color:#2C1208;font-family:'Poppins',sans-serif;font-size:16px;outline:none;appearance:none;text-align:center;">
           <option value="">MM</option>
           <option value="00">00</option><option value="01">01</option><option value="02">02</option><option value="03">03</option><option value="04">04</option><option value="05">05</option><option value="06">06</option><option value="07">07</option><option value="08">08</option><option value="09">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option><option value="32">32</option><option value="33">33</option><option value="34">34</option><option value="35">35</option><option value="36">36</option><option value="37">37</option><option value="38">38</option><option value="39">39</option><option value="40">40</option><option value="41">41</option><option value="42">42</option><option value="43">43</option><option value="44">44</option><option value="45">45</option><option value="46">46</option><option value="47">47</option><option value="48">48</option><option value="49">49</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="53">53</option><option value="54">54</option><option value="55">55</option><option value="56">56</option><option value="57">57</option><option value="58">58</option><option value="59">59</option>
         </select>
