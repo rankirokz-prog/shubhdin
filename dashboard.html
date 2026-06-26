@@ -4944,11 +4944,13 @@ function openCalendar(){
   const now = new Date();
   _calYear = now.getFullYear();
   _calMonth = now.getMonth();
-  _calSelected = now.getDate();
+  _calSelected = null; // nothing selected until user taps
   const ov = document.getElementById('calOverlay');
   ov.style.display='flex';
   renderCalendar();
-  showCalDetail(now);
+  // Show gentle prompt instead of auto-opening detail
+  const cd = document.getElementById('calDetail');
+  if(cd) cd.innerHTML = `<div style="text-align:center;padding:18px 12px;color:rgba(212,168,67,0.55);font-size:13px;">${H?'📅 किसी तारीख पर टैप करें':'📅 Tap any date to see details'}</div>`;
   // Translate button
   const bt=document.getElementById('calBtnTitle');
   const bs=document.getElementById('calBtnSub');
@@ -5035,10 +5037,7 @@ function renderCalendar(){
   html += '</div>';
   document.getElementById('calGrid').innerHTML = html;
 
-  // Show today's detail if current month
-  if(_calSelected && _calMonth===today.getMonth() && _calYear===today.getFullYear()){
-    showCalDetail(new Date(_calYear, _calMonth, _calSelected));
-  }
+  // Detail only shows when user taps a date (no auto-open)
 }
 
 function selectCalDate(d){
@@ -5098,7 +5097,7 @@ function showCalDetail(date){
   // Build full data rows when we have real data (today)
   let fullData = '';
   if(p){
-    const fmtTime = (iso)=>{ if(!iso) return ''; try{ const d=new Date(iso); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }catch(e){ return iso; } };
+    const fmtTime = (iso)=>{ if(!iso) return ''; try{ const d=new Date(iso); if(isNaN(d.getTime())) return (typeof iso==='string'?iso:''); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }catch(e){ return ''; } };
     const rows = [];
     const tEnd = p.tithi_end ? ' '+(H?'तक':'until')+' '+fmtTime(p.tithi_end) : '';
     const nEnd = p.nakshatra_end ? ' '+(H?'तक':'until')+' '+fmtTime(p.nakshatra_end) : '';
@@ -5113,12 +5112,13 @@ function showCalDetail(date){
     if(p.gulika) rows.push([(H?'गुलिक काल':'Gulika'), p.gulika]);
     if(p.abhijit_muhurta) rows.push(['⭐ '+(H?'अभिजित':'Abhijit'), p.abhijit_muhurta]);
 
-    fullData = `<div style="margin-top:12px;border-top:1px solid rgba(212,168,67,0.15);padding-top:10px;">
-      ${rows.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;">
+    const validRows = rows.filter(r => r[1] && r[1].trim() && r[1]!=='Invalid Date');
+    fullData = validRows.length ? `<div style="margin-top:12px;border-top:1px solid rgba(212,168,67,0.15);padding-top:10px;">
+      ${validRows.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;">
         <span style="color:rgba(212,168,67,0.75);">${r[0]}</span>
         <span style="color:rgba(255,240,220,0.92);font-weight:500;text-align:right;">${r[1]}</span>
       </div>`).join('')}
-    </div>`;
+    </div>` : '';
   }
 
   // For today, add a button to the full panchang page
