@@ -5090,8 +5090,42 @@ function showCalDetail(date){
     isPurnima(phase)?(H?'🌕 पूर्णिमा — व्रत का विशेष दिन':'🌕 Purnima — Auspicious for fasting'):
     isEkadashi(phase)?(H?'🙏 एकादशी — व्रत एवं विष्णु पूजा':'🙏 Ekadashi — Fast & Vishnu Puja'):'';
 
+  // Is this TODAY? If so, show the full real panchang data from API
+  const today = new Date();
+  const isToday = date.getDate()===today.getDate() && date.getMonth()===today.getMonth() && date.getFullYear()===today.getFullYear();
+  const p = (isToday && window._panchangData) ? window._panchangData : null;
+
+  // Build full data rows when we have real data (today)
+  let fullData = '';
+  if(p){
+    const fmtTime = (iso)=>{ if(!iso) return ''; try{ const d=new Date(iso); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }catch(e){ return iso; } };
+    const rows = [];
+    const tEnd = p.tithi_end ? ' '+(H?'तक':'until')+' '+fmtTime(p.tithi_end) : '';
+    const nEnd = p.nakshatra_end ? ' '+(H?'तक':'until')+' '+fmtTime(p.nakshatra_end) : '';
+    rows.push([H?'तिथि':'Tithi', (H?tithi.hi:tithi.en)+tEnd]);
+    if(p.nakshatra) rows.push([H?'नक्षत्र':'Nakshatra', p.nakshatra+nEnd]);
+    if(p.yoga) rows.push([H?'योग':'Yoga', p.yoga]);
+    if(p.karana) rows.push([H?'करण':'Karana', p.karana]);
+    if(p.sunrise) rows.push(['☀️ '+(H?'सूर्योदय':'Sunrise'), fmtTime(p.sunrise)]);
+    if(p.sunset) rows.push(['🌇 '+(H?'सूर्यास्त':'Sunset'), fmtTime(p.sunset)]);
+    if(p.moonrise) rows.push(['🌙 '+(H?'चंद्रोदय':'Moonrise'), fmtTime(p.moonrise)]);
+    if(p.rahu_kaal) rows.push(['⚠️ '+(H?'राहु काल':'Rahu Kaal'), p.rahu_kaal]);
+    if(p.gulika) rows.push([(H?'गुलिक काल':'Gulika'), p.gulika]);
+    if(p.abhijit_muhurta) rows.push(['⭐ '+(H?'अभिजित':'Abhijit'), p.abhijit_muhurta]);
+
+    fullData = `<div style="margin-top:12px;border-top:1px solid rgba(212,168,67,0.15);padding-top:10px;">
+      ${rows.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;">
+        <span style="color:rgba(212,168,67,0.75);">${r[0]}</span>
+        <span style="color:rgba(255,240,220,0.92);font-weight:500;text-align:right;">${r[1]}</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // For today, add a button to the full panchang page
+  const fullBtn = isToday ? `<div onclick="go('panchang')" style="margin-top:10px;text-align:center;padding:9px;background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,140,30,0.08));border:1px solid rgba(212,168,67,0.25);border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gold);">📿 ${H?'पूरा पंचांग देखें':'View Full Panchang'} ›</div>` : '';
+
   document.getElementById('calDetail').innerHTML = `
-    <div style="font-size:11px;color:rgba(212,168,67,0.72);letter-spacing:0.5px;margin-bottom:6px;">${dateStr}</div>
+    <div style="font-size:11px;color:rgba(212,168,67,0.72);letter-spacing:0.5px;margin-bottom:6px;">${dateStr}${isToday?(H?' • आज':' • Today'):''}</div>
     <div style="display:flex;gap:16px;align-items:center;">
       <span style="font-size:36px;line-height:1;">${moon.e}</span>
       <div>
@@ -5100,8 +5134,10 @@ function showCalDetail(date){
       </div>
     </div>
     ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.85);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
-  <div style='margin-top:6px;font-size:11px;color:rgba(255,255,255,0.74);font-style:italic;'>${calSpiritualNote(phase,festival)||''}</div>
+    ${fullData}
     ${festHtml}
+    ${!p?`<div style='margin-top:6px;font-size:11px;color:rgba(255,255,255,0.74);font-style:italic;'>${calSpiritualNote(phase,festival)||''}</div>`:''}
+    ${fullBtn}
   `;
 }
 
