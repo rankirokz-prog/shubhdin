@@ -155,16 +155,26 @@ async function fetchFromAPI(city, dateObj, token) {
   const sunset   = fmtTime(d.sunset)   || '18:34';
   const moonrise = d.moonrise ? fmtTime(d.moonrise) : '';
 
-  // Parse fields from actual Prokerala response structure
+  // Parse fields — Prokerala returns ARRAYS (current + next transitions)
   const tithi          = d.tithi?.[0]?.name                || '';
   const tithi_paksha   = d.tithi?.[0]?.paksha              || '';
   const tithi_end      = d.tithi?.[0]?.end                 || '';
+  const tithi2         = d.tithi?.[1]?.name                || '';   // next tithi
+  const tithi2_paksha  = d.tithi?.[1]?.paksha              || '';
   const nakshatra      = d.nakshatra?.[0]?.name            || '';
   const nakshatra_ruler= d.nakshatra?.[0]?.lord?.name      || '';
   const nakshatra_end  = d.nakshatra?.[0]?.end             || '';
+  const nakshatra2     = d.nakshatra?.[1]?.name            || '';   // next nakshatra
   const yoga           = d.yoga?.[0]?.name                 || '';
   const yoga_end       = d.yoga?.[0]?.end                  || '';
+  const yoga2          = d.yoga?.[1]?.name                 || '';   // next yoga
   const karana         = d.karana?.[0]?.name               || '';
+  const karana_end     = d.karana?.[0]?.end                || '';
+  const karana2        = d.karana?.[1]?.name               || '';   // next karana
+  const karana2_end    = d.karana?.[1]?.end                || '';
+  const karana3        = d.karana?.[2]?.name               || '';   // third karana (day has 2-3)
+  const moonset        = d.moonset ? fmtTime(d.moonset) : '';
+  const weekday        = d.vaara || d.weekday?.name || ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][dow] || '';
 
   // Prokerala does NOT return rahu_kaal or gulika — calculate both
   const rahu_kaal = calcRahuKaal(sunrise, dow);
@@ -172,8 +182,11 @@ async function fetchFromAPI(city, dateObj, token) {
 
   return {
     city: city.name,
-    tithi, tithi_paksha, tithi_end, nakshatra, nakshatra_ruler, nakshatra_end, yoga, yoga_end, karana,
-    sunrise, sunset, moonrise,
+    tithi, tithi_paksha, tithi_end, tithi2, tithi2_paksha,
+    nakshatra, nakshatra_ruler, nakshatra_end, nakshatra2,
+    yoga, yoga_end, yoga2,
+    karana, karana_end, karana2, karana2_end, karana3,
+    sunrise, sunset, moonrise, moonset, weekday,
     gulika: calcGulika(sunrise, dow),
     rahu_kaal: rahu_kaal,
     abhijit_muhurta: abhijit,
