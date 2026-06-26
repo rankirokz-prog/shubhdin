@@ -158,9 +158,12 @@ async function fetchFromAPI(city, dateObj, token) {
   // Parse fields from actual Prokerala response structure
   const tithi          = d.tithi?.[0]?.name                || '';
   const tithi_paksha   = d.tithi?.[0]?.paksha              || '';
+  const tithi_end      = d.tithi?.[0]?.end                 || '';
   const nakshatra      = d.nakshatra?.[0]?.name            || '';
   const nakshatra_ruler= d.nakshatra?.[0]?.lord?.name      || '';
+  const nakshatra_end  = d.nakshatra?.[0]?.end             || '';
   const yoga           = d.yoga?.[0]?.name                 || '';
+  const yoga_end       = d.yoga?.[0]?.end                  || '';
   const karana         = d.karana?.[0]?.name               || '';
 
   // Prokerala does NOT return rahu_kaal or gulika — calculate both
@@ -169,7 +172,7 @@ async function fetchFromAPI(city, dateObj, token) {
 
   return {
     city: city.name,
-    tithi, tithi_paksha, nakshatra, nakshatra_ruler, yoga, karana,
+    tithi, tithi_paksha, tithi_end, nakshatra, nakshatra_ruler, nakshatra_end, yoga, yoga_end, karana,
     sunrise, sunset, moonrise,
     gulika: calcGulika(sunrise, dow),
     rahu_kaal: rahu_kaal,
