@@ -5097,28 +5097,61 @@ function showCalDetail(date){
   // Build full data rows when we have real data (today)
   let fullData = '';
   if(p){
-    const fmtTime = (iso)=>{ if(!iso) return ''; try{ const d=new Date(iso); if(isNaN(d.getTime())) return (typeof iso==='string'?iso:''); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }catch(e){ return ''; } };
-    const rows = [];
-    const tEnd = p.tithi_end ? ' '+(H?'तक':'until')+' '+fmtTime(p.tithi_end) : '';
-    const nEnd = p.nakshatra_end ? ' '+(H?'तक':'until')+' '+fmtTime(p.nakshatra_end) : '';
-    rows.push([H?'तिथि':'Tithi', (H?tithi.hi:tithi.en)+tEnd]);
-    if(p.nakshatra) rows.push([H?'नक्षत्र':'Nakshatra', p.nakshatra+nEnd]);
-    if(p.yoga) rows.push([H?'योग':'Yoga', p.yoga]);
-    if(p.karana) rows.push([H?'करण':'Karana', p.karana]);
-    if(p.sunrise) rows.push(['☀️ '+(H?'सूर्योदय':'Sunrise'), fmtTime(p.sunrise)]);
-    if(p.sunset) rows.push(['🌇 '+(H?'सूर्यास्त':'Sunset'), fmtTime(p.sunset)]);
-    if(p.moonrise) rows.push(['🌙 '+(H?'चंद्रोदय':'Moonrise'), fmtTime(p.moonrise)]);
-    if(p.rahu_kaal) rows.push(['⚠️ '+(H?'राहु काल':'Rahu Kaal'), p.rahu_kaal]);
-    if(p.gulika) rows.push([(H?'गुलिक काल':'Gulika'), p.gulika]);
-    if(p.abhijit_muhurta) rows.push(['⭐ '+(H?'अभिजित':'Abhijit'), p.abhijit_muhurta]);
+    const fmtT = (iso)=>{ if(!iso) return ''; try{ const d=new Date(iso); if(isNaN(d.getTime())) return ''; return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }catch(e){ return ''; } };
+    const upto = H?'तक':'upto';
+    const after = H?'के बाद':'after';
 
-    const validRows = rows.filter(r => r[1] && r[1].trim() && r[1]!=='Invalid Date');
-    fullData = validRows.length ? `<div style="margin-top:12px;border-top:1px solid rgba(212,168,67,0.15);padding-top:10px;">
-      ${validRows.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;">
-        <span style="color:rgba(212,168,67,0.75);">${r[0]}</span>
-        <span style="color:rgba(255,240,220,0.92);font-weight:500;text-align:right;">${r[1]}</span>
-      </div>`).join('')}
-    </div>` : '';
+    // Build a panchang element block: current upto TIME, then next after TIME
+    const block = (label, cur, endIso, next) => {
+      const t = fmtT(endIso);
+      let lines = '';
+      if(cur && t){
+        lines += `<div style="font-size:12px;color:rgba(255,240,220,0.92);">${cur} <span style="color:rgba(212,168,67,0.65);">– ${upto} ${t}</span></div>`;
+        if(next) lines += `<div style="font-size:12px;color:rgba(255,240,220,0.78);">${next} <span style="color:rgba(212,168,67,0.55);">– ${after} ${t}</span></div>`;
+      } else if(cur){
+        lines += `<div style="font-size:12px;color:rgba(255,240,220,0.92);">${cur}</div>`;
+      }
+      if(!lines) return '';
+      return `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);">
+        <div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>
+        ${lines}
+      </div>`;
+    };
+
+    // Simple time row (sunrise etc.)
+    const timeRow = (label, val) => {
+      if(!val) return '';
+      return `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid rgba(212,168,67,0.08);">
+        <span style="color:rgba(212,168,67,0.70);">${label}</span>
+        <span style="color:rgba(255,240,220,0.92);font-weight:500;">${val}</span>
+      </div>`;
+    };
+
+    let blocks = '';
+    blocks += block(H?'तिथि':'Tithi', H?tithi.hi:tithi.en, p.tithi_end, p.tithi2||'');
+    blocks += block(H?'नक्षत्र':'Nakshatra', p.nakshatra, p.nakshatra_end, p.nakshatra2||'');
+    blocks += block(H?'योग':'Yoga', p.yoga, p.yoga_end, p.yoga2||'');
+    blocks += block(H?'करण':'Karana', p.karana, p.karana_end, p.karana2||'');
+    if(p.weekday) blocks += `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);"><div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${H?'वार':'Weekday'}</div><div style="font-size:12px;color:rgba(255,240,220,0.92);">${p.weekday}</div></div>`;
+
+    // Sun/Moon times
+    let sunmoon = '';
+    sunmoon += timeRow('☀️ '+(H?'सूर्योदय':'Sunrise'), fmtT(p.sunrise) || p.sunrise);
+    sunmoon += timeRow('🌇 '+(H?'सूर्यास्त':'Sunset'), fmtT(p.sunset) || p.sunset);
+    sunmoon += timeRow('🌙 '+(H?'चंद्रोदय':'Moonrise'), fmtT(p.moonrise) || p.moonrise);
+    if(p.moonset) sunmoon += timeRow('🌘 '+(H?'चंद्रास्त':'Moonset'), fmtT(p.moonset) || p.moonset);
+
+    // Auspicious/inauspicious
+    let timings = '';
+    timings += timeRow('⭐ '+(H?'अभिजित मुहूर्त':'Abhijit Muhurta'), p.abhijit_muhurta);
+    timings += timeRow('⚠️ '+(H?'राहु काल':'Rahu Kaal'), p.rahu_kaal);
+    timings += timeRow((H?'गुलिक काल':'Gulika Kaal'), p.gulika);
+
+    fullData = `<div style="margin-top:12px;">
+      ${blocks}
+      ${sunmoon?`<div style="margin-top:8px;">${sunmoon}</div>`:''}
+      ${timings?`<div style="margin-top:8px;">${timings}</div>`:''}
+    </div>`;
   }
 
   // For today, add a button to the full panchang page
