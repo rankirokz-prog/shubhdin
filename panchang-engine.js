@@ -1,6 +1,6 @@
 /* ============================================================
    SHUBH DIN — Offline Panchang Engine
-   Phase 1: The Five Limbs (Tithi, Nakshatra, Yoga, Karana, Vara)
+   Phase 2: Five Limbs + Transition Times (Drik-style segments)
    Powered by astronomy-engine (MIT). Runs fully on-device.
    ------------------------------------------------------------
    Depends on: window.Astronomy (load astronomy.min.js first)
@@ -19,10 +19,10 @@
     'Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Amavasya'
   ];
   const TITHI_HI = [
-    'प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी',
-    'अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','पूर्णिमा',
-    'प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी',
-    'अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','अमावस्या'
+    '\u092a\u094d\u0930\u0924\u093f\u092a\u0926\u093e','\u0926\u094d\u0935\u093f\u0924\u0940\u092f\u093e','\u0924\u0943\u0924\u0940\u092f\u093e','\u091a\u0924\u0941\u0930\u094d\u0925\u0940','\u092a\u0902\u091a\u092e\u0940','\u0937\u0937\u094d\u0920\u0940','\u0938\u092a\u094d\u0924\u092e\u0940',
+    '\u0905\u0937\u094d\u091f\u092e\u0940','\u0928\u0935\u092e\u0940','\u0926\u0936\u092e\u0940','\u090f\u0915\u093e\u0926\u0936\u0940','\u0926\u094d\u0935\u093e\u0926\u0936\u0940','\u0924\u094d\u0930\u092f\u094b\u0926\u0936\u0940','\u091a\u0924\u0941\u0930\u094d\u0926\u0936\u0940','\u092a\u0942\u0930\u094d\u0923\u093f\u092e\u093e',
+    '\u092a\u094d\u0930\u0924\u093f\u092a\u0926\u093e','\u0926\u094d\u0935\u093f\u0924\u0940\u092f\u093e','\u0924\u0943\u0924\u0940\u092f\u093e','\u091a\u0924\u0941\u0930\u094d\u0925\u0940','\u092a\u0902\u091a\u092e\u0940','\u0937\u0937\u094d\u0920\u0940','\u0938\u092a\u094d\u0924\u092e\u0940',
+    '\u0905\u0937\u094d\u091f\u092e\u0940','\u0928\u0935\u092e\u0940','\u0926\u0936\u092e\u0940','\u090f\u0915\u093e\u0926\u0936\u0940','\u0926\u094d\u0935\u093e\u0926\u0936\u0940','\u0924\u094d\u0930\u092f\u094b\u0926\u0936\u0940','\u091a\u0924\u0941\u0930\u094d\u0926\u0936\u0940','\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e'
   ];
 
   const NAKSHATRA_NAMES = [
@@ -32,12 +32,11 @@
     'Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'
   ];
   const NAKSHATRA_HI = [
-    'अश्विनी','भरणी','कृत्तिका','रोहिणी','मृगशिरा','आर्द्रा','पुनर्वसु','पुष्य',
-    'आश्लेषा','मघा','पूर्व फाल्गुनी','उत्तर फाल्गुनी','हस्त','चित्रा','स्वाति','विशाखा',
-    'अनुराधा','ज्येष्ठा','मूल','पूर्वाषाढ़ा','उत्तराषाढ़ा','श्रवण','धनिष्ठा',
-    'शतभिषा','पूर्व भाद्रपद','उत्तर भाद्रपद','रेवती'
+    '\u0905\u0936\u094d\u0935\u093f\u0928\u0940','\u092d\u0930\u0923\u0940','\u0915\u0943\u0924\u094d\u0924\u093f\u0915\u093e','\u0930\u094b\u0939\u093f\u0923\u0940','\u092e\u0943\u0917\u0936\u093f\u0930\u093e','\u0906\u0930\u094d\u0926\u094d\u0930\u093e','\u092a\u0941\u0928\u0930\u094d\u0935\u0938\u0941','\u092a\u0941\u0937\u094d\u092f',
+    '\u0906\u0936\u094d\u0932\u0947\u0937\u093e','\u092e\u0918\u093e','\u092a\u0942\u0930\u094d\u0935 \u092b\u093e\u0932\u094d\u0917\u0941\u0928\u0940','\u0909\u0924\u094d\u0924\u0930 \u092b\u093e\u0932\u094d\u0917\u0941\u0928\u0940','\u0939\u0938\u094d\u0924','\u091a\u093f\u0924\u094d\u0930\u093e','\u0938\u094d\u0935\u093e\u0924\u093f','\u0935\u093f\u0936\u093e\u0916\u093e',
+    '\u0905\u0928\u0941\u0930\u093e\u0927\u093e','\u091c\u094d\u092f\u0947\u0937\u094d\u0920\u093e','\u092e\u0942\u0932','\u092a\u0942\u0930\u094d\u0935\u093e\u0937\u093e\u0922\u093c\u093e','\u0909\u0924\u094d\u0924\u0930\u093e\u0937\u093e\u0922\u093c\u093e','\u0936\u094d\u0930\u0935\u0923','\u0927\u0928\u093f\u0937\u094d\u0920\u093e',
+    '\u0936\u0924\u092d\u093f\u0937\u093e','\u092a\u0942\u0930\u094d\u0935 \u092d\u093e\u0926\u094d\u0930\u092a\u0926','\u0909\u0924\u094d\u0924\u0930 \u092d\u093e\u0926\u094d\u0930\u092a\u0926','\u0930\u0947\u0935\u0924\u0940'
   ];
-  // Nakshatra lords (Vimshottari sequence)
   const NAK_LORDS = [
     'Ketu','Venus','Sun','Moon','Mars','Rahu','Jupiter','Saturn','Mercury',
     'Ketu','Venus','Sun','Moon','Mars','Rahu','Jupiter','Saturn','Mercury',
@@ -50,129 +49,132 @@
     'Variyana','Parigha','Shiva','Siddha','Sadhya','Shubha','Shukla','Brahma','Indra','Vaidhriti'
   ];
   const YOGA_HI = [
-    'विष्कम्भ','प्रीति','आयुष्मान','सौभाग्य','शोभन','अतिगण्ड','सुकर्मा','धृति',
-    'शूल','गण्ड','वृद्धि','ध्रुव','व्याघात','हर्षण','वज्र','सिद्धि','व्यतीपात',
-    'वरीयान','परिघ','शिव','सिद्ध','साध्य','शुभ','शुक्ल','ब्रह्म','इन्द्र','वैधृति'
+    '\u0935\u093f\u0937\u094d\u0915\u092e\u094d\u092d','\u092a\u094d\u0930\u0940\u0924\u093f','\u0906\u092f\u0941\u0937\u094d\u092e\u093e\u0928','\u0938\u094c\u092d\u093e\u0917\u094d\u092f','\u0936\u094b\u092d\u0928','\u0905\u0924\u093f\u0917\u0923\u094d\u0921','\u0938\u0941\u0915\u0930\u094d\u092e\u093e','\u0927\u0943\u0924\u093f',
+    '\u0936\u0942\u0932','\u0917\u0923\u094d\u0921','\u0935\u0943\u0926\u094d\u0927\u093f','\u0927\u094d\u0930\u0941\u0935','\u0935\u094d\u092f\u093e\u0918\u093e\u0924','\u0939\u0930\u094d\u0937\u0923','\u0935\u091c\u094d\u0930','\u0938\u093f\u0926\u094d\u0927\u093f','\u0935\u094d\u092f\u0924\u0940\u092a\u093e\u0924',
+    '\u0935\u0930\u0940\u092f\u093e\u0928','\u092a\u0930\u093f\u0918','\u0936\u093f\u0935','\u0938\u093f\u0926\u094d\u0927','\u0938\u093e\u0927\u094d\u092f','\u0936\u0941\u092d','\u0936\u0941\u0915\u094d\u0932','\u092c\u094d\u0930\u0939\u094d\u092e','\u0907\u0928\u094d\u0926\u094d\u0930','\u0935\u0948\u0927\u0943\u0924\u093f'
   ];
 
-  // Karana: 7 movable (chara) + 4 fixed (sthira)
   const KARANA_MOVABLE = ['Bava','Balava','Kaulava','Taitila','Gara','Vanija','Vishti'];
-  const KARANA_MOVABLE_HI = ['बव','बालव','कौलव','तैतिल','गर','वणिज','विष्टि'];
-  // returns {en, hi} for a karana half-tithi index 0..59
+  const KARANA_MOVABLE_HI = ['\u092c\u0935','\u092c\u093e\u0932\u0935','\u0915\u094c\u0932\u0935','\u0924\u0948\u0924\u093f\u0932','\u0917\u0930','\u0935\u0923\u093f\u091c','\u0935\u093f\u0937\u094d\u091f\u093f'];
   function karanaName(k) {
-    // k = floor(elongation / 6), range 0..59 within a lunar month
-    if (k === 0) return { en: 'Kimstughna', hi: 'किंस्तुघ्न' };
-    if (k >= 1 && k <= 56) {
-      const idx = (k - 1) % 7;
-      return { en: KARANA_MOVABLE[idx], hi: KARANA_MOVABLE_HI[idx] };
-    }
-    if (k === 57) return { en: 'Shakuni', hi: 'शकुनि' };
-    if (k === 58) return { en: 'Chatushpada', hi: 'चतुष्पाद' };
-    return { en: 'Naga', hi: 'नाग' }; // k === 59
+    if (k === 0) return { en: 'Kimstughna', hi: '\u0915\u093f\u0902\u0938\u094d\u0924\u0941\u0918\u094d\u0928' };
+    if (k >= 1 && k <= 56) { const i = (k - 1) % 7; return { en: KARANA_MOVABLE[i], hi: KARANA_MOVABLE_HI[i] }; }
+    if (k === 57) return { en: 'Shakuni', hi: '\u0936\u0915\u0941\u0928\u093f' };
+    if (k === 58) return { en: 'Chatushpada', hi: '\u091a\u0924\u0941\u0937\u094d\u092a\u093e\u0926' };
+    return { en: 'Naga', hi: '\u0928\u093e\u0917' };
   }
 
   const VARA_EN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const VARA_HI = ['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
+  const VARA_HI = ['\u0930\u0935\u093f\u0935\u093e\u0930','\u0938\u094b\u092e\u0935\u093e\u0930','\u092e\u0902\u0917\u0932\u0935\u093e\u0930','\u092c\u0941\u0927\u0935\u093e\u0930','\u0917\u0941\u0930\u0941\u0935\u093e\u0930','\u0936\u0941\u0915\u094d\u0930\u0935\u093e\u0930','\u0936\u0928\u093f\u0935\u093e\u0930'];
 
-  // ---- Core astronomical helpers ----------------------------------------
-  // Sun's geocentric true-of-date ecliptic longitude (tropical), degrees
-  function sunLongitude(date) {
-    const v = A.GeoVector(A.Body.Sun, date, true);
-    return A.Ecliptic(v).elon;
-  }
-  // Moon's geocentric ecliptic longitude (tropical), degrees
-  function moonLongitude(date) {
-    return A.EclipticGeoMoon(date).lon;
-  }
-  // Elongation (Moon - Sun) normalised 0..360 — drives Tithi & Karana
-  function elongation(date) {
-    let d = (moonLongitude(date) - sunLongitude(date)) % 360;
-    if (d < 0) d += 360;
-    return d;
-  }
+  // ---- Core astronomy ----------------------------------------------------
+  function sunLongitude(date) { return A.Ecliptic(A.GeoVector(A.Body.Sun, date, true)).elon; }
+  function moonLongitude(date) { return A.EclipticGeoMoon(date).lon; }
 
-  // Lahiri (Chitrapaksha) ayanamsa, anchored to verified 2026.0 value
-  // 24°07'47" = 24.12972° at 2026.0, precession ~50.2388"/yr
+  // Lahiri (Chitrapaksha) ayanamsa, anchored to verified 2026.0 value.
+  // CALIBRATION_OFFSET tuned in Phase 3 to align nakshatra/yoga times with Drik.
+  const CALIBRATION_OFFSET = 0.0;
   function ayanamsa(date) {
     const jd = (date.getTime() / 86400000) + 2440587.5;
     const yearFrac = 2000.0 + (jd - 2451545.0) / 365.25;
-    return 24.12972 + (yearFrac - 2026.0) * (50.2388 / 3600);
+    return 24.12972 + (yearFrac - 2026.0) * (50.2388 / 3600) + CALIBRATION_OFFSET;
   }
 
-  // ---- Sunrise (the conventional reference instant for panchang) --------
+  function elongation(date) { let e = (moonLongitude(date) - sunLongitude(date)) % 360; if (e < 0) e += 360; return e; }
+  function moonSidereal(date) { let m = (moonLongitude(date) - ayanamsa(date)) % 360; if (m < 0) m += 360; return m; }
+  function yogaSum(date) {
+    let s = (sunLongitude(date) - ayanamsa(date)) % 360; if (s < 0) s += 360;
+    return (s + moonSidereal(date)) % 360;
+  }
+
+  // ---- Sunrise / sunset --------------------------------------------------
   function findSunrise(date, lat, lng) {
     const obs = new A.Observer(lat, lng, 0);
-    // Search starting from local midnight (approx via UTC day start minus tz)
     const dayStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0));
     const sr = A.SearchRiseSet(A.Body.Sun, obs, +1, dayStart, 1);
     return sr ? sr.date : null;
   }
-
-  // ---- The Five Limbs at a given instant --------------------------------
-  function limbsAt(date) {
-    const sunL = sunLongitude(date);
-    const moonL = moonLongitude(date);
-    const ay = ayanamsa(date);
-
-    // Tithi (ayanamsa cancels — uses tropical difference)
-    let elong = (moonL - sunL) % 360; if (elong < 0) elong += 360;
-    const tithiIdx = Math.floor(elong / 12);              // 0..29
-    const paksha = tithiIdx < 15 ? 'Shukla' : 'Krishna';
-
-    // Nakshatra (needs sidereal Moon)
-    let moonSid = (moonL - ay) % 360; if (moonSid < 0) moonSid += 360;
-    const nakIdx = Math.floor(moonSid / (360 / 27));      // 0..26
-    const nakPada = Math.floor((moonSid % (360 / 27)) / ((360 / 27) / 4)) + 1; // 1..4
-
-    // Yoga (sidereal Sun + sidereal Moon)
-    let sunSid = (sunL - ay) % 360; if (sunSid < 0) sunSid += 360;
-    let yogaSum = (sunSid + moonSid) % 360;
-    const yogaIdx = Math.floor(yogaSum / (360 / 27));     // 0..26
-
-    // Karana (half-tithi)
-    const karanaIdx = Math.floor(elong / 6);              // 0..59
-    const kar = karanaName(karanaIdx);
-
-    return {
-      elongation: elong,
-      tithi: { index: tithiIdx, en: TITHI_NAMES[tithiIdx], hi: TITHI_HI[tithiIdx], paksha },
-      nakshatra: { index: nakIdx, en: NAKSHATRA_NAMES[nakIdx], hi: NAKSHATRA_HI[nakIdx], lord: NAK_LORDS[nakIdx], pada: nakPada },
-      yoga: { index: yogaIdx, en: YOGA_NAMES[yogaIdx], hi: YOGA_HI[yogaIdx] },
-      karana: { index: karanaIdx, en: kar.en, hi: kar.hi },
-      _debug: { sunL, moonL, ayanamsa: ay, moonSid, sunSid }
-    };
+  function findSunset(date, lat, lng) {
+    const obs = new A.Observer(lat, lng, 0);
+    const dayStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0));
+    const ss = A.SearchRiseSet(A.Body.Sun, obs, -1, dayStart, 1);
+    return ss ? ss.date : null;
   }
 
-  // ---- Public: full Phase-1 panchang for a date+place -------------------
-  // date: JS Date (any time on the target calendar day, UTC-safe)
-  // lat, lng: observer location in degrees
+  // ---- Transition-time engine (bisection) -------------------------------
+  function findBoundary(startMs, phaseFn, stepDeg) {
+    const v0 = phaseFn(new Date(startMs));
+    const nextB = (Math.floor(v0 / stepDeg) + 1) * stepDeg;
+    let lo = startMs, hi = startMs + 30 * 3600 * 1000;
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      let v = phaseFn(new Date(mid));
+      if (v < v0 - 0.0001) v += 360;
+      if (v < nextB) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  function buildSegments(srMs, nextSrMs, phaseFn, stepDeg, nameFn) {
+    const segs = []; let t = srMs, guard = 0;
+    while (t < nextSrMs && guard < 8) {
+      const v = phaseFn(new Date(t));
+      const idx = Math.floor(v / stepDeg);
+      const nm = nameFn(idx);
+      const endMs = findBoundary(t, phaseFn, stepDeg);
+      segs.push({ index: idx, en: nm.en, hi: nm.hi, end: new Date(endMs) });
+      t = endMs + 1000;
+      guard++;
+    }
+    return segs;
+  }
+
+  const tithiNameFn = i => ({ en: TITHI_NAMES[i % 30], hi: TITHI_HI[i % 30] });
+  const nakNameFn   = i => ({ en: NAKSHATRA_NAMES[i % 27], hi: NAKSHATRA_HI[i % 27] });
+  const yogaNameFn  = i => ({ en: YOGA_NAMES[i % 27], hi: YOGA_HI[i % 27] });
+  const karNameFn   = i => karanaName(i % 60);
+
+  // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng) {
     const sunrise = findSunrise(date, lat, lng);
-    const refInstant = sunrise || date; // panchang stated at sunrise
-    const limbs = limbsAt(refInstant);
-    const dow = refInstant.getDay(); // weekday at sunrise (local to runtime tz)
+    const sunset = findSunset(date, lat, lng);
+    const nextDate = new Date(date.getTime() + 24 * 3600 * 1000);
+    const nextSunrise = findSunrise(nextDate, lat, lng) || new Date((sunrise || date).getTime() + 24 * 3600 * 1000);
+
+    const refInstant = sunrise || date;
+    const srMs = refInstant.getTime();
+    const nextSrMs = nextSunrise.getTime();
+    const dow = refInstant.getDay();
+
+    const tithiSegs = buildSegments(srMs, nextSrMs, elongation, 12, tithiNameFn);
+    const nakSegs   = buildSegments(srMs, nextSrMs, moonSidereal, 360 / 27, nakNameFn);
+    const yogaSegs  = buildSegments(srMs, nextSrMs, yogaSum, 360 / 27, yogaNameFn);
+    const karSegs   = buildSegments(srMs, nextSrMs, elongation, 6, karNameFn);
+
+    const tithiIdx = tithiSegs[0].index;
+    const paksha = (tithiIdx % 30) < 15 ? 'Shukla' : 'Krishna';
+    const moonSid = moonSidereal(refInstant);
+    const nakPada = Math.floor((moonSid % (360 / 27)) / ((360 / 27) / 4)) + 1;
+    const nakLord = NAK_LORDS[nakSegs[0].index % 27];
 
     return {
       date: date,
       sunrise: sunrise,
+      sunset: sunset,
+      nextSunrise: nextSunrise,
       vara: { index: dow, en: VARA_EN[dow], hi: VARA_HI[dow] },
-      tithi: limbs.tithi,
-      nakshatra: limbs.nakshatra,
-      yoga: limbs.yoga,
-      karana: limbs.karana,
-      _debug: limbs._debug
+      tithi: { index: tithiIdx % 30, en: tithiSegs[0].en, hi: tithiSegs[0].hi, paksha, segments: tithiSegs },
+      nakshatra: { index: nakSegs[0].index % 27, en: nakSegs[0].en, hi: nakSegs[0].hi, lord: nakLord, pada: nakPada, segments: nakSegs },
+      yoga: { index: yogaSegs[0].index % 27, en: yogaSegs[0].en, hi: yogaSegs[0].hi, segments: yogaSegs },
+      karana: { index: karSegs[0].index % 60, en: karSegs[0].en, hi: karSegs[0].hi, segments: karSegs }
     };
   }
 
-  // Expose
   global.PanchangEngine = {
     getPanchang,
-    limbsAt,
-    elongation,
-    ayanamsa,
-    findSunrise,
-    sunLongitude,
-    moonLongitude,
+    elongation, moonSidereal, yogaSum, ayanamsa,
+    findSunrise, findSunset, findBoundary, buildSegments,
+    sunLongitude, moonLongitude,
     _data: { TITHI_NAMES, NAKSHATRA_NAMES, YOGA_NAMES }
   };
 
