@@ -5128,7 +5128,7 @@ function showCalDetail(date){
     };
 
     let blocks = '';
-    blocks += block(H?'तिथि':'Tithi', H?tithi.hi:tithi.en, p.tithi_end, p.tithi2||'');
+    blocks += block(H?'तिथि':'Tithi', p.tithi || (H?tithi.hi:tithi.en), p.tithi_end, p.tithi2||'');
     blocks += block(H?'नक्षत्र':'Nakshatra', p.nakshatra, p.nakshatra_end, p.nakshatra2||'');
     blocks += block(H?'योग':'Yoga', p.yoga, p.yoga_end, p.yoga2||'');
     blocks += block(H?'करण':'Karana', p.karana, p.karana_end, p.karana2||'');
@@ -5162,7 +5162,7 @@ function showCalDetail(date){
     <div style="display:flex;gap:16px;align-items:center;">
       <span style="font-size:36px;line-height:1;">${moon.e}</span>
       <div>
-        <div style="font-size:15px;font-weight:600;color:var(--gold);">${H?tithi.hi:tithi.en}</div>
+        <div style="font-size:15px;font-weight:600;color:var(--gold);">${p&&p.tithi?p.tithi:(H?tithi.hi:tithi.en)}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${tithi.paksha} ${H?'पक्ष':'Paksha'} • ${H?moon.h:moon.n}</div>
       </div>
     </div>
