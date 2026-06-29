@@ -3,70 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 1)</title>
+<title>Shubh Din — Panchang Engine Test (Phase 2)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
-    background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500);
-    color:#FFE8C8; padding:16px; min-height:100vh;
-  }
+  body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
   h1 { font-size:18px; color:#D4A843; margin-bottom:4px; }
   .sub { font-size:12px; color:rgba(255,232,200,0.6); margin-bottom:16px; }
-  .controls {
-    background:rgba(255,255,255,0.04); border:1px solid rgba(212,168,67,0.25);
-    border-radius:12px; padding:14px; margin-bottom:16px;
-  }
+  .controls { background:rgba(255,255,255,0.04); border:1px solid rgba(212,168,67,0.25); border-radius:12px; padding:14px; margin-bottom:16px; }
   label { font-size:11px; color:#D4A843; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px; }
-  input, select {
-    width:100%; padding:9px 12px; border-radius:8px;
-    border:1px solid rgba(212,168,67,0.3); background:rgba(255,255,255,0.06);
-    color:#FFE8C8; font-size:14px; margin-bottom:10px;
-  }
-  .row { display:flex; gap:10px; }
-  .row > div { flex:1; }
-  button {
-    width:100%; padding:11px; border-radius:8px; border:none;
-    background:linear-gradient(135deg,#D4A843,#B8860B); color:#1A0800;
-    font-size:14px; font-weight:700; cursor:pointer;
-  }
-  .day-card {
-    background:rgba(255,255,255,0.04); border:1px solid rgba(212,168,67,0.18);
-    border-radius:12px; padding:14px; margin-bottom:12px;
-  }
-  .day-head {
-    display:flex; justify-content:space-between; align-items:baseline;
-    border-bottom:1px solid rgba(212,168,67,0.15); padding-bottom:8px; margin-bottom:10px;
-  }
+  input, select { width:100%; padding:9px 12px; border-radius:8px; border:1px solid rgba(212,168,67,0.3); background:rgba(255,255,255,0.06); color:#FFE8C8; font-size:14px; margin-bottom:10px; }
+  .row { display:flex; gap:10px; } .row > div { flex:1; }
+  button { width:100%; padding:11px; border-radius:8px; border:none; background:linear-gradient(135deg,#D4A843,#B8860B); color:#1A0800; font-size:14px; font-weight:700; cursor:pointer; }
+  .day-card { background:rgba(255,255,255,0.04); border:1px solid rgba(212,168,67,0.18); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .day-head { display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid rgba(212,168,67,0.15); padding-bottom:8px; margin-bottom:10px; }
   .day-date { font-size:15px; font-weight:700; color:#FFE0A3; }
   .day-sr { font-size:11px; color:rgba(255,232,200,0.6); }
-  .limb { display:flex; justify-content:space-between; padding:5px 0; font-size:13px; }
-  .limb-label { color:#D4A843; font-weight:600; }
-  .limb-val { color:#FFE8C8; text-align:right; }
-  .limb-val small { color:rgba(255,232,200,0.55); }
-  .note { font-size:11px; color:rgba(255,232,200,0.5); margin-top:8px; font-style:italic; line-height:1.4; }
+  .limb-block { padding:7px 0; border-bottom:1px solid rgba(212,168,67,0.08); }
+  .limb-label { font-size:10px; color:#D4A843; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px; }
+  .seg { font-size:13px; color:#FFE8C8; }
+  .seg-time { color:rgba(212,168,67,0.7); }
+  .seg.next { color:rgba(255,232,200,0.72); }
+  .sun-row { display:flex; justify-content:space-between; font-size:12px; padding:4px 0; }
+  .sun-row span:first-child { color:rgba(212,168,67,0.7); }
   .err { color:#FF9B9B; padding:12px; }
-  .legend {
-    background:rgba(212,168,67,0.06); border-radius:10px; padding:12px;
-    font-size:12px; line-height:1.6; margin-bottom:16px; color:rgba(255,232,200,0.75);
-  }
+  .legend { background:rgba(212,168,67,0.06); border-radius:10px; padding:12px; font-size:12px; line-height:1.6; margin-bottom:16px; color:rgba(255,232,200,0.75); }
   .legend b { color:#D4A843; }
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 1 Test</h1>
-  <div class="sub">The Five Limbs, calculated fully offline. Compare against Drik Panchang / DinchaK.</div>
+  <h1>🔬 Panchang Engine — Phase 2 Test</h1>
+  <div class="sub">Now with transition times! "Ekadashi upto 8:09 PM, then Dwadashi" — fully offline.</div>
 
   <div class="legend">
-    <b>What to test:</b> For each date below, open <b>drikpanchang.com</b> (or DinchaK) for the same date + a South India city, and check that our <b>Tithi</b> and <b>Nakshatra</b> names match. Yoga, Karana, Vara too. <br>
-    👉 Phase 1 shows the limb <b>at sunrise</b> (names only). Transition times ("upto 8:10 PM") come in Phase 2.<br>
-    👉 If a name is one unit off, note the date — it's usually a sunrise-boundary case we'll handle with transition times.
+    <b>What to test now:</b> Open <b>drikpanchang.com</b> for the same date + city. Check the <b>transition TIMES</b> match:<br>
+    ✅ <b>Tithi</b> times should match Drik almost exactly (to the minute)<br>
+    ✅ <b>Karana</b> times should match Drik almost exactly<br>
+    ⏳ <b>Nakshatra & Yoga</b> times may be ~10-20 min off — that's the ayanamsa calibration I fix in Phase 3. Just note how far off they are.<br>
+    👉 Names should all still match. Tell me: do tithi/karana times line up? How many minutes off are nakshatra/yoga?
   </div>
 
   <div class="controls">
     <label>City</label>
     <select id="city">
       <option value="16.7,81.1">Eluru, AP</option>
+      <option value="16.5062,80.648">Vijayawada</option>
       <option value="17.385,78.4867">Hyderabad</option>
       <option value="13.0827,80.2707">Chennai</option>
       <option value="19.076,72.8777">Mumbai</option>
@@ -81,40 +61,39 @@
     </div>
     <div class="row">
       <div><label>Start date</label><input id="startDate" type="date"></div>
-      <div><label>Days to show</label><input id="numDays" type="number" min="1" max="40" value="10"></div>
+      <div><label>Days to show</label><input id="numDays" type="number" min="1" max="40" value="7"></div>
     </div>
     <button onclick="run()">Calculate Panchang</button>
   </div>
 
   <div id="output"></div>
 
-  <!-- Load vendored astronomy library, then our engine -->
   <script src="astronomy.min.js"></script>
   <script src="panchang-engine.js"></script>
   <script>
-    // default start = today
     document.getElementById('startDate').valueAsDate = new Date();
-
     document.getElementById('city').addEventListener('change', function(){
       document.getElementById('customLatLng').style.display = this.value==='custom' ? 'flex' : 'none';
     });
 
+    function fmtT(d){ return d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' }); }
+
+    function limbHtml(label, seg){
+      let rows = seg.segments.map((s, i) =>
+        `<div class="seg${i>0?' next':''}">${s.en} <span class="seg-time">– upto ${fmtT(s.end)}</span></div>`
+      ).join('');
+      return `<div class="limb-block"><div class="limb-label">${label}</div>${rows}</div>`;
+    }
+
     function run(){
       const out = document.getElementById('output');
-      if (!window.PanchangEngine) {
-        out.innerHTML = '<div class="err">Engine not loaded. Make sure astronomy.min.js and panchang-engine.js are in the same folder.</div>';
-        return;
-      }
+      if (!window.PanchangEngine) { out.innerHTML = '<div class="err">Engine not loaded. Put astronomy.min.js + panchang-engine.js in same folder.</div>'; return; }
       const citySel = document.getElementById('city').value;
       let lat, lng;
-      if (citySel === 'custom') {
-        lat = parseFloat(document.getElementById('lat').value);
-        lng = parseFloat(document.getElementById('lng').value);
-      } else {
-        [lat, lng] = citySel.split(',').map(Number);
-      }
+      if (citySel === 'custom') { lat = parseFloat(document.getElementById('lat').value); lng = parseFloat(document.getElementById('lng').value); }
+      else { [lat, lng] = citySel.split(',').map(Number); }
       const start = document.getElementById('startDate').valueAsDate || new Date();
-      const n = Math.min(40, Math.max(1, parseInt(document.getElementById('numDays').value) || 10));
+      const n = Math.min(40, Math.max(1, parseInt(document.getElementById('numDays').value) || 7));
 
       let html = '';
       for (let i = 0; i < n; i++) {
@@ -122,26 +101,22 @@
         let p;
         try { p = window.PanchangEngine.getPanchang(d, lat, lng); }
         catch(e){ html += '<div class="err">Error on '+d.toDateString()+': '+e.message+'</div>'; continue; }
-
         const dateStr = d.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'UTC' });
-        const srStr = p.sunrise ? p.sunrise.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', timeZone:'Asia/Kolkata' }) : '—';
 
         html += `<div class="day-card">
-          <div class="day-head">
-            <span class="day-date">${dateStr}</span>
-            <span class="day-sr">☀️ ${srStr}</span>
+          <div class="day-head"><span class="day-date">${dateStr}</span><span class="day-sr">${p.vara.en}</span></div>
+          ${limbHtml('Tithi', p.tithi)}
+          ${limbHtml('Nakshatra', p.nakshatra)}
+          ${limbHtml('Yoga', p.yoga)}
+          ${limbHtml('Karana', p.karana)}
+          <div style="margin-top:8px;">
+            <div class="sun-row"><span>☀️ Sunrise</span><span>${p.sunrise?fmtT(p.sunrise):'—'}</span></div>
+            <div class="sun-row"><span>🌇 Sunset</span><span>${p.sunset?fmtT(p.sunset):'—'}</span></div>
           </div>
-          <div class="limb"><span class="limb-label">Tithi</span><span class="limb-val">${p.tithi.en} <small>(${p.tithi.paksha} Paksha)</small></span></div>
-          <div class="limb"><span class="limb-label">Nakshatra</span><span class="limb-val">${p.nakshatra.en} <small>(Pada ${p.nakshatra.pada} · ${p.nakshatra.lord})</small></span></div>
-          <div class="limb"><span class="limb-label">Yoga</span><span class="limb-val">${p.yoga.en}</span></div>
-          <div class="limb"><span class="limb-label">Karana</span><span class="limb-val">${p.karana.en}</span></div>
-          <div class="limb"><span class="limb-label">Vara</span><span class="limb-val">${p.vara.en}</span></div>
         </div>`;
       }
       out.innerHTML = html;
     }
-
-    // auto-run on load
     run();
   </script>
 </body>
