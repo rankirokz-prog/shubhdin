@@ -73,7 +73,7 @@
 
   // Lahiri (Chitrapaksha) ayanamsa, anchored to verified 2026.0 value.
   // CALIBRATION_OFFSET tuned in Phase 3 to align nakshatra/yoga times with Drik.
-  const CALIBRATION_OFFSET = 0.0;
+  const CALIBRATION_OFFSET = 0.10;
   function ayanamsa(date) {
     const jd = (date.getTime() / 86400000) + 2440587.5;
     const yearFrac = 2000.0 + (jd - 2451545.0) / 365.25;
