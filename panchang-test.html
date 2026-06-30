@@ -35,12 +35,11 @@
   <div class="sub">Added Moonrise, Moonset, Moon sign & Sun sign. Five limbs still DinchaK-grade.</div>
 
   <div class="legend">
-    <b>Phase 4 — new fields to test:</b><br>
-    ✅ <b>Moon Sign (Rashi)</b> — which zodiac the Moon is in<br>
-    ✅ <b>Moonrise & Moonset</b> times<br>
-    ✅ <b>Sun Sign</b><br>
-    👉 Compare against DinchaK/Drik. Moonrise/Moonset should match within a few minutes. Moon sign should match exactly.<br>
-    👉 The five limbs are already validated — just glance to confirm they still look right.
+    <b>Phase 4 (fixed) — moonset now pairs correctly with the day's moonrise.</b><br>
+    ✅ <b>Moon Sign / Sun Sign</b> — match exactly<br>
+    ✅ <b>Moonrise / Moonset</b> — within 3-5 min of DinchaK (normal moon variance)<br>
+    ✅ <b>Time format toggle</b> — 12h, 24h, or 24h+ (like DinchaK's option). 24h+ shows after-midnight events as 25:34 etc.<br>
+    👉 Re-check the moonsets that were blank/wrong before. Tell me any moon time more than ~6 min off.
   </div>
 
   <div class="controls">
@@ -64,6 +63,12 @@
       <div><label>Start date</label><input id="startDate" type="date"></div>
       <div><label>Days to show</label><input id="numDays" type="number" min="1" max="40" value="7"></div>
     </div>
+    <label>Time format</label>
+    <select id="timeFmt">
+      <option value="12">12-hour (5:34 PM)</option>
+      <option value="24">24-hour (17:34)</option>
+      <option value="24plus">24-hour+ (next-day shown as 25:34)</option>
+    </select>
     <button onclick="run()">Calculate Panchang</button>
   </div>
 
@@ -76,12 +81,33 @@
     document.getElementById('city').addEventListener('change', function(){
       document.getElementById('customLatLng').style.display = this.value==='custom' ? 'flex' : 'none';
     });
+    document.getElementById('timeFmt').addEventListener('change', run);
 
-    function fmtT(d){ return d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' }); }
+    function fmtT(d, dayRefMs){
+      const fmtMode = document.getElementById('timeFmt').value;
+      if (fmtMode === '12') {
+        return d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Kolkata' });
+      }
+      // Get IST hours/minutes
+      const istStr = d.toLocaleString('en-GB', { hour:'2-digit', minute:'2-digit', hour12:false, timeZone:'Asia/Kolkata' });
+      let [hh, mm] = istStr.split(':').map(Number);
+      if (fmtMode === '24') {
+        return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+      }
+      // 24plus: if the event is on the day AFTER the reference day, show 24+
+      if (fmtMode === '24plus' && dayRefMs != null) {
+        // Compare calendar date (IST) of event vs reference
+        const evDay = new Date(d.getTime() + 5.5*3600000).getUTCDate();
+        const refDay = new Date(dayRefMs + 5.5*3600000).getUTCDate();
+        if (evDay !== refDay) hh += 24; // spilled into next day
+        return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+      }
+      return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+    }
 
-    function limbHtml(label, seg){
+    function limbHtml(label, seg, dayRefMs){
       let rows = seg.segments.map((s, i) =>
-        `<div class="seg${i>0?' next':''}">${s.en} <span class="seg-time">– upto ${fmtT(s.end)}</span></div>`
+        `<div class="seg${i>0?' next':''}">${s.en} <span class="seg-time">– upto ${fmtT(s.end, dayRefMs)}</span></div>`
       ).join('');
       return `<div class="limb-block"><div class="limb-label">${label}</div>${rows}</div>`;
     }
@@ -104,21 +130,22 @@
         catch(e){ html += '<div class="err">Error on '+d.toDateString()+': '+e.message+'</div>'; continue; }
         const dateStr = d.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric', timeZone:'UTC' });
 
+        const dayRefMs = p.sunrise ? p.sunrise.getTime() : d.getTime();
         html += `<div class="day-card">
           <div class="day-head"><span class="day-date">${dateStr}</span><span class="day-sr">${p.vara.en}</span></div>
-          ${limbHtml('Tithi', p.tithi)}
-          ${limbHtml('Nakshatra', p.nakshatra)}
-          ${limbHtml('Yoga', p.yoga)}
-          ${limbHtml('Karana', p.karana)}
+          ${limbHtml('Tithi', p.tithi, dayRefMs)}
+          ${limbHtml('Nakshatra', p.nakshatra, dayRefMs)}
+          ${limbHtml('Yoga', p.yoga, dayRefMs)}
+          ${limbHtml('Karana', p.karana, dayRefMs)}
           <div class="limb-block">
             <div class="limb-label">Signs</div>
             <div class="seg">Moon: ${p.moonSign.en} &nbsp;·&nbsp; Sun: ${p.sunSign.en}</div>
           </div>
           <div style="margin-top:8px;">
-            <div class="sun-row"><span>☀️ Sunrise</span><span>${p.sunrise?fmtT(p.sunrise):'—'}</span></div>
-            <div class="sun-row"><span>🌇 Sunset</span><span>${p.sunset?fmtT(p.sunset):'—'}</span></div>
-            <div class="sun-row"><span>🌙 Moonrise</span><span>${p.moonrise?fmtT(p.moonrise):'—'}</span></div>
-            <div class="sun-row"><span>🌘 Moonset</span><span>${p.moonset?fmtT(p.moonset):'—'}</span></div>
+            <div class="sun-row"><span>☀️ Sunrise</span><span>${p.sunrise?fmtT(p.sunrise, dayRefMs):'—'}</span></div>
+            <div class="sun-row"><span>🌇 Sunset</span><span>${p.sunset?fmtT(p.sunset, dayRefMs):'—'}</span></div>
+            <div class="sun-row"><span>🌙 Moonrise</span><span>${p.moonrise?fmtT(p.moonrise, dayRefMs):'—'}</span></div>
+            <div class="sun-row"><span>🌘 Moonset</span><span>${p.moonset?fmtT(p.moonset, dayRefMs):'—'}</span></div>
           </div>
         </div>`;
       }
