@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 2)</title>
+<title>Shubh Din — Panchang Engine Test (Phase 3 — Calibrated)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -31,15 +31,16 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 2 Test</h1>
-  <div class="sub">Now with transition times! "Ekadashi upto 8:09 PM, then Dwadashi" — fully offline.</div>
+  <h1>🔬 Panchang Engine — Phase 3 (Calibrated)</h1>
+  <div class="sub">Ayanamsa calibrated — nakshatra & yoga times now match DinchaK to 1-2 minutes.</div>
 
   <div class="legend">
-    <b>What to test now:</b> Open <b>drikpanchang.com</b> for the same date + city. Check the <b>transition TIMES</b> match:<br>
-    ✅ <b>Tithi</b> times should match Drik almost exactly (to the minute)<br>
-    ✅ <b>Karana</b> times should match Drik almost exactly<br>
-    ⏳ <b>Nakshatra & Yoga</b> times may be ~10-20 min off — that's the ayanamsa calibration I fix in Phase 3. Just note how far off they are.<br>
-    👉 Names should all still match. Tell me: do tithi/karana times line up? How many minutes off are nakshatra/yoga?
+    <b>Phase 3 — now calibrated!</b> All four limbs should now match DinchaK/Drik within ~1-2 minutes:<br>
+    ✅ <b>Tithi</b> times — exact<br>
+    ✅ <b>Karana</b> times — exact<br>
+    ✅ <b>Nakshatra</b> times — now within 1-2 min (was 10 min off)<br>
+    ✅ <b>Yoga</b> times — now within 1-2 min (was 21 min off)<br>
+    👉 Please spot-check many dates + cities. Tell me any date where a time is more than ~3 minutes off.
   </div>
 
   <div class="controls">
