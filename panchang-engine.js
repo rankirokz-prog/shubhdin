@@ -106,21 +106,24 @@
   }
 
   // ---- Moonrise / Moonset (Phase 4) -------------------------------------
-  // Search from IST midnight of the target day, 24h forward.
-  // tzOffsetHours = local timezone offset from UTC (default +5.5 for IST)
+  // DinchaK convention: the day's moonrise is the first rise on/after local midnight.
+  // The day's moonset is the first SET that occurs AFTER that moonrise (they pair up).
+  // This avoids grabbing the previous night's moonset, and never goes blank.
   function findMoonrise(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
     const obs = new A.Observer(lat, lng, 0);
-    // local midnight in UTC = day 00:00 local - tz
     const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
-    const mr = A.SearchRiseSet(A.Body.Moon, obs, +1, localMidUTC, 1);
+    const mr = A.SearchRiseSet(A.Body.Moon, obs, +1, localMidUTC, 2);
     return mr ? mr.date : null;
   }
   function findMoonset(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
     const obs = new A.Observer(lat, lng, 0);
     const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
-    const ms = A.SearchRiseSet(A.Body.Moon, obs, -1, localMidUTC, 1);
+    // Find this day's moonrise first, then the moonset that follows it.
+    const mr = A.SearchRiseSet(A.Body.Moon, obs, +1, localMidUTC, 2);
+    const searchFrom = mr ? mr.date : localMidUTC;
+    const ms = A.SearchRiseSet(A.Body.Moon, obs, -1, searchFrom, 2);
     return ms ? ms.date : null;
   }
 
