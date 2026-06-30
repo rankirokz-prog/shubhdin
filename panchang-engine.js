@@ -67,6 +67,10 @@
   const VARA_EN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const VARA_HI = ['\u0930\u0935\u093f\u0935\u093e\u0930','\u0938\u094b\u092e\u0935\u093e\u0930','\u092e\u0902\u0917\u0932\u0935\u093e\u0930','\u092c\u0941\u0927\u0935\u093e\u0930','\u0917\u0941\u0930\u0941\u0935\u093e\u0930','\u0936\u0941\u0915\u094d\u0930\u0935\u093e\u0930','\u0936\u0928\u093f\u0935\u093e\u0930'];
 
+  // 12 Rashis (zodiac signs) — sidereal
+  const RASHI_EN = ['Mesha','Vrishabha','Mithuna','Karka','Simha','Kanya','Tula','Vrishchika','Dhanu','Makara','Kumbha','Meena'];
+  const RASHI_HI = ['\u092e\u0947\u0937','\u0935\u0943\u0937\u092d','\u092e\u093f\u0925\u0941\u0928','\u0915\u0930\u094d\u0915','\u0938\u093f\u0902\u0939','\u0915\u0928\u094d\u092f\u093e','\u0924\u0941\u0932\u093e','\u0935\u0943\u0936\u094d\u091a\u093f\u0915','\u0927\u0928\u0941','\u092e\u0915\u0930','\u0915\u0941\u0902\u092d','\u092e\u0940\u0928'];
+
   // ---- Core astronomy ----------------------------------------------------
   function sunLongitude(date) { return A.Ecliptic(A.GeoVector(A.Body.Sun, date, true)).elon; }
   function moonLongitude(date) { return A.EclipticGeoMoon(date).lon; }
@@ -100,6 +104,30 @@
     const ss = A.SearchRiseSet(A.Body.Sun, obs, -1, dayStart, 1);
     return ss ? ss.date : null;
   }
+
+  // ---- Moonrise / Moonset (Phase 4) -------------------------------------
+  // Search from IST midnight of the target day, 24h forward.
+  // tzOffsetHours = local timezone offset from UTC (default +5.5 for IST)
+  function findMoonrise(date, lat, lng, tzOffsetHours) {
+    const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
+    const obs = new A.Observer(lat, lng, 0);
+    // local midnight in UTC = day 00:00 local - tz
+    const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
+    const mr = A.SearchRiseSet(A.Body.Moon, obs, +1, localMidUTC, 1);
+    return mr ? mr.date : null;
+  }
+  function findMoonset(date, lat, lng, tzOffsetHours) {
+    const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
+    const obs = new A.Observer(lat, lng, 0);
+    const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
+    const ms = A.SearchRiseSet(A.Body.Moon, obs, -1, localMidUTC, 1);
+    return ms ? ms.date : null;
+  }
+
+  // ---- Sidereal sign helpers (Phase 4) ----------------------------------
+  function sunSidereal(date) { let s = (sunLongitude(date) - ayanamsa(date)) % 360; if (s < 0) s += 360; return s; }
+  function moonSign(date) { return Math.floor(moonSidereal(date) / 30); }   // 0..11
+  function sunSign(date) { return Math.floor(sunSidereal(date) / 30); }     // 0..11
 
   // ---- Transition-time engine (bisection) -------------------------------
   function findBoundary(startMs, phaseFn, stepDeg) {
@@ -135,9 +163,11 @@
   const karNameFn   = i => karanaName(i % 60);
 
   // ---- Public: full Phase-2 panchang ------------------------------------
-  function getPanchang(date, lat, lng) {
+  function getPanchang(date, lat, lng, tzOffsetHours) {
     const sunrise = findSunrise(date, lat, lng);
     const sunset = findSunset(date, lat, lng);
+    const moonrise = findMoonrise(date, lat, lng, tzOffsetHours);
+    const moonset = findMoonset(date, lat, lng, tzOffsetHours);
     const nextDate = new Date(date.getTime() + 24 * 3600 * 1000);
     const nextSunrise = findSunrise(nextDate, lat, lng) || new Date((sunrise || date).getTime() + 24 * 3600 * 1000);
 
@@ -157,25 +187,34 @@
     const nakPada = Math.floor((moonSid % (360 / 27)) / ((360 / 27) / 4)) + 1;
     const nakLord = NAK_LORDS[nakSegs[0].index % 27];
 
+    // Signs at sunrise
+    const mSign = moonSign(refInstant);
+    const sSign = sunSign(refInstant);
+
     return {
       date: date,
       sunrise: sunrise,
       sunset: sunset,
+      moonrise: moonrise,
+      moonset: moonset,
       nextSunrise: nextSunrise,
       vara: { index: dow, en: VARA_EN[dow], hi: VARA_HI[dow] },
       tithi: { index: tithiIdx % 30, en: tithiSegs[0].en, hi: tithiSegs[0].hi, paksha, segments: tithiSegs },
       nakshatra: { index: nakSegs[0].index % 27, en: nakSegs[0].en, hi: nakSegs[0].hi, lord: nakLord, pada: nakPada, segments: nakSegs },
       yoga: { index: yogaSegs[0].index % 27, en: yogaSegs[0].en, hi: yogaSegs[0].hi, segments: yogaSegs },
-      karana: { index: karSegs[0].index % 60, en: karSegs[0].en, hi: karSegs[0].hi, segments: karSegs }
+      karana: { index: karSegs[0].index % 60, en: karSegs[0].en, hi: karSegs[0].hi, segments: karSegs },
+      moonSign: { index: mSign, en: RASHI_EN[mSign], hi: RASHI_HI[mSign] },
+      sunSign: { index: sSign, en: RASHI_EN[sSign], hi: RASHI_HI[sSign] }
     };
   }
 
   global.PanchangEngine = {
     getPanchang,
-    elongation, moonSidereal, yogaSum, ayanamsa,
-    findSunrise, findSunset, findBoundary, buildSegments,
+    elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
+    findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
+    moonSign, sunSign,
     sunLongitude, moonLongitude,
-    _data: { TITHI_NAMES, NAKSHATRA_NAMES, YOGA_NAMES }
+    _data: { TITHI_NAMES, NAKSHATRA_NAMES, YOGA_NAMES, RASHI_EN }
   };
 
 })(typeof window !== 'undefined' ? window : this);
