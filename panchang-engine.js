@@ -138,6 +138,31 @@
   function moonSign(date) { return Math.floor(moonSidereal(date) / 30); }   // 0..11
   function sunSign(date) { return Math.floor(sunSidereal(date) / 30); }     // 0..11
 
+  // ---- Kaal periods & Muhurtas (Phase 5) --------------------------------
+  // Day (sunrise→sunset) is divided into 8 equal parts. Each weekday assigns a
+  // specific part to Rahu, Gulika and Yamaganda. Index 0-indexed, 0=Sunday.
+  const RAHU_PART   = [7, 1, 6, 4, 5, 3, 2];   // Sun,Mon,Tue,Wed,Thu,Fri,Sat
+  const GULIKA_PART = [6, 5, 4, 3, 2, 1, 0];
+  const YAMA_PART   = [4, 3, 2, 1, 0, 6, 5];
+
+  // Returns {start:Date, end:Date} for a given eighth-part index of the day.
+  function dayPart(sunriseMs, sunsetMs, partIdx) {
+    const part = (sunsetMs - sunriseMs) / 8;
+    return { start: new Date(sunriseMs + partIdx * part), end: new Date(sunriseMs + (partIdx + 1) * part) };
+  }
+
+  // Abhijit Muhurta — the 8th of 15 muhurtas of the day (centered on solar noon).
+  function computeAbhijit(sunriseMs, sunsetMs) {
+    const muhurta = (sunsetMs - sunriseMs) / 15;
+    return { start: new Date(sunriseMs + 7 * muhurta), end: new Date(sunriseMs + 8 * muhurta) };
+  }
+
+  // Brahma Muhurta — 2nd muhurta before sunrise, using night/15 division.
+  function computeBrahmaMuhurta(sunriseMs, prevSunsetMs) {
+    const mNight = (sunriseMs - prevSunsetMs) / 15;
+    return { start: new Date(sunriseMs - 2 * mNight), end: new Date(sunriseMs - mNight) };
+  }
+
   // ---- Transition-time engine (bisection) -------------------------------
   function findBoundary(startMs, phaseFn, stepDeg) {
     const v0 = phaseFn(new Date(startMs));
@@ -203,6 +228,15 @@
     const mSign = moonSign(refInstant);
     const sSign = sunSign(refInstant);
 
+    // Kaal periods & muhurtas (Phase 5)
+    const ssMs = sunset ? sunset.getTime() : (srMs + 12 * 3600000);
+    const rahu = dayPart(srMs, ssMs, RAHU_PART[dow]);
+    const gulika = dayPart(srMs, ssMs, GULIKA_PART[dow]);
+    const yama = dayPart(srMs, ssMs, YAMA_PART[dow]);
+    const abhijit = computeAbhijit(srMs, ssMs);
+    const prevSunset = findSunset(new Date(date.getTime() - 86400000), lat, lng, tz);
+    const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
+
     return {
       date: date,
       sunrise: sunrise,
@@ -216,7 +250,12 @@
       yoga: { index: yogaSegs[0].index % 27, en: yogaSegs[0].en, hi: yogaSegs[0].hi, segments: yogaSegs },
       karana: { index: karSegs[0].index % 60, en: karSegs[0].en, hi: karSegs[0].hi, segments: karSegs },
       moonSign: { index: mSign, en: RASHI_EN[mSign], hi: RASHI_HI[mSign] },
-      sunSign: { index: sSign, en: RASHI_EN[sSign], hi: RASHI_HI[sSign] }
+      sunSign: { index: sSign, en: RASHI_EN[sSign], hi: RASHI_HI[sSign] },
+      rahuKaal: rahu,
+      gulikaKaal: gulika,
+      yamaganda: yama,
+      abhijit: abhijit,
+      brahmaMuhurta: brahma
     };
   }
 
@@ -224,7 +263,7 @@
     getPanchang,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
-    moonSign, sunSign,
+    moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
     sunLongitude, moonLongitude,
     _data: { TITHI_NAMES, NAKSHATRA_NAMES, YOGA_NAMES, RASHI_EN }
   };
