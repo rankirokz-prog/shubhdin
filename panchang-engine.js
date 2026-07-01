@@ -92,16 +92,22 @@
   }
 
   // ---- Sunrise / sunset --------------------------------------------------
-  function findSunrise(date, lat, lng) {
+  // Anchor the search at LOCAL (IST) midnight, not UTC midnight. Otherwise, for
+  // eastern cities in summer (e.g. Kolkata sunrise 4:52 AM IST = 23:22 UTC prev day),
+  // a UTC-midnight search skips the real sunrise and returns the next day's — shifting
+  // the whole panchang by a day. Searching from local midnight fixes all seasons/cities.
+  function findSunrise(date, lat, lng, tzOffsetHours) {
+    const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
     const obs = new A.Observer(lat, lng, 0);
-    const dayStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0));
-    const sr = A.SearchRiseSet(A.Body.Sun, obs, +1, dayStart, 1);
+    const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
+    const sr = A.SearchRiseSet(A.Body.Sun, obs, +1, localMidUTC, 1.5);
     return sr ? sr.date : null;
   }
-  function findSunset(date, lat, lng) {
+  function findSunset(date, lat, lng, tzOffsetHours) {
+    const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
     const obs = new A.Observer(lat, lng, 0);
-    const dayStart = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0));
-    const ss = A.SearchRiseSet(A.Body.Sun, obs, -1, dayStart, 1);
+    const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
+    const ss = A.SearchRiseSet(A.Body.Sun, obs, -1, localMidUTC, 1.5);
     return ss ? ss.date : null;
   }
 
@@ -167,17 +173,20 @@
 
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
-    const sunrise = findSunrise(date, lat, lng);
-    const sunset = findSunset(date, lat, lng);
-    const moonrise = findMoonrise(date, lat, lng, tzOffsetHours);
-    const moonset = findMoonset(date, lat, lng, tzOffsetHours);
+    const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
+    const sunrise = findSunrise(date, lat, lng, tz);
+    const sunset = findSunset(date, lat, lng, tz);
+    const moonrise = findMoonrise(date, lat, lng, tz);
+    const moonset = findMoonset(date, lat, lng, tz);
     const nextDate = new Date(date.getTime() + 24 * 3600 * 1000);
-    const nextSunrise = findSunrise(nextDate, lat, lng) || new Date((sunrise || date).getTime() + 24 * 3600 * 1000);
+    const nextSunrise = findSunrise(nextDate, lat, lng, tz) || new Date((sunrise || date).getTime() + 24 * 3600 * 1000);
 
     const refInstant = sunrise || date;
     const srMs = refInstant.getTime();
     const nextSrMs = nextSunrise.getTime();
-    const dow = refInstant.getDay();
+    // Weekday must be in LOCAL time, not the JS runtime's timezone.
+    // Shift the sunrise instant by tz and read the UTC weekday = local weekday.
+    const dow = new Date(refInstant.getTime() + tz * 3600000).getUTCDay();
 
     const tithiSegs = buildSegments(srMs, nextSrMs, elongation, 12, tithiNameFn);
     const nakSegs   = buildSegments(srMs, nextSrMs, moonSidereal, 360 / 27, nakNameFn);
