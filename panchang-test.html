@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 4)</title>
+<title>Shubh Din — Panchang Engine Test (Phase 5)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -31,15 +31,15 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 4</h1>
-  <div class="sub">Added Moonrise, Moonset, Moon sign & Sun sign. Five limbs still DinchaK-grade.</div>
+  <h1>🔬 Panchang Engine — Phase 5</h1>
+  <div class="sub">Added Rahu Kaal, Gulika, Yamaganda, Abhijit & Brahma Muhurta.</div>
 
   <div class="legend">
-    <b>Phase 4 (fixed) — moonset now pairs correctly with the day's moonrise.</b><br>
-    ✅ <b>Moon Sign / Sun Sign</b> — match exactly<br>
-    ✅ <b>Moonrise / Moonset</b> — within 3-5 min of DinchaK (normal moon variance)<br>
-    ✅ <b>Time format toggle</b> — 12h, 24h, or 24h+ (like DinchaK's option). 24h+ shows after-midnight events as 25:34 etc.<br>
-    👉 Re-check the moonsets that were blank/wrong before. Tell me any moon time more than ~6 min off.
+    <b>Phase 5 — auspicious & inauspicious periods:</b><br>
+    ⚠️ <b>Rahu Kaal, Gulika, Yamaganda</b> — inauspicious (each weekday puts them in a different part of the day)<br>
+    ⭐ <b>Abhijit Muhurta</b> — most auspicious (midday), <b>Brahma Muhurta</b> — pre-dawn spiritual time<br>
+    👉 Compare START–END times against DinchaK for a few weekdays. These should match within ~1-2 min.<br>
+    👉 Note: Amrit Kaal, Varjyam & Dur Muhurtam use nakshatra-based tables — I'll add those next (Phase 5b) with careful validation.
   </div>
 
   <div class="controls">
@@ -112,6 +112,11 @@
       return `<div class="limb-block"><div class="limb-label">${label}</div>${rows}</div>`;
     }
 
+    function periodStr(per, dayRefMs){
+      if (!per) return '—';
+      return fmtT(per.start, dayRefMs) + ' – ' + fmtT(per.end, dayRefMs);
+    }
+
     function run(){
       const out = document.getElementById('output');
       if (!window.PanchangEngine) { out.innerHTML = '<div class="err">Engine not loaded. Put astronomy.min.js + panchang-engine.js in same folder.</div>'; return; }
@@ -146,6 +151,17 @@
             <div class="sun-row"><span>🌇 Sunset</span><span>${p.sunset?fmtT(p.sunset, dayRefMs):'—'}</span></div>
             <div class="sun-row"><span>🌙 Moonrise</span><span>${p.moonrise?fmtT(p.moonrise, dayRefMs):'—'}</span></div>
             <div class="sun-row"><span>🌘 Moonset</span><span>${p.moonset?fmtT(p.moonset, dayRefMs):'—'}</span></div>
+          </div>
+          <div class="limb-block" style="margin-top:8px;">
+            <div class="limb-label">Auspicious</div>
+            <div class="sun-row"><span>⭐ Abhijit</span><span>${periodStr(p.abhijit, dayRefMs)}</span></div>
+            <div class="sun-row"><span>🕉️ Brahma Muhurta</span><span>${periodStr(p.brahmaMuhurta, dayRefMs)}</span></div>
+          </div>
+          <div class="limb-block">
+            <div class="limb-label">Inauspicious</div>
+            <div class="sun-row"><span>⚠️ Rahu Kaal</span><span>${periodStr(p.rahuKaal, dayRefMs)}</span></div>
+            <div class="sun-row"><span>⚠️ Yamaganda</span><span>${periodStr(p.yamaganda, dayRefMs)}</span></div>
+            <div class="sun-row"><span>⚠️ Gulika Kaal</span><span>${periodStr(p.gulikaKaal, dayRefMs)}</span></div>
           </div>
         </div>`;
       }
