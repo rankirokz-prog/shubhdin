@@ -152,7 +152,9 @@
   }
 
   // Abhijit Muhurta — the 8th of 15 muhurtas of the day (centered on solar noon).
-  function computeAbhijit(sunriseMs, sunsetMs) {
+  // Traditionally VOID on Wednesday (dow 3), where DinchaK/Drik show "None".
+  function computeAbhijit(sunriseMs, sunsetMs, dow) {
+    if (dow === 3) return null; // Wednesday: no Abhijit Muhurta
     const muhurta = (sunsetMs - sunriseMs) / 15;
     return { start: new Date(sunriseMs + 7 * muhurta), end: new Date(sunriseMs + 8 * muhurta) };
   }
@@ -233,7 +235,7 @@
     const rahu = dayPart(srMs, ssMs, RAHU_PART[dow]);
     const gulika = dayPart(srMs, ssMs, GULIKA_PART[dow]);
     const yama = dayPart(srMs, ssMs, YAMA_PART[dow]);
-    const abhijit = computeAbhijit(srMs, ssMs);
+    const abhijit = computeAbhijit(srMs, ssMs, dow);
     const prevSunset = findSunset(new Date(date.getTime() - 86400000), lat, lng, tz);
     const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
 
