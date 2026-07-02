@@ -165,6 +165,72 @@
     return { start: new Date(sunriseMs - 2 * mNight), end: new Date(sunriseMs - mNight) };
   }
 
+  // ---- Varjyam & Amrit Kaal (Phase 5b) ----------------------------------
+  // Varjyam (Nakshatra Thyajyam / Visha Ghati) is a per-nakshatra window.
+  // Drik's table gives the tyajya START ghati within each nakshatra (of 60 ghatis).
+  // The window lasts 4 ghatis (= 1h36m in nakshatra-time). Amrit Kaal is the
+  // "nectar" counterpart, occurring 30 ghatis (half a nakshatra) after Varjyam start.
+  // Index 0 = Ashvini. Values are the tyajya START ghati (lower bound from Drik table).
+  const TYAJYA_START_GHATI = [
+    50, 24, 30, 40, 14, 21, 30, 20, 32, 30, 20, 18, 21, 20, 14,
+    14, 10, 14, 56, 24, 20, 10, 10, 18, 16, 24, 30
+  ];
+  const VARJYAM_SPAN_GHATI = 4; // 4 ghatis ≈ 1h36m
+
+  // Given the nakshatra a moment falls in, find that nakshatra's start & end instants,
+  // then map a ghati-fraction to a wall-clock time. Returns {start,end} windows list.
+  function computeNakshatraWindows(refMs, spanFn) {
+    // spanFn: returns moonSidereal at a time
+    const v0 = moonSidereal(new Date(refMs));
+    const nakSize = 360 / 27;
+    const nakIdx = Math.floor(v0 / nakSize);
+    const nakStartDeg = nakIdx * nakSize;
+    const nakEndDeg = (nakIdx + 1) * nakSize;
+    // find times moon crosses nakStartDeg (before ref) and nakEndDeg (after ref)
+    const startMs = findMoonDegBackward(refMs, nakStartDeg);
+    const endMs = findMoonDegForward(refMs, nakEndDeg);
+    const dur = endMs - startMs;
+    const tyajyaG = TYAJYA_START_GHATI[nakIdx];
+    const vStart = startMs + (tyajyaG / 60) * dur;
+    const vEnd = startMs + ((tyajyaG + VARJYAM_SPAN_GHATI) / 60) * dur;
+    // Amrit Kaal = 30 ghatis after varjyam start (opposite half), same span
+    let amritStartG = tyajyaG + 30;
+    let aStartMs, aEndMs;
+    if (amritStartG + VARJYAM_SPAN_GHATI <= 60) {
+      aStartMs = startMs + (amritStartG / 60) * dur;
+      aEndMs = startMs + ((amritStartG + VARJYAM_SPAN_GHATI) / 60) * dur;
+    } else {
+      // spills into next nakshatra — approximate using same daily rate
+      aStartMs = startMs + (amritStartG / 60) * dur;
+      aEndMs = aStartMs + (VARJYAM_SPAN_GHATI / 60) * dur;
+    }
+    return {
+      nakIndex: nakIdx,
+      varjyam: { start: new Date(vStart), end: new Date(vEnd) },
+      amritKaal: { start: new Date(aStartMs), end: new Date(aEndMs) }
+    };
+  }
+  // Bisection helpers to find when Moon's sidereal longitude hits a target degree
+  function findMoonDegForward(fromMs, targetDeg) {
+    return bisectMoonDeg(fromMs, fromMs + 2 * 86400000, targetDeg);
+  }
+  function findMoonDegBackward(fromMs, targetDeg) {
+    return bisectMoonDeg(fromMs - 2 * 86400000, fromMs, targetDeg);
+  }
+  function bisectMoonDeg(loMs, hiMs, targetDeg) {
+    // Assumes moon sidereal crosses targetDeg once in [lo,hi]. Handles 360 wrap.
+    const vLo = moonSidereal(new Date(loMs));
+    for (let i = 0; i < 60; i++) {
+      const mid = (loMs + hiMs) / 2;
+      let vv = moonSidereal(new Date(mid));
+      let tt = targetDeg;
+      if (vv < vLo - 0.5) vv += 360;
+      if (tt < vLo - 0.5) tt += 360;
+      if (vv < tt) loMs = mid; else hiMs = mid;
+    }
+    return (loMs + hiMs) / 2;
+  }
+
   // ---- Transition-time engine (bisection) -------------------------------
   function findBoundary(startMs, phaseFn, stepDeg) {
     const v0 = phaseFn(new Date(startMs));
@@ -239,6 +305,14 @@
     const prevSunset = findSunset(new Date(date.getTime() - 86400000), lat, lng, tz);
     const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
 
+    // Varjyam & Amrit Kaal (Phase 5b) — based on the nakshatra prevailing at sunrise
+    let varjyam = null, amritKaal = null;
+    try {
+      const nw = computeNakshatraWindows(srMs);
+      varjyam = nw.varjyam;
+      amritKaal = nw.amritKaal;
+    } catch (e) { /* leave null on any edge failure */ }
+
     return {
       date: date,
       sunrise: sunrise,
@@ -257,7 +331,9 @@
       gulikaKaal: gulika,
       yamaganda: yama,
       abhijit: abhijit,
-      brahmaMuhurta: brahma
+      brahmaMuhurta: brahma,
+      varjyam: varjyam,
+      amritKaal: amritKaal
     };
   }
 
