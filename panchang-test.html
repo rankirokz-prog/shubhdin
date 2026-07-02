@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 5)</title>
+<title>Shubh Din — Panchang Engine Test (Phase 5b)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -31,15 +31,15 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 5</h1>
-  <div class="sub">Added Rahu Kaal, Gulika, Yamaganda, Abhijit & Brahma Muhurta.</div>
+  <h1>🔬 Panchang Engine — Phase 5b</h1>
+  <div class="sub">Added Varjyam & Amrit Kaal (needs your DinchaK check to finalize).</div>
 
   <div class="legend">
-    <b>Phase 5 — auspicious & inauspicious periods:</b><br>
-    ⚠️ <b>Rahu Kaal, Gulika, Yamaganda</b> — inauspicious (each weekday puts them in a different part of the day)<br>
-    ⭐ <b>Abhijit Muhurta</b> — most auspicious (midday), <b>Brahma Muhurta</b> — pre-dawn spiritual time<br>
-    👉 Compare START–END times against DinchaK for a few weekdays. These should match within ~1-2 min.<br>
-    👉 Note: Amrit Kaal, Varjyam & Dur Muhurtam use nakshatra-based tables — I'll add those next (Phase 5b) with careful validation.
+    <b>Phase 5b — Varjyam & Amrit Kaal:</b><br>
+    ⚠️ <b>Varjyam</b> (Visha Ghati) — inauspicious window from the nakshatra<br>
+    ⭐ <b>Amrit Kaal</b> — auspicious "nectar" window<br>
+    <b>IMPORTANT:</b> Unlike tithi/nakshatra (pure astronomy), Varjyam has different <i>conventions</i> — Drik and Prokerala differ by ~1 hour! I used Drik's table. <br>
+    👉 <b>Please compare our Varjyam & Amrit Kaal against DinchaK for 2-3 dates.</b> Tell me the exact DinchaK times. If they're offset from ours by a consistent amount, I'll calibrate to match DinchaK — just like we did with the ayanamsa.
   </div>
 
   <div class="controls">
@@ -154,7 +154,8 @@
           </div>
           <div class="limb-block" style="margin-top:8px;">
             <div class="limb-label">Auspicious</div>
-            <div class="sun-row"><span>⭐ Abhijit</span><span>${periodStr(p.abhijit, dayRefMs)}</span></div>
+            <div class="sun-row"><span>⭐ Abhijit</span><span>${p.abhijit ? periodStr(p.abhijit, dayRefMs) : 'None (Wed)'}</span></div>
+            <div class="sun-row"><span>⭐ Amrit Kaal</span><span>${periodStr(p.amritKaal, dayRefMs)}</span></div>
             <div class="sun-row"><span>🕉️ Brahma Muhurta</span><span>${periodStr(p.brahmaMuhurta, dayRefMs)}</span></div>
           </div>
           <div class="limb-block">
@@ -162,6 +163,7 @@
             <div class="sun-row"><span>⚠️ Rahu Kaal</span><span>${periodStr(p.rahuKaal, dayRefMs)}</span></div>
             <div class="sun-row"><span>⚠️ Yamaganda</span><span>${periodStr(p.yamaganda, dayRefMs)}</span></div>
             <div class="sun-row"><span>⚠️ Gulika Kaal</span><span>${periodStr(p.gulikaKaal, dayRefMs)}</span></div>
+            <div class="sun-row"><span>⚠️ Varjyam</span><span>${periodStr(p.varjyam, dayRefMs)}</span></div>
           </div>
         </div>`;
       }
