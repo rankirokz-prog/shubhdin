@@ -35,11 +35,10 @@
   <div class="sub">Added Varjyam & Amrit Kaal (needs your DinchaK check to finalize).</div>
 
   <div class="legend">
-    <b>Phase 5b — Varjyam & Amrit Kaal:</b><br>
-    ⚠️ <b>Varjyam</b> (Visha Ghati) — inauspicious window from the nakshatra<br>
-    ⭐ <b>Amrit Kaal</b> — auspicious "nectar" window<br>
-    <b>IMPORTANT:</b> Unlike tithi/nakshatra (pure astronomy), Varjyam has different <i>conventions</i> — Drik and Prokerala differ by ~1 hour! I used Drik's table. <br>
-    👉 <b>Please compare our Varjyam & Amrit Kaal against DinchaK for 2-3 dates.</b> Tell me the exact DinchaK times. If they're offset from ours by a consistent amount, I'll calibrate to match DinchaK — just like we did with the ayanamsa.
+    <b>Phase 5b — Varjyam (Amrit Kaal deferred):</b><br>
+    ⚠️ <b>Varjyam</b> — I validated our table against DinchaK: it matches to ~1 min on most days. A day can have 1-2 Varjyam windows (both shown).<br>
+    ⭐ <b>Amrit Kaal — temporarily removed.</b> Its per-nakshatra table is different from Varjyam and I don't have it confirmed yet. Better to omit than show a wrong auspicious time.<br>
+    👉 Please check <b>Varjyam</b> against DinchaK for several dates. Tell me any that are off by more than a few min (note the date + city). Some rare boundary days may still mismatch — I want to find how often.
   </div>
 
   <div class="controls">
@@ -155,7 +154,6 @@
           <div class="limb-block" style="margin-top:8px;">
             <div class="limb-label">Auspicious</div>
             <div class="sun-row"><span>⭐ Abhijit</span><span>${p.abhijit ? periodStr(p.abhijit, dayRefMs) : 'None (Wed)'}</span></div>
-            <div class="sun-row"><span>⭐ Amrit Kaal</span><span>${periodStr(p.amritKaal, dayRefMs)}</span></div>
             <div class="sun-row"><span>🕉️ Brahma Muhurta</span><span>${periodStr(p.brahmaMuhurta, dayRefMs)}</span></div>
           </div>
           <div class="limb-block">
@@ -163,7 +161,7 @@
             <div class="sun-row"><span>⚠️ Rahu Kaal</span><span>${periodStr(p.rahuKaal, dayRefMs)}</span></div>
             <div class="sun-row"><span>⚠️ Yamaganda</span><span>${periodStr(p.yamaganda, dayRefMs)}</span></div>
             <div class="sun-row"><span>⚠️ Gulika Kaal</span><span>${periodStr(p.gulikaKaal, dayRefMs)}</span></div>
-            <div class="sun-row"><span>⚠️ Varjyam</span><span>${periodStr(p.varjyam, dayRefMs)}</span></div>
+            ${(p.varjyamAll && p.varjyamAll.length) ? p.varjyamAll.map(v=>`<div class="sun-row"><span>⚠️ Varjyam</span><span>${periodStr(v, dayRefMs)}</span></div>`).join('') : '<div class="sun-row"><span>⚠️ Varjyam</span><span>—</span></div>'}
           </div>
         </div>`;
       }
