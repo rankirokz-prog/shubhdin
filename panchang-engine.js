@@ -166,59 +166,45 @@
   }
 
   // ---- Varjyam & Amrit Kaal (Phase 5b) ----------------------------------
-  // Varjyam (Nakshatra Thyajyam / Visha Ghati) is a per-nakshatra window.
-  // Drik's table gives the tyajya START ghati within each nakshatra (of 60 ghatis).
-  // The window lasts 4 ghatis (= 1h36m in nakshatra-time). Amrit Kaal is the
-  // "nectar" counterpart, occurring 30 ghatis (half a nakshatra) after Varjyam start.
-  // Index 0 = Ashvini. Values are the tyajya START ghati (lower bound from Drik table).
+  // Varjyam (Nakshatra Thyajyam / Visha Ghati): each nakshatra has a tyajya START
+  // ghati (of 60). The window lasts 4 ghatis in nakshatra-time. A day (sunrise→next
+  // sunrise) can contain 1-2 Varjyam windows — from whichever nakshatra(s) are active.
+  // Drik's published per-nakshatra tyajya start ghati (index 0 = Ashvini):
   const TYAJYA_START_GHATI = [
     50, 24, 30, 40, 14, 21, 30, 20, 32, 30, 20, 18, 21, 20, 14,
     14, 10, 14, 56, 24, 20, 10, 10, 18, 16, 24, 30
   ];
-  const VARJYAM_SPAN_GHATI = 4; // 4 ghatis ≈ 1h36m
+  const VARJYAM_SPAN_GHATI = 4; // ≈ 1h36m in nakshatra-time
 
-  // Given the nakshatra a moment falls in, find that nakshatra's start & end instants,
-  // then map a ghati-fraction to a wall-clock time. Returns {start,end} windows list.
-  function computeNakshatraWindows(refMs, spanFn) {
-    // spanFn: returns moonSidereal at a time
-    const v0 = moonSidereal(new Date(refMs));
+  // Compute the tyajya window for one nakshatra instance (found around refMs).
+  function varjyamForNakshatra(nakIdx, nearMs) {
     const nakSize = 360 / 27;
-    const nakIdx = Math.floor(v0 / nakSize);
-    const nakStartDeg = nakIdx * nakSize;
-    const nakEndDeg = (nakIdx + 1) * nakSize;
-    // find times moon crosses nakStartDeg (before ref) and nakEndDeg (after ref)
-    const startMs = findMoonDegBackward(refMs, nakStartDeg);
-    const endMs = findMoonDegForward(refMs, nakEndDeg);
-    const dur = endMs - startMs;
-    const tyajyaG = TYAJYA_START_GHATI[nakIdx];
-    const vStart = startMs + (tyajyaG / 60) * dur;
-    const vEnd = startMs + ((tyajyaG + VARJYAM_SPAN_GHATI) / 60) * dur;
-    // Amrit Kaal = 30 ghatis after varjyam start (opposite half), same span
-    let amritStartG = tyajyaG + 30;
-    let aStartMs, aEndMs;
-    if (amritStartG + VARJYAM_SPAN_GHATI <= 60) {
-      aStartMs = startMs + (amritStartG / 60) * dur;
-      aEndMs = startMs + ((amritStartG + VARJYAM_SPAN_GHATI) / 60) * dur;
-    } else {
-      // spills into next nakshatra — approximate using same daily rate
-      aStartMs = startMs + (amritStartG / 60) * dur;
-      aEndMs = aStartMs + (VARJYAM_SPAN_GHATI / 60) * dur;
+    const startDeg = nakIdx * nakSize;
+    const endDeg = (nakIdx + 1) * nakSize;
+    const cross = bisectMoonDeg(nearMs - 2 * 86400000, nearMs + 2 * 86400000, startDeg);
+    const nakEnd = bisectMoonDeg(cross, cross + 3 * 86400000, endDeg);
+    const dur = nakEnd - cross;
+    const g = TYAJYA_START_GHATI[nakIdx];
+    return { start: cross + (g / 60) * dur, end: cross + ((g + VARJYAM_SPAN_GHATI) / 60) * dur };
+  }
+
+  // Find all Varjyam windows overlapping [srMs, nextSrMs].
+  function varjyamsInDay(srMs, nextSrMs) {
+    const nakSize = 360 / 27;
+    const out = [];
+    const startNak = Math.floor(moonSidereal(new Date(srMs - 12 * 3600000)) / nakSize);
+    for (let k = 0; k < 4; k++) {
+      const ni = ((startNak + k) % 27 + 27) % 27;
+      const w = varjyamForNakshatra(ni, srMs + k * 86400000);
+      if (w.end > srMs && w.start < nextSrMs) {
+        out.push({ nakIndex: ni, start: new Date(w.start), end: new Date(w.end) });
+      }
     }
-    return {
-      nakIndex: nakIdx,
-      varjyam: { start: new Date(vStart), end: new Date(vEnd) },
-      amritKaal: { start: new Date(aStartMs), end: new Date(aEndMs) }
-    };
+    return out;
   }
+
   // Bisection helpers to find when Moon's sidereal longitude hits a target degree
-  function findMoonDegForward(fromMs, targetDeg) {
-    return bisectMoonDeg(fromMs, fromMs + 2 * 86400000, targetDeg);
-  }
-  function findMoonDegBackward(fromMs, targetDeg) {
-    return bisectMoonDeg(fromMs - 2 * 86400000, fromMs, targetDeg);
-  }
   function bisectMoonDeg(loMs, hiMs, targetDeg) {
-    // Assumes moon sidereal crosses targetDeg once in [lo,hi]. Handles 360 wrap.
     const vLo = moonSidereal(new Date(loMs));
     for (let i = 0; i < 60; i++) {
       const mid = (loMs + hiMs) / 2;
@@ -305,13 +291,14 @@
     const prevSunset = findSunset(new Date(date.getTime() - 86400000), lat, lng, tz);
     const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
 
-    // Varjyam & Amrit Kaal (Phase 5b) — based on the nakshatra prevailing at sunrise
-    let varjyam = null, amritKaal = null;
-    try {
-      const nw = computeNakshatraWindows(srMs);
-      varjyam = nw.varjyam;
-      amritKaal = nw.amritKaal;
-    } catch (e) { /* leave null on any edge failure */ }
+    // Varjyam (Phase 5b) — all windows overlapping sunrise→next-sunrise.
+    // Table validated against DinchaK to ~1 min. Amrit Kaal is temporarily
+    // disabled: its correct per-nakshatra "amrita ghati" table differs from
+    // Varjyam and isn't yet confirmed — better to omit than show a wrong muhurta.
+    let varjyamList = [];
+    try { varjyamList = varjyamsInDay(srMs, nextSrMs); } catch (e) { varjyamList = []; }
+    const varjyam = varjyamList.length ? varjyamList[0] : null;
+    const amritKaal = null; // pending correct amrita-ghati table
 
     return {
       date: date,
@@ -333,6 +320,7 @@
       abhijit: abhijit,
       brahmaMuhurta: brahma,
       varjyam: varjyam,
+      varjyamAll: varjyamList,
       amritKaal: amritKaal
     };
   }
