@@ -169,10 +169,11 @@
   // Varjyam (Nakshatra Thyajyam / Visha Ghati): each nakshatra has a tyajya START
   // ghati (of 60). The window lasts 4 ghatis in nakshatra-time. A day (sunrise→next
   // sunrise) can contain 1-2 Varjyam windows — from whichever nakshatra(s) are active.
-  // Drik's published per-nakshatra tyajya start ghati (index 0 = Ashvini):
+  // Drik's published per-nakshatra tyajya start ghati (index 0 = Ashvini).
+  // Mula = 20 (not 56 — earlier data-entry error confirmed against DinchaK + literature).
   const TYAJYA_START_GHATI = [
     50, 24, 30, 40, 14, 21, 30, 20, 32, 30, 20, 18, 21, 20, 14,
-    14, 10, 14, 56, 24, 20, 10, 10, 18, 16, 24, 30
+    14, 10, 14, 20, 24, 20, 10, 10, 18, 16, 24, 30
   ];
   const VARJYAM_SPAN_GHATI = 4; // ≈ 1h36m in nakshatra-time
 
