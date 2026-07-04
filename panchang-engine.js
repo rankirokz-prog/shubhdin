@@ -165,6 +165,60 @@
     return { start: new Date(sunriseMs - 2 * mNight), end: new Date(sunriseMs - mNight) };
   }
 
+  // ---- Choghadiya (Phase 6) ---------------------------------------------
+  // Day (sunrise→sunset) and night (sunset→next sunrise) each split into 8.
+  // Cycle order fixed; the day's first choghadiya is set by weekday.
+  const CHOG_CYCLE_EN = ['Udveg', 'Char', 'Labh', 'Amrit', 'Kaal', 'Shubh', 'Rog'];
+  const CHOG_CYCLE_HI = ['\u0909\u0926\u094d\u0935\u0947\u0917', '\u091a\u0930', '\u0932\u093e\u092d', '\u0905\u092e\u0943\u0924', '\u0915\u093e\u0932', '\u0936\u0941\u092d', '\u0930\u094b\u0917'];
+  const CHOG_GOOD = { Udveg: false, Char: true, Labh: true, Amrit: true, Kaal: false, Shubh: true, Rog: false };
+  const CHOG_DAY_START = [0, 3, 6, 2, 5, 1, 4]; // Sun..Sat → index into CHOG_CYCLE
+
+  function computeChoghadiya(sunriseMs, sunsetMs, nextSunriseMs, dow) {
+    const dayStart = CHOG_DAY_START[dow];
+    const nightStart = (dayStart + 5) % 7;
+    const dayPart = (sunsetMs - sunriseMs) / 8;
+    const nightPart = (nextSunriseMs - sunsetMs) / 8;
+    const day = [], night = [];
+    for (let i = 0; i < 8; i++) {
+      const ci = (dayStart + i) % 7;
+      day.push({ en: CHOG_CYCLE_EN[ci], hi: CHOG_CYCLE_HI[ci], good: CHOG_GOOD[CHOG_CYCLE_EN[ci]],
+        start: new Date(sunriseMs + i * dayPart), end: new Date(sunriseMs + (i + 1) * dayPart) });
+    }
+    for (let i = 0; i < 8; i++) {
+      const ci = (nightStart + i) % 7;
+      night.push({ en: CHOG_CYCLE_EN[ci], hi: CHOG_CYCLE_HI[ci], good: CHOG_GOOD[CHOG_CYCLE_EN[ci]],
+        start: new Date(sunsetMs + i * nightPart), end: new Date(sunsetMs + (i + 1) * nightPart) });
+    }
+    return { day, night };
+  }
+
+  // ---- Hora / Planetary Hours (Phase 6) ---------------------------------
+  // Day split into 12 horas, night into 12. First hora at sunrise = weekday lord.
+  // Chaldean cycle order. The 25th hora correctly yields the next weekday's lord.
+  const HORA_CYCLE_EN = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mars'];
+  const HORA_CYCLE_HI = ['\u0938\u0942\u0930\u094d\u092f', '\u0936\u0941\u0915\u094d\u0930', '\u092c\u0941\u0927', '\u091a\u0902\u0926\u094d\u0930', '\u0936\u0928\u093f', '\u0917\u0941\u0930\u0941', '\u092e\u0902\u0917\u0932'];
+  const HORA_START = [0, 3, 6, 2, 5, 1, 4]; // Sun..Sat → index (starts with weekday lord)
+  // Hora "goodness" for general activity (traditional): benefics good, malefics caution
+  const HORA_GOOD = { Sun: false, Venus: true, Mercury: true, Moon: true, Saturn: false, Jupiter: true, Mars: false };
+
+  function computeHora(sunriseMs, sunsetMs, nextSunriseMs, dow) {
+    const startIdx = HORA_START[dow];
+    const dayHora = (sunsetMs - sunriseMs) / 12;
+    const nightHora = (nextSunriseMs - sunsetMs) / 12;
+    const horas = [];
+    for (let i = 0; i < 12; i++) {
+      const li = (startIdx + i) % 7;
+      horas.push({ en: HORA_CYCLE_EN[li], hi: HORA_CYCLE_HI[li], good: HORA_GOOD[HORA_CYCLE_EN[li]], dayTime: true,
+        start: new Date(sunriseMs + i * dayHora), end: new Date(sunriseMs + (i + 1) * dayHora) });
+    }
+    for (let i = 0; i < 12; i++) {
+      const li = (startIdx + 12 + i) % 7;
+      horas.push({ en: HORA_CYCLE_EN[li], hi: HORA_CYCLE_HI[li], good: HORA_GOOD[HORA_CYCLE_EN[li]], dayTime: false,
+        start: new Date(sunsetMs + i * nightHora), end: new Date(sunsetMs + (i + 1) * nightHora) });
+    }
+    return horas;
+  }
+
   // ---- Varjyam & Amrit Kaal (Phase 5b) ----------------------------------
   // Varjyam (Nakshatra Thyajyam / Visha Ghati): each nakshatra has a tyajya START
   // ghati (of 60). The window lasts 4 ghatis in nakshatra-time. A day (sunrise→next
@@ -304,6 +358,12 @@
     const varjyam = varjyamList.length ? varjyamList[0] : null;
     const amritKaal = null;
 
+    // Choghadiya & Hora (Phase 6) — pure day/night divisions, no ambiguity.
+    const ssForDiv = sunset ? sunset.getTime() : (srMs + 12 * 3600000);
+    let choghadiya = null, hora = null;
+    try { choghadiya = computeChoghadiya(srMs, ssForDiv, nextSrMs, dow); } catch (e) { choghadiya = null; }
+    try { hora = computeHora(srMs, ssForDiv, nextSrMs, dow); } catch (e) { hora = null; }
+
     return {
       date: date,
       sunrise: sunrise,
@@ -326,7 +386,8 @@
       varjyam: varjyam,
       varjyamAll: varjyamList,
       amritKaal: amritKaal,
-      amritKaalAll: amritList
+      choghadiya: choghadiya,
+      hora: hora
     };
   }
 
