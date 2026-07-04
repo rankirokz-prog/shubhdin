@@ -176,8 +176,13 @@
     14, 10, 14, 20, 24, 20, 10, 10, 18, 16, 24, 30
   ];
   const VARJYAM_SPAN_GHATI = 4; // ≈ 1h36m in nakshatra-time
+  // Note: Amrit Kaal ≈ tyajya + 36 ghati (relationship confirmed vs DinchaK),
+  // but reliable anchoring isn't solved yet, so Amrit is not emitted for now.
 
-  // Compute the tyajya window for one nakshatra instance (found around refMs).
+  // Day-scan for Varjyam windows overlapping [srMs, nextSrMs]. This anchors each
+  // candidate nakshatra by a time offset from sunrise; validated against DinchaK
+  // to ~1 min across many cities/dates. (Amrit Kaal needs a different anchoring
+  // that isn't yet solved — see note in getPanchang.)
   function varjyamForNakshatra(nakIdx, nearMs) {
     const nakSize = 360 / 27;
     const startDeg = nakIdx * nakSize;
@@ -188,8 +193,6 @@
     const g = TYAJYA_START_GHATI[nakIdx];
     return { start: cross + (g / 60) * dur, end: cross + ((g + VARJYAM_SPAN_GHATI) / 60) * dur };
   }
-
-  // Find all Varjyam windows overlapping [srMs, nextSrMs].
   function varjyamsInDay(srMs, nextSrMs) {
     const nakSize = 360 / 27;
     const out = [];
@@ -292,14 +295,14 @@
     const prevSunset = findSunset(new Date(date.getTime() - 86400000), lat, lng, tz);
     const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
 
-    // Varjyam (Phase 5b) — all windows overlapping sunrise→next-sunrise.
-    // Table validated against DinchaK to ~1 min. Amrit Kaal is temporarily
-    // disabled: its correct per-nakshatra "amrita ghati" table differs from
-    // Varjyam and isn't yet confirmed — better to omit than show a wrong muhurta.
-    let varjyamList = [];
+    // Varjyam (Phase 5b) — validated against DinchaK to ~1 min.
+    // Amrit Kaal: the +36-ghati relationship is confirmed, but the nakshatra-
+    // instance bracketing needs a fix before Amrit times are reliable. Kept OFF
+    // rather than show a wrong auspicious muhurta.
+    let varjyamList = [], amritList = [];
     try { varjyamList = varjyamsInDay(srMs, nextSrMs); } catch (e) { varjyamList = []; }
     const varjyam = varjyamList.length ? varjyamList[0] : null;
-    const amritKaal = null; // pending correct amrita-ghati table
+    const amritKaal = null;
 
     return {
       date: date,
@@ -322,7 +325,8 @@
       brahmaMuhurta: brahma,
       varjyam: varjyam,
       varjyamAll: varjyamList,
-      amritKaal: amritKaal
+      amritKaal: amritKaal,
+      amritKaalAll: amritList
     };
   }
 
