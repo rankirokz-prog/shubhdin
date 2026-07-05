@@ -275,6 +275,57 @@
     return (loMs + hiMs) / 2;
   }
 
+  // ---- Amrit Kaal (Phase 8, bracketing FIXED) ----------------------------
+  // Amrit start ghati = tyajya + 24 (span 4 ghati of the nakshatra instance).
+  // Derived + validated from Ram's DinchaK data (Jul 5 2026 Shatabhisha: ghati 42
+  // = 18+24; Jul 20 2026 Hasta: ghati 45 = 21+24; both to 0.05 ghati precision).
+  // The old +36 hypothesis came from the bracketing bug — this replaces it.
+  // Fix: each nakshatra instance's TRUE span is found by backward-bisecting its
+  // start transit and forward-bisecting its end — no more day-offset guessing.
+  // NOTE: for Ashvini (50) and Rohini (40), tyajya+24 exceeds 60 ghatis, so the
+  // window would spill past the instance end — convention unverified; we SKIP
+  // those two rather than show a wrong auspicious time (validate later).
+  function nakInstanceAt(ms) {
+    const step = 360 / 27;
+    const idx = Math.floor(moonSidereal(new Date(ms)) / step) % 27;
+    const start = bisectMoonDeg(ms - 30 * 3600000, ms, idx * step);
+    const end = findBoundary(start + 60000, moonSidereal, step);
+    return { idx: idx, start: start, end: end, dur: end - start };
+  }
+  function amritKaalsInDay(srMs, nextSrMs) {
+    const out = [];
+    let inst = nakInstanceAt(srMs);
+    for (let k = 0; k < 3; k++) {
+      const g = TYAJYA_START_GHATI[inst.idx] + 24;
+      if (g + 4 <= 60) { // skip spill cases (Ashvini, Rohini) until validated
+        const ws = inst.start + (g / 60) * inst.dur;
+        const we = inst.start + ((g + 4) / 60) * inst.dur;
+        if (we > srMs && ws < nextSrMs) out.push({ nakIndex: inst.idx, start: new Date(ws), end: new Date(we) });
+      }
+      const nStart = inst.end;
+      const nIdx = (inst.idx + 1) % 27;
+      const nEnd = findBoundary(nStart + 60000, moonSidereal, 360 / 27);
+      inst = { idx: nIdx, start: nStart, end: nEnd, dur: nEnd - nStart };
+      if (inst.start > nextSrMs) break;
+    }
+    return out;
+  }
+
+  // ---- Dur Muhurtam (Phase 8) --------------------------------------------
+  // Day (sunrise->sunset) / 15 muhurtas; inauspicious muhurta(s) by weekday.
+  // 1-based indices. VALIDATED from Ram's DinchaK data: Sunday = 14th;
+  // Monday = 9th & 12th (both matched to 0.01 muhurta). Remaining weekdays use
+  // the classical published table — PENDING Ram's validation (Tue-Sat).
+  // Tuesday traditionally also has a NIGHT dur muhurtam — not emitted yet;
+  // will be derived from Ram's DinchaK data if shown there.
+  const DUR_MUHURTA_DAY = [[14], [9, 12], [4], [8], [6, 12], [4, 9], [3]]; // Sun..Sat
+  function durMuhurtamsInDay(srMs, ssMs, dow) {
+    const mu = (ssMs - srMs) / 15;
+    return DUR_MUHURTA_DAY[dow].map(function (i) {
+      return { start: new Date(srMs + (i - 1) * mu), end: new Date(srMs + i * mu) };
+    });
+  }
+
   // ---- Phase 7: Hindu Calendar Layer -------------------------------------
   // Lunar (Amanta) month = new moon to new moon. The month is NAMED by the
   // sidereal rashi the Sun ENTERS during that month (Mesha entry -> Chaitra).
@@ -504,13 +555,19 @@
     const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
 
     // Varjyam (Phase 5b) — validated against DinchaK to ~1 min.
-    // Amrit Kaal: the +36-ghati relationship is confirmed, but the nakshatra-
-    // instance bracketing needs a fix before Amrit times are reliable. Kept OFF
-    // rather than show a wrong auspicious muhurta.
-    let varjyamList = [], amritList = [];
+    let varjyamList = [];
     try { varjyamList = varjyamsInDay(srMs, nextSrMs); } catch (e) { varjyamList = []; }
     const varjyam = varjyamList.length ? varjyamList[0] : null;
-    const amritKaal = null;
+
+    // Amrit Kaal (Phase 8) — bracketing fixed; ghati = tyajya + 24 (validated
+    // against DinchaK Jul 5 + Jul 20 2026). Ashvini/Rohini days skipped pending validation.
+    let amritList = [];
+    try { amritList = amritKaalsInDay(srMs, nextSrMs); } catch (e) { amritList = []; }
+    const amritKaal = amritList.length ? amritList[0] : null;
+
+    // Dur Muhurtam (Phase 8) — Sun/Mon validated; Tue-Sat classical table pending validation.
+    let durMuhurtam = [];
+    try { durMuhurtam = durMuhurtamsInDay(srMs, (sunset ? sunset.getTime() : srMs + 12 * 3600000), dow); } catch (e) { durMuhurtam = []; }
 
     // Hindu calendar layer (Phase 7) — months, samvats, ritu, ayana.
     let hinduCalendar = null;
@@ -544,6 +601,8 @@
       varjyam: varjyam,
       varjyamAll: varjyamList,
       amritKaal: amritKaal,
+      amritKaalAll: amritList,
+      durMuhurtam: durMuhurtam,
       choghadiya: choghadiya,
       hora: hora,
       hinduCalendar: hinduCalendar
