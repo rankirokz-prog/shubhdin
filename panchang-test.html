@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 6)</title>
+<title>Shubh Din — Panchang Engine Test (Phase 7)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,15 +35,16 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 6</h1>
-  <div class="sub">Added Choghadiya (day + night) and Hora (planetary hours).</div>
+  <h1>🔬 Panchang Engine — Phase 7</h1>
+  <div class="sub">Added Hindu Calendar: lunar months, Adhik Maas, Samvats, Samvatsara, Ritu, Ayana.</div>
 
   <div class="legend">
-    <b>Phase 6 — Choghadiya & Hora:</b><br>
-    🟢 <b>Choghadiya</b> — 8 day + 8 night periods, each good (green) or bad (red). Very popular for picking work times.<br>
-    🪐 <b>Hora</b> — 12 day + 12 night planetary hours. First hora = weekday's planet.<br>
-    👉 Compare against DinchaK's Choghadiya + Hora pages for a few dates/weekdays. Times should match to ~1 min.<br>
-    (Everything from earlier phases is unchanged — limbs, kaal periods, Varjyam all still validated.)
+    <b>Phase 7 — Hindu Calendar:</b><br>
+    📅 <b>Amanta + Purnimanta month</b> — computed from new moons + Sun's rashi. Adhik Maas auto-detected (2026's Adhik Jyeshtha ✓).<br>
+    🗓️ <b>Vikram / Shaka / Gujarati Samvat</b> + <b>Samvatsara</b> (60-year name).<br>
+    🌸 <b>Ritu</b> (Vedic & Drik) and <b>Ayana</b> (Vedic & Drik).<br>
+    👉 On DinchaK/Drik these appear at the TOP of the panchang page. Compare month names, samvat numbers, ritu & ayana.<br>
+    (Everything from earlier phases is unchanged — limbs, kaal periods, Varjyam, Choghadiya, Hora all still validated.)
   </div>
 
   <div class="controls">
@@ -150,6 +151,14 @@
             <div class="limb-label">Signs</div>
             <div class="seg">Moon: ${p.moonSign.en} &nbsp;·&nbsp; Sun: ${p.sunSign.en}</div>
           </div>
+          ${p.hinduCalendar ? `<div class="limb-block">
+            <div class="limb-label">Hindu Calendar (Phase 7)</div>
+            <div class="seg">Amanta: <b>${p.hinduCalendar.amantaMonth.adhik?'Adhik ':''}${p.hinduCalendar.amantaMonth.en}</b> &nbsp;·&nbsp; Purnimanta: <b>${p.hinduCalendar.purnimantaMonth.adhik?'Adhik ':''}${p.hinduCalendar.purnimantaMonth.en}</b></div>
+            <div class="seg">Vikram Samvat ${p.hinduCalendar.vikramSamvat} &nbsp;·&nbsp; Shaka ${p.hinduCalendar.shakaSamvat} &nbsp;·&nbsp; Gujarati ${p.hinduCalendar.gujaratiSamvat}</div>
+            <div class="seg">Samvatsara: ${p.hinduCalendar.samvatsara.en}</div>
+            <div class="seg">Ritu — Vedic: ${p.hinduCalendar.ritu.vedic.en} &nbsp;·&nbsp; Drik: ${p.hinduCalendar.ritu.drik.en}</div>
+            <div class="seg">Ayana — Vedic: ${p.hinduCalendar.ayana.vedic.en} &nbsp;·&nbsp; Drik: ${p.hinduCalendar.ayana.drik.en}</div>
+          </div>` : ''}
           <div style="margin-top:8px;">
             <div class="sun-row"><span>☀️ Sunrise</span><span>${p.sunrise?fmtT(p.sunrise, dayRefMs):'—'}</span></div>
             <div class="sun-row"><span>🌇 Sunset</span><span>${p.sunset?fmtT(p.sunset, dayRefMs):'—'}</span></div>
