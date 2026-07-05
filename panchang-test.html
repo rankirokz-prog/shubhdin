@@ -169,6 +169,7 @@
             <div class="limb-label">Auspicious</div>
             <div class="sun-row"><span>⭐ Abhijit</span><span>${p.abhijit ? periodStr(p.abhijit, dayRefMs) : 'None (Wed)'}</span></div>
             <div class="sun-row"><span>🕉️ Brahma Muhurta</span><span>${periodStr(p.brahmaMuhurta, dayRefMs)}</span></div>
+            ${(p.amritKaalAll && p.amritKaalAll.length) ? p.amritKaalAll.map(a=>`<div class="sun-row"><span>💧 Amrit Kaal</span><span>${periodStr(a, dayRefMs)}</span></div>`).join('') : '<div class="sun-row"><span>💧 Amrit Kaal</span><span>—</span></div>'}
           </div>
           <div class="limb-block">
             <div class="limb-label">Inauspicious</div>
@@ -176,6 +177,7 @@
             <div class="sun-row"><span>⚠️ Yamaganda</span><span>${periodStr(p.yamaganda, dayRefMs)}</span></div>
             <div class="sun-row"><span>⚠️ Gulika Kaal</span><span>${periodStr(p.gulikaKaal, dayRefMs)}</span></div>
             ${(p.varjyamAll && p.varjyamAll.length) ? p.varjyamAll.map(v=>`<div class="sun-row"><span>⚠️ Varjyam</span><span>${periodStr(v, dayRefMs)}</span></div>`).join('') : '<div class="sun-row"><span>⚠️ Varjyam</span><span>—</span></div>'}
+            ${(p.durMuhurtam && p.durMuhurtam.length) ? p.durMuhurtam.map(dm=>`<div class="sun-row"><span>⚠️ Dur Muhurtam</span><span>${periodStr(dm, dayRefMs)}</span></div>`).join('') : ''}
           </div>
           <div class="limb-block">
             <div class="limb-label">Day Choghadiya</div>
