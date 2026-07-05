@@ -374,9 +374,16 @@
     else { vikram = y + 56; shaka = y - 79; vikramStartYear = y - 1; }
     const ks1 = kartikaShukla1(vikramStartYear);
     const gujarati = (refMs >= ks1) ? vikram : vikram - 1;
-    const samvatsaraIdx = ((shaka + 11) % 60 + 60) % 60;
+    const nameOf = function (n) { return SAMVATSARA_EN[((n % 60) + 60) % 60]; };
+    // Drik attaches a DIFFERENT samvatsara name to each samvat. Offsets
+    // reverse-engineered from Ram's DinchaK data (Mar 15/25 + Nov 5/25, 2026):
+    //   Shaka 1948 -> Parabhava  => index = (shaka + 11) % 60
+    //   Vikram 2082 -> Kalayukta, 2083 -> Siddharthi => index = (vikram + 9) % 60
+    //   Gujarati 2082 -> Pingala, 2083 -> Kalayukta  => index = (gujarati + 8) % 60
     return { vikram: vikram, shaka: shaka, gujarati: gujarati,
-             samvatsara: SAMVATSARA_EN[samvatsaraIdx] };
+             samvatsaraShaka: nameOf(shaka + 11),
+             samvatsaraVikram: nameOf(vikram + 9),
+             samvatsaraGujarati: nameOf(gujarati + 8) };
   }
 
   // Ritu: six 60° seasons, Vasanta anchored at 330° (Meena) — Drik's convention
@@ -415,7 +422,8 @@
       vikramSamvat: years.vikram,
       shakaSamvat: years.shaka,
       gujaratiSamvat: years.gujarati,
-      samvatsara: { en: years.samvatsara },
+      samvatsara: { en: years.samvatsaraShaka, shaka: years.samvatsaraShaka,
+                    vikram: years.samvatsaraVikram, gujarati: years.samvatsaraGujarati },
       ritu: { vedic: rituFromLong(sidLon), drik: rituFromLong(tropLon) },
       ayana: { vedic: ayanaFromLong(sidLon), drik: ayanaFromLong(tropLon) }
     };
