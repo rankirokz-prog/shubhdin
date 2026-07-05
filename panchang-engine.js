@@ -275,6 +275,152 @@
     return (loMs + hiMs) / 2;
   }
 
+  // ---- Phase 7: Hindu Calendar Layer -------------------------------------
+  // Lunar (Amanta) month = new moon to new moon. The month is NAMED by the
+  // sidereal rashi the Sun ENTERS during that month (Mesha entry -> Chaitra).
+  // Adhik Maas = a lunar month containing NO sankranti (Sun stays in one rashi);
+  // it takes the name of the FOLLOWING regular month, prefixed "Adhik".
+  // 2026 has a rare Adhik Jyeshtha (~mid-May to mid-June) — primary validation target.
+  const MASA_EN = ['Chaitra','Vaishakha','Jyeshtha','Ashadha','Shravana','Bhadrapada',
+                   'Ashwina','Kartika','Margashirsha','Pausha','Magha','Phalguna'];
+  const MASA_HI = ['\u091A\u0948\u0924\u094D\u0930','\u0935\u0948\u0936\u093E\u0916',
+    '\u091C\u094D\u092F\u0947\u0937\u094D\u0920','\u0906\u0937\u093E\u0922\u093C',
+    '\u0936\u094D\u0930\u093E\u0935\u0923','\u092D\u093E\u0926\u094D\u0930\u092A\u0926',
+    '\u0906\u0936\u094D\u0935\u093F\u0928','\u0915\u093E\u0930\u094D\u0924\u093F\u0915',
+    '\u092E\u093E\u0930\u094D\u0917\u0936\u0940\u0930\u094D\u0937','\u092A\u094C\u0937',
+    '\u092E\u093E\u0918','\u092B\u093E\u0932\u094D\u0917\u0941\u0928'];
+  const ADHIK_HI = '\u0905\u0927\u093F\u0915';
+
+  const RITU_EN = ['Vasanta','Grishma','Varsha','Sharad','Hemanta','Shishira'];
+  const RITU_HI = ['\u0935\u0938\u0902\u0924','\u0917\u094D\u0930\u0940\u0937\u094D\u092E',
+    '\u0935\u0930\u094D\u0937\u093E','\u0936\u0930\u0926','\u0939\u0947\u092E\u0902\u0924',
+    '\u0936\u093F\u0936\u093F\u0930'];
+
+  // 60-year Jupiter cycle (Samvatsara), 0-based from Prabhava.
+  // Anchor verified: Shaka 1947 (2025-26) = Vishvavasu, Shaka 1948 (2026-27) = Parabhava.
+  // Formula: index = (shakaYear + 11) % 60  [South/Drik convention — VALIDATE vs DinchaK]
+  const SAMVATSARA_EN = ['Prabhava','Vibhava','Shukla','Pramoda','Prajapati','Angirasa',
+    'Shrimukha','Bhava','Yuva','Dhatri','Ishvara','Bahudhanya','Pramathi','Vikrama','Vrisha',
+    'Chitrabhanu','Svabhanu','Tarana','Parthiva','Vyaya','Sarvajit','Sarvadhari','Virodhi',
+    'Vikriti','Khara','Nandana','Vijaya','Jaya','Manmatha','Durmukha','Hemalamba','Vilamba',
+    'Vikari','Sharvari','Plava','Shubhakrit','Shobhakrit','Krodhi','Vishvavasu','Parabhava',
+    'Plavanga','Kilaka','Saumya','Sadharana','Virodhikrit','Paridhavi','Pramadicha','Ananda',
+    'Rakshasa','Nala','Pingala','Kalayukta','Siddharthi','Raudra','Durmati','Dundubhi',
+    'Rudhirodgari','Raktakshi','Krodhana','Akshaya'];
+
+  // New moon (phase 0) search via astronomy-engine — precise to seconds.
+  function newMoonAfter(ms) {
+    const t = A.SearchMoonPhase(0, new Date(ms), 40);
+    return t ? t.date.getTime() : null;
+  }
+  function newMoonBefore(ms) {
+    // First new moon after (ms - 35d) is guaranteed before ms (lunation < 30d);
+    // then step forward while still before ms, keeping the last one.
+    let t = newMoonAfter(ms - 35 * 86400000);
+    if (t == null) return null;
+    let nxt = newMoonAfter(t + 86400000);
+    while (nxt != null && nxt < ms) { t = nxt; nxt = newMoonAfter(t + 86400000); }
+    return t;
+  }
+
+  function sunRashiAt(ms) { return Math.floor(sunSidereal(new Date(ms)) / 30); }
+
+  // Amanta lunar month containing the instant `ms`.
+  function amantaMonthInfo(ms) {
+    const startNM = newMoonBefore(ms);   // amavasya that BEGAN this month
+    const endNM = newMoonAfter(ms);      // amavasya that ENDS this month
+    const r1 = sunRashiAt(startNM);
+    const r2 = sunRashiAt(endNM);
+    const entries = ((r2 - r1) % 12 + 12) % 12; // sankrantis inside the month
+    const k = (r1 + 1) % 12;                    // first rashi the Sun enters (or would enter)
+    return {
+      index: k, en: MASA_EN[k], hi: MASA_HI[k],
+      adhik: entries === 0,          // no sankranti -> Adhik Maas
+      kshaya: entries > 1,           // two sankrantis -> rare Kshaya month (flagged only)
+      startNM: startNM, endNM: endNM
+    };
+  }
+
+  // Bisection: instant when Sun's SIDEREAL longitude crosses targetDeg (~approxMs ±25d).
+  function sidSunCross(targetDeg, approxMs) {
+    let lo = approxMs - 25 * 86400000, hi = approxMs + 25 * 86400000;
+    const f = function (ms) {
+      let d = (sunSidereal(new Date(ms)) - targetDeg + 180) % 360;
+      if (d < 0) d += 360;
+      return d - 180;
+    };
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      if (f(mid) < 0) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
+  // Chaitra Shukla Pratipada of a CE year = new moon just before Mesha sankranti (~Apr 14).
+  function chaitraShukla1(yearCE) {
+    return newMoonBefore(sidSunCross(0, Date.UTC(yearCE, 3, 14)));
+  }
+  // Kartika Shukla Pratipada = new moon just before Vrishchika sankranti (~Nov 16).
+  function kartikaShukla1(yearCE) {
+    return newMoonBefore(sidSunCross(210, Date.UTC(yearCE, 10, 16)));
+  }
+
+  // Vikram / Shaka change at Chaitra S1; Gujarati changes at Kartika S1 (Diwali new year).
+  function hinduYears(refMs, tz) {
+    const y = new Date(refMs + tz * 3600000).getUTCFullYear();
+    const cs1 = chaitraShukla1(y);
+    let vikram, shaka, vikramStartYear;
+    if (refMs >= cs1) { vikram = y + 57; shaka = y - 78; vikramStartYear = y; }
+    else { vikram = y + 56; shaka = y - 79; vikramStartYear = y - 1; }
+    const ks1 = kartikaShukla1(vikramStartYear);
+    const gujarati = (refMs >= ks1) ? vikram : vikram - 1;
+    const samvatsaraIdx = ((shaka + 11) % 60 + 60) % 60;
+    return { vikram: vikram, shaka: shaka, gujarati: gujarati,
+             samvatsara: SAMVATSARA_EN[samvatsaraIdx] };
+  }
+
+  // Ritu: six 60° seasons, Vasanta anchored at 330° (Meena) — Drik's convention
+  // for BOTH Vedic (sidereal longitude) and Drik (tropical longitude) ritu.
+  function rituFromLong(lon) {
+    const idx = Math.floor((((lon - 330) % 360 + 360) % 360) / 60);
+    return { index: idx, en: RITU_EN[idx], hi: RITU_HI[idx] };
+  }
+  // Ayana: Uttarayana = longitude in [270°, 90°); Vedic uses sidereal, Drik tropical.
+  function ayanaFromLong(lon) {
+    const utt = (lon >= 270 || lon < 90);
+    return utt
+      ? { en: 'Uttarayana', hi: '\u0909\u0924\u094D\u0924\u0930\u093E\u092F\u0923' }
+      : { en: 'Dakshinayana', hi: '\u0926\u0915\u094D\u0937\u093F\u0923\u093E\u092F\u0928' };
+  }
+
+  function computeHinduCalendar(refMs, paksha, tz) {
+    const cur = amantaMonthInfo(refMs);
+    // Purnimanta: Shukla paksha -> same name; Krishna paksha -> next month's name
+    // (Krishna paksha of Amanta month M = Krishna paksha of Purnimanta month M+1).
+    let purn;
+    if (paksha === 'Shukla') {
+      purn = { en: cur.en, hi: cur.hi, adhik: cur.adhik };
+    } else {
+      const nxt = amantaMonthInfo(cur.endNM + 43200000);
+      purn = { en: nxt.en, hi: nxt.hi, adhik: nxt.adhik };
+    }
+    const years = hinduYears(refMs, tz);
+    const sidLon = sunSidereal(new Date(refMs));
+    const tropLon = sunLongitude(new Date(refMs));
+    return {
+      amantaMonth: { index: cur.index, en: cur.en, hi: cur.hi, adhik: cur.adhik,
+                     kshaya: cur.kshaya, adhikHi: ADHIK_HI,
+                     monthStart: new Date(cur.startNM), monthEnd: new Date(cur.endNM) },
+      purnimantaMonth: { en: purn.en, hi: purn.hi, adhik: purn.adhik, adhikHi: ADHIK_HI },
+      vikramSamvat: years.vikram,
+      shakaSamvat: years.shaka,
+      gujaratiSamvat: years.gujarati,
+      samvatsara: { en: years.samvatsara },
+      ritu: { vedic: rituFromLong(sidLon), drik: rituFromLong(tropLon) },
+      ayana: { vedic: ayanaFromLong(sidLon), drik: ayanaFromLong(tropLon) }
+    };
+  }
+
   // ---- Transition-time engine (bisection) -------------------------------
   function findBoundary(startMs, phaseFn, stepDeg) {
     const v0 = phaseFn(new Date(startMs));
@@ -358,6 +504,10 @@
     const varjyam = varjyamList.length ? varjyamList[0] : null;
     const amritKaal = null;
 
+    // Hindu calendar layer (Phase 7) — months, samvats, ritu, ayana.
+    let hinduCalendar = null;
+    try { hinduCalendar = computeHinduCalendar(srMs, paksha, tz); } catch (e) { hinduCalendar = null; }
+
     // Choghadiya & Hora (Phase 6) — pure day/night divisions, no ambiguity.
     const ssForDiv = sunset ? sunset.getTime() : (srMs + 12 * 3600000);
     let choghadiya = null, hora = null;
@@ -387,7 +537,8 @@
       varjyamAll: varjyamList,
       amritKaal: amritKaal,
       choghadiya: choghadiya,
-      hora: hora
+      hora: hora,
+      hinduCalendar: hinduCalendar
     };
   }
 
