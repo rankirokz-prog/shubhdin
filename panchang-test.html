@@ -154,8 +154,8 @@
           ${p.hinduCalendar ? `<div class="limb-block">
             <div class="limb-label">Hindu Calendar (Phase 7)</div>
             <div class="seg">Amanta: <b>${p.hinduCalendar.amantaMonth.adhik?'Adhik ':''}${p.hinduCalendar.amantaMonth.en}</b> &nbsp;·&nbsp; Purnimanta: <b>${p.hinduCalendar.purnimantaMonth.adhik?'Adhik ':''}${p.hinduCalendar.purnimantaMonth.en}</b></div>
-            <div class="seg">Vikram Samvat ${p.hinduCalendar.vikramSamvat} &nbsp;·&nbsp; Shaka ${p.hinduCalendar.shakaSamvat} &nbsp;·&nbsp; Gujarati ${p.hinduCalendar.gujaratiSamvat}</div>
-            <div class="seg">Samvatsara: ${p.hinduCalendar.samvatsara.en}</div>
+            <div class="seg">Vikram Samvat ${p.hinduCalendar.vikramSamvat} ${p.hinduCalendar.samvatsara.vikram}</div>
+            <div class="seg">Shaka Samvat ${p.hinduCalendar.shakaSamvat} ${p.hinduCalendar.samvatsara.shaka} &nbsp;·&nbsp; Gujarati Samvat ${p.hinduCalendar.gujaratiSamvat} ${p.hinduCalendar.samvatsara.gujarati}</div>
             <div class="seg">Ritu — Vedic: ${p.hinduCalendar.ritu.vedic.en} &nbsp;·&nbsp; Drik: ${p.hinduCalendar.ritu.drik.en}</div>
             <div class="seg">Ayana — Vedic: ${p.hinduCalendar.ayana.vedic.en} &nbsp;·&nbsp; Drik: ${p.hinduCalendar.ayana.drik.en}</div>
           </div>` : ''}
