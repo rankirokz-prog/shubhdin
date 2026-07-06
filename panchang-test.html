@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 7)</title>
+<title>Shubh Din — Panchang Engine Test (Phase 8)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,8 +35,8 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 7</h1>
-  <div class="sub">Added Hindu Calendar: lunar months, Adhik Maas, Samvats, Samvatsara, Ritu, Ayana.</div>
+  <h1>🔬 Panchang Engine — Phase 8</h1>
+  <div class="sub">Added Phase 8: Disha Shool, Tarabalam, Chandrabalam (+ everything from Phases 1-7).</div>
 
   <div class="legend">
     <b>Phase 7 — Hindu Calendar:</b><br>
@@ -158,6 +158,12 @@
             <div class="seg">Shaka Samvat ${p.hinduCalendar.shakaSamvat} ${p.hinduCalendar.samvatsara.shaka} &nbsp;·&nbsp; Gujarati Samvat ${p.hinduCalendar.gujaratiSamvat} ${p.hinduCalendar.samvatsara.gujarati}</div>
             <div class="seg">Ritu — Vedic: ${p.hinduCalendar.ritu.vedic.en} &nbsp;·&nbsp; Drik: ${p.hinduCalendar.ritu.drik.en}</div>
             <div class="seg">Ayana — Vedic: ${p.hinduCalendar.ayana.vedic.en} &nbsp;·&nbsp; Drik: ${p.hinduCalendar.ayana.drik.en}</div>
+          </div>` : ''}
+          ${p.dishaShool ? `<div class="limb-block">
+            <div class="limb-label">Phase 8 — Personal & Travel</div>
+            <div class="seg">🧭 Disha Shool (avoid travel): <b>${p.dishaShool.en}</b></div>
+            ${p.tarabalam.map(t=>`<div class="seg" style="margin-top:6px;">⭐ Tarabalam (${t.dayNakshatra.en} upto ${fmtT(t.upto,dayRefMs)}) — good for:<br><span style="color:rgba(255,232,200,0.75);font-size:12px;">${t.good.map(g=>g.en).join(', ')}</span></div>`).join('')}
+            ${p.chandrabalam.map(c=>`<div class="seg" style="margin-top:6px;">🌙 Chandrabalam (Moon in ${c.dayRashi.en} upto ${fmtT(c.upto,dayRefMs)}) — good for:<br><span style="color:rgba(255,232,200,0.75);font-size:12px;">${c.good.map(g=>g.en).join(', ')}</span></div>`).join('')}
           </div>` : ''}
           <div style="margin-top:8px;">
             <div class="sun-row"><span>☀️ Sunrise</span><span>${p.sunrise?fmtT(p.sunrise, dayRefMs):'—'}</span></div>
