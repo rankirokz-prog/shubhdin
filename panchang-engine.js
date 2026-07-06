@@ -276,15 +276,18 @@
   }
 
   // ---- Amrit Kaal (Phase 8, bracketing FIXED) ----------------------------
-  // Amrit start ghati = tyajya + 24 (span 4 ghati of the nakshatra instance).
-  // Derived + validated from Ram's DinchaK data (Jul 5 2026 Shatabhisha: ghati 42
-  // = 18+24; Jul 20 2026 Hasta: ghati 45 = 21+24; both to 0.05 ghati precision).
-  // The old +36 hypothesis came from the bracketing bug — this replaces it.
-  // Fix: each nakshatra instance's TRUE span is found by backward-bisecting its
-  // start transit and forward-bisecting its end — no more day-offset guessing.
-  // NOTE: for Ashvini (50) and Rohini (40), tyajya+24 exceeds 60 ghatis, so the
-  // window would spill past the instance end — convention unverified; we SKIP
-  // those two rather than show a wrong auspicious time (validate later).
+  // Amrit start ghati = tyajya + 24 for 25 of 27 nakshatras (span always 4 ghati).
+  // Validated from Ram's DinchaK data: Shatabhisha 42 (Jul 5), Hasta 45 (Jul 20),
+  // plus Sep 10 + Sep 24 (Kolkata, cross-midnight) to 1 min.
+  // EXCEPTIONS (where tyajya+24 would exceed 60): the classical Amrita Ghatika
+  // table caps them with their own values:
+  //   Rohini = 52  — VALIDATED (Ram's Aug 8 2026 data: DinchaK ghati 51.95)
+  //   Ashvini = 42 — published table value, PENDING validation (test: Sep 1 2026)
+  function amritGhati(idx) {
+    if (idx === 0) return 42;  // Ashvini (pending validation)
+    if (idx === 3) return 52;  // Rohini (validated)
+    return TYAJYA_START_GHATI[idx] + 24;
+  }
   function nakInstanceAt(ms) {
     const step = 360 / 27;
     const idx = Math.floor(moonSidereal(new Date(ms)) / step) % 27;
@@ -296,12 +299,10 @@
     const out = [];
     let inst = nakInstanceAt(srMs);
     for (let k = 0; k < 3; k++) {
-      const g = TYAJYA_START_GHATI[inst.idx] + 24;
-      if (g + 4 <= 60) { // skip spill cases (Ashvini, Rohini) until validated
-        const ws = inst.start + (g / 60) * inst.dur;
-        const we = inst.start + ((g + 4) / 60) * inst.dur;
-        if (we > srMs && ws < nextSrMs) out.push({ nakIndex: inst.idx, start: new Date(ws), end: new Date(we) });
-      }
+      const g = amritGhati(inst.idx);
+      const ws = inst.start + (g / 60) * inst.dur;
+      const we = inst.start + ((g + 4) / 60) * inst.dur;
+      if (we > srMs && ws < nextSrMs) out.push({ nakIndex: inst.idx, start: new Date(ws), end: new Date(we) });
       const nStart = inst.end;
       const nIdx = (inst.idx + 1) % 27;
       const nEnd = findBoundary(nStart + 60000, moonSidereal, 360 / 27);
@@ -313,17 +314,22 @@
 
   // ---- Dur Muhurtam (Phase 8) --------------------------------------------
   // Day (sunrise->sunset) / 15 muhurtas; inauspicious muhurta(s) by weekday.
-  // 1-based indices. VALIDATED from Ram's DinchaK data: Sunday = 14th;
-  // Monday = 9th & 12th (both matched to 0.01 muhurta). Remaining weekdays use
-  // the classical published table — PENDING Ram's validation (Tue-Sat).
-  // Tuesday traditionally also has a NIGHT dur muhurtam — not emitted yet;
-  // will be derived from Ram's DinchaK data if shown there.
-  const DUR_MUHURTA_DAY = [[14], [9, 12], [4], [8], [6, 12], [4, 9], [3]]; // Sun..Sat
-  function durMuhurtamsInDay(srMs, ssMs, dow) {
+  // 1-based indices. ALL 7 WEEKDAYS VALIDATED from Ram's DinchaK data (Jul 2026):
+  // Sun 14 · Mon 9,12 · Tue 4 (+ NIGHT 7th) · Wed 8 · Thu 6,12 · Fri 4,9 · Sat 1,2.
+  // Tuesday additionally has a night dur muhurtam = 7th muhurta of the night
+  // (sunset -> next sunrise, /15) — validated: Jul 21 2026, 23:08-23:52, 44 min.
+  const DUR_MUHURTA_DAY = [[14], [9, 12], [4], [8], [6, 12], [4, 9], [1, 2]]; // Sun..Sat
+  const DUR_MUHURTA_NIGHT = [[], [], [7], [], [], [], []];                    // Sun..Sat
+  function durMuhurtamsInDay(srMs, ssMs, nextSrMs, dow) {
     const mu = (ssMs - srMs) / 15;
-    return DUR_MUHURTA_DAY[dow].map(function (i) {
+    const out = DUR_MUHURTA_DAY[dow].map(function (i) {
       return { start: new Date(srMs + (i - 1) * mu), end: new Date(srMs + i * mu) };
     });
+    const nmu = (nextSrMs - ssMs) / 15;
+    DUR_MUHURTA_NIGHT[dow].forEach(function (i) {
+      out.push({ start: new Date(ssMs + (i - 1) * nmu), end: new Date(ssMs + i * nmu) });
+    });
+    return out;
   }
 
   // ---- Phase 7: Hindu Calendar Layer -------------------------------------
@@ -565,9 +571,9 @@
     try { amritList = amritKaalsInDay(srMs, nextSrMs); } catch (e) { amritList = []; }
     const amritKaal = amritList.length ? amritList[0] : null;
 
-    // Dur Muhurtam (Phase 8) — Sun/Mon validated; Tue-Sat classical table pending validation.
+    // Dur Muhurtam (Phase 8) — ALL 7 weekdays validated from Ram's DinchaK data.
     let durMuhurtam = [];
-    try { durMuhurtam = durMuhurtamsInDay(srMs, (sunset ? sunset.getTime() : srMs + 12 * 3600000), dow); } catch (e) { durMuhurtam = []; }
+    try { durMuhurtam = durMuhurtamsInDay(srMs, (sunset ? sunset.getTime() : srMs + 12 * 3600000), nextSrMs, dow); } catch (e) { durMuhurtam = []; }
 
     // Hindu calendar layer (Phase 7) — months, samvats, ritu, ayana.
     let hinduCalendar = null;
