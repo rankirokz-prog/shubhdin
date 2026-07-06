@@ -332,6 +332,44 @@
     return out;
   }
 
+  // ---- Phase 8: Disha Shool, Tarabalam, Chandrabalam ---------------------
+  // Disha Shool: direction to AVOID travelling, fixed by weekday (classical
+  // table, Sun..Sat) — PENDING Ram's validation vs DinchaK.
+  const DISHA_EN = ['West', 'East', 'North', 'North', 'South', 'West', 'East'];
+  const DISHA_HI = ['\u092A\u0936\u094D\u091A\u093F\u092E', '\u092A\u0942\u0930\u094D\u0935',
+    '\u0909\u0924\u094D\u0924\u0930', '\u0909\u0924\u094D\u0924\u0930',
+    '\u0926\u0915\u094D\u0937\u093F\u0923', '\u092A\u0936\u094D\u091A\u093F\u092E',
+    '\u092A\u0942\u0930\u094D\u0935'];
+
+  // Tarabalam: tara = position of the DAY's nakshatra counted from a person's
+  // JANMA nakshatra, cycled by 9. Taras: 1 Janma, 2 Sampat, 3 Vipat, 4 Kshema,
+  // 5 Pratyari, 6 Sadhaka, 7 Vadha, 8 Mitra, 9 Parama Mitra.
+  // GOOD = {2,4,6,8,9} (15 of 27 janma nakshatras favourable on any day).
+  // Whether tara 1 (Janma) counts as good varies by tradition — DinchaK's list
+  // length (15 vs 18) will settle it; PENDING Ram's validation.
+  const TARA_GOOD = [2, 4, 6, 8, 9];
+  function taraOf(dayNak, janmaNak) {
+    return ((dayNak - janmaNak + 27) % 27) % 9 + 1;
+  }
+  function goodTarabalamNaks(dayNak) {
+    const out = [];
+    for (let j = 0; j < 27; j++) {
+      if (TARA_GOOD.indexOf(taraOf(dayNak, j)) >= 0) out.push(j);
+    }
+    return out;
+  }
+
+  // Chandrabalam: Moon transiting the 1,3,6,7,10,11th rashi FROM a person's
+  // janma rashi is favourable (6 of 12 rashis on any day) — PENDING validation.
+  const CHANDRA_GOOD_POS = [1, 3, 6, 7, 10, 11];
+  function goodChandrabalamRashis(dayRashi) {
+    const out = [];
+    for (let r = 0; r < 12; r++) {
+      if (CHANDRA_GOOD_POS.indexOf(((dayRashi - r + 12) % 12) + 1) >= 0) out.push(r);
+    }
+    return out;
+  }
+
   // ---- Phase 7: Hindu Calendar Layer -------------------------------------
   // Lunar (Amanta) month = new moon to new moon. The month is NAMED by the
   // sidereal rashi the Sun ENTERS during that month (Mesha entry -> Chaitra).
@@ -579,6 +617,35 @@
     let hinduCalendar = null;
     try { hinduCalendar = computeHinduCalendar(srMs, paksha, tz); } catch (e) { hinduCalendar = null; }
 
+    // Phase 8: Disha Shool + Tarabalam + Chandrabalam.
+    const dishaShool = { en: DISHA_EN[dow], hi: DISHA_HI[dow] };
+    // Tarabalam: one entry per day-nakshatra segment (list = favourable JANMA nakshatras).
+    let tarabalam = [];
+    try {
+      tarabalam = nakSegs.map(function (s) {
+        const good = goodTarabalamNaks(s.index % 27);
+        return {
+          dayNakshatra: { index: s.index % 27, en: s.en, hi: s.hi },
+          upto: s.end,
+          good: good.map(function (j) { return { index: j, en: NAKSHATRA_NAMES[j], hi: NAKSHATRA_HI[j] }; })
+        };
+      });
+    } catch (e) { tarabalam = []; }
+    // Chandrabalam: one entry per day moon-rashi segment (list = favourable JANMA rashis).
+    let chandrabalam = [];
+    try {
+      const rashiNameFn = function (i) { return { en: RASHI_EN[i % 12], hi: RASHI_HI[i % 12] }; };
+      const rashiSegs = buildSegments(srMs, nextSrMs, moonSidereal, 30, rashiNameFn);
+      chandrabalam = rashiSegs.map(function (s) {
+        const good = goodChandrabalamRashis(s.index % 12);
+        return {
+          dayRashi: { index: s.index % 12, en: s.en, hi: s.hi },
+          upto: s.end,
+          good: good.map(function (r) { return { index: r, en: RASHI_EN[r], hi: RASHI_HI[r] }; })
+        };
+      });
+    } catch (e) { chandrabalam = []; }
+
     // Choghadiya & Hora (Phase 6) — pure day/night divisions, no ambiguity.
     const ssForDiv = sunset ? sunset.getTime() : (srMs + 12 * 3600000);
     let choghadiya = null, hora = null;
@@ -611,7 +678,10 @@
       durMuhurtam: durMuhurtam,
       choghadiya: choghadiya,
       hora: hora,
-      hinduCalendar: hinduCalendar
+      hinduCalendar: hinduCalendar,
+      dishaShool: dishaShool,
+      tarabalam: tarabalam,
+      chandrabalam: chandrabalam
     };
   }
 
