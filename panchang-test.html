@@ -162,6 +162,10 @@
           ${p.dishaShool ? `<div class="limb-block">
             <div class="limb-label">Phase 8 — Personal & Travel</div>
             <div class="seg">🧭 Disha Shool (avoid travel): <b>${p.dishaShool.en}</b></div>
+            ${p.panchaka ? `<div class="seg">⛔ Panchaka${p.panchaka.type?' ('+p.panchaka.type+')':''}: ${p.panchaka.start.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'})} → ${p.panchaka.end.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:true,timeZone:'Asia/Kolkata'})}</div>` : '<div class="seg">⛔ Panchaka: not active</div>'}
+            ${p.muhurtas ? `<div class="seg">🏆 Vijaya: ${periodStr(p.muhurtas.vijaya,dayRefMs)} &nbsp;·&nbsp; 🐄 Godhuli: ${periodStr(p.muhurtas.godhuli,dayRefMs)}</div>
+            <div class="seg">🌅 Pratah Sandhya: ${periodStr(p.muhurtas.pratahSandhya,dayRefMs)} &nbsp;·&nbsp; 🌆 Sayahna Sandhya: ${periodStr(p.muhurtas.sayahnaSandhya,dayRefMs)}</div>
+            <div class="seg">🌌 Nishita: ${periodStr(p.muhurtas.nishita,dayRefMs)}</div>` : ''}
             ${p.tarabalam.map(t=>`<div class="seg" style="margin-top:6px;">⭐ Tarabalam (${t.dayNakshatra.en} upto ${fmtT(t.upto,dayRefMs)}) — good for:<br><span style="color:rgba(255,232,200,0.75);font-size:12px;">${t.good.map(g=>g.en).join(', ')}</span></div>`).join('')}
             ${p.chandrabalam.map(c=>`<div class="seg" style="margin-top:6px;">🌙 Chandrabalam (Moon in ${c.dayRashi.en} upto ${fmtT(c.upto,dayRefMs)}) — good for:<br><span style="color:rgba(255,232,200,0.75);font-size:12px;">${c.good.map(g=>g.en).join(', ')}</span></div>`).join('')}
           </div>` : ''}
