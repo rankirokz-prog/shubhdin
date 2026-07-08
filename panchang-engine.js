@@ -348,6 +348,12 @@
   // Whether tara 1 (Janma) counts as good varies by tradition — DinchaK's list
   // length (15 vs 18) will settle it; PENDING Ram's validation.
   const TARA_GOOD = [2, 4, 6, 8, 9];
+  // Tara names + DinchaK verdicts (decoded from Ram's Jul 8 2026 screenshots):
+  // 1 Janma=Not Good · 2 Sampata=Very Good · 3 Vipata=Bad · 4 Kshema=Good ·
+  // 5 Pratyari=Not Good · 6 Sadhaka=Very Good · 7 Naidhana=Totally Bad ·
+  // 8 Mitra=Good · 9 Param Mitra=Good.  VALIDATED 27/27.
+  const TARA_NAMES = ['Janma', 'Sampata', 'Vipata', 'Kshema', 'Pratyari', 'Sadhaka', 'Naidhana', 'Mitra', 'Param Mitra'];
+  const TARA_VERDICT = ['Not Good', 'Very Good', 'Bad', 'Good', 'Not Good', 'Very Good', 'Totally Bad', 'Good', 'Good'];
   function taraOf(dayNak, janmaNak) {
     return ((dayNak - janmaNak + 27) % 27) % 9 + 1;
   }
@@ -358,14 +364,37 @@
     }
     return out;
   }
+  function allTarabalam(dayNak) {
+    const out = [];
+    for (let j = 0; j < 27; j++) {
+      const t = taraOf(dayNak, j);
+      out.push({ index: j, en: NAKSHATRA_NAMES[j], hi: NAKSHATRA_HI[j],
+                 tara: t, taraEn: TARA_NAMES[t - 1], verdict: TARA_VERDICT[t - 1],
+                 good: TARA_GOOD.indexOf(t) >= 0 });
+    }
+    return out;
+  }
 
   // Chandrabalam: Moon transiting the 1,3,6,7,10,11th rashi FROM a person's
   // janma rashi is favourable (6 of 12 rashis on any day) — PENDING validation.
   const CHANDRA_GOOD_POS = [1, 3, 6, 7, 10, 11];
+  // DinchaK 3-state (decoded from Ram's Jul 6 2026 screenshot, VALIDATED 12/12):
+  // positions {1,3,6,7,10,11}=Good · {4,8,12}=Bad · {2,5,9}=Puja Needed.
+  const CHANDRA_BAD_POS = [4, 8, 12];
   function goodChandrabalamRashis(dayRashi) {
     const out = [];
     for (let r = 0; r < 12; r++) {
       if (CHANDRA_GOOD_POS.indexOf(((dayRashi - r + 12) % 12) + 1) >= 0) out.push(r);
+    }
+    return out;
+  }
+  function allChandrabalam(dayRashi) {
+    const out = [];
+    for (let r = 0; r < 12; r++) {
+      const pos = ((dayRashi - r + 12) % 12) + 1;
+      const status = CHANDRA_GOOD_POS.indexOf(pos) >= 0 ? 'Good'
+                   : CHANDRA_BAD_POS.indexOf(pos) >= 0 ? 'Bad' : 'Puja Needed';
+      out.push({ index: r, en: RASHI_EN[r], hi: RASHI_HI[r], position: pos, status: status });
     }
     return out;
   }
@@ -627,7 +656,8 @@
         return {
           dayNakshatra: { index: s.index % 27, en: s.en, hi: s.hi },
           upto: s.end,
-          good: good.map(function (j) { return { index: j, en: NAKSHATRA_NAMES[j], hi: NAKSHATRA_HI[j] }; })
+          good: good.map(function (j) { return { index: j, en: NAKSHATRA_NAMES[j], hi: NAKSHATRA_HI[j] }; }),
+          all: allTarabalam(s.index % 27)
         };
       });
     } catch (e) { tarabalam = []; }
@@ -641,7 +671,8 @@
         return {
           dayRashi: { index: s.index % 12, en: s.en, hi: s.hi },
           upto: s.end,
-          good: good.map(function (r) { return { index: r, en: RASHI_EN[r], hi: RASHI_HI[r] }; })
+          good: good.map(function (r) { return { index: r, en: RASHI_EN[r], hi: RASHI_HI[r] }; }),
+          all: allChandrabalam(s.index % 12)
         };
       });
     } catch (e) { chandrabalam = []; }
