@@ -399,6 +399,56 @@
     return out;
   }
 
+  // ---- Panchaka -----------------------------------------------------------
+  // Panchaka = Moon in the last 5 nakshatras (Dhanishtha 2nd half -> Revati)
+  // = moon sidereal longitude in [300°, 360°) = Kumbha + Meena. Period spans
+  // ~4.5-5 days; start = crossing 300°, end = crossing 360° (Revati end).
+  // Type named by the WEEKDAY of the period's start: Sun=Roga, Mon=Raja,
+  // Tue=Agni, Fri=Chora, Sat=Mrityu; Wed & Thu are traditionally dosha-free
+  // (type null). Period times validatable vs Drik's published Panchak lists —
+  // type convention PENDING Ram's validation.
+  const PANCHAKA_TYPE_EN = ['Roga', 'Raja', 'Agni', null, null, 'Chora', 'Mrityu'];
+  function panchakaForDay(srMs, nextSrMs, tz) {
+    const inZone = function (ms) { return moonSidereal(new Date(ms)) >= 300; };
+    const in0 = inZone(srMs), in1 = inZone(nextSrMs);
+    if (!in0 && !in1) return null;
+    const startMs = in0
+      ? bisectMoonDeg(srMs - 6 * 86400000, srMs, 300)
+      : bisectMoonDeg(srMs, nextSrMs, 300);
+    const endMs = bisectMoonDeg(startMs + 60000, startMs + 6.5 * 86400000, 360);
+    const dowStart = new Date(startMs + tz * 3600000).getUTCDay();
+    return { start: new Date(startMs), end: new Date(endMs),
+             type: PANCHAKA_TYPE_EN[dowStart], startWeekday: dowStart };
+  }
+
+  // ---- Secondary muhurtas (Vijaya, Godhuli, Nishita, Sandhya) -------------
+  // ALL PENDING validation vs drikpanchang.com "Auspicious Timings":
+  //   Vijaya  = 11th of 15 day muhurtas (Abhijit is the validated 8th).
+  //   Godhuli = sunset -> sunset + 24 min (1 ghati).
+  //   Nishita = solar midnight ± half a night-muhurta (night = ss -> next sr, /15).
+  //   Pratah Sandhya  = (sunrise - 2 prev-night-muhurtas) -> sunrise
+  //                     (i.e., Brahma Muhurta start -> sunrise).
+  //   Sayahna Sandhya = sunset -> sunset + 2 night-muhurtas.
+  function secondaryMuhurtas(srMs, ssMs, nextSrMs, prevSsMs) {
+    const mu = (ssMs - srMs) / 15;
+    const nmu = (nextSrMs - ssMs) / 15;
+    const out = {
+      vijaya: { start: new Date(srMs + 10 * mu), end: new Date(srMs + 11 * mu) },
+      godhuli: { start: new Date(ssMs), end: new Date(ssMs + 24 * 60000) },
+      nishita: (function () {
+        const mid = (ssMs + nextSrMs) / 2;
+        return { start: new Date(mid - nmu / 2), end: new Date(mid + nmu / 2) };
+      })(),
+      sayahnaSandhya: { start: new Date(ssMs), end: new Date(ssMs + 2 * nmu) },
+      pratahSandhya: null
+    };
+    if (prevSsMs != null) {
+      const pnmu = (srMs - prevSsMs) / 15;
+      out.pratahSandhya = { start: new Date(srMs - 2 * pnmu), end: new Date(srMs) };
+    }
+    return out;
+  }
+
   // ---- Phase 7: Hindu Calendar Layer -------------------------------------
   // Lunar (Amanta) month = new moon to new moon. The month is NAMED by the
   // sidereal rashi the Sun ENTERS during that month (Mesha entry -> Chaitra).
@@ -627,6 +677,15 @@
     const prevSunset = findSunset(new Date(date.getTime() - 86400000), lat, lng, tz);
     const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
 
+    // Panchaka + secondary muhurtas (Phase 8).
+    let panchaka = null;
+    try { panchaka = panchakaForDay(srMs, nextSrMs, tz); } catch (e) { panchaka = null; }
+    let muhurtas = null;
+    try {
+      muhurtas = secondaryMuhurtas(srMs, (sunset ? sunset.getTime() : srMs + 12 * 3600000),
+        nextSrMs, prevSunset ? prevSunset.getTime() : null);
+    } catch (e) { muhurtas = null; }
+
     // Varjyam (Phase 5b) — validated against DinchaK to ~1 min.
     let varjyamList = [];
     try { varjyamList = varjyamsInDay(srMs, nextSrMs); } catch (e) { varjyamList = []; }
@@ -712,7 +771,9 @@
       hinduCalendar: hinduCalendar,
       dishaShool: dishaShool,
       tarabalam: tarabalam,
-      chandrabalam: chandrabalam
+      chandrabalam: chandrabalam,
+      panchaka: panchaka,
+      muhurtas: muhurtas
     };
   }
 
