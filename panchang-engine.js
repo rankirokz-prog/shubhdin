@@ -422,29 +422,32 @@
   }
 
   // ---- Secondary muhurtas (Vijaya, Godhuli, Nishita, Sandhya) -------------
-  // ALL PENDING validation vs drikpanchang.com "Auspicious Timings":
-  //   Vijaya  = 11th of 15 day muhurtas (Abhijit is the validated 8th).
-  //   Godhuli = sunset -> sunset + 24 min (1 ghati).
-  //   Nishita = solar midnight ± half a night-muhurta (night = ss -> next sr, /15).
-  //   Pratah Sandhya  = (sunrise - 2 prev-night-muhurtas) -> sunrise
-  //                     (i.e., Brahma Muhurta start -> sunrise).
-  //   Sayahna Sandhya = sunset -> sunset + 2 night-muhurtas.
+  // Reverse-engineered + VALIDATED against Drik's published values for
+  // Bengaluru + New Delhi (Jul 8 2026) and Chennai + Mumbai (Jul 3 2026):
+  //   Vijaya  = 11th of 15 day muhurtas (fit: start muhurta #10.996-11.002). ✓
+  //   Nishita = solar midnight ± half night-muhurta (fit: 0.1-0.3 min). ✓
+  //   Sayahna Sandhya = sunset -> sunset + 1.5 night-muhurtas (fit: 1.49-1.51). ✓
+  //   Godhuli = (sunset - 84 s) -> (sunset + nmu/2 - 45 s); the small constants
+  //     are Drik's slightly different solar-disc sunset definition (fits all
+  //     four cities within ~0.5 min). ✓
+  //   Pratah Sandhya = (sunrise - 1.5 prev-night-muhurtas) -> sunrise —
+  //     inferred by SYMMETRY with Sayahna; pending one confirmation.
   function secondaryMuhurtas(srMs, ssMs, nextSrMs, prevSsMs) {
     const mu = (ssMs - srMs) / 15;
     const nmu = (nextSrMs - ssMs) / 15;
     const out = {
       vijaya: { start: new Date(srMs + 10 * mu), end: new Date(srMs + 11 * mu) },
-      godhuli: { start: new Date(ssMs), end: new Date(ssMs + 24 * 60000) },
+      godhuli: { start: new Date(ssMs - 84000), end: new Date(ssMs + nmu / 2 - 45000) },
       nishita: (function () {
         const mid = (ssMs + nextSrMs) / 2;
         return { start: new Date(mid - nmu / 2), end: new Date(mid + nmu / 2) };
       })(),
-      sayahnaSandhya: { start: new Date(ssMs), end: new Date(ssMs + 2 * nmu) },
+      sayahnaSandhya: { start: new Date(ssMs), end: new Date(ssMs + 1.5 * nmu) },
       pratahSandhya: null
     };
     if (prevSsMs != null) {
       const pnmu = (srMs - prevSsMs) / 15;
-      out.pratahSandhya = { start: new Date(srMs - 2 * pnmu), end: new Date(srMs) };
+      out.pratahSandhya = { start: new Date(srMs - 1.5 * pnmu), end: new Date(srMs) };
     }
     return out;
   }
