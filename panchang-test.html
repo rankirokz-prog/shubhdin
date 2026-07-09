@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 8)</title>
+<title>Shubh Din — Panchang Engine Test (Phase 9)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 8</h1>
+  <h1>🔬 Panchang Engine — Phase 9</h1>
   <div class="sub">Added Phase 8: Disha Shool, Tarabalam, Chandrabalam (+ everything from Phases 1-7).</div>
 
   <div class="legend">
@@ -75,7 +75,10 @@
       <option value="24plus">24-hour+ (next-day shown as 25:34)</option>
     </select>
     <button onclick="run()">Calculate Panchang</button>
+    <button onclick="showFestivals()" style="margin-top:8px;background:linear-gradient(135deg,#8B5A2B,#6B4423);color:#FFE8C8;">🎉 Festivals for Year (Phase 9)</button>
   </div>
+
+  <div id="festOutput"></div>
 
   <div id="output"></div>
 
@@ -120,6 +123,26 @@
     function periodStr(per, dayRefMs){
       if (!per) return '—';
       return fmtT(per.start, dayRefMs) + ' – ' + fmtT(per.end, dayRefMs);
+    }
+
+    function showFestivals(){
+      const fo = document.getElementById('festOutput');
+      const citySel = document.getElementById('city').value;
+      let lat, lng;
+      if (citySel === 'custom') { lat = parseFloat(document.getElementById('lat').value); lng = parseFloat(document.getElementById('lng').value); }
+      else { [lat, lng] = citySel.split(',').map(Number); }
+      const start = document.getElementById('startDate').valueAsDate || new Date();
+      const yr = start.getUTCFullYear();
+      fo.innerHTML = '<div class="day-card">Computing festivals for '+yr+'…</div>';
+      setTimeout(()=>{
+        const fest = window.PanchangEngine.getFestivals(yr, lat, lng);
+        let rows = fest.map(f=>{
+          const d = new Date(f.date+'T00:00:00Z');
+          const ds = d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
+          return '<div class="sun-row"><span>'+f.en+' <span style="opacity:0.6">'+f.hi+'</span></span><span>'+ds+'</span></div>';
+        }).join('');
+        fo.innerHTML = '<div class="day-card"><div class="day-head"><span class="day-date">🎉 Festivals '+yr+'</span><span class="day-sr">'+fest.length+' festivals</span></div>'+rows+'</div>';
+      }, 30);
     }
 
     function run(){
