@@ -656,26 +656,26 @@
     { en: 'Holika Dahan', hi: '\u0939\u094B\u0932\u093F\u0915\u093E \u0926\u0939\u0928', month: 11, paksha: 'S', tithi: 15, anchor: 'pradosh' },
     { en: 'Holi', hi: '\u0939\u094B\u0932\u0940', month: 11, paksha: 'S', tithi: 15, anchor: 'pradosh', nextDay: 1 },
     { en: 'Ugadi / Gudi Padwa', hi: '\u0909\u0917\u093E\u0926\u093F / \u0917\u0941\u0921\u093C\u0940 \u092A\u0921\u093C\u0935\u093E', month: 0, paksha: 'S', tithi: 1, anchor: 'udaya' },
-    { en: 'Rama Navami', hi: '\u0930\u093E\u092E \u0928\u0935\u092E\u0940', month: 0, paksha: 'S', tithi: 9, anchor: 'udaya' },
+    { en: 'Rama Navami', hi: '\u0930\u093E\u092E \u0928\u0935\u092E\u0940', month: 0, paksha: 'S', tithi: 9, anchor: 'madhyahna' },
     { en: 'Hanuman Jayanti', hi: '\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month: 0, paksha: 'S', tithi: 15, anchor: 'udaya' },
-    { en: 'Akshaya Tritiya', hi: '\u0905\u0915\u094D\u0937\u092F \u0924\u0943\u0924\u0940\u092F\u093E', month: 1, paksha: 'S', tithi: 3, anchor: 'udaya' },
-    { en: 'Vat Savitri Vrat', hi: '\u0935\u091F \u0938\u093E\u0935\u093F\u0924\u094D\u0930\u0940 \u0935\u094D\u0930\u0924', month: 2, paksha: 'K', tithi: 15, anchor: 'udaya' },
+    { en: 'Akshaya Tritiya', hi: '\u0905\u0915\u094D\u0937\u092F \u0924\u0943\u0924\u0940\u092F\u093E', month: 1, paksha: 'S', tithi: 3, anchor: 'madhyahna' },
+    { en: 'Vat Savitri Vrat', hi: '\u0935\u091F \u0938\u093E\u0935\u093F\u0924\u094D\u0930\u0940 \u0935\u094D\u0930\u0924', month: 1, paksha: 'K', tithi: 15, anchor: 'udaya' },
     { en: 'Guru Purnima', hi: '\u0917\u0941\u0930\u0941 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month: 3, paksha: 'S', tithi: 15, anchor: 'udaya' },
     { en: 'Nag Panchami', hi: '\u0928\u093E\u0917 \u092A\u0902\u091A\u092E\u0940', month: 4, paksha: 'S', tithi: 5, anchor: 'udaya' },
-    { en: 'Raksha Bandhan', hi: '\u0930\u0915\u094D\u0937\u093E \u092C\u0902\u0927\u0928', month: 4, paksha: 'S', tithi: 15, anchor: 'udaya' },
+    { en: 'Raksha Bandhan', hi: '\u0930\u0915\u094D\u0937\u093E \u092C\u0902\u0927\u0928', month: 4, paksha: 'S', tithi: 15, anchor: 'aparahna' },
     { en: 'Krishna Janmashtami', hi: '\u0915\u0943\u0937\u094D\u0923 \u091C\u0928\u094D\u092E\u093E\u0937\u094D\u091F\u092E\u0940', month: 4, paksha: 'K', tithi: 8, anchor: 'nishita' },
-    { en: 'Ganesh Chaturthi', hi: '\u0917\u0923\u0947\u0936 \u091A\u0924\u0941\u0930\u094D\u0925\u0940', month: 5, paksha: 'S', tithi: 4, anchor: 'udaya' },
+    { en: 'Ganesh Chaturthi', hi: '\u0917\u0923\u0947\u0936 \u091A\u0924\u0941\u0930\u094D\u0925\u0940', month: 5, paksha: 'S', tithi: 4, anchor: 'madhyahna' },
     { en: 'Anant Chaturdashi', hi: '\u0905\u0928\u0902\u0924 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month: 5, paksha: 'S', tithi: 14, anchor: 'udaya' },
     { en: 'Sharad Navratri Begins', hi: '\u0936\u093E\u0930\u0926\u0940\u092F \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F \u092A\u094D\u0930\u093E\u0930\u0902\u092D', month: 6, paksha: 'S', tithi: 1, anchor: 'udaya' },
     { en: 'Durga Ashtami', hi: '\u0926\u0941\u0930\u094D\u0917\u093E \u0905\u0937\u094D\u091F\u092E\u0940', month: 6, paksha: 'S', tithi: 8, anchor: 'udaya' },
-    { en: 'Maha Navami', hi: '\u092E\u0939\u093E \u0928\u0935\u092E\u0940', month: 6, paksha: 'S', tithi: 9, anchor: 'udaya' },
-    { en: 'Vijayadashami (Dussehra)', hi: '\u0935\u093F\u091C\u092F\u093E\u0926\u0936\u092E\u0940 (\u0926\u0936\u0939\u0930\u093E)', month: 6, paksha: 'S', tithi: 10, anchor: 'udaya' },
+    { en: 'Maha Navami', hi: '\u092E\u0939\u093E \u0928\u0935\u092E\u0940', month: 6, paksha: 'S', tithi: 9, anchor: 'aparahna' },
+    { en: 'Vijayadashami (Dussehra)', hi: '\u0935\u093F\u091C\u092F\u093E\u0926\u0936\u092E\u0940 (\u0926\u0936\u0939\u0930\u093E)', month: 6, paksha: 'S', tithi: 10, anchor: 'aparahna' },
     { en: 'Karwa Chauth', hi: '\u0915\u0930\u0935\u093E \u091A\u094C\u0925', month: 6, paksha: 'K', tithi: 4, anchor: 'moonrise' },
     { en: 'Dhanteras', hi: '\u0927\u0928\u0924\u0947\u0930\u0938', month: 6, paksha: 'K', tithi: 13, anchor: 'pradosh' },
-    { en: 'Naraka Chaturdashi', hi: '\u0928\u0930\u0915 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month: 6, paksha: 'K', tithi: 14, anchor: 'udaya' },
+    { en: 'Naraka Chaturdashi', hi: '\u0928\u0930\u0915 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month: 6, paksha: 'K', tithi: 14, anchor: 'arunodaya' },
     { en: 'Diwali (Lakshmi Puja)', hi: '\u0926\u0940\u092A\u093E\u0935\u0932\u0940 (\u0932\u0915\u094D\u0937\u094D\u092E\u0940 \u092A\u0942\u091C\u093E)', month: 6, paksha: 'K', tithi: 15, anchor: 'pradosh' },
-    { en: 'Govardhan Puja', hi: '\u0917\u094B\u0935\u0930\u094D\u0927\u0928 \u092A\u0942\u091C\u093E', month: 7, paksha: 'S', tithi: 1, anchor: 'udaya' },
-    { en: 'Bhai Dooj', hi: '\u092D\u093E\u0908 \u0926\u0942\u091C', month: 7, paksha: 'S', tithi: 2, anchor: 'udaya' },
+    { en: 'Govardhan Puja', hi: '\u0917\u094B\u0935\u0930\u094D\u0927\u0928 \u092A\u0942\u091C\u093E', month: 7, paksha: 'S', tithi: 1, anchor: 'aparahna' },
+    { en: 'Bhai Dooj', hi: '\u092D\u093E\u0908 \u0926\u0942\u091C', month: 7, paksha: 'S', tithi: 2, anchor: 'aparahna' },
     { en: 'Chhath Puja', hi: '\u091B\u0920 \u092A\u0942\u091C\u093E', month: 7, paksha: 'S', tithi: 6, anchor: 'udaya' },
     { en: 'Dev Uthani Ekadashi', hi: '\u0926\u0947\u0935 \u0909\u0920\u0928\u0940 \u090F\u0915\u093E\u0926\u0936\u0940', month: 7, paksha: 'S', tithi: 11, anchor: 'udaya' },
     { en: 'Kartika Purnima', hi: '\u0915\u093E\u0930\u094D\u0924\u093F\u0915 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month: 7, paksha: 'S', tithi: 15, anchor: 'udaya' },
@@ -729,6 +729,22 @@
       } else if (anchor === 'moonrise') {
         var mr = findMoonrise(noon, lat, lng, tz);
         point = mr ? mr.getTime() : null;
+      } else if (anchor === 'arunodaya') {
+        var srA = findSunrise(noon, lat, lng, tz);
+        point = srA ? srA.getTime() - 96 * 60000 : null; // 4 ghati before sunrise
+      } else if (anchor === 'madhyahna' || anchor === 'aparahna') {
+        // Day split into 5 parts: madhyahna = 3rd part, aparahna = 4th part.
+        // The day QUALIFIES if the part-window OVERLAPS the tithi (vyapini rule);
+        // the FIRST qualifying day wins (purvaviddha).
+        var srW = findSunrise(noon, lat, lng, tz);
+        var ssW = findSunset(noon, lat, lng, tz);
+        if (srW && ssW) {
+          var D5 = (ssW.getTime() - srW.getTime()) / 5;
+          var wi = (anchor === 'madhyahna') ? 2 : 3;
+          var wS = srW.getTime() + wi * D5, wE = srW.getTime() + (wi + 1) * D5;
+          if (wS < Te && wE > Ts) return d0 + k * 86400000 + 6 * 3600000;
+        }
+        continue;
       }
       if (point != null && point >= Ts && point < Te) return d0 + k * 86400000 + 6 * 3600000;
     }
