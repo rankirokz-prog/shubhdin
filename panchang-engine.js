@@ -786,6 +786,82 @@
     return out;
   }
 
+  // ---- Phase 9b: Recurring vrats (Ekadashi, Pradosh, Sankashti) ----------
+  // Ekadashi names indexed by AMANTA month (Chaitra=0). Krishna-paksha names
+  // are the purnimanta (m+1) names translated to amanta indexing. Adhik-month
+  // ekadashis are Padmini (S) and Parama (K). Day rule v1 = udaya (smarta
+  // dashami-viddha nuance not yet modeled — validate vs Drik).
+  var EKADASHI_S = [{ en: 'Kamada', hi: '\u0915\u093E\u092E\u0926\u093E' }, { en: 'Mohini', hi: '\u092E\u094B\u0939\u093F\u0928\u0940' }, { en: 'Nirjala', hi: '\u0928\u093F\u0930\u094D\u091C\u0932\u093E' }, { en: 'Devshayani', hi: '\u0926\u0947\u0935\u0936\u092F\u0928\u0940' }, { en: 'Shravana Putrada', hi: '\u0936\u094D\u0930\u093E\u0935\u0923 \u092A\u0941\u0924\u094D\u0930\u0926\u093E' }, { en: 'Parivartini', hi: '\u092A\u0930\u093F\u0935\u0930\u094D\u0924\u093F\u0928\u0940' }, { en: 'Papankusha', hi: '\u092A\u093E\u092A\u093E\u0902\u0915\u0941\u0936\u093E' }, { en: 'Devutthana', hi: '\u0926\u0947\u0935\u0909\u0920\u0928\u0940' }, { en: 'Mokshada', hi: '\u092E\u094B\u0915\u094D\u0937\u0926\u093E' }, { en: 'Pausha Putrada', hi: '\u092A\u094C\u0937 \u092A\u0941\u0924\u094D\u0930\u0926\u093E' }, { en: 'Jaya', hi: '\u091C\u092F\u093E' }, { en: 'Amalaki', hi: '\u0906\u092E\u0932\u0915\u0940' }];
+  var EKADASHI_K = [{ en: 'Varuthini', hi: '\u0935\u0930\u0941\u0925\u093F\u0928\u0940' }, { en: 'Apara', hi: '\u0905\u092A\u0930\u093E' }, { en: 'Yogini', hi: '\u092F\u094B\u0917\u093F\u0928\u0940' }, { en: 'Kamika', hi: '\u0915\u093E\u092E\u093F\u0915\u093E' }, { en: 'Aja', hi: '\u0905\u091C\u093E' }, { en: 'Indira', hi: '\u0907\u0902\u0926\u093F\u0930\u093E' }, { en: 'Rama', hi: '\u0930\u092E\u093E' }, { en: 'Utpanna', hi: '\u0909\u0924\u094D\u092A\u0928\u094D\u0928\u093E' }, { en: 'Saphala', hi: '\u0938\u092B\u0932\u093E' }, { en: 'Shattila', hi: '\u0937\u091F\u0924\u093F\u0932\u093E' }, { en: 'Vijaya', hi: '\u0935\u093F\u091C\u092F\u093E' }, { en: 'Papmochani', hi: '\u092A\u093E\u092A\u092E\u094B\u091A\u0928\u0940' }];
+  var EKADASHI_ADHIK_S = { en: 'Padmini', hi: '\u092A\u0926\u094D\u092E\u093F\u0928\u0940' };
+  var EKADASHI_ADHIK_K = { en: 'Parama', hi: '\u092A\u0930\u092E\u093E' };
+  var EK_WORD = ' \u090F\u0915\u093E\u0926\u0936\u0940';
+  var PRADOSH_HI = '\u092A\u094D\u0930\u0926\u094B\u0937 \u0935\u094D\u0930\u0924';
+  var PRADOSH_PREFIX_EN = { 1: 'Soma ', 2: 'Bhauma ', 6: 'Shani ' };
+  var PRADOSH_PREFIX_HI = { 1: '\u0938\u094B\u092E ', 2: '\u092D\u094C\u092E ', 6: '\u0936\u0928\u093F ' };
+  var SANKASHTI_EN = 'Sankashti Chaturthi', SANKASHTI_HI = '\u0938\u0902\u0915\u0937\u094D\u091F\u0940 \u091A\u0924\u0941\u0930\u094D\u0925\u0940';
+  var ANGARKI_EN = 'Angarki Sankashti Chaturthi', ANGARKI_HI = '\u0905\u0902\u0917\u093E\u0930\u0915\u0940 \u0938\u0902\u0915\u0937\u094D\u091F\u0940 \u091A\u0924\u0941\u0930\u094D\u0925\u0940';
+
+  // Public: recurring vrats for a CE year — Ekadashi (both pakshas, named),
+  // Pradosh Vrat (Trayodashi at pradosh kaal, Soma/Bhauma/Shani prefixes),
+  // Sankashti Chaturthi (Krishna Chaturthi at moonrise; Tuesday = Angarki).
+  // Pradosh + Sankashti occur in adhik months too; Ekadashi gets Padmini/Parama there.
+  function getVrats(yearCE, lat, lng, tzOffsetHours) {
+    var tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
+    var months = buildMonthTable(yearCE);
+    var out = [];
+    function dateStr(ms) { return new Date(ms + tz * 3600000).toISOString().slice(0, 10); }
+    function push(dayMs, en, hi, type) {
+      var ds = dateStr(dayMs);
+      if (ds.slice(0, 4) === String(yearCE)) out.push({ date: ds, en: en, hi: hi, type: type });
+    }
+    function dowOf(dayMs) { return new Date(dayMs + tz * 3600000).getUTCDay(); }
+    // Smarta dashami-viddha rule: if the Ekadashi tithi BEGAN inside the
+    // arunodaya window (sunrise − 96 min .. sunrise) of the udaya day, Dashami
+    // "pierced" arunodaya — the fast shifts to the NEXT day. Validated: 2026
+    // Padmini Ekadashi (tithi begins pre-dawn May 26 -> fast May 27).
+    function ekadashiDay(Ts, Te) {
+      var d = anchorDay(Ts, Te, 'udaya', lat, lng, tz);
+      var sr = findSunrise(new Date(d), lat, lng, tz);
+      if (sr && Ts > sr.getTime() - 96 * 60000 && Ts < sr.getTime()) d += 86400000;
+      return d;
+    }
+    for (var mi = 0; mi < months.length; mi++) {
+      var M = months[mi];
+      // Ekadashi — Shukla (idx 10) and Krishna (idx 25), udaya rule.
+      var pairs = [
+        [10, M.adhik ? EKADASHI_ADHIK_S : EKADASHI_S[M.index]],
+        [25, M.adhik ? EKADASHI_ADHIK_K : EKADASHI_K[M.index]]
+      ];
+      for (var p = 0; p < 2; p++) {
+        var idx = pairs[p][0], nm = pairs[p][1];
+        var Ts = bisectElong(M.start, M.end, idx * 12);
+        var Te = bisectElong(Ts + 60000, M.end, (idx + 1) * 12);
+        var d = ekadashiDay(Ts, Te);
+        push(d, nm.en + ' Ekadashi', nm.hi + EK_WORD, 'ekadashi');
+      }
+      // Pradosh Vrat — S13 (idx 12) and K13 (idx 27), pradosh-kaal rule.
+      var pIdx = [12, 27];
+      for (var q = 0; q < 2; q++) {
+        var Tsp = bisectElong(M.start, M.end, pIdx[q] * 12);
+        var Tep = bisectElong(Tsp + 60000, M.end, (pIdx[q] + 1) * 12);
+        var dp = anchorDay(Tsp, Tep, 'pradosh', lat, lng, tz);
+        var dw = dowOf(dp);
+        var pre = PRADOSH_PREFIX_EN[dw] || '';
+        var preHi = PRADOSH_PREFIX_HI[dw] || '';
+        push(dp, pre + 'Pradosh Vrat', preHi + PRADOSH_HI, 'pradosh');
+      }
+      // Sankashti Chaturthi — K4 (idx 18) at moonrise; Tuesday = Angarki.
+      var Tsk = bisectElong(M.start, M.end, 18 * 12);
+      var Tek = bisectElong(Tsk + 60000, M.end, 19 * 12);
+      var dk = anchorDay(Tsk, Tek, 'moonrise', lat, lng, tz);
+      var isTue = dowOf(dk) === 2;
+      push(dk, isTue ? ANGARKI_EN : SANKASHTI_EN, isTue ? ANGARKI_HI : SANKASHTI_HI, 'sankashti');
+    }
+    out.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    return out;
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -930,6 +1006,7 @@
   global.PanchangEngine = {
     getPanchang,
     getFestivals,
+    getVrats,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
