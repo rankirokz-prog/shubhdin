@@ -76,6 +76,7 @@
     </select>
     <button onclick="run()">Calculate Panchang</button>
     <button onclick="showFestivals()" style="margin-top:8px;background:linear-gradient(135deg,#8B5A2B,#6B4423);color:#FFE8C8;">🎉 Festivals for Year (Phase 9)</button>
+    <button onclick="showVrats()" style="margin-top:8px;background:linear-gradient(135deg,#5A2B8B,#44236B);color:#FFE8C8;">🙏 Vrats for Year (Phase 9b: Ekadashi · Pradosh · Sankashti)</button>
   </div>
 
   <div id="festOutput"></div>
@@ -142,6 +143,27 @@
           return '<div class="sun-row"><span>'+f.en+' <span style="opacity:0.6">'+f.hi+'</span></span><span>'+ds+'</span></div>';
         }).join('');
         fo.innerHTML = '<div class="day-card"><div class="day-head"><span class="day-date">🎉 Festivals '+yr+'</span><span class="day-sr">'+fest.length+' festivals</span></div>'+rows+'</div>';
+      }, 30);
+    }
+
+    function showVrats(){
+      const fo = document.getElementById('festOutput');
+      const citySel = document.getElementById('city').value;
+      let lat, lng;
+      if (citySel === 'custom') { lat = parseFloat(document.getElementById('lat').value); lng = parseFloat(document.getElementById('lng').value); }
+      else { [lat, lng] = citySel.split(',').map(Number); }
+      const start = document.getElementById('startDate').valueAsDate || new Date();
+      const yr = start.getUTCFullYear();
+      fo.innerHTML = '<div class="day-card">Computing vrats for '+yr+'…</div>';
+      setTimeout(()=>{
+        const v = window.PanchangEngine.getVrats(yr, lat, lng);
+        const icon = {ekadashi:'🕉️', pradosh:'🌒', sankashti:'🐘'};
+        let rows = v.map(x=>{
+          const d = new Date(x.date+'T00:00:00Z');
+          const ds = d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
+          return '<div class="sun-row"><span>'+(icon[x.type]||'')+' '+x.en+' <span style="opacity:0.6">'+x.hi+'</span></span><span>'+ds+'</span></div>';
+        }).join('');
+        fo.innerHTML = '<div class="day-card"><div class="day-head"><span class="day-date">🙏 Vrats '+yr+'</span><span class="day-sr">'+v.length+' vrat days</span></div>'+rows+'</div>';
       }, 30);
     }
 
