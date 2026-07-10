@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Phase 9)</title>
+<title>Shubh Din — Panchang Engine Test (Kundli K1)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Phase 9</h1>
+  <h1>🔬 Panchang Engine — Kundli K1 (Lagna)</h1>
   <div class="sub">Added Phase 8: Disha Shool, Tarabalam, Chandrabalam (+ everything from Phases 1-7).</div>
 
   <div class="legend">
@@ -233,6 +233,10 @@
             <div class="sun-row"><span>⚠️ Gulika Kaal</span><span>${periodStr(p.gulikaKaal, dayRefMs)}</span></div>
             ${(p.varjyamAll && p.varjyamAll.length) ? p.varjyamAll.map(v=>`<div class="sun-row"><span>⚠️ Varjyam</span><span>${periodStr(v, dayRefMs)}</span></div>`).join('') : '<div class="sun-row"><span>⚠️ Varjyam</span><span>—</span></div>'}
             ${(p.durMuhurtam && p.durMuhurtam.length) ? p.durMuhurtam.map(dm=>`<div class="sun-row"><span>⚠️ Dur Muhurtam</span><span>${periodStr(dm, dayRefMs)}</span></div>`).join('') : ''}
+          </div>
+          <div class="limb-block">
+            <div class="limb-label">Lagna Timings (Kundli K1)</div>
+            ${(() => { try { const lt = window.PanchangEngine.getLagnaTable(d, lat, lng); return lt.map(x=>`<div class="sun-row"><span>${x.en}</span><span>${fmtT(x.start,dayRefMs)} – ${fmtT(x.end,dayRefMs)}</span></div>`).join(''); } catch(e){ return '—'; } })()}
           </div>
           <div class="limb-block">
             <div class="limb-label">Day Choghadiya</div>
