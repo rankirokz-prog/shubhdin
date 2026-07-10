@@ -927,6 +927,63 @@
     return out;
   }
 
+  // ---- Kundli K2: Graha (planetary) positions ------------------------------
+  // Sun..Saturn: geocentric true ecliptic-of-date longitude via astronomy-engine
+  // (same call pattern as the validated Sun), converted to sidereal with the
+  // validated Lahiri ayanamsa. Rahu = MEAN lunar ascending node (Meeus
+  // polynomial; panchang convention — Drik's default is Mean Rahu); Ketu =
+  // Rahu + 180. Retrograde flag = sign of tropical motion over a 6h sample
+  // (Rahu/Ketu come out perpetually retrograde naturally).
+  var GRAHA_LIST = [
+    { key: 'sun', en: 'Surya (Sun)', hi: '\u0938\u0942\u0930\u094D\u092F', body: 'Sun' },
+    { key: 'moon', en: 'Chandra (Moon)', hi: '\u091A\u0902\u0926\u094D\u0930', body: 'Moon' },
+    { key: 'mars', en: 'Mangal (Mars)', hi: '\u092E\u0902\u0917\u0932', body: 'Mars' },
+    { key: 'mercury', en: 'Budh (Mercury)', hi: '\u092C\u0941\u0927', body: 'Mercury' },
+    { key: 'jupiter', en: 'Guru (Jupiter)', hi: '\u0917\u0941\u0930\u0941', body: 'Jupiter' },
+    { key: 'venus', en: 'Shukra (Venus)', hi: '\u0936\u0941\u0915\u094D\u0930', body: 'Venus' },
+    { key: 'saturn', en: 'Shani (Saturn)', hi: '\u0936\u0928\u093F', body: 'Saturn' },
+    { key: 'rahu', en: 'Rahu', hi: '\u0930\u093E\u0939\u0941', body: 'Rahu' },
+    { key: 'ketu', en: 'Ketu', hi: '\u0915\u0947\u0924\u0941', body: 'Ketu' },
+  ];
+  function meanLunarNode(date) {
+    var T = (date.getTime() / 86400000 + 2440587.5 - 2451545.0) / 36525.0;
+    var om = 125.0445479 - 1934.1362891 * T + 0.0020754 * T * T
+           + T * T * T / 467441.0 - T * T * T * T / 60616000.0;
+    om %= 360; if (om < 0) om += 360;
+    return om; // tropical longitude of mean ascending node
+  }
+  function grahaTropical(body, date) {
+    if (body === 'Moon') return A.EclipticGeoMoon(date).lon;
+    if (body === 'Rahu') return meanLunarNode(date);
+    if (body === 'Ketu') return (meanLunarNode(date) + 180) % 360;
+    return A.Ecliptic(A.GeoVector(A.Body[body], date, true)).elon;
+  }
+  // Public: all 9 graha positions at an instant.
+  function getGrahas(date) {
+    var ay = ayanamsa(date);
+    var later = new Date(date.getTime() + 6 * 3600000);
+    var out = [];
+    for (var i = 0; i < GRAHA_LIST.length; i++) {
+      var g = GRAHA_LIST[i];
+      var trop = grahaTropical(g.body, date);
+      var trop2 = grahaTropical(g.body, later);
+      var motion = ((trop2 - trop + 540) % 360) - 180;
+      var sid = (trop - ay) % 360; if (sid < 0) sid += 360;
+      var r = Math.floor(sid / 30) % 12;
+      var nIdx = Math.floor(sid / (360 / 27)) % 27;
+      var pada = Math.floor((sid % (360 / 27)) / ((360 / 27) / 4)) + 1;
+      out.push({
+        key: g.key, en: g.en, hi: g.hi,
+        longitude: sid,
+        rashi: { index: r, en: RASHI_EN[r], hi: RASHI_HI[r] },
+        degreesInRashi: sid - r * 30,
+        nakshatra: { index: nIdx, en: NAKSHATRA_NAMES[nIdx], hi: NAKSHATRA_HI[nIdx], pada: pada },
+        retrograde: motion < 0
+      });
+    }
+    return out;
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -1074,6 +1131,7 @@
     getVrats,
     getLagna,
     getLagnaTable,
+    getGrahas,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
