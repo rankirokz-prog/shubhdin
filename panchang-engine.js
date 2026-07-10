@@ -862,6 +862,71 @@
     return out;
   }
 
+  // ---- Kundli K1: Lagna (Ascendant) ---------------------------------------
+  // Ascendant = ecliptic longitude rising on the eastern horizon.
+  // RAMC = Greenwich apparent sidereal time (astronomy-engine) x 15 + east longitude.
+  // Tropical Asc = atan2( cos RAMC, -(sin RAMC * cos eps + tan lat * sin eps) ),
+  // then sidereal via our VALIDATED Lahiri ayanamsa. Self-check: lagna at sunrise
+  // must approximately equal the Sun's sidereal longitude (the rising Sun).
+  function obliquity(date) {
+    var T = (date.getTime() / 86400000 + 2440587.5 - 2451545.0) / 36525.0;
+    return (23.43929111 - 0.0130042 * T) * Math.PI / 180;
+  }
+  function lagnaLongitude(date, lat, lng) {
+    var gst = A.SiderealTime(date); // hours
+    var ramcDeg = (gst * 15 + lng) % 360;
+    if (ramcDeg < 0) ramcDeg += 360;
+    var ramc = ramcDeg * Math.PI / 180;
+    var eps = obliquity(date);
+    var phi = lat * Math.PI / 180;
+    var asc = Math.atan2(Math.cos(ramc), -(Math.sin(ramc) * Math.cos(eps) + Math.tan(phi) * Math.sin(eps))) * 180 / Math.PI;
+    if (asc < 0) asc += 360;
+    var sid = (asc - ayanamsa(date)) % 360;
+    if (sid < 0) sid += 360;
+    return sid;
+  }
+
+  // Public: lagna at an instant — sidereal longitude, rashi, degrees within rashi.
+  function getLagna(date, lat, lng) {
+    var lon = lagnaLongitude(date, lat, lng);
+    var r = Math.floor(lon / 30) % 12;
+    return { longitude: lon, rashiIndex: r, en: RASHI_EN[r], hi: RASHI_HI[r],
+             degreesInRashi: lon - r * 30 };
+  }
+
+  // Public: lagna timings table for a day (sunrise -> next sunrise), Drik-style.
+  // Lagna moves ~15 deg/hour (a rashi rises in ~1.3-3h), far faster than tithi,
+  // so the shared 30h-window bisection would see multiple 360-wraps. This walker
+  // uses a dedicated 5h window (exactly one crossing of each 30-deg boundary).
+  function getLagnaTable(date, lat, lng, tzOffsetHours) {
+    var tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
+    var sr = findSunrise(date, lat, lng, tz);
+    var nextSr = findSunrise(new Date(date.getTime() + 86400000), lat, lng, tz);
+    if (!sr || !nextSr) return [];
+    function nextBoundary(fromMs) {
+      var v0 = lagnaLongitude(new Date(fromMs), lat, lng);
+      var target = (Math.floor(v0 / 30) + 1) * 30; // next multiple of 30 (may be 360)
+      var lo = fromMs, hi = fromMs + 5 * 3600000;
+      for (var i = 0; i < 50; i++) {
+        var mid = (lo + hi) / 2;
+        var v = lagnaLongitude(new Date(mid), lat, lng);
+        if (v < v0 - 0.001) v += 360; // unwrap past 0
+        if (v < target) lo = mid; else hi = mid;
+      }
+      return (lo + hi) / 2;
+    }
+    var out = [];
+    var t = sr.getTime();
+    for (var k = 0; k < 16 && t < nextSr.getTime(); k++) {
+      var r = Math.floor(lagnaLongitude(new Date(t + 60000), lat, lng) / 30) % 12;
+      var end = nextBoundary(t + 60000);
+      out.push({ rashiIndex: r, en: RASHI_EN[r], hi: RASHI_HI[r],
+                 start: new Date(t), end: new Date(Math.min(end, nextSr.getTime())) });
+      t = end;
+    }
+    return out;
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -1007,6 +1072,8 @@
     getPanchang,
     getFestivals,
     getVrats,
+    getLagna,
+    getLagnaTable,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
