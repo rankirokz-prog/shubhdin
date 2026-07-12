@@ -1045,7 +1045,10 @@
   // classical texts compute it). Year = 365.25 days (validate vs Drik).
   var DASHA_ORDER = ['ketu', 'venus', 'sun', 'moon', 'mars', 'rahu', 'jupiter', 'saturn', 'mercury'];
   var DASHA_YEARS = { ketu: 7, venus: 20, sun: 6, moon: 10, mars: 7, rahu: 18, jupiter: 16, saturn: 19, mercury: 17 };
-  var DASHA_YEAR_MS = 365.25 * 86400000;
+  // Year = SIDEREAL year 365.25636 days — decoded from Drik's own dasha table:
+  // their notional Shukra start (Jun 18 2009 17:06) to Ketu end (Jun 20 2129
+  // 11:25) implies 365.25636 d/yr to 5 decimals. (Was 365.25 before decoding.)
+  var DASHA_YEAR_MS = 365.25636 * 86400000;
   function grahaMeta(key) {
     for (var i = 0; i < GRAHA_LIST.length; i++) if (GRAHA_LIST[i].key === key) return GRAHA_LIST[i];
     return { key: key, en: key, hi: key };
