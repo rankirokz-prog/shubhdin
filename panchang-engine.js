@@ -989,6 +989,22 @@
         retrograde: motion < 0
       });
     }
+    // Combustion (Asta): planet within its threshold of the Sun. Thresholds
+    // (deg): Moon 12, Mars 17, Mercury 14 (12 if retrograde), Jupiter 11,
+    // Venus 10 (8 if retrograde), Saturn 15 — per Drik's convention (their
+    // kundali showed Budha Asta on Jul 10+12 2026, reproduced by these values).
+    var sunLon = out[0].longitude;
+    var COMBUST = { moon: 12, mars: 17, mercury: 14, jupiter: 11, venus: 10, saturn: 15 };
+    var COMBUST_R = { mercury: 12, venus: 8 };
+    for (var c = 0; c < out.length; c++) {
+      var gg = out[c];
+      var th = COMBUST[gg.key];
+      if (th == null) { gg.combust = false; continue; }
+      if (gg.retrograde && COMBUST_R[gg.key] != null) th = COMBUST_R[gg.key];
+      var dd = Math.abs(((gg.longitude - sunLon + 540) % 360) - 180);
+      gg.combust = (180 - dd) < th || dd < th;
+      gg.combust = Math.min(Math.abs(gg.longitude - sunLon), 360 - Math.abs(gg.longitude - sunLon)) < th;
+    }
     return out;
   }
 
@@ -1107,6 +1123,123 @@
       birthNakshatra: { index: nakIdx, en: NAKSHATRA_NAMES[nakIdx], hi: NAKSHATRA_HI[nakIdx] },
       balanceYears: (1 - frac) * DASHA_YEARS[lord0],
       mahadashas: mahas
+    };
+  }
+
+  // ---- Kundli K5: Doshas (Manglik, Kaal Sarp, Sade Sati) -------------------
+  // MANGLIK: Mars in houses 1,4,7,8,12 (core, all traditions) or 2 (South
+  // Indian addition) counted from Lagna, Moon and Venus. v1 reports presence
+  // per reference point; classical CANCELLATION rules are for the report layer.
+  var MANGLIK_CORE = [1, 4, 7, 8, 12];
+  function manglikCheck(bc) {
+    var mars = null, moon = null, venus = null;
+    for (var i = 0; i < bc.grahas.length; i++) {
+      var g = bc.grahas[i];
+      if (g.key === 'mars') mars = g;
+      if (g.key === 'moon') moon = g;
+      if (g.key === 'venus') venus = g;
+    }
+    function from(refRashi) {
+      var h = ((mars.rashi.index - refRashi + 12) % 12) + 1;
+      var core = MANGLIK_CORE.indexOf(h) >= 0;
+      return { house: h, dosha: core || h === 2, southernOnly: h === 2 };
+    }
+    var L = from(bc.lagna.rashiIndex), M = from(moon.rashi.index), V = from(venus.rashi.index);
+    var count = (L.dosha ? 1 : 0) + (M.dosha ? 1 : 0) + (V.dosha ? 1 : 0);
+    return { fromLagna: L, fromMoon: M, fromVenus: V,
+             present: L.dosha || M.dosha,
+             strength: count === 0 ? 'None' : count === 1 ? 'Mild' : count === 2 ? 'Moderate' : 'Strong' };
+  }
+
+  // KAAL SARP: all seven classical grahas hemmed on one side of the Rahu-Ketu
+  // axis. Type named by RAHU'S HOUSE from lagna (1 Anant .. 12 Sheshnag).
+  // A planet within 1 deg of either node is flagged (partial/anshik cases).
+  var KAAL_SARP_TYPES = ['Anant', 'Kulik', 'Vasuki', 'Shankhpal', 'Padma', 'Mahapadma',
+                         'Takshak', 'Karkotak', 'Shankhachur', 'Ghatak', 'Vishdhar', 'Sheshnag'];
+  function kaalSarpCheck(bc) {
+    var rahu = null, seven = [];
+    for (var i = 0; i < bc.grahas.length; i++) {
+      var g = bc.grahas[i];
+      if (g.key === 'rahu') rahu = g;
+      else if (g.key !== 'ketu') seven.push(g);
+    }
+    var allFirst = true, allSecond = true, nearNode = false;
+    for (var j = 0; j < seven.length; j++) {
+      var d = (seven[j].longitude - rahu.longitude + 360) % 360;
+      if (!(d > 0 && d < 180)) allFirst = false;
+      if (!(d > 180 && d < 360)) allSecond = false;
+      if (Math.min(d % 180, 180 - (d % 180)) < 1) nearNode = true;
+    }
+    var present = allFirst || allSecond;
+    var rahuHouse = ((rahu.rashi.index - bc.lagna.rashiIndex + 12) % 12) + 1;
+    return { present: present, partial: present && nearNode,
+             type: present ? KAAL_SARP_TYPES[rahuHouse - 1] : null,
+             rahuHouse: rahuHouse,
+             direction: present ? (allFirst ? 'Rahu-to-Ketu' : 'Ketu-to-Rahu') : null };
+  }
+
+  // SADE SATI: Saturn transiting the 12th (Rising), 1st (Peak) or 2nd (Setting)
+  // rashi from the natal Moon sign — ~7.5 years. Saturn retrogrades across
+  // boundaries, so periods are found by SCANNING Saturn's sidereal rashi in
+  // 10-day steps over the window and refining each change by bisection (Drik's
+  // own Sade Sati tables likewise show multiple start/end rows near boundaries).
+  // Also flags the two Dhaiya (Small Panoti) transits: 4th (Kantaka) and 8th
+  // (Ashtama Shani) from Moon.
+  function saturnSid(ms) {
+    var s = (grahaTropical('Saturn', new Date(ms)) - ayanamsa(new Date(ms))) % 360;
+    return s < 0 ? s + 360 : s;
+  }
+  function getSadeSati(moonRashiIndex, refDate) {
+    var ref = refDate ? refDate.getTime() : Date.now();
+    var from = ref - 12 * 365.25 * 86400000, to = ref + 18 * 365.25 * 86400000;
+    var zone = {};
+    zone[(moonRashiIndex + 11) % 12] = 'Rising (12th)';
+    zone[moonRashiIndex] = 'Peak (1st)';
+    zone[(moonRashiIndex + 1) % 12] = 'Setting (2nd)';
+    var dhaiya = {};
+    dhaiya[(moonRashiIndex + 3) % 12] = 'Kantaka Shani (4th Dhaiya)';
+    dhaiya[(moonRashiIndex + 7) % 12] = 'Ashtama Shani (8th Dhaiya)';
+    var step = 10 * 86400000;
+    function rashiAt(ms) { return Math.floor(saturnSid(ms) / 30) % 12; }
+    function refine(loMs, hiMs) { // instant where rashi changes between samples
+      var rLo = rashiAt(loMs);
+      for (var i = 0; i < 40; i++) {
+        var mid = (loMs + hiMs) / 2;
+        if (rashiAt(mid) === rLo) loMs = mid; else hiMs = mid;
+      }
+      return (loMs + hiMs) / 2;
+    }
+    var periods = [];
+    var prevR = rashiAt(from), segStart = from;
+    for (var t = from + step; t <= to + step; t += step) {
+      var r = rashiAt(Math.min(t, to));
+      if (r !== prevR || t > to) {
+        var segEnd = (r !== prevR) ? refine(t - step, Math.min(t, to)) : to;
+        var label = zone[prevR] || dhaiya[prevR] || null;
+        if (label) periods.push({ phase: label, rashiIndex: prevR, en: RASHI_EN[prevR],
+                                  start: new Date(segStart), end: new Date(segEnd) });
+        segStart = segEnd; prevR = r;
+        if (t > to) break;
+      }
+    }
+    var nowR = rashiAt(ref);
+    return {
+      moonRashi: { index: moonRashiIndex, en: RASHI_EN[moonRashiIndex] },
+      active: !!zone[nowR],
+      currentPhase: zone[nowR] || dhaiya[nowR] || null,
+      periods: periods
+    };
+  }
+
+  // Public: all doshas for a birth (Sade Sati status evaluated at refDate, default now).
+  function getDoshas(birthDate, lat, lng, refDate) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var moonR = 0;
+    for (var i = 0; i < bc.grahas.length; i++) if (bc.grahas[i].key === 'moon') moonR = bc.grahas[i].rashi.index;
+    return {
+      manglik: manglikCheck(bc),
+      kaalSarp: kaalSarpCheck(bc),
+      sadeSati: getSadeSati(moonR, refDate || new Date())
     };
   }
 
@@ -1261,6 +1394,8 @@
     getBirthChart,
     getVimshottariDasha,
     dashaSubPeriods,
+    getDoshas,
+    getSadeSati,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
