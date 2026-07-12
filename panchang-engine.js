@@ -872,8 +872,16 @@
     var T = (date.getTime() / 86400000 + 2440587.5 - 2451545.0) / 36525.0;
     return (23.43929111 - 0.0130042 * T) * Math.PI / 180;
   }
+  // DRIK CALIBRATION: Drik's ascendant corresponds to a sidereal-time epoch
+  // ~51.6 s ahead of straight GAST(UT) — likely their Delta-T / ephemeris-time
+  // convention. Empirically fitted to 0.01 arc-min against Drik's Kundali
+  // (Jul 10 2026 10:00 IST Vijayawada: lagna 22 Simha 44'02'') and consistent
+  // with the Jul 10 Vrishchika->Dhanu boundary bracket (ours 16:57:08 inside
+  // Drik's 16:56:00-16:57:41). Constancy across DECADES not yet verified —
+  // validate with an old-year birth (e.g. 1990s) before trusting historic charts.
+  var LAGNA_ST_OFFSET_MS = 51600;
   function lagnaLongitude(date, lat, lng) {
-    var gst = A.SiderealTime(date); // hours
+    var gst = A.SiderealTime(new Date(date.getTime() + LAGNA_ST_OFFSET_MS)); // hours
     var ramcDeg = (gst * 15 + lng) % 360;
     if (ramcDeg < 0) ramcDeg += 360;
     var ramc = ramcDeg * Math.PI / 180;
