@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Kundli K4)</title>
+<title>Shubh Din — Panchang Engine Test (Kundli K5)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Kundli K4 (Charts + Dasha)</h1>
+  <h1>🔬 Panchang Engine — Kundli K5 (Charts + Dasha + Doshas)</h1>
   <div class="sub">Added Phase 8: Disha Shool, Tarabalam, Chandrabalam (+ everything from Phases 1-7).</div>
 
   <div class="legend">
@@ -220,6 +220,19 @@
         ${southChart('Navamsa (D9)<br>Lagna: '+bc.navamsaLagna.en, bc.navamsaLagna.rashiIndex, d9p)}
         <div class="limb-block"><div class="limb-label">Graha Positions</div>${rows}</div>
         <div class="limb-block"><div class="limb-label">Vimshottari Dasha (K4) — birth nakshatra ${dz.birthNakshatra.en}</div>${dashaHtml}</div>
+        ${(() => { try {
+          const dos = window.PanchangEngine.getDoshas(birthUTC, lat, lng);
+          const mg = dos.manglik, ksp = dos.kaalSarp, ss = dos.sadeSati;
+          const combusts = bc.grahas.filter(g=>g.combust).map(g=>g.en).join(', ');
+          const ssRows = ss.periods.map(p=>`<div class="sun-row" style="font-size:10px;opacity:0.8;"><span>${p.phase} (${p.en})</span><span>${DD(p.start)} – ${DD(p.end)}</span></div>`).join('');
+          return `<div class="limb-block"><div class="limb-label">Doshas (K5)</div>
+            <div class="seg">🔴 Manglik: <b>${mg.present?'YES ('+mg.strength+')':'No'}</b> — Mars in house ${mg.fromLagna.house} from Lagna, ${mg.fromMoon.house} from Moon, ${mg.fromVenus.house} from Venus${(mg.fromLagna.southernOnly||mg.fromMoon.southernOnly)?' (2nd house: South tradition)':''}</div>
+            <div class="seg">🐍 Kaal Sarp: <b>${ksp.present?'YES — '+ksp.type+' ('+ksp.direction+')'+(ksp.partial?' partial':''):'No'}</b> (Rahu in house ${ksp.rahuHouse})</div>
+            <div class="seg">🔥 Combust (Asta): ${combusts||'none'}</div>
+            <div class="seg">🪐 Sade Sati (Moon in ${ss.moonRashi.en}): <b>${ss.active?'ACTIVE — '+ss.currentPhase:(ss.currentPhase?ss.currentPhase+' (Dhaiya)':'Not active now')}</b></div>
+            ${ssRows}
+          </div>`;
+        } catch(e){ return ''; } })()}
       </div>`;
     }
 
