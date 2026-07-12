@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Kundli K2)</title>
+<title>Shubh Din — Panchang Engine Test (Kundli K4)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Kundli K2 (Lagna + Grahas)</h1>
+  <h1>🔬 Panchang Engine — Kundli K4 (Charts + Dasha)</h1>
   <div class="sub">Added Phase 8: Disha Shool, Tarabalam, Chandrabalam (+ everything from Phases 1-7).</div>
 
   <div class="legend">
@@ -77,6 +77,11 @@
     <button onclick="run()">Calculate Panchang</button>
     <button onclick="showFestivals()" style="margin-top:8px;background:linear-gradient(135deg,#8B5A2B,#6B4423);color:#FFE8C8;">🎉 Festivals for Year (Phase 9)</button>
     <button onclick="showVrats()" style="margin-top:8px;background:linear-gradient(135deg,#5A2B8B,#44236B);color:#FFE8C8;">🙏 Vrats for Year (Phase 9b: Ekadashi · Pradosh · Sankashti)</button>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(212,168,67,0.25);">
+      <label>Kundli — Birth Time (uses city + start date above)</label>
+      <input id="birthTime" type="time" value="10:00" step="60">
+      <button onclick="showKundli()" style="background:linear-gradient(135deg,#B8434A,#8B2B33);color:#FFE8C8;">🕉️ Generate Kundli (D1 + D9 + Dasha)</button>
+    </div>
   </div>
 
   <div id="festOutput"></div>
@@ -165,6 +170,57 @@
         }).join('');
         fo.innerHTML = '<div class="day-card"><div class="day-head"><span class="day-date">🙏 Vrats '+yr+'</span><span class="day-sr">'+v.length+' vrat days</span></div>'+rows+'</div>';
       }, 30);
+    }
+
+    // South Indian chart: fixed rashi positions in a 4x4 grid.
+    const SOUTH_POS = {11:[1,1],0:[1,2],1:[1,3],2:[1,4],10:[2,1],3:[2,4],9:[3,1],4:[3,4],8:[4,1],7:[4,2],6:[4,3],5:[4,4]};
+    const GR_AB = {sun:'Su',moon:'Mo',mars:'Ma',mercury:'Me',jupiter:'Ju',venus:'Ve',saturn:'Sa',rahu:'Ra',ketu:'Ke'};
+    function southChart(title, lagnaRashi, placements){
+      // placements: {rashiIndex: ['Su','Mo(R)',...]}
+      let cells = '';
+      for (let r=0;r<12;r++){
+        const [row,col] = SOUTH_POS[r];
+        const isLg = r===lagnaRashi;
+        const gl = (placements[r]||[]).join(' ');
+        cells += `<div style="grid-row:${row};grid-column:${col};border:1px solid rgba(212,168,67,0.4);padding:3px;min-height:52px;font-size:10px;position:relative;${isLg?'background:rgba(212,168,67,0.15);':''}">
+          <div style="color:rgba(212,168,67,0.6);font-size:8px;">${['Mes','Vrs','Mit','Kar','Sim','Kan','Tul','Vrc','Dha','Mak','Kum','Min'][r]}${isLg?' <b style="color:#FFD700;">Lg</b>':''}</div>
+          <div style="color:#FFE8C8;font-size:11px;line-height:1.4;">${gl}</div></div>`;
+      }
+      cells += `<div style="grid-row:2/4;grid-column:2/4;display:flex;align-items:center;justify-content:center;color:#D4A843;font-size:12px;text-align:center;">${title}</div>`;
+      return `<div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:1px;background:rgba(212,168,67,0.15);border:2px solid rgba(212,168,67,0.5);border-radius:8px;overflow:hidden;margin:8px 0;">${cells}</div>`;
+    }
+    function showKundli(){
+      const fo = document.getElementById('festOutput');
+      const citySel = document.getElementById('city').value;
+      let lat, lng;
+      if (citySel === 'custom') { lat = parseFloat(document.getElementById('lat').value); lng = parseFloat(document.getElementById('lng').value); }
+      else { [lat, lng] = citySel.split(',').map(Number); }
+      const start = document.getElementById('startDate').valueAsDate || new Date();
+      const bt = document.getElementById('birthTime').value || '10:00';
+      const [hh,mm] = bt.split(':').map(Number);
+      const birthUTC = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate(), hh, mm, 0) - 5.5*3600000);
+      const bc = window.PanchangEngine.getBirthChart(birthUTC, lat, lng);
+      const d1p = {}, d9p = {};
+      bc.grahas.forEach(g=>{
+        const tag = GR_AB[g.key] + (g.retrograde?'(R)':'');
+        (d1p[g.rashi.index] = d1p[g.rashi.index]||[]).push(tag);
+        (d9p[g.navamsa.rashiIndex] = d9p[g.navamsa.rashiIndex]||[]).push(tag);
+      });
+      const rows = bc.grahas.map(g=>`<div class="sun-row"><span>${g.en}${g.retrograde?' <span style="color:#F0A8A8">(R)</span>':''}</span><span>${g.degreesInRashi.toFixed(2)}° ${g.rashi.en} · D9: ${g.navamsa.en}</span></div>`).join('');
+      const dz = window.PanchangEngine.getVimshottariDasha(birthUTC);
+      const DD = d => d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Kolkata'});
+      const dashaHtml = dz.mahadashas.map(m =>
+        `<div class="sun-row" style="font-weight:700;"><span>${m.en}${m.balance?' (balance '+dz.balanceYears.toFixed(2)+'y)':''}</span><span>${DD(m.start)} – ${DD(m.end)}</span></div>` +
+        m.antardashas.map(a=>`<div class="sun-row" style="font-size:10px;opacity:0.75;padding-left:14px;"><span>${m.en.split(' ')[0]} – ${a.en.split(' ')[0]}</span><span>${DD(a.start)} – ${DD(a.end)}</span></div>`).join('')
+      ).join('');
+      fo.innerHTML = `<div class="day-card">
+        <div class="day-head"><span class="day-date">🕉️ Kundli — ${start.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})} ${bt} IST</span>
+        <span class="day-sr">Lagna: ${bc.lagna.en} ${bc.lagna.degreesInRashi.toFixed(1)}°</span></div>
+        ${southChart('Rashi (D1)<br>Lagna: '+bc.lagna.en, bc.lagna.rashiIndex, d1p)}
+        ${southChart('Navamsa (D9)<br>Lagna: '+bc.navamsaLagna.en, bc.navamsaLagna.rashiIndex, d9p)}
+        <div class="limb-block"><div class="limb-label">Graha Positions</div>${rows}</div>
+        <div class="limb-block"><div class="limb-label">Vimshottari Dasha (K4) — birth nakshatra ${dz.birthNakshatra.en}</div>${dashaHtml}</div>
+      </div>`;
     }
 
     function run(){
