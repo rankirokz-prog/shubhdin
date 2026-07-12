@@ -984,6 +984,121 @@
     return out;
   }
 
+  // ---- Kundli K3: Birth Chart (D1 Rashi + D9 Navamsa) ----------------------
+  // D1: whole-sign houses — house of a graha = ((grahaRashi - lagnaRashi + 12) % 12) + 1.
+  // D9 Navamsa: each rashi divided into 9 parts of 3deg20'; navamsa rashi =
+  // floor(longitude * 9 / 30) mod 12. This single formula reproduces the classical
+  // rule exactly (movable signs count from themselves, fixed from the 9th, dual
+  // from the 5th) — verified programmatically for all 12 rashis.
+  function navamsaRashi(lon) {
+    return Math.floor((((lon % 360) + 360) % 360) * 9 / 30) % 12;
+  }
+  function buildHouses(lagnaRashiIndex) {
+    var houses = [];
+    for (var h = 0; h < 12; h++) {
+      var r = (lagnaRashiIndex + h) % 12;
+      houses.push({ house: h + 1, rashiIndex: r, en: RASHI_EN[r], hi: RASHI_HI[r], grahas: [] });
+    }
+    return houses;
+  }
+  // Public: full birth chart for a birth instant + place.
+  function getBirthChart(date, lat, lng) {
+    var lagna = getLagna(date, lat, lng);
+    var grahas = getGrahas(date);
+    var d1 = buildHouses(lagna.rashiIndex);
+    var navLagnaR = navamsaRashi(lagna.longitude);
+    var d9 = buildHouses(navLagnaR);
+    for (var i = 0; i < grahas.length; i++) {
+      var g = grahas[i];
+      g.house = ((g.rashi.index - lagna.rashiIndex + 12) % 12) + 1;
+      d1[g.house - 1].grahas.push(g.key);
+      var nr = navamsaRashi(g.longitude);
+      g.navamsa = { rashiIndex: nr, en: RASHI_EN[nr], hi: RASHI_HI[nr] };
+      g.navamsaHouse = ((nr - navLagnaR + 12) % 12) + 1;
+      d9[g.navamsaHouse - 1].grahas.push(g.key);
+    }
+    return {
+      lagna: lagna,
+      navamsaLagna: { rashiIndex: navLagnaR, en: RASHI_EN[navLagnaR], hi: RASHI_HI[navLagnaR] },
+      grahas: grahas,
+      d1: d1,
+      d9: d9
+    };
+  }
+
+  // ---- Kundli K4: Vimshottari Dasha ----------------------------------------
+  // 120-year cycle. Lord order = nakshatra-lord order (Ashvini=Ketu):
+  // Ketu 7, Venus 20, Sun 6, Moon 10, Mars 7, Rahu 18, Jupiter 16, Saturn 19,
+  // Mercury 17. Birth mahadasha lord = Moon's birth-nakshatra lord; the first
+  // dasha's BALANCE = (1 - elapsed fraction of the nakshatra) x lord's years.
+  // CRITICAL correctness detail: the first mahadasha's ANTARDASHA boundaries are
+  // anchored at the NOTIONAL dasha start (before birth) and then clipped to the
+  // birth instant — they are NOT rescaled to the balance (this is how Drik and
+  // classical texts compute it). Year = 365.25 days (validate vs Drik).
+  var DASHA_ORDER = ['ketu', 'venus', 'sun', 'moon', 'mars', 'rahu', 'jupiter', 'saturn', 'mercury'];
+  var DASHA_YEARS = { ketu: 7, venus: 20, sun: 6, moon: 10, mars: 7, rahu: 18, jupiter: 16, saturn: 19, mercury: 17 };
+  var DASHA_YEAR_MS = 365.25 * 86400000;
+  function grahaMeta(key) {
+    for (var i = 0; i < GRAHA_LIST.length; i++) if (GRAHA_LIST[i].key === key) return GRAHA_LIST[i];
+    return { key: key, en: key, hi: key };
+  }
+  // Sub-periods of any period: sub-lords start from the period's own lord,
+  // each spanning (subLordYears/120) of the parent. Same recursion gives
+  // antardasha -> pratyantardasha -> sookshma, so this helper is exported.
+  function dashaSubPeriods(lordKey, startMs, endMs) {
+    var res = [];
+    var total = endMs - startMs;
+    var i0 = DASHA_ORDER.indexOf(lordKey);
+    var t = startMs;
+    for (var k = 0; k < 9; k++) {
+      var L = DASHA_ORDER[(i0 + k) % 9];
+      var span = total * DASHA_YEARS[L] / 120;
+      var m = grahaMeta(L);
+      res.push({ lord: L, en: m.en, hi: m.hi, start: new Date(t), end: new Date(t + span) });
+      t += span;
+    }
+    return res;
+  }
+  // Public: full Vimshottari timeline from a birth instant.
+  function getVimshottariDasha(birthDate) {
+    var moonSid = moonSidereal(birthDate);
+    var nakIdx = Math.floor(moonSid / (360 / 27)) % 27;
+    var lordIdx = nakIdx % 9;
+    var frac = (moonSid % (360 / 27)) / (360 / 27); // elapsed fraction of nakshatra
+    var birthMs = birthDate.getTime();
+    var mahas = [];
+    var idx = lordIdx;
+    var lord0 = DASHA_ORDER[lordIdx];
+    var fullSpan0 = DASHA_YEARS[lord0] * DASHA_YEAR_MS;
+    var notionalStart = birthMs - frac * fullSpan0;
+    var cur = notionalStart;
+    for (var k = 0; k < 9; k++) {
+      var L = DASHA_ORDER[idx];
+      var span = DASHA_YEARS[L] * DASHA_YEAR_MS;
+      var end = cur + span;
+      var antars = dashaSubPeriods(L, cur, end);
+      if (k === 0) {
+        // clip the balance dasha to birth: drop finished antars, clip the running one
+        antars = antars.filter(function (a) { return a.end.getTime() > birthMs; });
+        if (antars.length && antars[0].start.getTime() < birthMs) antars[0].start = new Date(birthMs);
+      }
+      var m = grahaMeta(L);
+      mahas.push({
+        lord: L, en: m.en, hi: m.hi, years: DASHA_YEARS[L],
+        start: new Date(k === 0 ? birthMs : cur), end: new Date(end),
+        balance: k === 0, antardashas: antars
+      });
+      cur = end;
+      idx = (idx + 1) % 9;
+    }
+    return {
+      birthMoonLongitude: moonSid,
+      birthNakshatra: { index: nakIdx, en: NAKSHATRA_NAMES[nakIdx], hi: NAKSHATRA_HI[nakIdx] },
+      balanceYears: (1 - frac) * DASHA_YEARS[lord0],
+      mahadashas: mahas
+    };
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -1132,6 +1247,9 @@
     getLagna,
     getLagnaTable,
     getGrahas,
+    getBirthChart,
+    getVimshottariDasha,
+    dashaSubPeriods,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
