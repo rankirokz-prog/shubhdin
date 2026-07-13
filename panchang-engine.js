@@ -1257,6 +1257,113 @@
     };
   }
 
+  // ---- Kundli K6: Yogas -----------------------------------------------------
+  // Starter set of classical, crisply-defined yogas. Rashi lords (Mesha..Meena):
+  // Mars, Venus, Mercury, Moon, Sun, Mercury, Venus, Mars, Jupiter, Saturn,
+  // Saturn, Jupiter. Dignities: own signs + exaltation/debilitation rashis.
+  var RASHI_LORD = ['mars', 'venus', 'mercury', 'moon', 'sun', 'mercury',
+                    'venus', 'mars', 'jupiter', 'saturn', 'saturn', 'jupiter'];
+  var OWN_SIGNS = { sun: [4], moon: [3], mars: [0, 7], mercury: [2, 5],
+                    jupiter: [8, 11], venus: [1, 6], saturn: [9, 10] };
+  var EXALT = { sun: 0, moon: 1, mars: 9, mercury: 5, jupiter: 3, venus: 11, saturn: 6 };
+  var DEBIL = { sun: 6, moon: 7, mars: 3, mercury: 11, jupiter: 9, venus: 5, saturn: 0 };
+  var KENDRA = [1, 4, 7, 10];
+
+  function dignityOf(g) {
+    if (EXALT[g.key] === g.rashi.index) return 'Exalted';
+    if (DEBIL[g.key] === g.rashi.index) return 'Debilitated';
+    if (OWN_SIGNS[g.key] && OWN_SIGNS[g.key].indexOf(g.rashi.index) >= 0) return 'Own Sign';
+    return null;
+  }
+
+  // Public: yoga analysis of a birth chart.
+  function getYogas(birthDate, lat, lng) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var byKey = {};
+    for (var i = 0; i < bc.grahas.length; i++) byKey[bc.grahas[i].key] = bc.grahas[i];
+    var lagR = bc.lagna.rashiIndex;
+    function houseFromLagna(rashiIdx) { return ((rashiIdx - lagR + 12) % 12) + 1; }
+    function houseFromMoon(rashiIdx) { return ((rashiIdx - byKey.moon.rashi.index + 12) % 12) + 1; }
+    function lordOfHouse(h) { return RASHI_LORD[(lagR + h - 1) % 12]; }
+    var yogas = [];
+    function add(key, en, present, detail) { yogas.push({ key: key, en: en, present: present, detail: detail }); }
+
+    // Gaja Kesari: Jupiter in a kendra FROM THE MOON.
+    var jupFromMoon = houseFromMoon(byKey.jupiter.rashi.index);
+    add('gajaKesari', 'Gaja Kesari Yoga', KENDRA.indexOf(jupFromMoon) >= 0,
+        'Jupiter is in house ' + jupFromMoon + ' from the Moon');
+    // Budhaditya: Sun + Mercury in the same rashi.
+    add('budhaditya', 'Budhaditya Yoga', byKey.sun.rashi.index === byKey.mercury.rashi.index,
+        'Sun in ' + byKey.sun.rashi.en + ', Mercury in ' + byKey.mercury.rashi.en +
+        (byKey.mercury.combust ? ' (Mercury combust)' : ''));
+    // Chandra-Mangal: Moon + Mars in the same rashi.
+    add('chandraMangal', 'Chandra-Mangal Yoga', byKey.moon.rashi.index === byKey.mars.rashi.index,
+        'Moon in ' + byKey.moon.rashi.en + ', Mars in ' + byKey.mars.rashi.en);
+    // Panch Mahapurusha: planet in own/exaltation sign AND in a kendra from Lagna.
+    var MAHA = [['ruchaka', 'Ruchaka Yoga (Mars)', 'mars'], ['bhadra', 'Bhadra Yoga (Mercury)', 'mercury'],
+                ['hamsa', 'Hamsa Yoga (Jupiter)', 'jupiter'], ['malavya', 'Malavya Yoga (Venus)', 'venus'],
+                ['shasha', 'Shasha Yoga (Saturn)', 'saturn']];
+    for (var m = 0; m < MAHA.length; m++) {
+      var pk = MAHA[m][2], pg = byKey[pk];
+      var strong = (OWN_SIGNS[pk].indexOf(pg.rashi.index) >= 0) || (EXALT[pk] === pg.rashi.index);
+      var hK = houseFromLagna(pg.rashi.index);
+      add(MAHA[m][0], MAHA[m][1], strong && KENDRA.indexOf(hK) >= 0,
+          pg.en.split(' ')[0] + ' in ' + pg.rashi.en + ' (' + (dignityOf(pg) || 'ordinary') + '), house ' + hK);
+    }
+    // Vipreet Raja trio: lords of 6/8/12 placed in 6/8/12.
+    var VIP = [['harsha', 'Harsha Yoga (Vipreet)', 6], ['sarala', 'Sarala Yoga (Vipreet)', 8], ['vimala', 'Vimala Yoga (Vipreet)', 12]];
+    for (var v = 0; v < VIP.length; v++) {
+      var lord = byKey[lordOfHouse(VIP[v][2])];
+      var lh = houseFromLagna(lord.rashi.index);
+      add(VIP[v][0], VIP[v][1], lh === 6 || lh === 8 || lh === 12,
+          'Lord of house ' + VIP[v][2] + ' (' + lord.en.split(' ')[0] + ') is in house ' + lh);
+    }
+    // Basic Raja Yoga: a kendra-lord conjunct a trikona-lord (different planets).
+    var kendraLords = [1, 4, 7, 10].map(lordOfHouse);
+    var trikonaLords = [1, 5, 9].map(lordOfHouse);
+    var rajaPairs = [];
+    for (var a = 0; a < kendraLords.length; a++) {
+      for (var b = 0; b < trikonaLords.length; b++) {
+        var A = kendraLords[a], B = trikonaLords[b];
+        if (A !== B && byKey[A].rashi.index === byKey[B].rashi.index) {
+          var tag = A + '+' + B;
+          if (rajaPairs.indexOf(tag) < 0 && rajaPairs.indexOf(B + '+' + A) < 0) rajaPairs.push(tag);
+        }
+      }
+    }
+    add('raja', 'Raja Yoga (kendra-trikona conjunction)', rajaPairs.length > 0,
+        rajaPairs.length ? 'Pairs: ' + rajaPairs.join(', ') : 'No kendra-lord + trikona-lord conjunction');
+    // Basic Dhana Yoga: lord of 2 conjunct lord of 11.
+    var l2 = lordOfHouse(2), l11 = lordOfHouse(11);
+    add('dhana', 'Dhana Yoga (2nd-11th lords)', l2 !== l11 && byKey[l2].rashi.index === byKey[l11].rashi.index,
+        '2nd lord ' + l2 + ' in ' + byKey[l2].rashi.en + ', 11th lord ' + l11 + ' in ' + byKey[l11].rashi.en);
+    // Kemadruma (inauspicious): houses 2 and 12 FROM MOON empty and no planet
+    // with the Moon (Sun, Rahu, Ketu excluded per classical rule). Note:
+    // kendra-based cancellations exist — report layer.
+    var occupied = false;
+    for (var q = 0; q < bc.grahas.length; q++) {
+      var gg = bc.grahas[q];
+      if (gg.key === 'moon' || gg.key === 'sun' || gg.key === 'rahu' || gg.key === 'ketu') continue;
+      var hm = houseFromMoon(gg.rashi.index);
+      if (hm === 1 || hm === 2 || hm === 12) occupied = true;
+    }
+    add('kemadruma', 'Kemadruma Yoga (inauspicious)', !occupied,
+        occupied ? 'Moon is supported by adjacent planets' : 'No planets in 12th/1st/2nd from Moon (cancellations not yet checked)');
+
+    // Dignities table
+    var dignities = [];
+    for (var d2 = 0; d2 < bc.grahas.length; d2++) {
+      var gd = bc.grahas[d2];
+      var dg = dignityOf(gd);
+      if (dg) dignities.push({ key: gd.key, en: gd.en, rashi: gd.rashi.en, dignity: dg });
+    }
+    return {
+      yogas: yogas,
+      presentYogas: yogas.filter(function (y) { return y.present; }),
+      dignities: dignities
+    };
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -1410,6 +1517,7 @@
     dashaSubPeriods,
     getDoshas,
     getSadeSati,
+    getYogas,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
