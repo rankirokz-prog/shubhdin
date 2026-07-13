@@ -1364,6 +1364,149 @@
     };
   }
 
+  // ---- Kundli K7: Guna Milan (Ashtakoota, 36 points) ------------------------
+  // Marriage matching from the two Moons (nakshatra + rashi) only. Kootas:
+  // Varna 1 + Vashya 2 + Tara 3 + Yoni 4 + Graha Maitri 5 + Gana 6 + Bhakoot 7
+  // + Nadi 8 = 36. Vashya matrix, Yoni matrix and Gana matrix follow the widely
+  // published North-Indian standard — PENDING one Drik Horoscope-Match
+  // validation (any cell differences will be reverse-engineered, as always).
+  var KOOTA_HI = { 'Varna': '\u0935\u0930\u094D\u0923', 'Vashya': '\u0935\u0936\u094D\u092F', 'Tara': '\u0924\u093E\u0930\u093E', 'Yoni': '\u092F\u094B\u0928\u093F', 'Graha Maitri': '\u0917\u094D\u0930\u0939 \u092E\u0948\u0924\u094D\u0930\u0940', 'Gana': '\u0917\u0923', 'Bhakoot': '\u092D\u0915\u0942\u091F', 'Nadi': '\u0928\u093E\u0921\u093C\u0940' };
+  // Varna by rashi: 0=Brahmin(water) 1=Kshatriya(fire) 2=Vaishya(earth) 3=Shudra(air)
+  var VARNA_OF_RASHI = [1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0];
+  var VARNA_NAMES = ['Brahmin', 'Kshatriya', 'Vaishya', 'Shudra'];
+  // Vashya groups by rashi (full-sign convention): 0 Chatushpad, 1 Manav,
+  // 2 Jalchar, 3 Vanchar, 4 Keet. (Dhanu->Chatushpad, Makara->Jalchar variants noted.)
+  var VASHYA_OF_RASHI = [0, 0, 1, 2, 3, 1, 1, 4, 0, 2, 1, 2];
+  var VASHYA_NAMES = ['Chatushpad', 'Manav', 'Jalchar', 'Vanchar', 'Keet'];
+  var VASHYA_MATRIX = [ // boy rows x girl cols
+    [2, 1, 1, 0, 1],
+    [1, 2, 0.5, 0, 1],
+    [1, 0.5, 2, 0, 1],
+    [0, 0, 0, 2, 0],
+    [1, 1, 1, 0, 2]
+  ];
+  // Yoni animal per nakshatra (0..26):
+  var YONI_OF_NAK = [0, 1, 2, 3, 3, 4, 5, 2, 5, 6, 6, 7, 8, 9, 8, 9, 10, 10, 4, 11, 12, 11, 13, 0, 13, 7, 1];
+  var YONI_NAMES = ['Horse', 'Elephant', 'Sheep', 'Serpent', 'Dog', 'Cat', 'Rat',
+                    'Cow', 'Buffalo', 'Tiger', 'Deer', 'Monkey', 'Mongoose', 'Lion'];
+  var YONI_MATRIX = [
+    [4,2,2,3,2,2,2,1,0,1,3,3,2,1],
+    [2,4,3,3,2,2,2,2,3,1,2,3,2,0],
+    [2,3,4,2,1,2,1,3,3,1,2,0,3,1],
+    [3,3,2,4,2,1,1,1,1,2,2,2,0,2],
+    [2,2,1,2,4,2,1,2,2,1,0,2,1,1],
+    [2,2,2,1,2,4,0,2,2,1,3,3,2,1],
+    [2,2,1,1,1,0,4,2,2,2,2,2,1,2],
+    [1,2,3,1,2,2,2,4,3,0,3,2,2,1],
+    [0,3,3,1,2,2,2,3,4,1,2,2,2,1],
+    [1,1,1,2,1,1,2,0,1,4,1,1,2,1],
+    [3,2,2,2,0,3,2,3,2,1,4,2,2,1],
+    [3,3,0,2,2,3,2,2,2,1,2,4,3,2],
+    [2,2,3,0,1,2,1,2,2,2,2,3,4,2],
+    [1,0,1,2,1,1,2,1,1,1,1,2,2,4]
+  ];
+  // Graha Maitri: natural planetary friendship. 2=friend 1=neutral 0=enemy.
+  var MAITRI = {
+    sun:     { sun: 2, moon: 2, mars: 2, mercury: 1, jupiter: 2, venus: 0, saturn: 0 },
+    moon:    { sun: 2, moon: 2, mars: 1, mercury: 2, jupiter: 1, venus: 1, saturn: 1 },
+    mars:    { sun: 2, moon: 2, mars: 2, mercury: 0, jupiter: 2, venus: 1, saturn: 1 },
+    mercury: { sun: 2, moon: 0, mars: 1, mercury: 2, jupiter: 1, venus: 2, saturn: 1 },
+    jupiter: { sun: 2, moon: 2, mars: 2, mercury: 0, jupiter: 2, venus: 0, saturn: 1 },
+    venus:   { sun: 0, moon: 0, mars: 1, mercury: 2, jupiter: 1, venus: 2, saturn: 2 },
+    saturn:  { sun: 0, moon: 0, mars: 0, mercury: 2, jupiter: 1, venus: 2, saturn: 2 }
+  };
+  // Gana per nakshatra: 0 Deva, 1 Manushya, 2 Rakshasa.
+  var GANA_OF_NAK = [0, 1, 2, 1, 0, 1, 0, 0, 2, 2, 1, 1, 0, 2, 0, 2, 0, 2, 2, 1, 1, 0, 2, 2, 1, 1, 0];
+  var GANA_NAMES = ['Deva', 'Manushya', 'Rakshasa'];
+  var GANA_MATRIX = [ // boy rows x girl cols
+    [6, 6, 1],
+    [5, 6, 0],
+    [1, 0, 6]
+  ];
+  // Nadi per nakshatra: 0 Adi, 1 Madhya, 2 Antya.
+  var NADI_OF_NAK = [0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2, 2, 1, 0, 0, 1, 2];
+  var NADI_NAMES = ['Adi', 'Madhya', 'Antya'];
+
+  function taraKootaScore(boyNak, girlNak) {
+    function bad(from, to) {
+      var t = ((to - from + 27) % 27) % 9 + 1;
+      return t === 3 || t === 5 || t === 7;
+    }
+    var b1 = bad(girlNak, boyNak), b2 = bad(boyNak, girlNak);
+    return (!b1 && !b2) ? 3 : (b1 && b2) ? 0 : 1.5;
+  }
+  // Core matcher on the two Moons.
+  function gunaMilanCore(boyNak, boyRashi, girlNak, girlRashi) {
+    var k = [];
+    // 1 Varna
+    var bv = VARNA_OF_RASHI[boyRashi], gv = VARNA_OF_RASHI[girlRashi];
+    k.push({ koota: 'Varna', hi: KOOTA_HI['Varna'], max: 1, obtained: bv <= gv ? 1 : 0,
+             boy: VARNA_NAMES[bv], girl: VARNA_NAMES[gv] });
+    // 2 Vashya
+    var bw = VASHYA_OF_RASHI[boyRashi], gw = VASHYA_OF_RASHI[girlRashi];
+    k.push({ koota: 'Vashya', hi: KOOTA_HI['Vashya'], max: 2, obtained: VASHYA_MATRIX[bw][gw],
+             boy: VASHYA_NAMES[bw], girl: VASHYA_NAMES[gw] });
+    // 3 Tara
+    k.push({ koota: 'Tara', hi: KOOTA_HI['Tara'], max: 3, obtained: taraKootaScore(boyNak, girlNak),
+             boy: NAKSHATRA_NAMES[boyNak], girl: NAKSHATRA_NAMES[girlNak] });
+    // 4 Yoni
+    var by = YONI_OF_NAK[boyNak], gy = YONI_OF_NAK[girlNak];
+    k.push({ koota: 'Yoni', hi: KOOTA_HI['Yoni'], max: 4, obtained: YONI_MATRIX[by][gy],
+             boy: YONI_NAMES[by], girl: YONI_NAMES[gy] });
+    // 5 Graha Maitri (moon-sign lords)
+    var bl = RASHI_LORD[boyRashi], gl = RASHI_LORD[girlRashi];
+    var f1 = MAITRI[bl][gl], f2 = MAITRI[gl][bl];
+    var gm;
+    if (bl === gl) gm = 5;
+    else if (f1 === 2 && f2 === 2) gm = 5;
+    else if ((f1 === 2 && f2 === 1) || (f1 === 1 && f2 === 2)) gm = 4;
+    else if (f1 === 1 && f2 === 1) gm = 3;
+    else if ((f1 === 2 && f2 === 0) || (f1 === 0 && f2 === 2)) gm = 1;
+    else if ((f1 === 1 && f2 === 0) || (f1 === 0 && f2 === 1)) gm = 0.5;
+    else gm = 0;
+    k.push({ koota: 'Graha Maitri', hi: KOOTA_HI['Graha Maitri'], max: 5, obtained: gm,
+             boy: bl, girl: gl });
+    // 6 Gana
+    var bg = GANA_OF_NAK[boyNak], gg = GANA_OF_NAK[girlNak];
+    k.push({ koota: 'Gana', hi: KOOTA_HI['Gana'], max: 6, obtained: GANA_MATRIX[bg][gg],
+             boy: GANA_NAMES[bg], girl: GANA_NAMES[gg] });
+    // 7 Bhakoot
+    var d1 = ((girlRashi - boyRashi + 12) % 12) + 1;
+    var d2 = ((boyRashi - girlRashi + 12) % 12) + 1;
+    var badB = (d1 === 2 || d1 === 12 || d1 === 5 || d1 === 9 || d1 === 6 || d1 === 8);
+    k.push({ koota: 'Bhakoot', hi: KOOTA_HI['Bhakoot'], max: 7, obtained: badB ? 0 : 7,
+             boy: RASHI_EN[boyRashi], girl: RASHI_EN[girlRashi],
+             note: badB ? (d1 + '/' + d2 + ' — Bhakoot Dosha') : (d1 + '/' + d2) });
+    // 8 Nadi
+    var bn = NADI_OF_NAK[boyNak], gn = NADI_OF_NAK[girlNak];
+    k.push({ koota: 'Nadi', hi: KOOTA_HI['Nadi'], max: 8, obtained: bn === gn ? 0 : 8,
+             boy: NADI_NAMES[bn], girl: NADI_NAMES[gn],
+             note: bn === gn ? 'Nadi Dosha' : '' });
+    var total = 0;
+    for (var i = 0; i < k.length; i++) total += k[i].obtained;
+    var verdict = total >= 33 ? 'Excellent' : total >= 25 ? 'Very Good' : total >= 18 ? 'Acceptable' : 'Not Recommended';
+    return {
+      kootas: k, total: total, max: 36, verdict: verdict,
+      doshas: {
+        nadi: bn === gn,
+        bhakoot: badB,
+        gana: GANA_MATRIX[bg][gg] <= 1
+      }
+    };
+  }
+  // Public: full match from two birth instants (Moon needs no location).
+  function getGunaMilan(boyBirthDate, girlBirthDate) {
+    function moonOf(d) {
+      var ms = moonSidereal(d);
+      return { nak: Math.floor(ms / (360 / 27)) % 27, rashi: Math.floor(ms / 30) % 12 };
+    }
+    var b = moonOf(boyBirthDate), g = moonOf(girlBirthDate);
+    var res = gunaMilanCore(b.nak, b.rashi, g.nak, g.rashi);
+    res.boyMoon = { nakshatra: NAKSHATRA_NAMES[b.nak], rashi: RASHI_EN[b.rashi] };
+    res.girlMoon = { nakshatra: NAKSHATRA_NAMES[g.nak], rashi: RASHI_EN[g.rashi] };
+    return res;
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -1518,6 +1661,8 @@
     getDoshas,
     getSadeSati,
     getYogas,
+    getGunaMilan,
+    gunaMilanCore,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
