@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Kundli K6)</title>
+<title>Shubh Din — Panchang Engine Test (Kundli K7)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Kundli K6 (Full Kundli + Yogas)</h1>
+  <h1>🔬 Panchang Engine — Kundli K7 (Full Kundli + Guna Milan)</h1>
   <div class="sub">Added Phase 8: Disha Shool, Tarabalam, Chandrabalam (+ everything from Phases 1-7).</div>
 
   <div class="legend">
@@ -81,6 +81,11 @@
       <label>Kundli — Birth Time (uses city + start date above)</label>
       <input id="birthTime" type="time" value="10:00" step="60">
       <button onclick="showKundli()" style="background:linear-gradient(135deg,#B8434A,#8B2B33);color:#FFE8C8;">🕉️ Generate Kundli (D1 + D9 + Dasha)</button>
+      <div class="row" style="margin-top:10px;">
+        <div><label>Match: Girl Birth Date</label><input id="girlDate" type="date" value="2000-07-10"></div>
+        <div><label>Girl Birth Time</label><input id="girlTime" type="time" value="08:30" step="60"></div>
+      </div>
+      <button onclick="showMatch()" style="background:linear-gradient(135deg,#2B8B5A,#236B44);color:#FFE8C8;">💑 Guna Milan (K7) — Boy = Kundli inputs above</button>
     </div>
   </div>
 
@@ -242,6 +247,25 @@
             </div>`;
           } catch(e){ return ''; } })()}`;
         } catch(e){ return ''; } })()}
+      </div>`;
+    }
+
+    function showMatch(){
+      const fo = document.getElementById('festOutput');
+      const start = document.getElementById('startDate').valueAsDate || new Date();
+      const bt = (document.getElementById('birthTime').value || '10:00').split(':').map(Number);
+      const boyUTC = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate(), bt[0], bt[1], 0) - 5.5*3600000);
+      const gd = document.getElementById('girlDate').valueAsDate;
+      const gt = (document.getElementById('girlTime').value || '08:30').split(':').map(Number);
+      const girlUTC = new Date(Date.UTC(gd.getUTCFullYear(), gd.getUTCMonth(), gd.getUTCDate(), gt[0], gt[1], 0) - 5.5*3600000);
+      const r = window.PanchangEngine.getGunaMilan(boyUTC, girlUTC);
+      const rows = r.kootas.map(x=>`<div class="sun-row"><span><b>${x.koota}</b> <span style="opacity:0.6">${x.hi}</span><br><span style="font-size:10px;opacity:0.75;">${x.boy} → ${x.girl}${x.note?' · '+x.note:''}</span></span><span style="font-size:15px;"><b>${x.obtained}</b> / ${x.max}</span></div>`).join('');
+      const doshaLine = [r.doshas.nadi?'⚠️ Nadi Dosha':'', r.doshas.bhakoot?'⚠️ Bhakoot Dosha':'', r.doshas.gana?'⚠️ Gana Dosha':''].filter(Boolean).join(' · ');
+      fo.innerHTML = `<div class="day-card">
+        <div class="day-head"><span class="day-date">💑 Guna Milan</span><span class="day-sr">${r.total} / 36 — <b>${r.verdict}</b></span></div>
+        <div class="seg" style="margin-bottom:6px;">Boy Moon: ${r.boyMoon.nakshatra} (${r.boyMoon.rashi}) · Girl Moon: ${r.girlMoon.nakshatra} (${r.girlMoon.rashi})</div>
+        ${rows}
+        ${doshaLine?`<div class="seg" style="margin-top:8px;color:#F0A8A8;">${doshaLine} <span style="opacity:0.6;font-size:10px;">(cancellation rules: report layer)</span></div>`:''}
       </div>`;
     }
 
