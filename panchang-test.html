@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shubh Din — Panchang Engine Test (Kundli K5)</title>
+<title>Shubh Din — Panchang Engine Test (Kundli K6)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,'Segoe UI',Roboto,sans-serif; background:linear-gradient(155deg,#0D0500,#2C1208 50%,#0D0500); color:#FFE8C8; padding:16px; min-height:100vh; }
@@ -35,7 +35,7 @@
 </style>
 </head>
 <body>
-  <h1>🔬 Panchang Engine — Kundli K5 (Charts + Dasha + Doshas)</h1>
+  <h1>🔬 Panchang Engine — Kundli K6 (Full Kundli + Yogas)</h1>
   <div class="sub">Added Phase 8: Disha Shool, Tarabalam, Chandrabalam (+ everything from Phases 1-7).</div>
 
   <div class="legend">
@@ -231,7 +231,16 @@
             <div class="seg">🔥 Combust (Asta): ${combusts||'none'}</div>
             <div class="seg">🪐 Sade Sati (Moon in ${ss.moonRashi.en}): <b>${ss.active?'ACTIVE — '+ss.currentPhase:(ss.currentPhase?ss.currentPhase+' (Dhaiya)':'Not active now')}</b></div>
             ${ssRows}
-          </div>`;
+          </div>
+          ${(() => { try {
+            const yg = window.PanchangEngine.getYogas(birthUTC, lat, lng);
+            const present = yg.presentYogas.map(y=>`<div class="seg">✨ <b>${y.en}</b> — <span style="opacity:0.8;font-size:12px;">${y.detail}</span></div>`).join('');
+            const dig = yg.dignities.map(d=>d.en.split(' ')[0]+': '+d.dignity+' ('+d.rashi+')').join(' · ');
+            return `<div class="limb-block"><div class="limb-label">Yogas (K6)</div>
+              ${present || '<div class="seg">No major yogas from the starter set</div>'}
+              ${dig?`<div class="seg" style="font-size:11px;opacity:0.8;">Dignities: ${dig}</div>`:''}
+            </div>`;
+          } catch(e){ return ''; } })()}`;
         } catch(e){ return ''; } })()}
       </div>`;
     }
