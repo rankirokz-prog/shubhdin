@@ -226,7 +226,7 @@
           const combusts = bc.grahas.filter(g=>g.combust).map(g=>g.en).join(', ');
           const ssRows = ss.periods.map(p=>`<div class="sun-row" style="font-size:10px;opacity:0.8;"><span>${p.phase} (${p.en})</span><span>${DD(p.start)} – ${DD(p.end)}</span></div>`).join('');
           return `<div class="limb-block"><div class="limb-label">Doshas (K5)</div>
-            <div class="seg">🔴 Manglik: <b>${mg.present?'YES ('+mg.strength+')':'No'}</b> — Mars in house ${mg.fromLagna.house} from Lagna, ${mg.fromMoon.house} from Moon, ${mg.fromVenus.house} from Venus${(mg.fromLagna.southernOnly||mg.fromMoon.southernOnly)?' (2nd house: South tradition)':''}</div>
+            <div class="seg">🔴 Manglik (Lagna chart, Drik model): <b>${mg.present?'YES — '+mg.percent+'% dosha':'No Mangal Dosha'}</b> — Mars in house ${mg.fromLagna.house} from Lagna, ${mg.fromMoon.house} from Moon, ${mg.fromVenus.house} from Venus${mg.fromMoon.dosha?' · Chandra-Manglik view: yes':''}</div>
             <div class="seg">🐍 Kaal Sarp: <b>${ksp.present?'YES — '+ksp.type+' ('+ksp.direction+')'+(ksp.partial?' partial':''):'No'}</b> (Rahu in house ${ksp.rahuHouse})</div>
             <div class="seg">🔥 Combust (Asta): ${combusts||'none'}</div>
             <div class="seg">🪐 Sade Sati (Moon in ${ss.moonRashi.en}): <b>${ss.active?'ACTIVE — '+ss.currentPhase:(ss.currentPhase?ss.currentPhase+' (Dhaiya)':'Not active now')}</b></div>
