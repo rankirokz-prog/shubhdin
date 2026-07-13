@@ -1127,28 +1127,42 @@
   }
 
   // ---- Kundli K5: Doshas (Manglik, Kaal Sarp, Sade Sati) -------------------
-  // MANGLIK: Mars in houses 1,4,7,8,12 (core, all traditions) or 2 (South
-  // Indian addition) counted from Lagna, Moon and Venus. v1 reports presence
-  // per reference point; classical CANCELLATION rules are for the report layer.
-  var MANGLIK_CORE = [1, 4, 7, 8, 12];
+  // MANGLIK — Drik's model (decoded from their Mangal Dosha page, Ram's 1996
+  // validation): headline verdict is FROM LAGNA; houses considered 12,1,2,4,7,8
+  // (Drik includes BOTH 1st and 2nd). Dosha %: Mars alone in 12=50, 1=60, 2=80,
+  // 4=80, 7=100, 8=100; aggravated by Saturn/Rahu/Ketu/Sun placed with Mars or
+  // in {12,1,2,4}: Mars in {12,1,2,4} -> 150 (1 malefic) / 200 (2+); Mars in
+  // {7,8} -> 200 (1) / 250 (2+). Cancellation rules = report layer (v2).
+  var MANGLIK_BASE = { 12: 50, 1: 60, 2: 80, 4: 80, 7: 100, 8: 100 };
+  function manglikFromRef(bc, refRashi) {
+    var byKey = {};
+    for (var i = 0; i < bc.grahas.length; i++) byKey[bc.grahas[i].key] = bc.grahas[i];
+    function houseOf(k) { return ((byKey[k].rashi.index - refRashi + 12) % 12) + 1; }
+    var mh = houseOf('mars');
+    if (MANGLIK_BASE[mh] == null) return { house: mh, dosha: false, percent: 0, aggravators: [] };
+    var aggr = [];
+    var mal = ['saturn', 'rahu', 'ketu', 'sun'];
+    for (var j = 0; j < mal.length; j++) {
+      var h = houseOf(mal[j]);
+      if (h === mh || h === 12 || h === 1 || h === 2 || h === 4) aggr.push(mal[j]);
+    }
+    var pct;
+    if (mh === 7 || mh === 8) pct = aggr.length >= 2 ? 250 : aggr.length === 1 ? 200 : MANGLIK_BASE[mh];
+    else pct = aggr.length >= 2 ? 200 : aggr.length === 1 ? 150 : MANGLIK_BASE[mh];
+    return { house: mh, dosha: true, percent: pct, aggravators: aggr };
+  }
   function manglikCheck(bc) {
-    var mars = null, moon = null, venus = null;
+    var moonR = 0, venusR = 0;
     for (var i = 0; i < bc.grahas.length; i++) {
-      var g = bc.grahas[i];
-      if (g.key === 'mars') mars = g;
-      if (g.key === 'moon') moon = g;
-      if (g.key === 'venus') venus = g;
+      if (bc.grahas[i].key === 'moon') moonR = bc.grahas[i].rashi.index;
+      if (bc.grahas[i].key === 'venus') venusR = bc.grahas[i].rashi.index;
     }
-    function from(refRashi) {
-      var h = ((mars.rashi.index - refRashi + 12) % 12) + 1;
-      var core = MANGLIK_CORE.indexOf(h) >= 0;
-      return { house: h, dosha: core || h === 2, southernOnly: h === 2 };
-    }
-    var L = from(bc.lagna.rashiIndex), M = from(moon.rashi.index), V = from(venus.rashi.index);
-    var count = (L.dosha ? 1 : 0) + (M.dosha ? 1 : 0) + (V.dosha ? 1 : 0);
+    var L = manglikFromRef(bc, bc.lagna.rashiIndex);
+    var M = manglikFromRef(bc, moonR);
+    var V = manglikFromRef(bc, venusR);
     return { fromLagna: L, fromMoon: M, fromVenus: V,
-             present: L.dosha || M.dosha,
-             strength: count === 0 ? 'None' : count === 1 ? 'Mild' : count === 2 ? 'Moderate' : 'Strong' };
+             present: L.dosha,          // Drik headline convention: Lagna chart
+             percent: L.percent };
   }
 
   // KAAL SARP: all seven classical grahas hemmed on one side of the Rahu-Ketu
@@ -1183,7 +1197,7 @@
   // boundaries, so periods are found by SCANNING Saturn's sidereal rashi in
   // 10-day steps over the window and refining each change by bisection (Drik's
   // own Sade Sati tables likewise show multiple start/end rows near boundaries).
-  // Also flags the two Dhaiya (Small Panoti) transits: 4th (Kantaka) and 8th
+  // Also flags the two Dhaiya (Small Panoti) transits: 4th (Ardhashtama) and 8th
   // (Ashtama Shani) from Moon.
   function saturnSid(ms) {
     var s = (grahaTropical('Saturn', new Date(ms)) - ayanamsa(new Date(ms))) % 360;
@@ -1197,7 +1211,7 @@
     zone[moonRashiIndex] = 'Peak (1st)';
     zone[(moonRashiIndex + 1) % 12] = 'Setting (2nd)';
     var dhaiya = {};
-    dhaiya[(moonRashiIndex + 3) % 12] = 'Kantaka Shani (4th Dhaiya)';
+    dhaiya[(moonRashiIndex + 3) % 12] = 'Ardhashtama Shani (4th Dhaiya)';
     dhaiya[(moonRashiIndex + 7) % 12] = 'Ashtama Shani (8th Dhaiya)';
     var step = 10 * 86400000;
     function rashiAt(ms) { return Math.floor(saturnSid(ms) / 30) % 12; }
