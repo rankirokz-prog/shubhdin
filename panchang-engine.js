@@ -1507,6 +1507,109 @@
     return res;
   }
 
+  // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
+  // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
+  // + Lagna): from each contributor's rashi, specific house-counts (classical
+  // BPHS tables below) receive 1 bindu. Bhinnashtakavarga totals must equal
+  // 48/49/39/54/56/52/39 (Sun..Saturn) and Sarvashtakavarga total = 337.
+  var ASHTAK_TABLES = {
+    sun:     { sun: [1,2,4,7,8,9,10,11], moon: [3,6,10,11], mars: [1,2,4,7,8,9,10,11],
+               mercury: [3,5,6,9,10,11,12], jupiter: [5,6,9,11], venus: [6,7,12],
+               saturn: [1,2,4,7,8,9,10,11], lagna: [3,4,6,10,11,12] },
+    moon:    { sun: [3,6,7,8,10,11], moon: [1,3,6,7,10,11], mars: [2,3,5,6,9,10,11],
+               mercury: [1,3,4,5,7,8,10,11], jupiter: [1,4,7,8,10,11,12],
+               venus: [3,4,5,7,9,10,11], saturn: [3,5,6,11], lagna: [3,6,10,11] },
+    mars:    { sun: [3,5,6,10,11], moon: [3,6,11], mars: [1,2,4,7,8,10,11],
+               mercury: [3,5,6,11], jupiter: [6,10,11,12], venus: [6,8,11,12],
+               saturn: [1,4,7,8,9,10,11], lagna: [1,3,6,10,11] },
+    mercury: { sun: [5,6,9,11,12], moon: [2,4,6,8,10,11], mars: [1,2,4,7,8,9,10,11],
+               mercury: [1,3,5,6,9,10,11,12], jupiter: [6,8,11,12],
+               venus: [1,2,3,4,5,8,9,11], saturn: [1,2,4,7,8,9,10,11], lagna: [1,2,4,6,8,10,11] },
+    jupiter: { sun: [1,2,3,4,7,8,9,10,11], moon: [2,5,7,9,11], mars: [1,2,4,7,8,10,11],
+               mercury: [1,2,4,5,6,9,10,11], jupiter: [1,2,3,4,7,8,10,11],
+               venus: [2,5,6,9,10,11], saturn: [3,5,6,12], lagna: [1,2,4,5,6,7,9,10,11] },
+    venus:   { sun: [8,11,12], moon: [1,2,3,4,5,8,9,11,12], mars: [3,5,6,9,11,12],
+               mercury: [3,5,6,9,11], jupiter: [5,8,9,10,11],
+               venus: [1,2,3,4,5,8,9,10,11], saturn: [3,4,5,8,9,10,11], lagna: [1,2,3,4,5,8,9,11] },
+    saturn:  { sun: [1,2,4,7,8,10,11], moon: [3,6,11], mars: [3,5,6,10,11,12],
+               mercury: [6,8,9,10,11,12], jupiter: [5,6,11,12], venus: [6,11,12],
+               saturn: [3,5,6,11], lagna: [1,3,4,6,10,11] }
+  };
+  // Public: Bhinnashtakavarga (per planet, per rashi, with contributor rows)
+  // + Sarvashtakavarga, from a birth chart.
+  function getAshtakavarga(birthDate, lat, lng) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var pos = { lagna: bc.lagna.rashiIndex };
+    for (var i = 0; i < bc.grahas.length; i++) {
+      var g = bc.grahas[i];
+      if (ASHTAK_TABLES[g.key] || g.key === 'sun') pos[g.key] = g.rashi.index;
+    }
+    var targets = ['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn'];
+    var contributors = ['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn', 'lagna'];
+    var bav = {};
+    var sav = [0,0,0,0,0,0,0,0,0,0,0,0];
+    for (var t = 0; t < targets.length; t++) {
+      var tk = targets[t];
+      var perRashi = [0,0,0,0,0,0,0,0,0,0,0,0];
+      var rows = {};
+      for (var c = 0; c < contributors.length; c++) {
+        var ck = contributors[c];
+        var row = [0,0,0,0,0,0,0,0,0,0,0,0];
+        var houses = ASHTAK_TABLES[tk][ck];
+        for (var h = 0; h < houses.length; h++) {
+          var r = (pos[ck] + houses[h] - 1) % 12;
+          row[r] = 1;
+          perRashi[r]++;
+        }
+        rows[ck] = row;
+      }
+      var tot = 0;
+      for (var r2 = 0; r2 < 12; r2++) { tot += perRashi[r2]; sav[r2] += perRashi[r2]; }
+      bav[tk] = { perRashi: perRashi, total: tot, rows: rows };
+    }
+    var savTotal = 0;
+    for (var r3 = 0; r3 < 12; r3++) savTotal += sav[r3];
+    return { bav: bav, sav: sav, savTotal: savTotal };
+  }
+
+  // ---- Generic transit periods (gochara) ------------------------------------
+  // Rashi-transit segments for any slow graha over a window, retrogrades
+  // captured via sampling + bisection (same method as the validated Sade Sati).
+  function getTransitPeriods(planetKey, fromDate, toDate) {
+    var body = null;
+    for (var i = 0; i < GRAHA_LIST.length; i++) if (GRAHA_LIST[i].key === planetKey) body = GRAHA_LIST[i].body;
+    if (!body || planetKey === 'moon') return [];
+    function sid(ms) {
+      var s = (grahaTropical(body, new Date(ms)) - ayanamsa(new Date(ms))) % 360;
+      return s < 0 ? s + 360 : s;
+    }
+    function rashiAt(ms) { return Math.floor(sid(ms) / 30) % 12; }
+    var fast = (planetKey === 'sun' || planetKey === 'mercury' || planetKey === 'venus' || planetKey === 'mars');
+    var step = (fast ? 2 : 10) * 86400000;
+    var from = fromDate.getTime(), to = toDate.getTime();
+    function refine(loMs, hiMs) {
+      var rLo = rashiAt(loMs);
+      for (var k = 0; k < 40; k++) {
+        var mid = (loMs + hiMs) / 2;
+        if (rashiAt(mid) === rLo) loMs = mid; else hiMs = mid;
+      }
+      return (loMs + hiMs) / 2;
+    }
+    var out = [];
+    var prevR = rashiAt(from), segStart = from;
+    for (var t2 = from + step; t2 <= to + step; t2 += step) {
+      var r = rashiAt(Math.min(t2, to));
+      if (r !== prevR || t2 > to) {
+        var segEnd = (r !== prevR) ? refine(t2 - step, Math.min(t2, to)) : to;
+        out.push({ rashiIndex: prevR, en: RASHI_EN[prevR], hi: RASHI_HI[prevR],
+                   start: new Date(segStart), end: new Date(segEnd) });
+        segStart = segEnd; prevR = r;
+        if (t2 > to) break;
+      }
+    }
+    return out;
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -1663,6 +1766,8 @@
     getYogas,
     getGunaMilan,
     gunaMilanCore,
+    getAshtakavarga,
+    getTransitPeriods,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
