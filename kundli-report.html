@@ -160,6 +160,12 @@ function generate(){
   var av=PE.getAshtakavarga(b,lat,lng);
   var L=C.labels,H='';
   function pg(inner){H+='<div class="page">'+inner+'</div>';}
+  function paginateRows(headerRow,rows,perPage,title){ // chunk long tables into pages
+    for(var i=0;i<rows.length;i+=perPage){
+      pg('<h2 class="sec">'+title+(rows.length>perPage?' ('+(Math.floor(i/perPage)+1)+'/'+Math.ceil(rows.length/perPage)+')':'')+'</h2>'
+        +'<table>'+headerRow+rows.slice(i,i+perPage).join('')+'</table>');
+    }
+  }
   // ---- COVER ----
   pg('<div class="cover" style="min-height:900px;">'
     +'<div class="om">ॐ</div><h1>'+T(L.reportTitle)+'</h1>'
@@ -170,6 +176,14 @@ function generate(){
     +'<div class="idcard"><div class="t">'+T(L.yourLagna)+'</div><div class="v">'+(LANG==='hi'?bc.lagna.hi:bc.lagna.en)+' '+dms(bc.lagna.degreesInRashi)+'</div></div>'
     +'<div class="idcard"><div class="t">'+T(L.yourNak)+'</div><div class="v">'+(LANG==='hi'?moon.nakshatra.hi:moon.nakshatra.en)+' · '+(LANG==='hi'?moon.rashi.hi:moon.rashi.en)+'</div></div>'
     +'</div><div class="tagfree">'+T(L.free)+'</div></div>');
+  // ---- TOC ----
+  var tocItems=(LANG==='hi')
+    ?['जन्म पंचांग','कुंडली चक्र (D1 · D9)','ग्रह स्थिति','सर्वाष्टकवर्ग','आपका नक्षत्र एवं लग्न','शुभ योग','दोष विश्लेषण','शनि साढ़े साती','विंशोत्तरी दशा क्रम','संपूर्ण जीवन दशा सारणी (प्रत्यंतर स्तर)','भिन्नाष्टकवर्ग सारणियाँ','उपाय — साधना रूप में']
+    :['Birth Panchang','Kundli Charts (D1 · D9)','Planetary Positions','Sarvashtakavarga','Your Nakshatra & Lagna','Auspicious Yogas','Dosha Analysis','Shani Sade Sati','Vimshottari Dasha Timeline','Full-Life Period Tables (Pratyantar level)','Bhinnashtakavarga Tables','Remedies as Sadhana'];
+  pg('<h2 class="sec">'+(LANG==='hi'?'विषय-सूची':'Table of Contents')+'</h2><table>'
+    +tocItems.map(function(t,i){return '<tr><th style="width:60px;text-align:center;">'+(i+1)+'</th><td>'+t+'</td></tr>';}).join('')
+    +'</table><div class="prose" style="font-size:13px;color:#8B5A2B;">'
+    +(LANG==='hi'?'यह रिपोर्ट '+name+' के लिए दृक्-गणित से व्यक्तिगत रूप से गणना की गई है।':'This report is individually computed for '+name+' using Drik Ganita.')+'</div>');
   // ---- BIRTH PANCHANG ----
   var hc=p.hinduCalendar;
   var rows=[[LANG==='hi'?'सूर्योदय / सूर्यास्त':'Sunrise / Sunset',fT(p.sunrise)+' / '+fT(p.sunset)],
@@ -229,6 +243,40 @@ function generate(){
   dT+='</table>';
   var curTxt=cur?('<h2 class="sec">'+T(L.currentDasha)+' — '+gname(cur.lord)+'</h2><div class="prose">'+T(C.dashaLord[cur.lord])+'</div>'):'';
   pg('<h2 class="sec">'+T(L.dashaTimeline)+'</h2><div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'जन्म नक्षत्र':'Birth nakshatra')+': '+(LANG==='hi'?dz.birthNakshatra.hi:dz.birthNakshatra.en)+'</div>'+dT+curTxt);
+  // ---- FULL-LIFE PERIOD TABLES (pratyantar level, 729 rows) ----
+  var prHeader='<tr><th>'+(LANG==='hi'?'दशा – अंतर – प्रत्यंतर':'Maha – Antar – Pratyantar')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>';
+  dz.mahadashas.forEach(function(md){
+    var rows=[];
+    md.antardashas.forEach(function(a){
+      var prs=PE.dashaSubPeriods(a.lord,a.start.getTime(),a.end.getTime());
+      prs.forEach(function(pr,pi){
+        if(pr.end.getTime()<=a.start.getTime())return;
+        rows.push('<tr'+(pi===0?' style="border-top:2px solid #D4A843;"':'')+'><td>'+gname(md.lord)+' – '+gname(a.lord)+' – '+gname(pr.lord)+'</td><td>'+fD(pr.start)+'</td><td>'+fD(pr.end)+'</td></tr>');
+      });
+    });
+    paginateRows(prHeader,rows,41,(LANG==='hi'?'जीवन दशा सारणी — ':'Life Period Table — ')+gname(md.lord)+' '+(LANG==='hi'?'महादशा':'Mahadasha')+' ('+fD(md.start)+' → '+fD(md.end)+')');
+  });
+  // ---- FULL BHINNASHTAKAVARGA TABLES ----
+  var CONTRIB=['sun','moon','mars','mercury','jupiter','venus','saturn'];
+  var CLAB=LANG==='hi'?{sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',lagna:'लग्न'}:{sun:'Sun',moon:'Moon',mars:'Mars',mercury:'Mer',jupiter:'Jup',venus:'Ven',saturn:'Sat',lagna:'Lag'};
+  var bavPages='';
+  CONTRIB.forEach(function(tk,ti){
+    var B=av.bav[tk];
+    var t2='<table style="font-size:12px;"><tr><th>'+(LANG==='hi'?'दाता':'From')+'</th>'+bc.d1.map(function(){return '';}).join('');
+    t2='<table style="font-size:12px;"><tr><th>'+(LANG==='hi'?'दाता':'From')+'</th>';
+    for(var r=0;r<12;r++){t2+='<th style="text-align:center;">'+(LANG==='hi'?['मे','वृ','मि','क','सिं','कन','तु','वृश','ध','मक','कुं','मी'][r]:['Ar','Ta','Ge','Ca','Le','Vi','Li','Sc','Sg','Cp','Aq','Pi'][r])+'</th>';}
+    t2+='</tr>';
+    ['sun','moon','mars','mercury','jupiter','venus','saturn','lagna'].forEach(function(ck){
+      t2+='<tr><th>'+CLAB[ck]+'</th>';
+      for(var r2=0;r2<12;r2++)t2+='<td style="text-align:center;">'+(B.rows[ck][r2]||'·')+'</td>';
+      t2+='</tr>';
+    });
+    t2+='<tr style="font-weight:700;"><th>'+(LANG==='hi'?'योग':'Total')+'</th>';
+    for(var r3=0;r3<12;r3++)t2+='<td style="text-align:center;background:#F8EFD8;">'+B.perRashi[r3]+'</td>';
+    t2+='</tr></table>';
+    bavPages+='<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'भिन्नाष्टकवर्ग — ':'Bhinnashtakavarga — ')+gname(tk)+' ('+B.total+')</h2>'+t2;
+    if(ti%2===1||ti===CONTRIB.length-1){pg(bavPages);bavPages='';}
+  });
   // ---- REMEDIES + FOOTER ----
   var remKeys=['sun','moon','mars','mercury','jupiter','venus','saturn','rahu','ketu'];
   var remH=remKeys.map(function(k){var r=C.remedy[k];return '<div class="rem"><div><b>'+r.name+'</b><br><span class="m">'+r.mantra+'</span></div><div>'+(LANG==='hi'?r.hi:r.en)+'</div></div>';}).join('');
