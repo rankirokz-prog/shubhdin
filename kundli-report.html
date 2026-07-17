@@ -385,6 +385,43 @@ function generate(){
       +'<tr><th>'+(LANG==='hi'?'शुभ रंग':'Lucky colours')+'</th><td>'+M.color+'</td></tr>'
       +'<tr><th>'+(LANG==='hi'?'आराध्य':'Deity')+'</th><td>'+M.deity+'</td></tr></table>');
   })();
+  // ---- YEARLY PREDICTIONS (next 30 years, dasha + transit composed) ----
+  (function(){
+    var y0=new Date().getFullYear();
+    var jt=PE.getTransitPeriods('jupiter',new Date(Date.UTC(y0,0,1)),new Date(Date.UTC(y0+30,0,10)));
+    var st=PE.getTransitPeriods('saturn',new Date(Date.UTC(y0,0,1)),new Date(Date.UTC(y0+30,0,10)));
+    function domHouse(segs,ys,ye){ // dominant rashi during the year -> house from moon
+      var best=null,bl=0;
+      segs.forEach(function(s2){
+        var o=Math.min(s2.end.getTime(),ye)-Math.max(s2.start.getTime(),ys);
+        if(o>bl){bl=o;best=s2.rashiIndex;}
+      });
+      return best===null?null:((best-moonR+12)%12);
+    }
+    function dashaOf(t){
+      var md=dz.mahadashas.find(function(m2){return m2.start<=t&&m2.end>t;});
+      if(!md)return null;
+      var a=md.antardashas.find(function(a2){return a2.start<=t&&a2.end>t;});
+      return {m:md.lord,a:a?a.lord:md.lord};
+    }
+    var yearBlocks=[];
+    for(var y=y0;y<y0+30;y++){
+      var ys=Date.UTC(y,0,1),ye=Date.UTC(y+1,0,1);
+      var mid=new Date((ys+ye)/2);
+      var dsh=dashaOf(mid);
+      var jh=domHouse(jt,ys,ye),sh=domHouse(st,ys,ye);
+      var blk='<div class="yog" style="border-left-color:#2B6B8B;background:#F5FAFD;">'
+        +'<b style="font-size:16px;">'+y+'</b>'
+        +(dsh?' <span style="font-size:12px;color:#8B5A2B;">— '+(LANG==='hi'?'दशा: ':'Period: ')+gname(dsh.m)+' / '+gname(dsh.a)+'</span>':'')+'<br>'
+        +(jh!==null?('<b>'+(LANG==='hi'?'गुरु':'Jupiter')+':</b> '+T(C.jupTransit[jh])+'<br>'):'')
+        +(sh!==null?('<b>'+(LANG==='hi'?'शनि':'Saturn')+':</b> '+T(C.satTransit[sh])):'')
+        +'</div>';
+      yearBlocks.push(blk);
+    }
+    for(var i=0;i<yearBlocks.length;i+=3){
+      pg('<h2 class="sec">'+(LANG==='hi'?'वार्षिक फल — ':'Yearly Outlook — ')+(y0+i)+' – '+Math.min(y0+i+2,y0+29)+'</h2>'+yearBlocks.slice(i,i+3).join(''));
+    }
+  })();
   // ---- REMEDIES + FOOTER ----
   var remKeys=['sun','moon','mars','mercury','jupiter','venus','saturn','rahu','ketu'];
   var remH=remKeys.map(function(k){var r=C.remedy[k];return '<div class="rem"><div><b>'+r.name+'</b><br><span class="m">'+r.mantra+'</span></div><div>'+(LANG==='hi'?r.hi:r.en)+'</div></div>';}).join('');
