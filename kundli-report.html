@@ -325,6 +325,25 @@ function generate(){
       +'<div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'आपके जन्म-क्षण का लग्न चिह्नित है।':'Your birth-moment lagna is highlighted.')+'</div>');
     if(cRows.length)pg('<h2 class="sec">'+(LANG==='hi'?'जन्म-दिवस चौघड़िया':'Birth-Day Choghadiya')+'</h2><table><tr><th></th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>'+cRows.join('')+'</table>');
   }catch(e){}
+  // ---- NUMEROLOGY CHAPTER ----
+  (function(){
+    function dsum(n){while(n>9)n=String(n).split('').reduce(function(a,c){return a+ +c;},0);return n;}
+    var bi=ist(b);
+    var dd=bi.getUTCDate(), mm=bi.getUTCMonth()+1, yy=bi.getUTCFullYear();
+    var mulank=dsum(dd);
+    var bhagyank=dsum(String(dd)+String(mm)+String(yy).split('').join(''));
+    bhagyank=dsum((String(dd)+String(mm)+String(yy)).split('').reduce(function(a,c){return a+ +c;},0));
+    var M=C.mulank[mulank-1], B=C.bhagyank[bhagyank-1];
+    pg('<h2 class="sec">'+(LANG==='hi'?'अंक ज्योतिष':'Numerology')+'</h2>'
+      +'<div class="cardrow">'
+      +'<div class="idcard"><div class="t">'+(LANG==='hi'?'मूलांक (जन्म दिनांक '+dd+')':'Mulank / Driver (born on '+dd+')')+'</div><div class="v">'+mulank+' — '+M.planet+'</div></div>'
+      +'<div class="idcard"><div class="t">'+(LANG==='hi'?'भाग्यांक (पूर्ण जन्मतिथि)':'Bhagyank / Destiny (full DOB)')+'</div><div class="v">'+bhagyank+'</div></div></div>'
+      +'<div class="prose">'+T(M)+'</div><div class="prose">'+T(B)+'</div>'
+      +'<table><tr><th>'+(LANG==='hi'?'शुभ ग्रह':'Ruling planet')+'</th><td>'+M.planet+'</td></tr>'
+      +'<tr><th>'+(LANG==='hi'?'शुभ वार':'Lucky day')+'</th><td>'+M.day+'</td></tr>'
+      +'<tr><th>'+(LANG==='hi'?'शुभ रंग':'Lucky colours')+'</th><td>'+M.color+'</td></tr>'
+      +'<tr><th>'+(LANG==='hi'?'आराध्य':'Deity')+'</th><td>'+M.deity+'</td></tr></table>');
+  })();
   // ---- REMEDIES + FOOTER ----
   var remKeys=['sun','moon','mars','mercury','jupiter','venus','saturn','rahu','ketu'];
   var remH=remKeys.map(function(k){var r=C.remedy[k];return '<div class="rem"><div><b>'+r.name+'</b><br><span class="m">'+r.mantra+'</span></div><div>'+(LANG==='hi'?r.hi:r.en)+'</div></div>';}).join('');
