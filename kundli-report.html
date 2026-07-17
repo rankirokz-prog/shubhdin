@@ -220,6 +220,22 @@ function generate(){
     +'<div class="prose">'+T(C.nakshatra[moon.nakshatra.index])+'</div>'
     +'<h2 class="sec">'+T(L.yourLagna)+' — '+(LANG==='hi'?bc.lagna.hi:bc.lagna.en)+'</h2>'
     +'<div class="prose">'+T(C.lagna[bc.lagna.rashiIndex])+'</div>');
+  // ---- BHAVA CHAPTERS (12 life domains with lord + occupants) ----
+  var RL=['mars','venus','mercury','moon','sun','mercury','venus','mars','jupiter','saturn','saturn','jupiter'];
+  var bhBlocks=bc.d1.map(function(h2,i){
+    var lordKey=RL[h2.rashiIndex];
+    var lordG=bc.grahas.find(function(g3){return g3.key===lordKey;});
+    var occ=h2.grahas.map(gname).join(', ')||(LANG==='hi'?'कोई ग्रह नहीं':'no planets');
+    var bb=C.bhava[i];
+    return '<div class="yog" style="border-left-color:#5A2B8B;background:#FBF7FF;">'
+      +'<b>'+(LANG==='hi'?'भाव ':'House ')+(i+1)+' — '+(LANG==='hi'?h2.hi:h2.en)+' · '+bb.t_en+'</b><br>'
+      +T(bb)+'<br><span style="font-size:12px;color:#8B5A2B;">'
+      +(LANG==='hi'?'भावेश':'Lord')+': '+gname(lordKey)+' ('+(LANG==='hi'?'भाव':'house')+' '+lordG.house+') · '
+      +(LANG==='hi'?'स्थित ग्रह':'Occupants')+': '+occ+'</span></div>';
+  });
+  pg('<h2 class="sec">'+(LANG==='hi'?'द्वादश भाव — जीवन के बारह क्षेत्र':'The Twelve Bhavas — Domains of Life')+'</h2>'+bhBlocks.slice(0,4).join(''));
+  pg('<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'द्वादश भाव (क्रमशः)':'Twelve Bhavas (contd.)')+'</h2>'+bhBlocks.slice(4,8).join(''));
+  pg('<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'द्वादश भाव (क्रमशः)':'Twelve Bhavas (contd.)')+'</h2>'+bhBlocks.slice(8).join(''));
   // ---- GRAHA PHAL (planet-in-house readings, 9 blocks) ----
   var gpBlocks=bc.grahas.map(function(g2){
     var arr=C.grahaBhava[g2.key]; var txt=arr?arr[g2.house-1]:null;
