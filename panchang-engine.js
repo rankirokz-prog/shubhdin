@@ -1231,6 +1231,7 @@
         var segEnd = (r !== prevR) ? refine(t - step, Math.min(t, to)) : to;
         var label = zone[prevR] || dhaiya[prevR] || null;
         if (label) periods.push({ phase: label, rashiIndex: prevR, en: RASHI_EN[prevR],
+                                  hi: RASHI_HI[prevR],
                                   start: new Date(segStart), end: new Date(segEnd) });
         segStart = segEnd; prevR = r;
         if (t > to) break;
