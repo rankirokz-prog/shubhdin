@@ -243,6 +243,20 @@ function generate(){
   dT+='</table>';
   var curTxt=cur?('<h2 class="sec">'+T(L.currentDasha)+' — '+gname(cur.lord)+'</h2><div class="prose">'+T(C.dashaLord[cur.lord])+'</div>'):'';
   pg('<h2 class="sec">'+T(L.dashaTimeline)+'</h2><div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'जन्म नक्षत्र':'Birth nakshatra')+': '+(LANG==='hi'?dz.birthNakshatra.hi:dz.birthNakshatra.en)+'</div>'+dT+curTxt);
+  // ---- DASHA PREDICTION CHAPTERS (maha intro + dated antar prose) ----
+  dz.mahadashas.forEach(function(md){
+    var head='<h2 class="sec">'+(LANG==='hi'?'दशा फल — ':'Period Predictions — ')+gname(md.lord)+' '+(LANG==='hi'?'महादशा':'Mahadasha')+'</h2>'
+      +'<div class="prose" style="font-size:13px;color:#8B5A2B;">'+fD(md.start)+' → '+fD(md.end)+'</div>'
+      +'<div class="prose">'+T(C.dashaLord[md.lord])+'</div>';
+    var blocks=md.antardashas.map(function(a){
+      var key=md.lord+'-'+a.lord, txt=C.antar[key];
+      return '<div class="yog" style="border-left-color:#8B5A2B;background:#FDF8EC;">'
+        +'<b>'+gname(md.lord)+' – '+gname(a.lord)+'</b> <span style="font-size:12px;color:#8B5A2B;">('+fD(a.start)+' → '+fD(a.end)+')</span><br>'
+        +(txt?T(txt):'')+'</div>';
+    });
+    pg(head+blocks.slice(0,4).join(''));
+    if(blocks.length>4)pg('<h2 class="sec" style="font-size:17px;">'+gname(md.lord)+' '+(LANG==='hi'?'महादशा (क्रमशः)':'Mahadasha (contd.)')+'</h2>'+blocks.slice(4).join(''));
+  });
   // ---- FULL-LIFE PERIOD TABLES (pratyantar level, 729 rows) ----
   var prHeader='<tr><th>'+(LANG==='hi'?'दशा – अंतर – प्रत्यंतर':'Maha – Antar – Pratyantar')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>';
   dz.mahadashas.forEach(function(md){
