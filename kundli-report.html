@@ -220,6 +220,15 @@ function generate(){
     +'<div class="prose">'+T(C.nakshatra[moon.nakshatra.index])+'</div>'
     +'<h2 class="sec">'+T(L.yourLagna)+' — '+(LANG==='hi'?bc.lagna.hi:bc.lagna.en)+'</h2>'
     +'<div class="prose">'+T(C.lagna[bc.lagna.rashiIndex])+'</div>');
+  // ---- GRAHA PHAL (planet-in-house readings, 9 blocks) ----
+  var gpBlocks=bc.grahas.map(function(g2){
+    var arr=C.grahaBhava[g2.key]; var txt=arr?arr[g2.house-1]:null;
+    return '<div class="yog" style="border-left-color:#B8860B;">'
+      +'<b>'+gname(g2.key)+' — '+(LANG==='hi'?'भाव':'House')+' '+g2.house+' ('+(LANG==='hi'?g2.rashi.hi:g2.rashi.en)+')</b><br>'
+      +(txt?T(txt):'')+'</div>';
+  });
+  pg('<h2 class="sec">'+(LANG==='hi'?'ग्रह फल — भाव स्थिति':'Graha Phala — House Placements')+'</h2>'+gpBlocks.slice(0,5).join(''));
+  pg('<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'ग्रह फल (क्रमशः)':'Graha Phala (contd.)')+'</h2>'+gpBlocks.slice(5).join(''));
   // ---- YOGAS + DOSHAS ----
   var yogHtml=yg.presentYogas.map(function(y){var txt=C.yoga[y.key];return '<div class="yog">✦ <b>'+y.en+'</b><br>'+(txt?T(txt):y.detail)+'</div>';}).join('')||'<div class="prose">—</div>';
   var m=dos.manglik,ks=dos.kaalSarp,ss=dos.sadeSati;
