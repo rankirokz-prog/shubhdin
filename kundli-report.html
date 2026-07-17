@@ -282,6 +282,31 @@ function generate(){
     pg(head+blocks.slice(0,4).join(''));
     if(blocks.length>4)pg('<h2 class="sec" style="font-size:17px;">'+gname(md.lord)+' '+(LANG==='hi'?'महादशा (क्रमशः)':'Mahadasha (contd.)')+'</h2>'+blocks.slice(4).join(''));
   });
+  // ---- DETAILED PRATYANTAR PREDICTIONS (711 dated composed blocks, ~95pp) ----
+  var MAITRI_T={sun:{sun:2,moon:2,mars:2,mercury:1,jupiter:2,venus:0,saturn:0},moon:{sun:2,moon:2,mars:1,mercury:2,jupiter:1,venus:1,saturn:1},mars:{sun:2,moon:2,mars:2,mercury:0,jupiter:2,venus:1,saturn:1},mercury:{sun:2,moon:0,mars:1,mercury:2,jupiter:1,venus:2,saturn:1},jupiter:{sun:2,moon:2,mars:2,mercury:0,jupiter:2,venus:0,saturn:1},venus:{sun:0,moon:0,mars:1,mercury:2,jupiter:1,venus:2,saturn:2},saturn:{sun:0,moon:0,mars:0,mercury:2,jupiter:1,venus:2,saturn:2},rahu:{sun:0,moon:0,mars:1,mercury:2,jupiter:1,venus:2,saturn:2},ketu:{sun:1,moon:1,mars:2,mercury:1,jupiter:2,venus:1,saturn:1}};
+  dz.mahadashas.forEach(function(md){
+    md.antardashas.forEach(function(a){
+      var prs=PE.dashaSubPeriods(a.lord,a.start.getTime(),a.end.getTime())
+        .filter(function(pr){return pr.end.getTime()>a.start.getTime();});
+      var blocks=prs.map(function(pr){
+        var rel=(MAITRI_T[md.lord]&&MAITRI_T[md.lord][pr.lord]!==undefined)?MAITRI_T[md.lord][pr.lord]:1;
+        if(pr.lord===md.lord)rel=2;
+        return '<div style="border-bottom:1px dashed #E4D3AE;padding:7px 2px;font-size:13.5px;line-height:1.65;">'
+          +'<b>'+gname(md.lord)+' – '+gname(a.lord)+' – '+gname(pr.lord)+'</b> '
+          +'<span style="font-size:11.5px;color:#8B5A2B;">('+fD(pr.start)+' → '+fD(pr.end)+')</span><br>'
+          +(LANG==='hi'?'इस अवधि में ':'In this period, ')+T(C.prFlavor[pr.lord])+'. '
+          +T(C.prTone[String(rel)])+'. '
+          +(LANG==='hi'?'मार्गदर्शन: ':'Guidance: ')+T(C.prGuide[pr.lord])+'.'
+          +'</div>';
+      });
+      for(var i=0;i<blocks.length;i+=5){
+        pg('<h2 class="sec" style="font-size:16px;">'+(LANG==='hi'?'सूक्ष्म दशा फल — ':'Detailed Periods — ')
+          +gname(md.lord)+' / '+gname(a.lord)
+          +' <span style="font-size:12px;color:#8B5A2B;">('+fD(a.start)+' → '+fD(a.end)+')</span></h2>'
+          +blocks.slice(i,i+5).join(''));
+      }
+    });
+  });
   // ---- FULL-LIFE PERIOD TABLES (pratyantar level, 729 rows) ----
   var prHeader='<tr><th>'+(LANG==='hi'?'दशा – अंतर – प्रत्यंतर':'Maha – Antar – Pratyantar')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>';
   dz.mahadashas.forEach(function(md){
