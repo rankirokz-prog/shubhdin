@@ -277,6 +277,31 @@ function generate(){
     bavPages+='<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'भिन्नाष्टकवर्ग — ':'Bhinnashtakavarga — ')+gname(tk)+' ('+B.total+')</h2>'+t2;
     if(ti%2===1||ti===CONTRIB.length-1){pg(bavPages);bavPages='';}
   });
+  // ---- GOCHARA TRANSIT TABLES (10 years, dated) ----
+  var now=new Date(); var tEnd=new Date(now.getTime()+10*365.25*86400000);
+  var moonR=moon.rashi.index;
+  [['jupiter',LANG==='hi'?'गुरु गोचर':'Jupiter Transit'],['saturn',LANG==='hi'?'शनि गोचर':'Saturn Transit'],['rahu',LANG==='hi'?'राहु गोचर':'Rahu Transit']].forEach(function(tp){
+    var segs=PE.getTransitPeriods(tp[0],now,tEnd);
+    var rows=segs.map(function(s2){
+      var hm=((s2.rashiIndex-moonR+12)%12)+1;
+      return '<tr><td>'+(LANG==='hi'?s2.hi:s2.en)+'</td><td>'+fD(s2.start)+'</td><td>'+fD(s2.end)+'</td><td style="text-align:center;">'+hm+'</td></tr>';
+    });
+    paginateRows('<tr><th>'+T(L.rashiW)+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th><th>'+(LANG==='hi'?'चंद्र से भाव':'House from Moon')+'</th></tr>',rows,41,tp[1]+' — '+(LANG==='hi'?'आगामी 10 वर्ष':'Next 10 Years'));
+  });
+  // ---- BIRTH-DAY TIME TABLES (hora, choghadiya, lagna) ----
+  try{
+    var hRows=p.hora.map(function(x){return '<tr><td>'+gname(x.key||x.lord||'')+(x.en&&!x.key?x.en:'')+'</td><td>'+fT(x.start)+'</td><td>'+fT(x.end)+'</td></tr>';});
+    if(p.hora[0]&&!p.hora[0].key&&p.hora[0].en){hRows=p.hora.map(function(x){return '<tr><td>'+(LANG==='hi'?(x.hi||x.en):x.en)+'</td><td>'+fT(x.start)+'</td><td>'+fT(x.end)+'</td></tr>';});}
+    paginateRows('<tr><th>'+(LANG==='hi'?'होरा':'Hora')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>',hRows,26,(LANG==='hi'?'जन्म-दिवस होरा सारणी':'Birth-Day Hora Table'));
+  }catch(e){}
+  try{
+    var lt=PE.getLagnaTable(dayUTC,lat,lng);
+    var lRows=lt.map(function(x){return '<tr'+(x.rashiIndex===bc.lagna.rashiIndex?' style="background:#F8EFD8;font-weight:700;"':'')+'><td>'+(LANG==='hi'?x.hi:x.en)+'</td><td>'+fT(x.start)+'</td><td>'+fT(x.end)+'</td></tr>';});
+    var cRows=[]; (p.choghadiya.day||[]).concat(p.choghadiya.night||[]).forEach(function(x){cRows.push('<tr><td>'+(LANG==='hi'?(x.hi||x.en):x.en)+'</td><td>'+fT(x.start)+'</td><td>'+fT(x.end)+'</td></tr>');});
+    pg('<h2 class="sec">'+(LANG==='hi'?'जन्म-दिवस लग्न सारणी':'Birth-Day Lagna Table')+'</h2><table><tr><th>'+(LANG==='hi'?'लग्न':'Lagna')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>'+lRows.join('')+'</table>'
+      +'<div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'आपके जन्म-क्षण का लग्न चिह्नित है।':'Your birth-moment lagna is highlighted.')+'</div>');
+    if(cRows.length)pg('<h2 class="sec">'+(LANG==='hi'?'जन्म-दिवस चौघड़िया':'Birth-Day Choghadiya')+'</h2><table><tr><th></th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>'+cRows.join('')+'</table>');
+  }catch(e){}
   // ---- REMEDIES + FOOTER ----
   var remKeys=['sun','moon','mars','mercury','jupiter','venus','saturn','rahu','ketu'];
   var remH=remKeys.map(function(k){var r=C.remedy[k];return '<div class="rem"><div><b>'+r.name+'</b><br><span class="m">'+r.mantra+'</span></div><div>'+(LANG==='hi'?r.hi:r.en)+'</div></div>';}).join('');
