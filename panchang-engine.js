@@ -1570,6 +1570,56 @@
     return res;
   }
 
+  // ---- Kundli K9c: Manglik matching (two charts) ----------------------------
+  // Both-manglik neutralization + classical cancellation factors, honestly listed.
+  function manglikFactors(birthDate, lat, lng) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var d = getDoshas(birthDate, lat, lng);
+    var mars = null, jup = null;
+    for (var i = 0; i < bc.grahas.length; i++) {
+      if (bc.grahas[i].key === 'mars') mars = bc.grahas[i];
+      if (bc.grahas[i].key === 'jupiter') jup = bc.grahas[i];
+    }
+    var factors = [];
+    if (d.manglik.present) {
+      if (mars.rashi.index === 0 || mars.rashi.index === 7)
+        factors.push({ en: 'Mars in own sign (' + mars.rashi.en + ')', hi: '\u092E\u0902\u0917\u0932 \u0938\u094D\u0935\u0930\u093E\u0936\u093F \u092E\u0947\u0902 (' + mars.rashi.hi + ')' });
+      if (mars.rashi.index === 9)
+        factors.push({ en: 'Mars exalted in Makara', hi: '\u092E\u0902\u0917\u0932 \u092E\u0915\u0930 \u092E\u0947\u0902 \u0909\u091A\u094D\u091A' });
+      var jh = ((jup.house - mars.house + 12) % 12) + 1;
+      if (jh === 1 || jh === 5 || jh === 7 || jh === 9)
+        factors.push({ en: 'Jupiter influences Mars (conjunction/aspect)', hi: '\u0917\u0941\u0930\u0941 \u0915\u0940 \u092E\u0902\u0917\u0932 \u092A\u0930 \u0926\u0943\u0937\u094D\u091F\u093F/\u092F\u0941\u0924\u093F' });
+      var ageYears = (Date.now() - birthDate.getTime()) / (365.25 * 86400000);
+      if (ageYears > 28)
+        factors.push({ en: 'Age above 28 — traditional attenuation', hi: '28 \u0935\u0930\u094D\u0937 \u0938\u0947 \u0905\u0927\u093F\u0915 \u0906\u092F\u0941 \u2014 \u092A\u093E\u0930\u0902\u092A\u0930\u093F\u0915 \u0936\u092E\u0928' });
+    }
+    return { present: d.manglik.present, percent: d.manglik.percent || 0,
+             marsHouse: mars.house, factors: factors,
+             softened: d.manglik.present && factors.length > 0 };
+  }
+  // Public: two-chart manglik match.
+  function getManglikMatch(boyDate, boyLat, boyLng, girlDate, girlLat, girlLng) {
+    var boy = manglikFactors(boyDate, boyLat, boyLng);
+    var girl = manglikFactors(girlDate, girlLat, girlLng);
+    var verdict;
+    if (!boy.present && !girl.present)
+      verdict = { key: 'none', en: 'No Mangal Dosha in either chart — Mars poses no obstacle to this match.',
+                  hi: '\u0926\u094B\u0928\u094B\u0902 \u0915\u0941\u0902\u0921\u0932\u093F\u092F\u094B\u0902 \u092E\u0947\u0902 \u092E\u0902\u0917\u0932 \u0926\u094B\u0937 \u0928\u0939\u0940\u0902 \u2014 \u0907\u0938 \u0938\u0902\u092C\u0902\u0927 \u092E\u0947\u0902 \u092E\u0902\u0917\u0932 \u092C\u093E\u0927\u0915 \u0928\u0939\u0940\u0902\u0964' };
+    else if (boy.present && girl.present)
+      verdict = { key: 'neutralized', en: 'Both charts carry Mangal Dosha — by classical rule the dosha is mutually neutralized.',
+                  hi: '\u0926\u094B\u0928\u094B\u0902 \u0915\u0941\u0902\u0921\u0932\u093F\u092F\u094B\u0902 \u092E\u0947\u0902 \u092E\u0902\u0917\u0932 \u0926\u094B\u0937 \u0939\u0948 \u2014 \u0936\u093E\u0938\u094D\u0924\u094D\u0930\u0940\u092F \u0928\u093F\u092F\u092E \u0938\u0947 \u0926\u094B\u0937 \u092A\u0930\u0938\u094D\u092A\u0930 \u0936\u093E\u0902\u0924 \u0939\u094B \u091C\u093E\u0924\u093E \u0939\u0948\u0964' };
+    else {
+      var m = boy.present ? boy : girl;
+      if (m.softened)
+        verdict = { key: 'softened', en: 'Mangal Dosha present in one chart but softened by classical cancellation factors listed; the match may proceed with the traditional remedies.',
+                    hi: '\u090F\u0915 \u0915\u0941\u0902\u0921\u0932\u0940 \u092E\u0947\u0902 \u092E\u0902\u0917\u0932 \u0926\u094B\u0937 \u0939\u0948 \u092A\u0930 \u0909\u0932\u094D\u0932\u093F\u0916\u093F\u0924 \u0936\u093E\u0938\u094D\u0924\u094D\u0930\u0940\u092F \u092A\u0930\u093F\u0939\u093E\u0930\u094B\u0902 \u0938\u0947 \u0936\u093E\u0902\u0924 \u2014 \u092A\u093E\u0930\u0902\u092A\u0930\u093F\u0915 \u0909\u092A\u093E\u092F\u094B\u0902 \u0938\u0939\u093F\u0924 \u0938\u0902\u092C\u0902\u0927 \u0906\u0917\u0947 \u092C\u0922\u093C \u0938\u0915\u0924\u093E \u0939\u0948\u0964' };
+      else
+        verdict = { key: 'present', en: 'Mangal Dosha present in one chart without listed cancellations — tradition advises Mangal shanti (Hanuman upasana, Tuesday vrat) and elder consultation before proceeding.',
+                    hi: '\u090F\u0915 \u0915\u0941\u0902\u0921\u0932\u0940 \u092E\u0947\u0902 \u092E\u0902\u0917\u0932 \u0926\u094B\u0937 \u092C\u093F\u0928\u093E \u092A\u0930\u093F\u0939\u093E\u0930 \u0915\u0947 \u0939\u0948 \u2014 \u092A\u0930\u0902\u092A\u0930\u093E \u092E\u0902\u0917\u0932 \u0936\u093E\u0902\u0924\u093F (\u0939\u0928\u0941\u092E\u093E\u0928 \u0909\u092A\u093E\u0938\u0928\u093E, \u092E\u0902\u0917\u0932\u0935\u093E\u0930 \u0935\u094D\u0930\u0924) \u0914\u0930 \u0917\u0941\u0930\u0941\u091C\u0928-\u092A\u0930\u093E\u092E\u0930\u094D\u0936 \u0915\u0940 \u0938\u0932\u093E\u0939 \u0926\u0947\u0924\u0940 \u0939\u0948\u0964' };
+    }
+    return { boy: boy, girl: girl, verdict: verdict };
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -1863,6 +1913,8 @@
     gunaMilanCore,
     getGunaMilanFull,
     gunaMilanParihara,
+    getManglikMatch,
+    manglikFactors,
     getAshtakavarga,
     getTransitPeriods,
     getVarga,
