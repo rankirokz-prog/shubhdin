@@ -1508,6 +1508,68 @@
     return res;
   }
 
+  // ---- Kundli K9b: Guna Milan cancellations (parihara) ----------------------
+  // Classical exception rules most free tools skip. Effective score = raw score
+  // with cancelled doshas' points restored; both are reported.
+  function gunaMilanParihara(bm, gm2) { // each: {nak, rashi, pada, lon}
+    var bl = RASHI_LORD[bm.rashi], gl = RASHI_LORD[gm2.rashi];
+    var mutualFriends = (bl === gl) || (MAITRI[bl][gl] === 2 && MAITRI[gl][bl] === 2);
+    // Nadi parihara
+    var nadiDosha = NADI_OF_NAK[bm.nak] === NADI_OF_NAK[gm2.nak];
+    var nadiReasons = [];
+    if (nadiDosha) {
+      if (bm.rashi === gm2.rashi && bm.nak !== gm2.nak)
+        nadiReasons.push({ en: 'Same rashi but different nakshatras', hi: '\u0938\u092E\u093E\u0928 \u0930\u093E\u0936\u093F \u092A\u0930 \u092D\u093F\u0928\u094D\u0928 \u0928\u0915\u094D\u0937\u0924\u094D\u0930' });
+      if (bm.nak === gm2.nak && bm.rashi !== gm2.rashi)
+        nadiReasons.push({ en: 'Same nakshatra but different rashis', hi: '\u0938\u092E\u093E\u0928 \u0928\u0915\u094D\u0937\u0924\u094D\u0930 \u092A\u0930 \u092D\u093F\u0928\u094D\u0928 \u0930\u093E\u0936\u093F' });
+      if (bm.nak === gm2.nak && bm.rashi === gm2.rashi && bm.pada !== gm2.pada)
+        nadiReasons.push({ en: 'Same nakshatra with different padas', hi: '\u0938\u092E\u093E\u0928 \u0928\u0915\u094D\u0937\u0924\u094D\u0930 \u092E\u0947\u0902 \u092D\u093F\u0928\u094D\u0928 \u091A\u0930\u0923' });
+      if (mutualFriends)
+        nadiReasons.push({ en: 'Moon-sign lords are the same or mutual friends', hi: '\u0930\u093E\u0936\u094D\u092F\u093E\u0927\u093F\u092A\u0924\u093F \u0938\u092E\u093E\u0928 \u092F\u093E \u092A\u0930\u0938\u094D\u092A\u0930 \u092E\u093F\u0924\u094D\u0930' });
+    }
+    // Bhakoot parihara
+    var d1 = ((gm2.rashi - bm.rashi + 12) % 12) + 1;
+    var bhakootDosha = (d1 === 2 || d1 === 12 || d1 === 5 || d1 === 9 || d1 === 6 || d1 === 8);
+    var bhakootReasons = [];
+    if (bhakootDosha) {
+      if (bl === gl)
+        bhakootReasons.push({ en: 'Both moon signs share the same lord', hi: '\u0926\u094B\u0928\u094B\u0902 \u0930\u093E\u0936\u093F\u092F\u094B\u0902 \u0915\u093E \u0938\u094D\u0935\u093E\u092E\u0940 \u090F\u0915 \u0939\u0940' });
+      else if (mutualFriends)
+        bhakootReasons.push({ en: 'Moon-sign lords are mutual friends', hi: '\u0930\u093E\u0936\u094D\u092F\u093E\u0927\u093F\u092A\u0924\u093F \u092A\u0930\u0938\u094D\u092A\u0930 \u092E\u093F\u0924\u094D\u0930' });
+      var bNav = Math.floor(bm.lon * 9 / 30) % 12, gNav = Math.floor(gm2.lon * 9 / 30) % 12;
+      if ((bNav - gNav + 12) % 12 % 4 === 0)
+        bhakootReasons.push({ en: 'Navamsa moon signs are in trine', hi: '\u0928\u0935\u093E\u0902\u0936 \u091A\u0902\u0926\u094D\u0930 \u0930\u093E\u0936\u093F\u092F\u093E\u0901 \u0924\u094D\u0930\u093F\u0915\u094B\u0923 \u092E\u0947\u0902' });
+    }
+    return {
+      nadi: { dosha: nadiDosha, cancelled: nadiDosha && nadiReasons.length > 0, reasons: nadiReasons },
+      bhakoot: { dosha: bhakootDosha, cancelled: bhakootDosha && bhakootReasons.length > 0, reasons: bhakootReasons }
+    };
+  }
+  // Public: guna milan + parihara + effective score.
+  function getGunaMilanFull(boyBirthDate, girlBirthDate) {
+    function moonFull(d) {
+      var ms = moonSidereal(d);
+      var nakSpan = 360 / 27;
+      return { lon: ms, nak: Math.floor(ms / nakSpan) % 27, rashi: Math.floor(ms / 30) % 12,
+               pada: Math.floor((ms % nakSpan) / (nakSpan / 4)) + 1 };
+    }
+    var bm = moonFull(boyBirthDate), gm2 = moonFull(girlBirthDate);
+    var res = gunaMilanCore(bm.nak, bm.rashi, gm2.nak, gm2.rashi);
+    var pariha = gunaMilanParihara(bm, gm2);
+    var effective = res.total;
+    if (pariha.nadi.dosha && pariha.nadi.cancelled) effective += 8;
+    if (pariha.bhakoot.dosha && pariha.bhakoot.cancelled) effective += 7;
+    var gana = res.doshas.gana;
+    var ganaSoftened = gana && !(pariha.nadi.dosha && !pariha.nadi.cancelled)
+                            && !(pariha.bhakoot.dosha && !pariha.bhakoot.cancelled);
+    res.boyMoon = { nakshatra: NAKSHATRA_NAMES[bm.nak], rashi: RASHI_EN[bm.rashi], rashiHi: RASHI_HI[bm.rashi], pada: bm.pada };
+    res.girlMoon = { nakshatra: NAKSHATRA_NAMES[gm2.nak], rashi: RASHI_EN[gm2.rashi], rashiHi: RASHI_HI[gm2.rashi], pada: gm2.pada };
+    res.parihara = { nadi: pariha.nadi, bhakoot: pariha.bhakoot, gana: { dosha: gana, softened: ganaSoftened } };
+    res.effectiveTotal = effective;
+    res.effectiveVerdict = effective >= 33 ? 'Excellent' : effective >= 25 ? 'Very Good' : effective >= 18 ? 'Acceptable' : 'Needs Careful Consideration';
+    return res;
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -1799,6 +1861,8 @@
     getYogas,
     getGunaMilan,
     gunaMilanCore,
+    getGunaMilanFull,
+    gunaMilanParihara,
     getAshtakavarga,
     getTransitPeriods,
     getVarga,
