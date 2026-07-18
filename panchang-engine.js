@@ -1620,6 +1620,64 @@
     return { boy: boy, girl: girl, verdict: verdict };
   }
 
+  // ---- Kundli K9e: Event timing windows -------------------------------------
+  // Scores every antardasha in a range against classical significators for the
+  // event type + Jupiter gochara + traditional age window. Honest reasons listed.
+  var EVENT_CFG = {
+    marriage: { house: 7, karakas: ['venus'], varga: 9, jupHouses: [1,5,7,9,11], ageMin: 21, ageMax: 38 },
+    career:   { house: 10, karakas: ['saturn','sun'], varga: 10, jupHouses: [2,6,10,11], ageMin: 20, ageMax: 60 },
+    child:    { house: 5, karakas: ['jupiter'], varga: 7, jupHouses: [1,5,9], ageMin: 21, ageMax: 45 },
+    property: { house: 4, karakas: ['mars'], varga: 12, jupHouses: [2,4,11], ageMin: 25, ageMax: 65 }
+  };
+  function getEventWindows(type, birthDate, lat, lng, fromDate, toDate) {
+    var cfg = EVENT_CFG[type]; if (!cfg) return null;
+    var bc = getBirthChart(birthDate, lat, lng);
+    var dz = getVimshottariDasha(birthDate);
+    var moonG = null; for (var i0=0;i0<bc.grahas.length;i0++) if (bc.grahas[i0].key==='moon') moonG=bc.grahas[i0];
+    // significator set with named roles
+    var lords = {};
+    function addLord(k, roleEn, roleHi) { if (!k) return; if (!lords[k]) lords[k] = []; lords[k].push({ en: roleEn, hi: roleHi }); }
+    var houseRashi = bc.d1[cfg.house - 1].rashiIndex;
+    addLord(RASHI_LORD[houseRashi], 'lord of your ' + cfg.house + 'th house', '\u0906\u092A\u0915\u0947 ' + cfg.house + '\u0935\u0947\u0902 \u092D\u093E\u0935 \u0915\u093E \u0938\u094D\u0935\u093E\u092E\u0940');
+    for (var c=0;c<cfg.karakas.length;c++) addLord(cfg.karakas[c], 'natural karaka', '\u0928\u0948\u0938\u0930\u094D\u0917\u093F\u0915 \u0915\u093E\u0930\u0915');
+    var occ = bc.d1[cfg.house - 1].grahas || [];
+    for (var o=0;o<occ.length;o++) addLord(occ[o], 'occupies your ' + cfg.house + 'th house', cfg.house + '\u0935\u0947\u0902 \u092D\u093E\u0935 \u092E\u0947\u0902 \u0938\u094D\u0925\u093F\u0924');
+    var vg = getVarga(birthDate, lat, lng, cfg.varga);
+    addLord(RASHI_LORD[vg.lagna.rashiIndex], 'D' + cfg.varga + ' lagna lord', 'D' + cfg.varga + ' \u0932\u0917\u094D\u0928\u0947\u0936');
+    addLord(RASHI_LORD[(vg.lagna.rashiIndex + cfg.house - 1) % 12], 'D' + cfg.varga + ' ' + cfg.house + 'th lord', 'D' + cfg.varga + ' ' + cfg.house + '\u0935\u0947\u0902 \u092D\u093E\u0935 \u0915\u093E \u0938\u094D\u0935\u093E\u092E\u0940');
+    // jupiter transit segments across range
+    var jt = getTransitPeriods('jupiter', fromDate, toDate);
+    function jupHouseAt(t) {
+      for (var j=0;j<jt.length;j++) if (jt[j].start.getTime()<=t && jt[j].end.getTime()>t)
+        return ((jt[j].rashiIndex - moonG.rashi.index + 12) % 12) + 1;
+      return null;
+    }
+    var out = [];
+    for (var m=0;m<dz.mahadashas.length;m++) {
+      var md = dz.mahadashas[m];
+      if (md.end.getTime() < fromDate.getTime() || md.start.getTime() > toDate.getTime()) continue;
+      for (var a=0;a<md.antardashas.length;a++) {
+        var ad = md.antardashas[a];
+        if (ad.end.getTime() < fromDate.getTime() || ad.start.getTime() > toDate.getTime()) continue;
+        var score = 0, reasons = [];
+        if (lords[ad.lord]) { score += 2; for (var r=0;r<lords[ad.lord].length;r++) reasons.push({ en: 'Antar lord ' + ad.lord + ' \u2014 ' + lords[ad.lord][r].en, hi: '\u0905\u0902\u0924\u0930\u0947\u0936 ' + (GRAHA_HI[ad.lord]||ad.lord) + ' \u2014 ' + lords[ad.lord][r].hi }); }
+        if (lords[md.lord]) { score += 1; reasons.push({ en: 'Maha lord ' + md.lord + ' \u2014 ' + lords[md.lord][0].en, hi: '\u0926\u0936\u0947\u0936 ' + (GRAHA_HI[md.lord]||md.lord) + ' \u2014 ' + lords[md.lord][0].hi }); }
+        var mid = (Math.max(ad.start.getTime(), fromDate.getTime()) + Math.min(ad.end.getTime(), toDate.getTime())) / 2;
+        var jh = jupHouseAt(mid);
+        if (jh !== null && cfg.jupHouses.indexOf(jh) >= 0) { score += 1; reasons.push({ en: 'Jupiter transits house ' + jh + ' from your Moon', hi: '\u0917\u0941\u0930\u0941 \u0917\u094B\u091A\u0930 \u091A\u0902\u0926\u094D\u0930 \u0938\u0947 ' + jh + '\u0935\u0947\u0902 \u092D\u093E\u0935 \u092E\u0947\u0902' }); }
+        var age = (mid - birthDate.getTime()) / (365.25 * 86400000);
+        if (age >= cfg.ageMin && age <= cfg.ageMax) { score += 1; reasons.push({ en: 'Within the traditional age window', hi: '\u092A\u093E\u0930\u0902\u092A\u0930\u093F\u0915 \u0906\u092F\u0941-\u0916\u093F\u0921\u093C\u0915\u0940 \u0915\u0947 \u092D\u0940\u0924\u0930' }); }
+        if (score >= 2) out.push({ maha: md.lord, antar: ad.lord,
+          start: new Date(Math.max(ad.start.getTime(), fromDate.getTime())),
+          end: new Date(Math.min(ad.end.getTime(), toDate.getTime())),
+          score: score, reasons: reasons });
+      }
+    }
+    out.sort(function (x, y) { return y.score - x.score || x.start - y.start; });
+    return { type: type, significators: lords, windows: out.slice(0, 6) };
+  }
+  var GRAHA_HI = { sun:'\u0938\u0942\u0930\u094D\u092F', moon:'\u091A\u0902\u0926\u094D\u0930', mars:'\u092E\u0902\u0917\u0932', mercury:'\u092C\u0941\u0927', jupiter:'\u0917\u0941\u0930\u0941', venus:'\u0936\u0941\u0915\u094D\u0930', saturn:'\u0936\u0928\u093F', rahu:'\u0930\u093E\u0939\u0941', ketu:'\u0915\u0947\u0924\u0941' };
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -1915,6 +1973,7 @@
     gunaMilanParihara,
     getManglikMatch,
     manglikFactors,
+    getEventWindows,
     getAshtakavarga,
     getTransitPeriods,
     getVarga,
