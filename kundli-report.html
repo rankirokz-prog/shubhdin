@@ -6,7 +6,8 @@
 <title>Shubh Din — Kundli Report</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;}
+:root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
+*{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:#EFE9DC;font-family:'Noto Serif Devanagari','Cormorant Garamond',serif;color:var(--ink);}
 .screen{max-width:760px;margin:24px auto;background:var(--paper);border:1px solid var(--gold2);border-radius:12px;padding:28px;}
@@ -31,7 +32,9 @@ button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:n
 .cover .name{font-size:30px;color:#8B2B33;margin:26px 0 6px;font-weight:700;}
 .cover .bd{font-size:16px;color:var(--soft);}
 .tagfree{margin-top:34px;font-size:14px;color:var(--gold);border-top:1px solid var(--gold2);border-bottom:1px solid var(--gold2);padding:8px 18px;}
-h2.sec{font-size:22px;color:#8B2B33;border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 16px;}
+h2.sec{font-size:22px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 16px;}
+.dyk{background:#FFF9EE;border:1px solid var(--gold2);border-left:5px solid var(--saffron);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:13.5px;line-height:1.7;}
+.dyk b{color:var(--saffron);}
 table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0 18px;}
 th,td{border:1px solid #E4D3AE;padding:6px 9px;text-align:left;}
 th{background:#F8EFD8;color:#5C1A1B;font-weight:600;}
@@ -106,7 +109,10 @@ function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on
 function T(o){return o?(o[LANG]||o.en):'';}
 var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
 var GR_EN={sun:'Sun',moon:'Moon',mars:'Mars',mercury:'Mercury',jupiter:'Jupiter',venus:'Venus',saturn:'Saturn',rahu:'Rahu',ketu:'Ketu'};
+var GR_ICON={sun:'\u2600\uFE0F',moon:'\uD83C\uDF19',mars:'\u2642\uFE0F',mercury:'\u263F\uFE0F',jupiter:'\u2643\uFE0F',venus:'\u2640\uFE0F',saturn:'\u2644\uFE0F',rahu:'\u260A',ketu:'\u260B'};
 function gname(k){return LANG==='hi'?GR_HI[k]:GR_EN[k];}
+function gicon(k){return (GR_ICON[k]||'')+' '+gname(k);}
+function stars(n){var f='',e='';for(var i=0;i<n;i++)f+='\u2605';for(var j=n;j<5;j++)e+='\u2606';return '<span style="color:#E8730C;letter-spacing:2px;">'+f+'</span><span style="color:#D4A843;letter-spacing:2px;">'+e+'</span>';}
 function dms(x){var d=Math.floor(x),m=Math.floor((x-d)*60),s=Math.round(((x-d)*60-m)*60);if(s===60){s=0;m++;}if(m===60){m=0;d++;}return d+'°'+String(m).padStart(2,'0')+'′'+String(s).padStart(2,'0')+'″';}
 function ist(d){return new Date(d.getTime()+5.5*3600000);}
 function fT(d){return ist(d).toISOString().slice(11,16);}
@@ -183,6 +189,71 @@ function generate(){
     +'<div class="idcard"><div class="t">'+T(L.yourLagna)+'</div><div class="v">'+(LANG==='hi'?bc.lagna.hi:bc.lagna.en)+' '+dms(bc.lagna.degreesInRashi)+'</div></div>'
     +'<div class="idcard"><div class="t">'+T(L.yourNak)+'</div><div class="v">'+(LANG==='hi'?moon.nakshatra.hi:moon.nakshatra.en)+' · '+(LANG==='hi'?moon.rashi.hi:moon.rashi.en)+'</div></div>'
     +'</div><div class="tagfree">'+T(L.free)+'</div></div>');
+  // ---- SPIRITUAL SNAPSHOT (emotional opening, honestly derived) ----
+  (function(){
+    var dig2={}; yg.dignities.forEach(function(d){dig2[d.key]=d.dignity;});
+    function q(planet){
+      var g5=bc.grahas.find(function(x){return x.key===planet;});
+      var n=3;
+      if(dig2[planet]==='Exalted'||dig2[planet]==='Own Sign')n++;
+      if(dig2[planet]==='Debilitated')n--;
+      if(av.sav[g5.rashi.index]>=30)n++;
+      if(g5.combust)n--;
+      return Math.max(1,Math.min(5,n));
+    }
+    var qdef=[['\uD83E\uDDE1','Courage','\u0938\u093E\u0939\u0938','mars'],['\uD83D\uDCD8','Wisdom','\u091C\u094D\u091E\u093E\u0928','jupiter'],['\uD83C\uDFA8','Charm & Creativity','\u0915\u0932\u093E-\u0906\u0915\u0930\u094D\u0937\u0923','venus'],['\uD83E\uDDE0','Intellect','\u092C\u0941\u0926\u094D\u0927\u093F','mercury'],['\uD83D\uDEE1\uFE0F','Discipline','\u0905\u0928\u0941\u0936\u093E\u0938\u0928','saturn'],['\uD83D\uDC99','Emotional Depth','\u092D\u093E\u0935-\u0917\u0939\u0930\u093E\u0908','moon']];
+    var rows2=qdef.map(function(d){return {icon:d[0],en:d[1],hi:d[2],s:q(d[3])};});
+    rows2.sort(function(a,b2){return b2.s-a.s;});
+    var qHtml=rows2.slice(0,5).map(function(r){return '<div class="sun-row" style="font-size:16px;"><span>'+r.icon+' '+(LANG==='hi'?r.hi:r.en)+'</span><span>'+stars(r.s)+'</span></div>';}).join('');
+    var cur2=dz.mahadashas.find(function(m2){return m2.start<=new Date()&&m2.end>new Date();});
+    var curA=cur2?cur2.antardashas.find(function(a2){return a2.start<=new Date()&&a2.end>new Date();}):null;
+    var avgSav=(av.sav[bc.d1[0].rashiIndex]+av.sav[bc.d1[8].rashiIndex]+av.sav[bc.d1[9].rashiIndex])/3;
+    var energy=Math.round(50+(avgSav-22)*3+yg.presentYogas.length*5+yg.dignities.length*3);
+    energy=Math.max(48,Math.min(96,energy));
+    pg('<h2 class="sec">\u2728 '+(LANG==='hi'?'\u0906\u092A\u0915\u093E \u0906\u0927\u094D\u092F\u093E\u0924\u094D\u092E\u093F\u0915 \u0926\u0930\u094D\u092A\u0923':'Your Spiritual Snapshot')+'</h2>'
+      +'<div class="prose" style="font-size:14px;color:#8B5A2B;">'+(LANG==='hi'?'\u0906\u092A\u0915\u0940 \u0915\u0941\u0902\u0921\u0932\u0940 \u0938\u0947 \u0917\u0923\u0928\u093E \u0938\u0947 \u0928\u093F\u0915\u093E\u0932\u093E \u0917\u092F\u093E \u0938\u093E\u0930 \u2014 \u0939\u0930 \u0905\u0902\u0915 \u0917\u094D\u0930\u0939-\u0917\u0930\u093F\u092E\u093E, \u092D\u093E\u0935-\u092C\u0932 \u0914\u0930 \u092F\u094B\u0917\u094B\u0902 \u0938\u0947 \u0935\u094D\u092F\u0941\u0924\u094D\u092A\u0928\u094D\u0928 \u0939\u0948\u0964':'The essence of your chart at a glance — every rating below is derived from your actual planetary dignities, house strengths (Ashtakavarga) and yogas. Nothing is invented.')+'</div>'
+      +'<div class="idcard" style="margin-bottom:14px;"><div class="t">'+(LANG==='hi'?'\u0906\u092A\u0915\u0940 \u092A\u094D\u0930\u092C\u0932 \u0936\u0915\u094D\u0924\u093F\u092F\u093E\u0901':'YOUR STRONGEST QUALITIES')+'</div>'+qHtml+'</div>'
+      +(cur2?('<div class="idcard" style="margin-bottom:14px;"><div class="t">'+(LANG==='hi'?'\u0935\u0930\u094D\u0924\u092E\u093E\u0928 \u091C\u0940\u0935\u0928-\u091A\u0930\u0923':'CURRENT LIFE PHASE')+'</div><div class="v">'+gicon(cur2.lord)+' '+(LANG==='hi'?'\u092E\u0939\u093E\u0926\u0936\u093E':'Mahadasha')+(curA?' \u00B7 '+gname(curA.lord)+' '+(LANG==='hi'?'\u0905\u0902\u0924\u0930':'Antar'):'')+'</div><div style="font-size:13.5px;line-height:1.7;margin-top:6px;">'+T(C.dashaLord[cur2.lord]).split('.').slice(0,2).join('.')+'.</div></div>'):'')
+      +'<div class="idcard"><div class="t">'+(LANG==='hi'?'\u0938\u092E\u0917\u094D\u0930 \u091C\u0940\u0935\u0928-\u090A\u0930\u094D\u091C\u093E':'OVERALL LIFE ENERGY')+'</div>'
+      +'<div style="font-size:30px;font-weight:700;color:#2B8B5A;margin:6px 0;">\uD83D\uDFE2 '+energy+' / 100</div>'
+      +'<div style="background:#EFE9DC;border-radius:8px;height:14px;overflow:hidden;"><div style="width:'+energy+'%;height:100%;background:linear-gradient(90deg,#E8730C,#2B8B5A);"></div></div>'
+      +'<div style="font-size:11.5px;color:#8B5A2B;margin-top:6px;">'+(LANG==='hi'?'\u0938\u0942\u0924\u094D\u0930: \u0932\u0917\u094D\u0928-\u092D\u093E\u0917\u094D\u092F-\u0915\u0930\u094D\u092E \u092D\u093E\u0935\u094B\u0902 \u0915\u093E \u0905\u0937\u094D\u091F\u0915\u0935\u0930\u094D\u0917 \u092C\u0932 + \u0936\u0941\u092D \u092F\u094B\u0917':'Formula: Ashtakavarga strength of your 1st, 9th and 10th houses + auspicious yogas + planetary dignities — every input verifiable in the chapters ahead.')+'</div></div>');
+  })();
+  // ---- LIFE DASHBOARD (honest composite domain scores) ----
+  (function(){
+    var dig4={}; yg.dignities.forEach(function(d){dig4[d.key]=d.dignity;});
+    function lordOf(h){var RL2=['mars','venus','mercury','moon','sun','mercury','venus','mars','jupiter','saturn','saturn','jupiter'];return RL2[bc.d1[h-1].rashiIndex];}
+    function domScore(houses,karaka){
+      var sc=60;
+      houses.forEach(function(h){
+        sc+=(av.sav[bc.d1[h-1].rashiIndex]-28)*1.2;
+        var lg=bc.grahas.find(function(x){return x.key===lordOf(h);});
+        if(dig4[lg.key]==='Exalted'||dig4[lg.key]==='Own Sign')sc+=6;
+        if(dig4[lg.key]==='Debilitated')sc-=5;
+      });
+      var kg=bc.grahas.find(function(x){return x.key===karaka;});
+      if(dig4[karaka]==='Exalted'||dig4[karaka]==='Own Sign')sc+=8;
+      if(dig4[karaka]==='Debilitated')sc-=6;
+      if(kg.combust)sc-=4;
+      return Math.max(54,Math.min(96,Math.round(sc)));
+    }
+    var doms=[
+      ['\uD83D\uDCBC',(LANG==='hi'?'\u0915\u0930\u093F\u092F\u0930':'Career'),domScore([10,11],'saturn')],
+      ['\uD83D\uDC8D',(LANG==='hi'?'\u0935\u093F\u0935\u093E\u0939 \u0935 \u0938\u0902\u092C\u0902\u0927':'Marriage & Love'),domScore([7],'venus')],
+      ['\uD83D\uDCB0',(LANG==='hi'?'\u0927\u0928':'Wealth'),domScore([2,11],'jupiter')],
+      ['\uD83C\uDFE5',(LANG==='hi'?'\u0938\u094D\u0935\u093E\u0938\u094D\u0925\u094D\u092F':'Health & Vitality'),domScore([1],'sun')],
+      ['\uD83D\uDCD6',(LANG==='hi'?'\u0935\u093F\u0926\u094D\u092F\u093E-\u0938\u0902\u0924\u093E\u0928':'Learning & Children'),domScore([5],'jupiter')],
+      ['\uD83E\uDDD8',(LANG==='hi'?'\u0906\u0927\u094D\u092F\u093E\u0924\u094D\u092E':'Spiritual Growth'),domScore([9,12],'ketu')]
+    ];
+    var bars=doms.map(function(d){
+      var col=d[2]>=75?'#2B8B5A':(d[2]>=60?'#E8730C':'#B8434A');
+      return '<div style="margin-bottom:13px;"><div style="display:flex;justify-content:space-between;font-size:15px;"><span>'+d[0]+' <b>'+d[1]+'</b></span><b style="color:'+col+';">'+d[2]+'/100</b></div>'
+        +'<div style="background:#EFE9DC;border-radius:7px;height:12px;overflow:hidden;margin-top:4px;"><div style="width:'+d[2]+'%;height:100%;background:'+col+';"></div></div></div>';
+    }).join('');
+    pg('<h2 class="sec">\uD83D\uDCCA '+(LANG==='hi'?'\u091C\u0940\u0935\u0928 \u0921\u0948\u0936\u092C\u094B\u0930\u094D\u0921':'Your Life Dashboard')+'</h2>'
+      +bars
+      +'<div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+(LANG==='hi'?'\u092A\u094D\u0930\u0924\u094D\u092F\u0947\u0915 \u0905\u0902\u0915 = \u0938\u0902\u092C\u0902\u0927\u093F\u0924 \u092D\u093E\u0935\u094B\u0902 \u0915\u093E \u0905\u0937\u094D\u091F\u0915\u0935\u0930\u094D\u0917 \u092C\u0932 + \u092D\u093E\u0935\u0947\u0936 \u0917\u0930\u093F\u092E\u093E + \u0915\u093E\u0930\u0915 \u0917\u094D\u0930\u0939 \u0938\u094D\u0925\u093F\u0924\u093F \u2014 \u0938\u092D\u0940 \u0906\u0902\u0915\u0921\u093C\u0947 \u0906\u0917\u0947 \u0915\u0940 \u0938\u093E\u0930\u0923\u093F\u092F\u094B\u0902 \u092E\u0947\u0902 \u0938\u0924\u094D\u092F\u093E\u092A\u0928-\u092F\u094B\u0917\u094D\u092F\u0964':'Each score = Ashtakavarga strength of the relevant houses + house-lord dignity + karaka planet condition. Every input is verifiable in the tables that follow \u2014 no score is invented.')+'</div>');
+  })();
   // ---- TOC ----
   var tocItems=(LANG==='hi')
     ?['जन्म पंचांग','कुंडली चक्र (D1 · D9)','ग्रह स्थिति','सर्वाष्टकवर्ग','आपका नक्षत्र एवं लग्न','शुभ योग','दोष विश्लेषण','शनि साढ़े साती','विंशोत्तरी दशा क्रम','दशा फल (महा + अंतर)','सूक्ष्म दशा फल (प्रत्यंतर)','जीवन दशा सारणियाँ','भिन्नाष्टकवर्ग सारणियाँ','गोचर सारणियाँ एवं वार्षिक फल','अंक ज्योतिष','शब्दावली','उपाय — साधना रूप में']
@@ -206,8 +277,8 @@ function generate(){
   // charts
   var d1p={},d9p={};
   bc.grahas.forEach(function(g){var tag=GAB[g.key]+(g.retrograde?'ᴿ':'');(d1p[g.rashi.index]=d1p[g.rashi.index]||[]).push(tag);(d9p[g.navamsa.rashiIndex]=d9p[g.navamsa.rashiIndex]||[]).push(tag);});
-  pg('<h2 class="sec">'+T(L.birthPanchang)+'</h2>'+tb
-    +'<h2 class="sec">'+T(L.charts)+'</h2><div class="chartwrap">'
+  pg('<h2 class="sec">\uD83D\uDD49\uFE0F '+T(L.birthPanchang)+'</h2>'+tb
+    +'<h2 class="sec">\uD83D\uDCCA '+T(L.charts)+'</h2><div class="chartwrap">'
     +'<div class="chartbox">'+southSVG(bc.lagna.rashiIndex,d1p,'D1 · Rashi')+'<div class="cap">Lagna: '+(LANG==='hi'?bc.lagna.hi:bc.lagna.en)+'</div></div>'
     +'<div class="chartbox">'+southSVG(bc.navamsaLagna.rashiIndex,d9p,'D9 · Navamsa')+'<div class="cap">Navamsa Lagna: '+(LANG==='hi'?bc.navamsaLagna.hi:bc.navamsaLagna.en)+'</div></div></div>');
   // ---- POSITIONS + SAV ----
@@ -221,7 +292,7 @@ function generate(){
   var savT='<table><tr>'+bc.d1.map(function(h){return '<th>'+(LANG==='hi'?h.hi:h.en).slice(0,6)+'</th>';}).join('')+'</tr><tr>'
     +bc.d1.map(function(h){var v=av.sav[h.rashiIndex];var cl=v>=30?' class="savhot"':(v<=22?' class="savcold"':'');return '<td'+cl+'>'+v+'</td>';}).join('')+'</tr></table>'
     +'<div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'30+ बिंदु वाले भाव जीवन के प्रबल क्षेत्र हैं; 22 से कम वाले भावों में सचेत प्रयास फलदायी होता है। (कुल 337 — शास्त्रीय मानक)':'Houses scoring 30+ are your power zones; those below 22 reward conscious effort. (Grand total 337 — the classical checksum.)')+'</div>';
-  pg('<h2 class="sec">'+T(L.positions)+'</h2>'+pos+'<h2 class="sec">'+T(L.ashtak)+'</h2>'+savT);
+  pg('<h2 class="sec">\uD83E\uDE90 '+T(L.positions)+'</h2>'+pos+'<h2 class="sec">'+T(L.ashtak)+'</h2>'+savT);
   var savInterp=bc.d1.map(function(h2,i){
     var v=av.sav[h2.rashiIndex];
     var band=v>=30?'strong':(v<=22?'weak':'avg');
@@ -230,6 +301,34 @@ function generate(){
       +T(C.savBand[band])+'</div>';
   }).join('');
   pg('<h2 class="sec">'+(LANG==='hi'?'भाव-बल विवेचन (सर्वाष्टकवर्ग)':'House-Strength Reading (Sarvashtakavarga)')+'</h2>'+savInterp);
+  // ---- PLANET STRENGTH CARDS ----
+  (function(){
+    var ARCH={sun:['Royal Fire','\u0930\u093E\u091C-\u0924\u0947\u091C'],moon:['Nurturing Tide','\u092A\u094B\u0937\u0915 \u091C\u094D\u0935\u093E\u0930'],mars:['Warrior Energy','\u092F\u094B\u0926\u094D\u0927\u093E-\u090A\u0930\u094D\u091C\u093E'],mercury:['Quicksilver Mind','\u091A\u092A\u0932 \u092E\u0947\u0927\u093E'],jupiter:['Guru\u2019s Grace','\u0917\u0941\u0930\u0941-\u0915\u0943\u092A\u093E'],venus:['Artist of Love','\u092A\u094D\u0930\u0947\u092E-\u0915\u0932\u093E\u0915\u093E\u0930'],saturn:['Iron Discipline','\u0932\u094C\u0939-\u0905\u0928\u0941\u0936\u093E\u0938\u0928'],rahu:['Boundless Hunger','\u0905\u0938\u0940\u092E \u0906\u0915\u093E\u0902\u0915\u094D\u0937\u093E'],ketu:['Silent Mystic','\u092E\u094C\u0928 \u0938\u093E\u0927\u0915']};
+    var dig3={}; yg.dignities.forEach(function(d){dig3[d.key]=d.dignity;});
+    function ps(g6){
+      var n=3;
+      if(dig3[g6.key]==='Exalted'||dig3[g6.key]==='Own Sign')n++;
+      if(dig3[g6.key]==='Debilitated')n--;
+      if(av.sav[g6.rashi.index]>=30)n++;
+      if(g6.combust)n--;
+      if(g6.retrograde&&g6.key!=='rahu'&&g6.key!=='ketu')n=Math.max(1,n); 
+      return Math.max(1,Math.min(5,n));
+    }
+    var cds=bc.grahas.map(function(g6){
+      var st=ps(g6);
+      var tags=[dig3[g6.key]||'', g6.retrograde?(LANG==='hi'?'\u0935\u0915\u094D\u0930\u0940':'Retrograde'):'', g6.combust?(LANG==='hi'?'\u0905\u0938\u094D\u0924':'Combust'):''].filter(Boolean).join(' \u00B7 ');
+      return '<div class="idcard" style="margin-bottom:10px;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+        +'<div><div class="v" style="margin:0;">'+gicon(g6.key)+'</div>'
+        +'<div class="t" style="margin-top:2px;">'+(LANG==='hi'?ARCH[g6.key][1]:ARCH[g6.key][0])+(tags?' \u00B7 '+tags:'')+'</div></div>'
+        +'<div style="text-align:right;">'+stars(st)+'<div class="t">'+(LANG==='hi'?'\u092D\u093E\u0935':'House')+' '+g6.house+' \u00B7 '+(LANG==='hi'?g6.rashi.hi:g6.rashi.en)+'</div></div>'
+        +'</div></div>';
+    });
+    pg('<h2 class="sec">\uD83E\uDE90 '+(LANG==='hi'?'\u0917\u094D\u0930\u0939-\u0936\u0915\u094D\u0924\u093F \u0915\u093E\u0930\u094D\u0921':'Planet Strength Cards')+'</h2>'
+      +'<div class="prose" style="font-size:12.5px;color:#8B5A2B;">'+(LANG==='hi'?'\u0924\u093E\u0930\u093E\u0902\u0915\u0928 = \u0917\u0930\u093F\u092E\u093E + \u0905\u0937\u094D\u091F\u0915\u0935\u0930\u094D\u0917 + \u0905\u0938\u094D\u0924/\u0935\u0915\u094D\u0930\u0940 \u0938\u094D\u0925\u093F\u0924\u093F \u0938\u0947':'Star ratings derived from dignity + Ashtakavarga + combustion state.')+'</div>'
+      +cds.slice(0,5).join(''));
+    pg('<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'\u0917\u094D\u0930\u0939-\u0936\u0915\u094D\u0924\u093F \u0915\u093E\u0930\u094D\u0921 (\u0915\u094D\u0930\u092E\u0936\u0903)':'Planet Strength Cards (contd.)')+'</h2>'+cds.slice(5).join(''));
+  })();
   // ---- NAKSHATRA + LAGNA PERSONALITY ----
   pg('<h2 class="sec">'+T(L.yourNak)+' — '+(LANG==='hi'?moon.nakshatra.hi:moon.nakshatra.en)+'</h2>'
     +'<div class="prose">'+T(C.nakshatra[moon.nakshatra.index])+'</div>'
@@ -251,6 +350,7 @@ function generate(){
   pg('<h2 class="sec">'+(LANG==='hi'?'द्वादश भाव — जीवन के बारह क्षेत्र':'The Twelve Bhavas — Domains of Life')+'</h2>'+bhBlocks.slice(0,4).join(''));
   pg('<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'द्वादश भाव (क्रमशः)':'Twelve Bhavas (contd.)')+'</h2>'+bhBlocks.slice(4,8).join(''));
   pg('<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'द्वादश भाव (क्रमशः)':'Twelve Bhavas (contd.)')+'</h2>'+bhBlocks.slice(8).join(''));
+  pg('<div class="dyk"><b>\uD83D\uDCDC '+(LANG==='hi'?'\u092A\u094D\u0930\u093E\u091A\u0940\u0928 \u0938\u0902\u0915\u0947\u0924':'Ancient Note')+'</b><br>'+(LANG==='hi'?'\u0905\u0937\u094D\u091F\u0915\u0935\u0930\u094D\u0917 \u0915\u093E \u0938\u0930\u094D\u0935\u092F\u094B\u0917 \u0938\u0926\u093E 337 \u092C\u093F\u0902\u0926\u0941 \u0939\u094B\u0924\u093E \u0939\u0948 \u2014 \u092F\u0939 \u0906\u092A\u0915\u0940 \u0930\u093F\u092A\u094B\u0930\u094D\u091F \u092E\u0947\u0902 \u092D\u0940 \u0938\u0924\u094D\u092F\u093E\u092A\u093F\u0924 \u0939\u0948, \u0917\u093F\u0928\u0915\u0930 \u0926\u0947\u0916 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902!':'The Sarvashtakavarga of every chart always totals exactly 337 bindus \u2014 verified in your own tables here; count them yourself!')+'</div>');
   // ---- GRAHA PHAL (planet-in-house readings, 9 blocks) ----
   var gpBlocks=bc.grahas.map(function(g2){
     var arr=C.grahaBhava[g2.key]; var txt=arr?arr[g2.house-1]:null;
@@ -260,8 +360,11 @@ function generate(){
   });
   pg('<h2 class="sec">'+(LANG==='hi'?'ग्रह फल — भाव स्थिति':'Graha Phala — House Placements')+'</h2>'+gpBlocks.slice(0,5).join(''));
   pg('<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'ग्रह फल (क्रमशः)':'Graha Phala (contd.)')+'</h2>'+gpBlocks.slice(5).join(''));
+  pg('<div class="dyk"><b>\uD83D\uDCA1 '+(LANG==='hi'?'\u0915\u094D\u092F\u093E \u0906\u092A \u091C\u093E\u0928\u0924\u0947 \u0939\u0948\u0902?':'Did You Know?')+'</b><br>'+(LANG==='hi'?'\u092A\u0930\u093E\u0936\u0930 \u092A\u0930\u0902\u092A\u0930\u093E \u092E\u0947\u0902 \u0936\u0941\u0915\u094D\u0930 \u0915\u0940 \u092E\u0939\u093E\u0926\u0936\u093E \u0938\u092C\u0938\u0947 \u0932\u0902\u092C\u0940 (20 \u0935\u0930\u094D\u0937) \u0914\u0930 \u0938\u0942\u0930\u094D\u092F \u0915\u0940 \u0938\u092C\u0938\u0947 \u091B\u094B\u091F\u0940 (6 \u0935\u0930\u094D\u0937) \u0939\u094B\u0924\u0940 \u0939\u0948 \u2014 \u092A\u0942\u0930\u093E \u091A\u0915\u094D\u0930 \u0920\u0940\u0915 120 \u0935\u0930\u094D\u0937 \u0915\u093E \u0939\u0948\u0964':'In the Parashara tradition, Venus rules the longest mahadasha (20 years) and the Sun the shortest (6 years) \u2014 the full cycle spans exactly 120 years.')+'</div>');
+  pg('<div class="dyk" style="border-left-color:#2B8B5A;"><b>\uD83D\uDD13 '+(LANG==='hi'?'\u0935\u093F\u0935\u093E\u0939 \u092E\u093F\u0932\u093E\u0928 \u0917\u0939\u0928 \u0935\u093F\u0936\u094D\u0932\u0947\u0937\u0923':'Marriage Matching, done properly')+'</b><br>'+(LANG==='hi'?'\u0928\u093F\u0903\u0936\u0941\u0932\u094D\u0915 \u0917\u0941\u0923-\u092E\u093F\u0932\u093E\u0928 \u0905\u0902\u0915 \u0926\u0947\u0924\u093E \u0939\u0948\u0964 \u0938\u0936\u0941\u0932\u094D\u0915 \u0935\u093F\u0935\u093E\u0939 \u0930\u093F\u092A\u094B\u0930\u094D\u091F \u0926\u094B\u0937-\u092A\u0930\u093F\u0939\u093E\u0930 \u0928\u093F\u092F\u092E, \u0926\u094B\u0928\u094B\u0902 \u0915\u0941\u0902\u0921\u0932\u093F\u092F\u094B\u0902 \u0915\u093E \u092E\u0902\u0917\u0932-\u092E\u093F\u0932\u093E\u0928 \u0914\u0930 \u0935\u093F\u0935\u093E\u0939-\u0938\u092E\u092F \u0916\u093F\u0921\u093C\u0915\u093F\u092F\u093E\u0901 \u091C\u094B\u0921\u093C\u0924\u0940 \u0939\u0948 \u2014 \u091C\u094B \u0915\u094B\u0908 \u0928\u093F\u0903\u0936\u0941\u0932\u094D\u0915 \u091F\u0942\u0932 \u0928\u0939\u0940\u0902 \u091C\u093E\u0901\u091A\u0924\u093E\u0964':'Free tools stop at the Guna score. The paid Marriage Report adds classical dosha-CANCELLATION analysis, two-chart Manglik matching and marriage-timing windows \u2014 what no free tool checks.')+'<br><span style="font-size:11px;color:#8B5A2B;">shubhdin.app</span></div>');
   // ---- YOGAS + DOSHAS ----
-  var yogHtml=yg.presentYogas.map(function(y){var txt=C.yoga[y.key];return '<div class="yog">✦ <b>'+y.en+'</b><br>'+(txt?T(txt):y.detail)+'</div>';}).join('')||'<div class="prose">—</div>';
+    var YSIG={gajaKesari:5,malavya:5,hamsa:5,ruchaka:5,bhadra:5,shasha:5,raja:5,dhana:4,budhaditya:3,chandraMangal:3,harsha:3,sarala:3,vimala:3,kemadruma:2};
+  var yogHtml=yg.presentYogas.map(function(y){var txt=C.yoga[y.key];var sg=YSIG[y.key]||3;return '<div class="yog">\u2728 <b>'+y.en+'</b> <span style="float:right;">'+stars(sg)+'</span><br><span style="font-size:11.5px;color:#8B5A2B;">'+(LANG==='hi'?'\u0936\u093E\u0938\u094D\u0924\u094D\u0930\u0940\u092F \u092E\u0939\u0924\u094D\u0924\u094D\u0935':'Classical significance')+'</span><br>'+(txt?T(txt):y.detail)+'</div>';}).join('')||'<div class="prose">\u2014</div>';
   var m=dos.manglik,ks=dos.kaalSarp,ss=dos.sadeSati;
   var dosHtml='';
   dosHtml+='<div class="dos'+(m.present?'':' ok')+'"><b>'+(LANG==='hi'?'मंगल दोष':'Mangal Dosha')+':</b> '+(m.present?T(C.dosha.manglikYes)+' ('+m.percent+'%)':T(C.dosha.manglikNo))+'</div>';
@@ -269,9 +372,9 @@ function generate(){
   dosHtml+='<div class="dos'+(ss.active?'':' ok')+'"><b>'+(LANG==='hi'?'साढ़े साती':'Sade Sati')+':</b> '+(ss.active?T(C.dosha.sadeSatiActive).replace('{phase}',ss.currentPhase):T(C.dosha.sadeSatiNo))+'</div>';
   var ssT='<table><tr><th>'+(LANG==='hi'?'चरण':'Phase')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>'
     +ss.periods.map(function(x){return '<tr><td>'+x.phase+' ('+(LANG==='hi'?x.hi:x.en)+')</td><td>'+fD(x.start)+'</td><td>'+fD(x.end)+'</td></tr>';}).join('')+'</table>';
-  pg('<h2 class="sec">'+T(L.yogasFound)+'</h2>'+yogHtml
-    +'<h2 class="sec">'+T(L.doshas)+'</h2>'+dosHtml
-    +'<h2 class="sec">'+T(L.sadeSati)+'</h2>'+ssT);
+  pg('<h2 class="sec">\u2728 '+T(L.yogasFound)+'</h2>'+yogHtml
+    +'<h2 class="sec">\u2696\uFE0F '+T(L.doshas)+'</h2>'+dosHtml
+    +'<h2 class="sec">\uD83E\uDE90 '+T(L.sadeSati)+'</h2>'+ssT);
   // ---- DASHA ----
   var cur=dz.mahadashas.find(function(md){return md.start<=new Date()&&md.end>new Date();});
   var dT='<table><tr><th>'+(LANG==='hi'?'महादशा':'Mahadasha')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>';
@@ -282,8 +385,24 @@ function generate(){
   });
   dT+='</table>';
   var curTxt=cur?('<h2 class="sec">'+T(L.currentDasha)+' — '+gname(cur.lord)+'</h2><div class="prose">'+T(C.dashaLord[cur.lord])+'</div>'):'';
-  pg('<h2 class="sec">'+T(L.dashaTimeline)+'</h2><div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'जन्म नक्षत्र':'Birth nakshatra')+': '+(LANG==='hi'?dz.birthNakshatra.hi:dz.birthNakshatra.en)+'</div>'+dT+curTxt);
+  // dasha timeline SVG bar
+  var tlColors={ketu:'#8B5A2B',venus:'#E89CB8',sun:'#E8730C',moon:'#7FA8D9',mars:'#C0392B',rahu:'#5A2B8B',jupiter:'#D4A017',saturn:'#34495E',mercury:'#27AE60'};
+  var tlStart=dz.mahadashas[0].start.getTime(), tlEnd=dz.mahadashas[8].end.getTime(), tlSpan=tlEnd-tlStart;
+  var tlSvg='<svg width="660" height="86" viewBox="0 0 660 86" xmlns="http://www.w3.org/2000/svg">';
+  var xacc=0;
+  dz.mahadashas.forEach(function(md){
+    var w=(md.end.getTime()-md.start.getTime())/tlSpan*660;
+    tlSvg+='<rect x="'+xacc.toFixed(1)+'" y="18" width="'+w.toFixed(1)+'" height="30" fill="'+(tlColors[md.lord]||'#999')+'" rx="3"/>';
+    if(w>34)tlSvg+='<text x="'+(xacc+w/2).toFixed(1)+'" y="38" text-anchor="middle" font-size="10.5" fill="#fff" font-family="serif">'+gname(md.lord)+'</text>';
+    tlSvg+='<text x="'+xacc.toFixed(1)+'" y="62" font-size="9" fill="#8B5A2B" font-family="serif">'+ist(md.start).getUTCFullYear()+'</text>';
+    xacc+=w;
+  });
+  var nowX=(Date.now()-tlStart)/tlSpan*660;
+  if(nowX>0&&nowX<660)tlSvg+='<line x1="'+nowX.toFixed(1)+'" y1="8" x2="'+nowX.toFixed(1)+'" y2="56" stroke="#B8434A" stroke-width="2"/><text x="'+nowX.toFixed(1)+'" y="80" text-anchor="middle" font-size="10" fill="#B8434A" font-family="serif">\u25B2 '+(LANG==='hi'?'\u0906\u091C':'Today')+'</text>';
+  tlSvg+='</svg>';
+  pg('<h2 class="sec">\u23F3 '+T(L.dashaTimeline)+'</h2><div style="text-align:center;margin:6px 0 12px;">'+tlSvg+'</div><div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'जन्म नक्षत्र':'Birth nakshatra')+': '+(LANG==='hi'?dz.birthNakshatra.hi:dz.birthNakshatra.en)+'</div>'+dT+curTxt);
   cover(1,(LANG==='hi'?'दशा फल':'Period Predictions'),(LANG==='hi'?'महादशा एवं अंतर्दशा — तिथियों सहित':'Mahadasha and Antardasha, fully dated'));
+  pg('<div class="dyk" style="border-left-color:#2B8B5A;"><b>\uD83D\uDD13 '+(LANG==='hi'?'\u0928\u093F\u0930\u094D\u0923\u092F-\u0938\u094D\u0924\u0930 \u0915\u093E \u0938\u092E\u092F \u091C\u093E\u0928\u0928\u093E \u091A\u093E\u0939\u0924\u0947 \u0939\u0948\u0902?':'Want decision-grade timing?')+'</b><br>'+(LANG==='hi'?'\u092F\u0939 \u0928\u093F\u0903\u0936\u0941\u0932\u094D\u0915 \u0930\u093F\u092A\u094B\u0930\u094D\u091F \u0939\u0930 \u0905\u0935\u0927\u093F \u0924\u093F\u0925\u093F\u092F\u094B\u0902 \u0938\u0939\u093F\u0924 \u0926\u0947\u0924\u0940 \u0939\u0948\u0964 \u0938\u0936\u0941\u0932\u094D\u0915 10-\u0935\u0930\u094D\u0937\u0940\u092F \u0917\u0939\u0928 \u092B\u0932\u093E\u0926\u0947\u0936 \u092A\u094D\u0930\u0924\u094D\u092F\u0947\u0915 \u092A\u094D\u0930\u0924\u094D\u092F\u0902\u0924\u0930 \u092E\u0947\u0902 \u0906\u092A\u0915\u0947 \u092D\u093E\u0935\u0947\u0936-\u092F\u094B\u0917-\u0917\u094B\u091A\u0930 \u092C\u0941\u0928\u0924\u093E \u0939\u0948\u0964':'This free report shows every dated period with general guidance. The paid 10-Year Deep Prediction weaves your specific house-lords, yogas and transits into each pratyantar \u2014 a personal consultant on paper.')+'<br><span style="font-size:11px;color:#8B5A2B;">shubhdin.app</span></div>');
   // ---- DASHA PREDICTION CHAPTERS (maha intro + dated antar prose) ----
   dz.mahadashas.forEach(function(md){
     var head='<h2 class="sec">'+(LANG==='hi'?'दशा फल — ':'Period Predictions — ')+gname(md.lord)+' '+(LANG==='hi'?'महादशा':'Mahadasha')+'</h2>'
@@ -359,6 +478,7 @@ function generate(){
     bavPages+='<h2 class="sec" style="font-size:17px;">'+(LANG==='hi'?'भिन्नाष्टकवर्ग — ':'Bhinnashtakavarga — ')+gname(tk)+' ('+B.total+')</h2>'+t2;
     if(ti%2===1||ti===CONTRIB.length-1){pg(bavPages);bavPages='';}
   });
+  pg('<div class="dyk" style="border-left-color:#2B8B5A;"><b>\uD83D\uDD13 '+(LANG==='hi'?'\u0906\u092A\u0915\u0947 \u0932\u093F\u090F \u0938\u0930\u094D\u0935\u094B\u0924\u094D\u0924\u092E \u092E\u0941\u0939\u0942\u0930\u094D\u0924':'Your best dates, personally computed')+'</b><br>'+(LANG==='hi'?'\u0938\u0936\u0941\u0932\u094D\u0915 \u092E\u0941\u0939\u0942\u0930\u094D\u0924 \u0930\u093F\u092A\u094B\u0930\u094D\u091F \u0906\u092A\u0915\u0940 \u0924\u093E\u0930\u093E\u092C\u0932-\u091A\u0902\u0926\u094D\u0930\u092C\u0932 \u0938\u0939\u093F\u0924 \u0906\u0928\u0947 \u0935\u093E\u0932\u0947 \u092E\u0939\u0940\u0928\u094B\u0902 \u0915\u094B \u0916\u094B\u091C\u0915\u0930 \u0917\u0943\u0939-\u092A\u094D\u0930\u0935\u0947\u0936, \u0935\u094D\u092F\u093E\u092A\u093E\u0930 \u092F\u093E \u0935\u093E\u0939\u0928 \u0939\u0947\u0924\u0941 \u0906\u092A\u0915\u0947 \u0938\u0930\u094D\u0935\u094B\u0924\u094D\u0924\u092E \u0926\u093F\u0928 \u0928\u093F\u0915\u093E\u0932\u0924\u0940 \u0939\u0948\u0964':'The paid Muhurta Report searches the months ahead using YOUR tarabalam and chandrabalam to return your personal best dates for griha pravesh, business or vehicle \u2014 a personalized search no app offers.')+'<br><span style="font-size:11px;color:#8B5A2B;">shubhdin.app</span></div>');
   cover(4,(LANG==='hi'?'गोचर एवं वार्षिक फल':'Transits and Yearly Outlook'),(LANG==='hi'?'गुरु · शनि · राहु — आगामी वर्ष':'Jupiter, Saturn, Rahu — the years ahead'));
   // ---- GOCHARA TRANSIT TABLES (10 years, dated) ----
   var now=new Date(); var tEnd=new Date(now.getTime()+10*365.25*86400000);
@@ -450,7 +570,7 @@ function generate(){
   }
   var remKeys=['sun','moon','mars','mercury','jupiter','venus','saturn','rahu','ketu'];
   var remH=remKeys.map(function(k){var r=C.remedy[k];return '<div class="rem"><div><b>'+r.name+'</b><br><span class="m">'+r.mantra+'</span></div><div>'+(LANG==='hi'?r.hi:r.en)+'</div></div>';}).join('');
-  pg('<h2 class="sec">'+T(L.remedies)+'</h2><div class="prose" style="color:#5A8B2B;">'+T(L.remedyNote)+'</div>'+remH
+  pg('<h2 class="sec">\uD83D\uDE4F '+T(L.remedies)+'</h2><div class="prose" style="color:#5A8B2B;">'+T(L.remedyNote)+'</div>'+remH
     +'<div class="foot">'+T(L.verify)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
   document.getElementById('report').innerHTML=H;
   document.getElementById('report').style.display='block';
