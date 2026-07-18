@@ -155,6 +155,25 @@ function generate(){ try {
     +'<div class="idcard" style="margin-top:30px;min-width:300px;"><div class="t">'+(LANG==='hi'?'प्रभावी गुण मिलान':'EFFECTIVE GUNA SCORE')+'</div>'
     +'<div class="v" style="font-size:30px;">'+gm.effectiveTotal+' / 36 &nbsp;<span style="font-size:15px;color:#2B8B5A;">('+overall+'%)</span></div></div>'
     +'<div class="prose" style="max-width:520px;">'+T(M.verdict[vkey])+'</div></div>');
+  // EXECUTIVE SUMMARY (the most-read page)
+  (function(){
+    var sorted=Object.keys(scores).map(function(k){return {k:k,v:scores[k]};}).sort(function(a,b){return b.v-a.v;});
+    var best=sorted.slice(0,3).map(function(x){return '\u2713 '+(LANG==='hi'?M.domains[x.k].t_hi:M.domains[x.k].t_en);});
+    var chall=sorted.filter(function(x){return x.v<66;}).slice(-2).map(function(x){return '\u26A0 '+(LANG==='hi'?M.domains[x.k].t_hi:M.domains[x.k].t_en);});
+    var starN=gm.effectiveTotal>=33?5:gm.effectiveTotal>=27?4:gm.effectiveTotal>=20?3:2;
+    var starStr='<span style="color:#E8730C;font-size:26px;letter-spacing:3px;">'+'\u2605'.repeat(starN)+'</span><span style="color:#D4A843;font-size:26px;letter-spacing:3px;">'+'\u2606'.repeat(5-starN)+'</span>';
+    var challTxt=chall.length?chall.join('<br>'):(LANG==='hi'?'कोई बड़ी चुनौती नहीं \u2713':'No major challenges \u2713');
+    var outlook=(LANG==='hi')
+      ?'शास्त्रीय अनुकूलता सिद्धांतों के अनुसार यह एक शुभ संबंध है। भावनात्मक नींव सुदृढ़ है, और उल्लिखित चुनौतियाँ संवाद, परस्पर सम्मान तथा सुझाए गए उपायों से सहज प्रबंधनीय हैं।'
+      :'This is a favourable match according to classical compatibility principles. The emotional foundation is strong, and the identified challenges are manageable through communication, mutual respect, and the suggested remedies.';
+    pg('<h2 class="sec">\u2728 '+(LANG==='hi'?'सारांश':'Executive Summary')+'</h2>'
+      +'<div style="text-align:center;margin:6px 0 18px;"><div class="t" style="font-size:12px;color:#8B5A2B;letter-spacing:1px;">'+(LANG==='hi'?'समग्र मिलान':'OVERALL MATCH')+'</div>'+starStr+'</div>'
+      +'<div class="two" style="margin-bottom:14px;">'
+      +'<div class="idcard ok" style="background:#F2F8EF;border:1px solid #B7D9A8;"><div class="t" style="color:#2B7A4B;">'+(LANG==='hi'?'सर्वोत्तम पक्ष':'BEST QUALITIES')+'</div><div style="font-size:15px;line-height:1.9;margin-top:4px;">'+best.join('<br>')+'</div></div>'
+      +'<div class="idcard" style="background:#FFF6E3;border:1px solid var(--gold2);"><div class="t" style="color:#B8434A;">'+(LANG==='hi'?'ध्यान-योग्य':'CHALLENGES')+'</div><div style="font-size:15px;line-height:1.9;margin-top:4px;">'+challTxt+'</div></div>'
+      +'</div>'
+      +'<div class="idcard"><div class="t">'+(LANG==='hi'?'विवाह दृष्टिकोण एवं अनुशंसा':'MARRIAGE OUTLOOK & RECOMMENDATION')+'</div><div class="prose" style="margin:6px 0 0;">'+outlook+'</div></div>');
+  })();
   // DASHBOARD
   var bars=Object.keys(scores).map(function(k){
     var v=scores[k], col=v>=74?'#2B8B5A':(v>=60?'#E8730C':'#B8434A');
@@ -176,11 +195,20 @@ function generate(){ try {
   if(!pariH)pariH='<div class="yog ok">'+(LANG==='hi'?'नाड़ी एवं भकूट — दोष रहित ✓':'Nadi and Bhakoot — no dosha ✓')+'</div>';
   pg('<h2 class="sec">🔢 '+T(L.guna)+'</h2>'+kt+pariH);
   // MANGLIK
-  function mkRow(p,label){return '<tr><td><b>'+label+'</b></td><td>'+(p.present?(LANG==='hi'?'हाँ':'Yes')+' ('+p.percent+'%)':(LANG==='hi'?'नहीं':'No'))+'</td><td style="font-size:12px;">'+(p.factors.map(function(f){return T(f);}).join('; ')||'—')+'</td></tr>';}
+  function manglikLabel(pct){
+    // Internal model can exceed 100% due to aggravation multipliers; show intuitive words.
+    if(pct<=0)return LANG==='hi'?'नहीं':'No';
+    var lvl,hi;
+    if(pct>=150){lvl='Strong';hi='प्रबल';}
+    else if(pct>=90){lvl='Moderate';hi='मध्यम';}
+    else{lvl='Mild';hi='अल्प';}
+    return (LANG==='hi'?('हाँ · '+hi):('Yes · '+lvl));
+  }
+  function mkRow(p,label){return '<tr><td><b>'+label+'</b></td><td>'+manglikLabel(p.present?p.percent:0)+'</td><td style="font-size:12px;">'+(p.factors.map(function(f){return T(f);}).join('; ')||'\u2014')+'</td></tr>';}
   pg('<h2 class="sec">⚖️ '+T(L.manglik)+'</h2>'
     +'<table><tr><th></th><th>'+(LANG==='hi'?'मंगल दोष':'Mangal Dosha')+'</th><th>'+(LANG==='hi'?'परिहार-कारक':'Cancellation factors')+'</th></tr>'
     +mkRow(mk.boy,B.name)+mkRow(mk.girl,G.name)+'</table>'
-    +'<div class="yog '+(mk.verdict.key==='present'?'care':'ok')+'">'+T(mk.verdict)+'</div>');
+    +'<div class="yog '+(mk.verdict.key==='present'?'care':'ok')+'">'+T(mk.verdict)+'</div>'+'<div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+(LANG==='hi'?'\u0928\u094B\u091F: \u092E\u0902\u0917\u0932 \u0926\u094B\u0937 \u0915\u0940 \u0924\u0940\u0935\u094D\u0930\u0924\u093E \u092E\u0902\u0917\u0932 \u0915\u0940 \u092D\u093E\u0935-\u0938\u094D\u0925\u093F\u0924\u093F \u0938\u0947 \u0906\u0901\u0915\u0940 \u091C\u093E\u0924\u0940 \u0939\u0948; \u090F\u0915\u093E\u0927\u093F\u0915 \u0915\u093E\u0930\u0915 \u0907\u0938\u0947 \u092C\u0922\u093C\u093E \u092F\u093E \u0918\u091F\u093E \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964':'Note: Mangal Dosha strength reflects Mars\u2019 house position and aggravating or softening factors \u2014 which is why we show it as Mild / Moderate / Strong rather than a raw number.')+'</div>');
   // DOMAIN CHAPTERS
   Object.keys(scores).forEach(function(k){
     var v=scores[k];
