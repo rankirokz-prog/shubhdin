@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubh Din — Marriage Compatibility Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+body{background:#EFE9DC;font-family:'Noto Serif Devanagari',serif;color:var(--ink);}
+.screen{max-width:860px;margin:24px auto;background:var(--paper);border:1px solid var(--gold2);border-radius:12px;padding:28px;}
+h1.brand{font-size:24px;text-align:center;}
+.sub{text-align:center;color:var(--soft);font-size:13px;margin:4px 0 16px;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.pcol{border:1px dashed var(--gold2);border-radius:10px;padding:12px;}
+.pcol h3{color:var(--saffron);font-size:16px;margin-bottom:6px;text-align:center;}
+label{display:block;font-size:12px;color:var(--soft);margin:8px 0 3px;}
+input,select,button{font-family:inherit;font-size:14px;padding:8px 9px;border:1px solid var(--gold2);border-radius:8px;background:#fff;color:var(--ink);width:100%;}
+button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:none;cursor:pointer;margin-top:14px;font-size:15px;}
+.confirm{background:#FFF6E3;border:1px dashed var(--gold);border-radius:10px;padding:12px;margin-top:14px;display:none;font-size:14px;line-height:1.8;}
+.langToggle{display:flex;gap:8px;margin-top:8px;}
+.langToggle button{margin:0;background:#fff;color:var(--ink);border:1px solid var(--gold2);}
+.langToggle button.on{background:var(--ink);color:#FFE8C8;}
+#report{display:none;}
+.page{max-width:794px;margin:16px auto;background:var(--paper);padding:46px 50px;box-shadow:0 2px 14px rgba(92,26,27,.12);position:relative;min-height:1000px;}
+.page::before{content:"";position:absolute;inset:14px;border:1.5px solid var(--gold2);border-radius:4px;pointer-events:none;}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+h2.sec{font-size:21px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 14px;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 16px;}
+th,td{border:1px solid #E4D3AE;padding:6px 8px;text-align:left;}
+th{background:#F8EFD8;font-weight:600;}
+tr:nth-child(even) td{background:#FDF8EC;}
+.prose{font-size:15px;line-height:1.85;text-align:justify;margin-bottom:12px;}
+.idcard{background:#FFF6E3;border:1px solid var(--gold2);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.idcard .t{font-size:11.5px;color:var(--soft);letter-spacing:.5px;}
+.idcard .v{font-size:18px;color:#8B2B33;font-weight:700;margin-top:2px;}
+.yog{background:#FDF8EC;border-left:4px solid var(--gold);padding:10px 13px;margin-bottom:10px;font-size:14.5px;line-height:1.75;}
+.ok{background:#F2F8EF;border-left-color:#5A8B2B;}
+.care{background:#FFF3F0;border-left-color:#B8434A;}
+.foot{font-size:12px;color:var(--soft);border-top:1px solid var(--gold2);padding-top:10px;margin-top:20px;line-height:1.7;}
+.printbar{max-width:794px;margin:10px auto;text-align:center;}
+.printbar button{width:auto;padding:10px 26px;}
+@media print{body{background:#fff;}.screen,.printbar{display:none !important;}#report{display:block !important;}
+.page{box-shadow:none;margin:0;page-break-after:always;min-height:auto;padding:34px 40px;}.page:last-child{page-break-after:auto;}}
+@page{size:A4;margin:10mm;}
+</style>
+</head>
+<body>
+<div class="screen" id="inputScreen">
+  <h1 class="brand">💑 शुभ दिन — Marriage Compatibility</h1>
+  <div class="sub">Guna Milan with cancellation analysis · Two-chart Manglik · Timing windows · Free of fear, full of clarity</div>
+  <div class="two">
+    <div class="pcol"><h3>वर · Boy</h3>
+      <label>Name</label><input id="bname" value="">
+      <label>Birth Date</label><input id="bdate" type="date" value="1996-12-06">
+      <label>Birth Time (24h)</label><input id="btime" type="time" value="15:47">
+      <label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343">
+      <label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985">
+      <label>Place</label><input id="bplace" value="Narasapur, AP">
+    </div>
+    <div class="pcol"><h3>वधू · Girl</h3>
+      <label>Name</label><input id="gname" value="">
+      <label>Birth Date</label><input id="gdate" type="date" value="2000-07-10">
+      <label>Birth Time (24h)</label><input id="gtime" type="time" value="06:00">
+      <label>Latitude</label><input id="glat" type="number" step="0.0001" value="16.4343">
+      <label>Longitude</label><input id="glng" type="number" step="0.0001" value="81.6985">
+      <label>Place</label><input id="gplace" value="Narasapur, AP">
+    </div>
+  </div>
+  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button></div>
+  <button onclick="confirmStep()">Check Both Charts → जाँचें</button>
+  <div class="confirm" id="confirmBox">
+    <div id="confirmText"></div>
+    <div class="two">
+      <button style="background:#5A8B2B;" onclick="generate()">✓ Correct — Generate</button>
+      <button style="background:#B8434A;" onclick="document.getElementById('confirmBox').style.display='none'">✗ Fix details</button>
+    </div>
+  </div>
+</div>
+<div class="printbar" id="printbar" style="display:none;"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div id="report"></div>
+
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="report-content.js"></script>
+<script src="marriage-content.js"></script>
+<script>
+var LANG='en', CTX=null;
+function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';}
+function T(o){return o?(o[LANG]||o.en):'';}
+var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
+function gname2(k){return LANG==='hi'?(GR_HI[k]||k):k.charAt(0).toUpperCase()+k.slice(1);}
+function ist(d){return new Date(d.getTime()+5.5*3600000);}
+function fD(d){return ist(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
+function bd(p){ // read person inputs p='b'|'g'
+  var dv=document.getElementById(p+'date').value.split('-').map(Number);
+  var tv=document.getElementById(p+'time').value.split(':').map(Number);
+  return { date:new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000),
+           lat:+document.getElementById(p+'lat').value, lng:+document.getElementById(p+'lng').value,
+           name:document.getElementById(p+'name').value||(p==='b'?'Boy':'Girl'),
+           place:document.getElementById(p+'place').value };
+}
+function chartLine(bc,moon){
+  return (LANG==='hi')
+   ? '<b>लग्न:</b> '+bc.lagna.hi+' · <b>चंद्र:</b> '+moon.rashi.hi+' · <b>नक्षत्र:</b> '+moon.nakshatra.hi+' (प '+moon.nakshatra.pada+')'
+   : '<b>Lagna:</b> '+bc.lagna.en+' · <b>Moon:</b> '+moon.rashi.en+' · <b>Nakshatra:</b> '+moon.nakshatra.en+' (p'+moon.nakshatra.pada+')';
+}
+function confirmStep(){
+  var PE=window.PanchangEngine;
+  var B=bd('b'), G=bd('g');
+  B.bc=PE.getBirthChart(B.date,B.lat,B.lng); B.moon=B.bc.grahas.find(function(x){return x.key==='moon';});
+  G.bc=PE.getBirthChart(G.date,G.lat,G.lng); G.moon=G.bc.grahas.find(function(x){return x.key==='moon';});
+  CTX={B:B,G:G};
+  document.getElementById('confirmText').innerHTML=
+    '<b>'+B.name+':</b> '+chartLine(B.bc,B.moon)+'<br><b>'+G.name+':</b> '+chartLine(G.bc,G.moon)
+    +'<br>'+(LANG==='hi'?'यदि दोनों विवरण सही हैं तो रिपोर्ट बनाएँ। (AM/PM की जाँच अवश्य करें)':'If both match known details, generate. (Do double-check AM/PM!)');
+  document.getElementById('confirmBox').style.display='block';
+}
+function generate(){
+  var PE=window.PanchangEngine, M=window.SD_MARRIAGE, C=window.SD_CONTENT;
+  var B=CTX.B, G=CTX.G, L=M.labels, H='';
+  function pg(inner){H+='<div class="page">'+inner+'</div>';}
+  var gm=PE.getGunaMilanFull(B.date,G.date);
+  var mk=PE.getManglikMatch(B.date,B.lat,B.lng,G.date,G.lat,G.lng);
+  var MT=PE.MAITRI, RL=PE.RASHI_LORD;
+  function mai(l1,l2){return (MT[l1][l2]||0)+(MT[l2][l1]||0);} // 0-4
+  function kpts(name){var k=gm.kootas.find(function(x){return x.koota===name;});return k?k.obtained:0;}
+  function lordOfHouse(bc,h){return RL[bc.d1[h-1].rashiIndex];}
+  var d7b=PE.getVarga(B.date,B.lat,B.lng,7), d7g=PE.getVarga(G.date,G.lat,G.lng,7);
+  function clamp(x){return Math.max(52,Math.min(96,Math.round(x)));}
+  var scores={
+    emotional: clamp(48+mai(RL[B.moon.rashi.index],RL[G.moon.rashi.index])*8+kpts('Gana')*3),
+    communication: clamp(50+mai(RL[B.bc.grahas.find(function(x){return x.key==='mercury';}).rashi.index],RL[G.bc.grahas.find(function(x){return x.key==='mercury';}).rashi.index])*9+kpts('Tara')*2),
+    romance: clamp(46+kpts('Yoni')*8+((mai(RL[B.bc.grahas.find(function(x){return x.key==='venus';}).rashi.index],RL[G.bc.grahas.find(function(x){return x.key==='mars';}).rashi.index])+mai(RL[G.bc.grahas.find(function(x){return x.key==='venus';}).rashi.index],RL[B.bc.grahas.find(function(x){return x.key==='mars';}).rashi.index]))/2)*4),
+    family: clamp(44+kpts('Vashya')*8+kpts('Gana')*3+((gm.parihara.bhakoot.dosha&&!gm.parihara.bhakoot.cancelled)?0:8)),
+    finance: clamp(52+mai(lordOfHouse(B.bc,2),lordOfHouse(G.bc,2))*9+kpts('Graha Maitri')),
+    children: clamp(50+mai(RL[d7b.lagna.rashiIndex],RL[d7g.lagna.rashiIndex])*8+kpts('Tara')*3)
+  };
+  function band(v){return v>=74?'strong':(v>=60?'avg':'care');}
+  var overall=Math.round(gm.effectiveTotal/36*100);
+  var vkey=gm.effectiveTotal>=33?'excellent':gm.effectiveTotal>=25?'verygood':gm.effectiveTotal>=18?'acceptable':'care';
+  // COVER
+  pg('<div class="cover" style="min-height:900px;"><div style="font-size:50px;color:var(--gold);">🕉️</div>'
+    +'<h1 style="font-size:34px;margin:10px 0;">'+T(L.title)+'</h1>'
+    +'<div class="sub" style="font-size:14px;">शुभ दिन · shubhdin.app</div>'
+    +'<div style="font-size:26px;color:#8B2B33;font-weight:700;margin:22px 0 4px;">'+B.name+' ❀ '+G.name+'</div>'
+    +'<div class="sub">'+fD(B.date)+' · '+B.place+' &nbsp;|&nbsp; '+fD(G.date)+' · '+G.place+'</div>'
+    +'<div class="idcard" style="margin-top:30px;min-width:300px;"><div class="t">'+(LANG==='hi'?'प्रभावी गुण मिलान':'EFFECTIVE GUNA SCORE')+'</div>'
+    +'<div class="v" style="font-size:30px;">'+gm.effectiveTotal+' / 36 &nbsp;<span style="font-size:15px;color:#2B8B5A;">('+overall+'%)</span></div></div>'
+    +'<div class="prose" style="max-width:520px;">'+T(M.verdict[vkey])+'</div></div>');
+  // DASHBOARD
+  var bars=Object.keys(scores).map(function(k){
+    var v=scores[k], col=v>=74?'#2B8B5A':(v>=60?'#E8730C':'#B8434A');
+    return '<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:15px;"><span><b>'+(LANG==='hi'?M.domains[k].t_hi:M.domains[k].t_en)+'</b></span><b style="color:'+col+';">'+v+'/100</b></div>'
+      +'<div style="background:#EFE9DC;border-radius:7px;height:12px;overflow:hidden;margin-top:4px;"><div style="width:'+v+'%;height:100%;background:'+col+';"></div></div></div>';
+  }).join('');
+  pg('<h2 class="sec">📊 '+T(L.dash)+'</h2>'+bars+'<div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+T(L.method)+'</div>');
+  // GUNA MILAN + PARIHARA
+  var kt='<table><tr><th>'+(LANG==='hi'?'कूट':'Koota')+'</th><th>'+(LANG==='hi'?'अर्थ':'Meaning')+'</th><th>'+(LANG==='hi'?'अंक':'Points')+'</th></tr>';
+  gm.kootas.forEach(function(k){kt+='<tr><td><b>'+k.koota+'</b></td><td style="font-size:12px;">'+T(M.koota[k.koota])+'</td><td>'+k.obtained+' / '+k.max+'</td></tr>';});
+  kt+='<tr style="font-weight:700;"><td colspan="2">'+T(L.raw)+'</td><td>'+gm.total+' / 36</td></tr>';
+  kt+='<tr style="font-weight:700;background:#F2F8EF;"><td colspan="2">'+T(L.eff)+'</td><td>'+gm.effectiveTotal+' / 36</td></tr></table>';
+  var pariH='';
+  [['Nadi',gm.parihara.nadi],['Bhakoot',gm.parihara.bhakoot]].forEach(function(pr){
+    if(!pr[1].dosha)return;
+    pariH+='<div class="yog '+(pr[1].cancelled?'ok':'care')+'"><b>'+pr[0]+' '+(LANG==='hi'?'दोष':'Dosha')+': '+(pr[1].cancelled?T(L.cancelled):T(L.stands))+'</b>'
+      +(pr[1].reasons.length?('<br>'+pr[1].reasons.map(function(r){return '• '+T(r);}).join('<br>')):'')+'</div>';
+  });
+  if(!pariH)pariH='<div class="yog ok">'+(LANG==='hi'?'नाड़ी एवं भकूट — दोष रहित ✓':'Nadi and Bhakoot — no dosha ✓')+'</div>';
+  pg('<h2 class="sec">🔢 '+T(L.guna)+'</h2>'+kt+pariH);
+  // MANGLIK
+  function mkRow(p,label){return '<tr><td><b>'+label+'</b></td><td>'+(p.present?(LANG==='hi'?'हाँ':'Yes')+' ('+p.percent+'%)':(LANG==='hi'?'नहीं':'No'))+'</td><td style="font-size:12px;">'+(p.factors.map(function(f){return T(f);}).join('; ')||'—')+'</td></tr>';}
+  pg('<h2 class="sec">⚖️ '+T(L.manglik)+'</h2>'
+    +'<table><tr><th></th><th>'+(LANG==='hi'?'मंगल दोष':'Mangal Dosha')+'</th><th>'+(LANG==='hi'?'परिहार-कारक':'Cancellation factors')+'</th></tr>'
+    +mkRow(mk.boy,B.name)+mkRow(mk.girl,G.name)+'</table>'
+    +'<div class="yog '+(mk.verdict.key==='present'?'care':'ok')+'">'+T(mk.verdict)+'</div>');
+  // DOMAIN CHAPTERS
+  Object.keys(scores).forEach(function(k){
+    var v=scores[k];
+    pg('<h2 class="sec">'+(LANG==='hi'?M.domains[k].t_hi:M.domains[k].t_en)+' — '+v+'/100</h2>'
+      +'<div class="prose">'+T(M.domains[k][band(v)])+'</div>');
+  });
+  // WINDOWS
+  var to=new Date(Date.now()+12*365.25*86400000);
+  var wb=PE.getEventWindows('marriage',B.date,B.lat,B.lng,new Date(),to);
+  var wg=PE.getEventWindows('marriage',G.date,G.lat,G.lng,new Date(),to);
+  function winH(w,nm){
+    return '<h2 class="sec" style="font-size:17px;">'+nm+'</h2>'+w.windows.slice(0,3).map(function(x){
+      return '<div class="yog ok"><b>'+gname2(x.maha)+' – '+gname2(x.antar)+'</b> · '+fD(x.start)+' → '+fD(x.end)
+        +'<br><span style="font-size:12px;color:#8B5A2B;">'+T(L.whyWin)+': '+x.reasons.map(function(r){return T(r);}).join('; ')+'</span></div>';
+    }).join('');
+  }
+  pg('<h2 class="sec">📅 '+T(L.windows)+'</h2>'+winH(wb,B.name)+winH(wg,G.name));
+  // STRENGTHS / CARE + REMEDIES + FOOTER
+  var strengths=gm.kootas.filter(function(k){return k.obtained>=k.max*0.75;}).map(function(k){return '✦ '+k.koota+': '+T(M.koota[k.koota]);});
+  var cares=gm.kootas.filter(function(k){return k.obtained<=k.max*0.3;}).map(function(k){return '• '+k.koota+': '+T(M.koota[k.koota]);});
+  var rem=['venus','mars','moon','jupiter'].map(function(k){var r=C.remedy[k];return '<div class="yog"><b>'+r.name+'</b> — <span style="color:#8B2B33;">'+r.mantra+'</span><br>'+(LANG==='hi'?r.hi:r.en)+'</div>';}).join('');
+  pg('<h2 class="sec">✨ '+T(L.strengths)+'</h2><div class="prose">'+(strengths.join('<br>')||'—')+'</div>'
+    +'<h2 class="sec">🪔 '+T(L.carePts)+'</h2><div class="prose">'+(cares.join('<br>')||(LANG==='hi'?'कोई विशेष नहीं ✓':'None significant ✓'))+'</div>'
+    +'<h2 class="sec">🙏 '+T(L.remedies)+'</h2>'+rem
+    +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
+  document.getElementById('report').innerHTML=H;
+  document.getElementById('report').style.display='block';
+  document.getElementById('printbar').style.display='block';
+  document.getElementById('inputScreen').style.display='none';
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
