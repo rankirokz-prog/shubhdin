@@ -1974,6 +1974,8 @@
     getManglikMatch,
     manglikFactors,
     getEventWindows,
+    MAITRI: MAITRI,
+    RASHI_LORD: RASHI_LORD,
     getAshtakavarga,
     getTransitPeriods,
     getVarga,
