@@ -1611,6 +1611,38 @@
     return out;
   }
 
+  // ---- Kundli K9a: Divisional charts (Varga) --------------------------------
+  // BPHS rules. Supported: D7 Saptamsa, D9 Navamsa, D10 Dashamsa, D12 Dwadashamsa.
+  // Odd signs = Mesha,Mithuna,Simha,Tula,Dhanu,Kumbha (index 0,2,4,6,8,10).
+  function vargaRashiOf(siderealLon, n) {
+    var lon = ((siderealLon % 360) + 360) % 360;
+    var rashi = Math.floor(lon / 30);
+    var deg = lon - rashi * 30;
+    var part = Math.floor(deg * n / 30);
+    if (part >= n) part = n - 1;
+    var odd = (rashi % 2 === 0);
+    if (n === 9) return Math.floor(lon * 9 / 30) % 12; // proven navamsa shortcut
+    if (n === 7) return (rashi + (odd ? 0 : 6) + part) % 12;
+    if (n === 10) return (rashi + (odd ? 0 : 8) + part) % 12;
+    if (n === 12) return (rashi + part) % 12;
+    return (rashi + part) % 12; // simple fallback for other harmonics
+  }
+  // Public: divisional chart for a birth.
+  function getVarga(birthDate, lat, lng, n) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var lagnaV = vargaRashiOf(bc.lagna.longitude, n);
+    var chart = [];
+    for (var i = 0; i < 12; i++) chart.push({ rashiIndex: i, en: RASHI_EN[i], hi: RASHI_HI[i], grahas: [] });
+    var grahas = bc.grahas.map(function (g) {
+      var vr = vargaRashiOf(g.longitude, n);
+      chart[vr].grahas.push(g.key);
+      return { key: g.key, rashiIndex: vr, en: RASHI_EN[vr], hi: RASHI_HI[vr],
+               house: ((vr - lagnaV + 12) % 12) + 1 };
+    });
+    return { n: n, lagna: { rashiIndex: lagnaV, en: RASHI_EN[lagnaV], hi: RASHI_HI[lagnaV] },
+             grahas: grahas, chart: chart };
+  }
+
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
@@ -1769,6 +1801,7 @@
     gunaMilanCore,
     getAshtakavarga,
     getTransitPeriods,
+    getVarga,
     elongation, moonSidereal, yogaSum, ayanamsa, sunSidereal,
     findSunrise, findSunset, findMoonrise, findMoonset, findBoundary, buildSegments,
     moonSign, sunSign, dayPart, computeAbhijit, computeBrahmaMuhurta,
