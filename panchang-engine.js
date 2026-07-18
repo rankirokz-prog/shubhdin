@@ -1678,6 +1678,106 @@
   }
   var GRAHA_HI = { sun:'\u0938\u0942\u0930\u094D\u092F', moon:'\u091A\u0902\u0926\u094D\u0930', mars:'\u092E\u0902\u0917\u0932', mercury:'\u092C\u0941\u0927', jupiter:'\u0917\u0941\u0930\u0941', venus:'\u0936\u0941\u0915\u094D\u0930', saturn:'\u0936\u0928\u093F', rahu:'\u0930\u093E\u0939\u0941', ketu:'\u0915\u0947\u0924\u0941' };
 
+  // ---- Kundli K9f: Career & Wealth analysis ---------------------------------
+  // D10-based field mapping + govt/private + job/business + entrepreneurship score.
+  var CAREER_FIELDS = {
+    sun:     { en: ['Government', 'Administration', 'Leadership roles', 'Politics', 'Medicine'], hi: ['\u0936\u093E\u0938\u0928', '\u092A\u094D\u0930\u0936\u093E\u0938\u0928', '\u0928\u0947\u0924\u0943\u0924\u094D\u0935', '\u0930\u093E\u091C\u0928\u0940\u0924\u093F', '\u091A\u093F\u0915\u093F\u0924\u094D\u0938\u093E'] },
+    moon:    { en: ['Public-facing work', 'Hospitality', 'Healthcare', 'Food & dairy', 'Travel'], hi: ['\u091C\u0928-\u0938\u0902\u092A\u0930\u094D\u0915 \u0915\u093E\u0930\u094D\u092F', '\u0906\u0924\u093F\u0925\u094D\u092F', '\u0938\u094D\u0935\u093E\u0938\u094D\u0925\u094D\u092F', '\u0905\u0928\u094D\u0928-\u0926\u0941\u0917\u094D\u0927', '\u092F\u093E\u0924\u094D\u0930\u093E'] },
+    mars:    { en: ['Engineering', 'Defence & police', 'Technology', 'Surgery', 'Real estate'], hi: ['\u0905\u092D\u093F\u092F\u093E\u0902\u0924\u094D\u0930\u093F\u0915\u0940', '\u0930\u0915\u094D\u0937\u093E-\u092A\u0941\u0932\u093F\u0938', '\u0924\u0915\u0928\u0940\u0915', '\u0936\u0932\u094D\u092F-\u091A\u093F\u0915\u093F\u0924\u094D\u0938\u093E', '\u092D\u0942-\u0938\u0902\u092A\u0926\u093E'] },
+    mercury: { en: ['Commerce & trade', 'Analytics & IT', 'Writing & media', 'Accounting', 'Consulting'], hi: ['\u0935\u093E\u0923\u093F\u091C\u094D\u092F-\u0935\u094D\u092F\u093E\u092A\u093E\u0930', '\u0935\u093F\u0936\u094D\u0932\u0947\u0937\u0923-\u0906\u0908\u091F\u0940', '\u0932\u0947\u0916\u0928-\u092E\u0940\u0921\u093F\u092F\u093E', '\u0932\u0947\u0916\u093E\u0902\u0915\u0928', '\u092A\u0930\u093E\u092E\u0930\u094D\u0936'] },
+    jupiter: { en: ['Teaching & academia', 'Law & justice', 'Finance & banking', 'Advisory', 'Spiritual work'], hi: ['\u0936\u093F\u0915\u094D\u0937\u0923', '\u0935\u093F\u0927\u093F-\u0928\u094D\u092F\u093E\u092F', '\u0935\u093F\u0924\u094D\u0924-\u092C\u0948\u0902\u0915\u093F\u0902\u0917', '\u092A\u0930\u093E\u092E\u0930\u094D\u0936', '\u0906\u0927\u094D\u092F\u093E\u0924\u094D\u092E\u093F\u0915 \u0915\u093E\u0930\u094D\u092F'] },
+    venus:   { en: ['Arts & design', 'Luxury & fashion', 'Media & entertainment', 'Beauty & wellness', 'Hospitality'], hi: ['\u0915\u0932\u093E-\u0921\u093F\u091C\u093C\u093E\u0907\u0928', '\u0935\u0948\u092D\u0935-\u092B\u0948\u0936\u0928', '\u092E\u0940\u0921\u093F\u092F\u093E-\u092E\u0928\u094B\u0930\u0902\u091C\u0928', '\u0938\u094C\u0902\u0926\u0930\u094D\u092F-\u0938\u094D\u0935\u093E\u0938\u094D\u0925\u094D\u092F', '\u0906\u0924\u093F\u0925\u094D\u092F'] },
+    saturn:  { en: ['Service & operations', 'Infrastructure', 'Government service', 'Labour & mining', 'Manufacturing'], hi: ['\u0938\u0947\u0935\u093E-\u0938\u0902\u091A\u093E\u0932\u0928', '\u0906\u0927\u093E\u0930\u092D\u0942\u0924 \u0922\u093E\u0902\u091A\u093E', '\u0936\u093E\u0938\u0915\u0940\u092F \u0938\u0947\u0935\u093E', '\u0936\u094D\u0930\u092E-\u0916\u0928\u0928', '\u0935\u093F\u0928\u093F\u0930\u094D\u092E\u093E\u0923'] },
+    rahu:    { en: ['Technology & software', 'Foreign trade', 'Aviation', 'Research', 'New-age industries'], hi: ['\u0924\u0915\u0928\u0940\u0915-\u0938\u0949\u092B\u094D\u091F\u0935\u0947\u092F\u0930', '\u0935\u093F\u0926\u0947\u0936 \u0935\u094D\u092F\u093E\u092A\u093E\u0930', '\u0935\u093F\u092E\u093E\u0928\u0928', '\u0936\u094B\u0927', '\u0928\u0935-\u092F\u0941\u0917 \u0909\u0926\u094D\u092F\u094B\u0917'] },
+    ketu:    { en: ['Research & investigation', 'Spirituality & healing', 'Pharmaceuticals', 'Occult sciences', 'Niche expertise'], hi: ['\u0936\u094B\u0927-\u0905\u0928\u094D\u0935\u0947\u0937\u0923', '\u0905\u0927\u094D\u092F\u093E\u0924\u094D\u092E-\u091A\u093F\u0915\u093F\u0924\u094D\u0938\u093E', '\u0914\u0937\u0927', '\u0917\u0942\u0922\u093C \u0935\u093F\u091C\u094D\u091E\u093E\u0928', '\u0935\u093F\u0936\u093F\u0937\u094D\u091F \u0926\u0915\u094D\u0937\u0924\u093E'] }
+  };
+  function getCareerWealth(birthDate, lat, lng) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var d10 = getVarga(birthDate, lat, lng, 10);
+    var av = getAshtakavarga(birthDate, lat, lng);
+    var yg = getYogas(birthDate, lat, lng);
+    var dig = {}; for (var i=0;i<yg.dignities.length;i++) dig[yg.dignities[i].key]=yg.dignities[i].dignity;
+    function G(k){for(var j=0;j<bc.grahas.length;j++) if(bc.grahas[j].key===k) return bc.grahas[j];}
+    // 10th house lord + occupants + D10 lagna lord => weighted field vote
+    var tenthRashi = bc.d1[9].rashiIndex;
+    var tenthLord = RASHI_LORD[tenthRashi];
+    var d10LagnaLord = RASHI_LORD[d10.lagna.rashiIndex];
+    var votes = {};
+    function vote(k,w){ if(!k)return; votes[k]=(votes[k]||0)+w; }
+    vote(tenthLord, 3);
+    vote(d10LagnaLord, 3);
+    var occ10 = bc.d1[9].grahas||[]; for (var o=0;o<occ10.length;o++) vote(occ10[o], 2);
+    var occD10 = d10.chart[(d10.lagna.rashiIndex+9)%12].grahas||[];
+    for (var o2=0;o2<occD10.length;o2++) vote(occD10[o2], 2);
+    // strongest planets overall (dignity + own SAV) add a soft vote
+    ['sun','mars','mercury','jupiter','venus','saturn'].forEach(function(k){
+      var g=G(k); var s=0;
+      if(dig[k]==='Exalted'||dig[k]==='Own Sign')s+=2; if(dig[k]==='Debilitated')s-=1;
+      if(av.sav[g.rashi.index]>=30)s+=1;
+      if(s>0)vote(k,s);
+    });
+    var ranked = Object.keys(votes).sort(function(a,b){return votes[b]-votes[a];});
+    var fields = [];
+    var perPlanet = {};
+    for (var r=0;r<ranked.length && fields.length<7;r++){
+      var arr = (CAREER_FIELDS[ranked[r]]||{})['en'];
+      var cap = ranked[r]===ranked[0] ? 3 : 2; // top planet gets 3, others 2
+      if(arr) for(var f=0;f<arr.length && fields.length<7;f++){
+        if((perPlanet[ranked[r]]||0)>=cap) break;
+        fields.push(ranked[r]+'|'+f);
+        perPlanet[ranked[r]]=(perPlanet[ranked[r]]||0)+1;
+      }
+    }
+    // govt vs private lean
+    var govtScore = 0, privScore = 0;
+    var sun=G('sun'), sat=G('saturn');
+    if(dig['sun']==='Exalted'||dig['sun']==='Own Sign')govtScore+=2;
+    if(sun.house===10||sun.house===1||sun.house===11)govtScore+=1;
+    if(dig['saturn']==='Exalted'||dig['saturn']==='Own Sign')govtScore+=1;
+    if(sat.house===10||sat.house===6)govtScore+=1;
+    var merc=G('mercury'), venus=G('venus');
+    if(dig['mercury']==='Exalted'||dig['mercury']==='Own Sign')privScore+=2;
+    if(merc.house===10||merc.house===7||merc.house===11)privScore+=1;
+    if(dig['venus']==='Exalted'||dig['venus']==='Own Sign')privScore+=1;
+    var govtLean = govtScore>privScore?'government':privScore>govtScore?'private':'balanced';
+    // job vs business + entrepreneurship score
+    var lagnaLord = RASHI_LORD[bc.lagna.rashiIndex]; var ll=G(lagnaLord);
+    var mars=G('mars');
+    var entre = 50;
+    if(ll&&(dig[lagnaLord]==='Exalted'||dig[lagnaLord]==='Own Sign'))entre+=10;
+    if(av.sav[bc.d1[0].rashiIndex]>=28)entre+=6;             // strong 1st
+    if(dig['mars']==='Exalted'||dig['mars']==='Own Sign')entre+=6;  // courage
+    if(mars.house===3||mars.house===10||mars.house===11)entre+=5;
+    if(av.sav[bc.d1[6].rashiIndex]>=28)entre+=5;             // 7th (trade)
+    if(dig['mercury']==='Exalted'||dig['mercury']==='Own Sign')entre+=5;
+    if(dig['sun']==='Exalted'||dig['sun']==='Own Sign')entre+=4;
+    if(av.sav[bc.d1[9].rashiIndex]>=30)entre+=5;             // strong 10th
+    entre=Math.max(35,Math.min(92,entre));
+    var jobBusiness = entre>=68?'business-leaning':entre>=52?'either (slight business edge)':'job-leaning';
+    // wealth: dhan yoga proxies + 2nd/11th SAV
+    var wealthScore = 55;
+    wealthScore += (av.sav[bc.d1[1].rashiIndex]-28)*1.5;   // 2nd
+    wealthScore += (av.sav[bc.d1[10].rashiIndex]-28)*1.5;  // 11th
+    var jup=G('jupiter');
+    if(dig['jupiter']==='Exalted'||dig['jupiter']==='Own Sign')wealthScore+=6;
+    var lord2=RASHI_LORD[bc.d1[1].rashiIndex], lord11=RASHI_LORD[bc.d1[10].rashiIndex];
+    if(dig[lord2]==='Exalted'||dig[lord2]==='Own Sign')wealthScore+=4;
+    if(dig[lord11]==='Exalted'||dig[lord11]==='Own Sign')wealthScore+=4;
+    wealthScore=Math.max(45,Math.min(94,Math.round(wealthScore)));
+    // foreign potential
+    var foreign = [];
+    var rahu=G('rahu');
+    if(rahu.house===7||rahu.house===12||rahu.house===9||rahu.house===10)foreign.push('rahuPlacement');
+    if(G('moon').house===12||jup.house===12)foreign.push('twelfthSupport');
+    return {
+      fieldKeys: fields, votes: votes, tenthLord: tenthLord, d10LagnaLord: d10LagnaLord,
+      govtLean: govtLean, govtScore: govtScore, privScore: privScore,
+      entrepreneurship: entre, jobBusiness: jobBusiness,
+      wealthScore: wealthScore, foreign: foreign,
+      d10: d10
+    };
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -1974,6 +2074,8 @@
     getManglikMatch,
     manglikFactors,
     getEventWindows,
+    getCareerWealth,
+    CAREER_FIELDS: CAREER_FIELDS,
     MAITRI: MAITRI,
     RASHI_LORD: RASHI_LORD,
     getAshtakavarga,
