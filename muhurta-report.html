@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubh Din — Muhurta Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+body{background:#EFE9DC;font-family:'Noto Serif Devanagari',serif;color:var(--ink);}
+.screen{max-width:720px;margin:24px auto;background:var(--paper);border:1px solid var(--gold2);border-radius:12px;padding:28px;}
+h1.brand{font-size:23px;text-align:center;}
+.sub{text-align:center;color:var(--soft);font-size:13px;margin:4px 0 16px;}
+label{display:block;font-size:12px;color:var(--soft);margin:8px 0 3px;}
+input,select,button{font-family:inherit;font-size:14px;padding:8px 9px;border:1px solid var(--gold2);border-radius:8px;background:#fff;color:var(--ink);width:100%;}
+button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:none;cursor:pointer;margin-top:14px;font-size:15px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.actgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0;}
+.actbtn{border:1px solid var(--gold2);border-radius:10px;padding:12px;text-align:center;cursor:pointer;background:#fff;font-size:14px;}
+.actbtn.on{background:#FFF6E3;border-color:var(--saffron);border-width:2px;font-weight:700;}
+.actbtn .ic{font-size:24px;display:block;margin-bottom:4px;}
+.confirm{background:#FFF6E3;border:1px dashed var(--gold);border-radius:10px;padding:12px;margin-top:14px;display:none;font-size:14px;line-height:1.8;}
+.langToggle{display:flex;gap:8px;margin-top:8px;}
+.langToggle button{margin:0;background:#fff;color:var(--ink);border:1px solid var(--gold2);}
+.langToggle button.on{background:var(--ink);color:#FFE8C8;}
+#report{display:none;}
+.page{max-width:794px;margin:16px auto;background:var(--paper);padding:46px 50px;box-shadow:0 2px 14px rgba(92,26,27,.12);position:relative;min-height:1000px;}
+.page::before{content:"";position:absolute;inset:14px;border:1.5px solid var(--gold2);border-radius:4px;pointer-events:none;}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+h2.sec{font-size:21px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 14px;}
+.prose{font-size:15px;line-height:1.85;text-align:justify;margin-bottom:12px;}
+.idcard{background:#FFF6E3;border:1px solid var(--gold2);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.idcard .t{font-size:11.5px;color:var(--soft);letter-spacing:.5px;}
+.idcard .v{font-size:18px;color:#8B2B33;font-weight:700;margin-top:2px;}
+.datecard{border:1px solid var(--gold2);border-radius:12px;padding:14px 16px;margin-bottom:14px;background:#FDF8EC;position:relative;}
+.datecard.top{border:2px solid var(--saffron);background:#FFF6E3;}
+.datecard .rank{position:absolute;top:-11px;left:14px;background:var(--saffron);color:#fff;border-radius:12px;padding:2px 12px;font-size:12px;font-weight:700;}
+.datecard .bigdate{font-size:22px;color:#8B2B33;font-weight:700;}
+.datecard .meta{font-size:13px;color:var(--soft);margin:4px 0 8px;}
+.datecard .why{font-size:13px;color:#2B7A4B;line-height:1.7;}
+.datecard .caution{font-size:12.5px;color:#B8434A;line-height:1.6;margin-top:5px;}
+.datecard .windows{font-size:12px;color:#5C1A1B;margin-top:8px;padding-top:7px;border-top:1px dashed #E4D3AE;}
+.scorepill{display:inline-block;background:#2B8B5A;color:#fff;border-radius:10px;padding:1px 9px;font-size:12px;font-weight:700;}
+.foot{font-size:12px;color:var(--soft);border-top:1px solid var(--gold2);padding-top:10px;margin-top:20px;line-height:1.7;}
+.printbar{max-width:794px;margin:10px auto;text-align:center;}
+.printbar button{width:auto;padding:10px 26px;}
+@media print{body{background:#fff;}.screen,.printbar{display:none !important;}#report{display:block !important;}
+.page{box-shadow:none;margin:0;page-break-after:always;min-height:auto;padding:34px 40px;}.page:last-child{page-break-after:auto;}
+.datecard{page-break-inside:avoid;}}
+@page{size:A4;margin:10mm;}
+</style>
+</head>
+<body>
+<div class="screen" id="inputScreen">
+  <h1 class="brand">🏠 शुभ दिन — Muhurta Report</h1>
+  <div class="sub">Your personal best dates · Filtered by YOUR tarabalam & chandrabalam · Something generic calendars can't do</div>
+  <label>What is the occasion? / अवसर चुनें</label>
+  <div class="actgrid" id="actGrid"></div>
+  <div class="row">
+    <div><label>From date / से</label><input id="fromd" type="date"></div>
+    <div><label>To date / तक</label><input id="tod" type="date"></div>
+  </div>
+  <div style="border-top:1px dashed var(--gold2);margin:14px 0 4px;padding-top:10px;font-size:12px;color:var(--soft);">आपका जन्म विवरण / Your birth details</div>
+  <div class="row">
+    <div><label>Name</label><input id="pname" value=""></div>
+    <div><label>Birth Date</label><input id="bdate" type="date" value="1996-12-06"></div>
+  </div>
+  <div class="row">
+    <div><label>Birth Time (24h)</label><input id="btime" type="time" value="15:47"></div>
+    <div><label>Place</label><input id="bplace" value="Narasapur, AP"></div>
+  </div>
+  <div class="row">
+    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"></div>
+    <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
+  </div>
+  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button></div>
+  <button onclick="confirmStep()">Find My Best Dates → खोजें</button>
+  <div class="confirm" id="confirmBox">
+    <div id="confirmText"></div>
+    <div class="row">
+      <button style="background:#5A8B2B;" onclick="generate()">✓ Correct — Search</button>
+      <button style="background:#B8434A;" onclick="document.getElementById('confirmBox').style.display='none'">✗ Fix details</button>
+    </div>
+  </div>
+</div>
+<div class="printbar" id="printbar" style="display:none;"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div id="report"></div>
+
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="muhurta-content.js"></script>
+<script>
+var LANG='en', CTX=null, ACT='griha_pravesh';
+function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';renderActs();}
+function T(o){return o?(o[LANG]||o.en):'';}
+function ist(d){return new Date(d.getTime()+5.5*3600000);}
+function fD(d){return ist(d).toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
+function fT(d){return ist(d).toISOString().slice(11,16);}
+function renderActs(){
+  var U=window.SD_MUHURTA; var g=document.getElementById('actGrid'); g.innerHTML='';
+  Object.keys(U.activities).forEach(function(k){
+    var a=U.activities[k];
+    var d=document.createElement('div');
+    d.className='actbtn'+(k===ACT?' on':'');
+    d.innerHTML='<span class="ic">'+a.icon+'</span>'+(LANG==='hi'?a.hi:a.en);
+    d.onclick=function(){ACT=k;renderActs();};
+    g.appendChild(d);
+  });
+}
+function initDates(){
+  var t=new Date(); var f=new Date(t.getTime()+7*86400000); var e=new Date(t.getTime()+120*86400000);
+  document.getElementById('fromd').value=f.toISOString().slice(0,10);
+  document.getElementById('tod').value=e.toISOString().slice(0,10);
+}
+function birthUTC(){
+  var dv=document.getElementById('bdate').value.split('-').map(Number);
+  var tv=document.getElementById('btime').value.split(':').map(Number);
+  return new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000);
+}
+function confirmStep(){
+  var PE=window.PanchangEngine;
+  var b=birthUTC(),lat=+document.getElementById('blat').value,lng=+document.getElementById('blng').value;
+  var bc=PE.getBirthChart(b,lat,lng); var moon=bc.grahas.find(function(x){return x.key==='moon';});
+  CTX={b:b,lat:lat,lng:lng,name:document.getElementById('pname').value||'—',place:document.getElementById('bplace').value,
+       from:document.getElementById('fromd').value,to:document.getElementById('tod').value};
+  var U=window.SD_MUHURTA; var a=U.activities[ACT];
+  document.getElementById('confirmText').innerHTML=
+    '<b>'+(LANG==='hi'?a.hi:a.en)+'</b> · '+CTX.from+' → '+CTX.to+'<br>'
+    +(LANG==='hi'?'<b>जन्म नक्षत्र:</b> '+moon.nakshatra.hi+' · <b>चंद्र राशि:</b> '+moon.rashi.hi:'<b>Birth star:</b> '+moon.nakshatra.en+' · <b>Moon sign:</b> '+moon.rashi.en)
+    +'<br>'+(LANG==='hi'?'सही हो तो शुभ दिन खोजें':'If correct, search best dates');
+  document.getElementById('confirmBox').style.display='block';
+}
+function generate(){ try {
+  var PE=window.PanchangEngine, U=window.SD_MUHURTA;
+  if(!PE||!PE.findMuhurta){alert('Engine not fully loaded. Please hard-refresh (Ctrl+Shift+R) so the latest panchang-engine.js loads.');return;}
+  if(!U){alert('Content file missing. Ensure muhurta-content.js is in the same folder.');return;}
+  if(!CTX){alert('Please click "Find My Best Dates" first.');return;}
+  var L=U.labels, a=U.activities[ACT], H='';
+  function pg(inner){H+='<div class="page">'+inner+'</div>';}
+  var fromD=new Date(CTX.from+'T00:00:00Z'), toD=new Date(CTX.to+'T00:00:00Z');
+  var res=PE.findMuhurta(ACT,CTX.b,CTX.lat,CTX.lng,fromD,toD,10);
+  var maxScore=res.results.length?res.results[0].score:1;
+  // COVER
+  pg('<div class="cover" style="min-height:900px;"><div style="font-size:50px;">'+a.icon+'</div>'
+    +'<h1 style="font-size:30px;margin:10px 0;">'+T(L.title)+'</h1>'
+    +'<div class="sub" style="font-size:14px;">'+T(L.subtitle)+' · शुभ दिन</div>'
+    +'<div style="font-size:24px;color:#8B2B33;font-weight:700;margin:20px 0 2px;">'+(LANG==='hi'?a.hi:a.en)+'</div>'
+    +'<div class="sub">'+CTX.name+' · '+fD(fromD).replace(/^\w+, /,'')+' → '+fD(toD).replace(/^\w+, /,'')+'</div>'
+    +'<div class="idcard" style="margin-top:24px;min-width:320px;"><div class="t">'+T(L.yourStars)+'</div>'
+    +'<div class="v">'+res.birthNakshatra+' · '+res.birthRashi+'</div></div>'
+    +'<div class="prose" style="max-width:520px;font-size:14px;">'+a['desc'+(LANG==='hi'?'Hi':'En')]+'</div></div>');
+  // RESULTS
+  if(!res.results.length){
+    pg('<h2 class="sec">'+a.icon+' '+T(L.bestDates)+'</h2><div class="prose">'+T(L.noResults)+'</div>');
+  } else {
+    var cards=res.results.map(function(r,i){
+      var pct=Math.round(r.score/maxScore*100);
+      var stars=Math.max(3,Math.min(5,Math.round(r.score/maxScore*5)));
+      return '<div class="datecard'+(i===0?' top':'')+'"><div class="rank">'+(i===0?T(L.topPick):(T(L.rank)+' '+(i+1)))+'</div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+        +'<div class="bigdate">'+fD(r.date)+'</div><div class="scorepill">'+('\u2605'.repeat(stars))+'</div></div>'
+        +'<div class="meta">'+T(L.nakshatra)+': <b>'+(LANG==='hi'?r.nakshatra.hi:r.nakshatra.en)+'</b> &nbsp;·&nbsp; '+T(L.tithi)+': <b>'+(LANG==='hi'?r.tithi.hi:r.tithi.en)+'</b> ('+r.paksha+') &nbsp;·&nbsp; '+T(L.day)+': <b>'+(LANG==='hi'?r.weekday.hi:r.weekday.en)+'</b></div>'
+        +'<div class="why">\u2705 '+r.plus.map(function(p){return T(p);}).join(' &nbsp; ')+'</div>'
+        +(r.minus.length?'<div class="caution">\u26A0 '+r.minus.map(function(p){return T(p);}).join('; ')+'</div>':'')
+        +'<div class="windows">\u2600 '+T(L.abhijit)+': '+(r.abhijit?fT(r.abhijit.start)+'–'+fT(r.abhijit.end):'—')
+        +(r.amritKaal&&r.amritKaal.start?' &nbsp;|&nbsp; \uD83C\uDF19 '+T(L.amrit)+': '+fT(r.amritKaal.start)+'–'+fT(r.amritKaal.end):'')+'</div></div>';
+    });
+    // paginate ~4 cards per page
+    pg('<h2 class="sec">'+a.icon+' '+T(L.bestDates)+'</h2>'
+      +'<div class="prose" style="font-size:13px;color:#8B5A2B;">'+res.totalFound+' '+T(L.found)+'.</div>'
+      +cards.slice(0,4).join(''));
+    for(var i=4;i<cards.length;i+=5){
+      pg('<h2 class="sec" style="font-size:17px;">'+a.icon+' '+T(L.bestDates)+' ('+(Math.floor(i/5)+2)+')</h2>'+cards.slice(i,i+5).join(''));
+    }
+  }
+  // METHOD + FOOTER
+  pg('<h2 class="sec">📖 '+(LANG==='hi'?'यह कैसे निकाला गया':'How This Was Computed')+'</h2>'
+    +'<div class="prose">'+T(L.method)+'</div>'
+    +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
+  document.getElementById('report').innerHTML=H;
+  document.getElementById('report').style.display='block';
+  document.getElementById('printbar').style.display='block';
+  document.getElementById('inputScreen').style.display='none';
+  window.scrollTo(0,0);
+} catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
+renderActs(); initDates();
+</script>
+</body>
+</html>
