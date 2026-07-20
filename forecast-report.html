@@ -121,8 +121,8 @@ function generate(){ try {
   var fc=PE.getYearForecast(CTX.b,CTX.lat,CTX.lng,CTX.startYear,10);
   // COVER
   pg('<div class="cover" style="min-height:900px;"><div style="font-size:50px;color:var(--gold);">🕉️</div>'
-    +'<h1 style="font-size:31px;margin:10px 0;">'+T(L.title)+'</h1>'
-    +'<div class="sub" style="font-size:14px;">'+T(L.subtitle)+' · शुभ दिन</div>'
+    +'<h1 style="font-size:31px;margin:10px 0;">'+(LANG==='hi'?'जीवन रोडमैप':'Your Life Roadmap')+'<br><span style="font-size:18px;color:var(--soft);">'+CTX.startYear+' – '+(CTX.startYear+9)+'</span></h1>'
+    +'<div class="sub" style="font-size:14px;">'+(LANG==='hi'?'आपके अगले 10 वर्ष — दशा, गोचर और क्या करें':'Your Next 10 Years — dasha, transits and what to do')+' · शुभ दिन</div>'
     +'<div style="font-size:25px;color:#8B2B33;font-weight:700;margin:22px 0 2px;">'+CTX.name+'</div>'
     +'<div class="sub">'+CTX.startYear+' – '+(CTX.startYear+9)+' &nbsp;·&nbsp; '+(LANG==='hi'?'चंद्र राशि':'Moon sign')+': '+(LANG==='hi'?fc.moonRashi.hi:fc.moonRashi.en)+'</div>'
     +(fc.currentDasha?'<div class="idcard" style="margin-top:24px;min-width:300px;"><div class="t">'+T(L.period)+'</div><div class="v">'+gname2(fc.currentDasha.maha)+' – '+gname2(fc.currentDasha.antar)+'</div></div>':'')+'</div>');
@@ -135,6 +135,54 @@ function generate(){ try {
       +'<div style="font-size:12px;color:var(--soft);width:120px;text-align:right;">'+gname2(y.maha)+'/'+gname2(y.antar)+'</div></div>';
   }).join('');
   pg('<h2 class="sec">📊 '+T(L.overview)+'</h2>'+ov+'<div class="prose" style="font-size:11.5px;color:#8B5A2B;margin-top:10px;">'+T(L.method)+'</div>');
+  // SPOTLIGHT FULL PAGES (best + caution years get their own page)
+  function starStr(n){return '<span style="color:#E8730C;letter-spacing:2px;">'+'\u2605'.repeat(n)+'</span><span style="color:#D4A843;letter-spacing:2px;">'+'\u2606'.repeat(5-n)+'</span>';}
+  function spotlightPage(y, kind){
+    var SL=Y.spotLabels, d=y.domains;
+    var isBest=kind==='best';
+    var head=isBest?T(SL.bright):T(SL.caution);
+    var col=isBest?'#2B8B5A':'#B8434A';
+    var intro=isBest?T(Y.spotlightBest):T(Y.spotlightCaution);
+    var domRows=[['career',SL.career],['money',SL.money],['marriage',SL.marriage],['health',SL.health],['travel',SL.travel],['invest',SL.invest]].map(function(dd){
+      return '<div style="display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #E4D3AE;"><span>'+T(dd[1])+'</span><span style="font-size:17px;">'+starStr(d[dd[0]])+'</span></div>';
+    }).join('');
+    // opportunities from high-star domains; risks from low-star + rating
+    var opps=[], risks=[];
+    if(isBest){
+      if(d.career>=4)opps.push(T(Y.opp.career));
+      if(d.money>=4)opps.push(T(Y.opp.wealth));
+      if(d.invest>=4)opps.push(T(Y.opp.business));
+      if(d.marriage>=4)opps.push(T(Y.opp.marriage));
+      if(d.travel>=4)opps.push(T(Y.opp.travel));
+      if(opps.length<2)opps.push(T(Y.opp.learning));
+      risks.push(T(Y.risk.overconfidence));
+    } else {
+      if(d.money<=2)risks.push(T(Y.risk.loans)), risks.push(T(Y.risk.speculation));
+      if(d.health<=3)risks.push(T(Y.risk.burnout)), risks.push(T(Y.risk.health));
+      if(d.career<=2)risks.push(T(Y.risk.conflict));
+      if(risks.length<2)risks.push(T(Y.risk.overconfidence));
+    }
+    var strat=isBest
+      ?(LANG==='hi'?'इस वर्ष की गति का पूरा लाभ लें — बड़े निर्णय, निवेश और पहल अभी करें। अवसर की खिड़की खुली है।':'Ride this year\u2019s momentum fully — make big decisions, investments and initiatives now. The window of opportunity is open.')
+      :(LANG==='hi'?'लाभ सुरक्षित रखें, बचत बढ़ाएँ, स्वास्थ्य को प्राथमिकता दें और बड़े जोखिम टालें। यह वर्ष धैर्य से पार करने का है।':'Protect your gains, increase savings, prioritize health, and avoid big risks. This is a year to cross with patience.');
+    var uniqOpps=opps.filter(function(v,i,a){return a.indexOf(v)===i;});
+    var uniqRisks=risks.filter(function(v,i,a){return a.indexOf(v)===i;});
+    pg('<h2 class="sec" style="color:'+col+';border-color:'+col+';">'+head+' — '+y.year+'</h2>'
+      +'<div style="text-align:center;font-size:20px;color:'+col+';font-weight:700;margin-bottom:4px;">'+T(Y.persona[y.persona])+'</div>'
+      +'<div class="sub" style="font-size:13px;">'+(LANG==='hi'?'आयु':'Age')+' '+y.age+' · '+gname2(y.maha)+' – '+gname2(y.antar)+'</div>'
+      +'<div class="prose" style="margin-top:10px;">'+intro+'</div>'
+      +'<div class="idcard"><div class="t">'+T(SL.domains)+'</div>'+domRows+'</div>'
+      +'<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
+      +(isBest?'<div class="idcard" style="background:#F2F8EF;"><div class="t" style="color:#2B7A4B;">'+T(SL.opportunities)+'</div><div style="font-size:14px;line-height:2;margin-top:4px;">'+uniqOpps.map(function(o){return '\u2705 '+o;}).join('<br>')+'</div></div>':'')
+      +'<div class="idcard" style="background:#FFF3F0;"><div class="t" style="color:#B8434A;">'+T(SL.avoid)+'</div><div style="font-size:14px;line-height:2;margin-top:4px;">'+uniqRisks.map(function(r){return '\u274C '+r;}).join('<br>')+'</div></div>'
+      +(isBest?'':'<div class="idcard" style="background:#F2F8EF;"><div class="t" style="color:#2B7A4B;">'+T(SL.strategy)+'</div><div style="font-size:14px;line-height:1.8;margin-top:4px;">'+strat+'</div></div>')
+      +'</div>'
+      +(isBest?'<div class="idcard" style="background:#FFF6E3;margin-top:2px;"><div class="t">'+T(SL.strategy)+'</div><div class="prose" style="margin:4px 0 0;">'+strat+'</div></div>':''));
+  }
+  var bestY=fc.years.find(function(y){return y.spotlight==='best';});
+  var cautionY=fc.years.find(function(y){return y.spotlight==='caution';});
+  if(bestY)spotlightPage(bestY,'best');
+  if(cautionY)spotlightPage(cautionY,'caution');
   // PER-YEAR CARDS
   function domClass(tone){return tone>0?{bg:'#F2F8EF',c:'#2B7A4B',lbl:T(L.favourable)}:tone<0?{bg:'#FFF3F0',c:'#B8434A',lbl:T(L.attention)}:{bg:'#FBF6E8',c:'#8B5A2B',lbl:T(L.steady)};}
   function transitTone(planet,h){if(h===null)return 0;
@@ -144,16 +192,17 @@ function generate(){ try {
     return 0;}
   var cards=fc.years.map(function(y){
     var rt=Y.ratings[y.rating], col=RATING_COLOR[y.rating];
-    // domain leanings: career=Saturn+Jupiter, money=Jupiter, relationships=Venus-ruled via Jupiter7/Moon, health=Saturn
-    var jT=transitTone('jupiter',y.jupiterHouse), sT=transitTone('saturn',y.saturnHouse), rT=transitTone('rahu',y.rahuHouse);
+    var jT=y.jTone, sT=y.sTone, rT=y.rTone;
     var career=domClass(sT+ (y.jupiterHouse&&[10,11,2].indexOf(y.jupiterHouse)>=0?1:0));
     var money=domClass(jT + (y.rahuHouse&&[2,11].indexOf(y.rahuHouse)>=0?1:0));
     var rel=domClass((y.jupiterHouse&&[7,5,11].indexOf(y.jupiterHouse)>=0?1:0) + (y.saturnHouse&&[7].indexOf(y.saturnHouse)>=0?-1:0));
     var health=domClass(sT + (y.saturnHouse&&[1,8].indexOf(y.saturnHouse)>=0?-1:0));
     function dom(label,d){return '<div class="domitem" style="background:'+d.bg+';color:'+d.c+';"><b>'+label+':</b> '+d.lbl+'</div>';}
     var themeTxt = y.antar&&Y.theme[y.antar] ? T(Y.theme[y.antar]) : (y.maha&&Y.theme[y.maha]?T(Y.theme[y.maha]):'');
-    return '<div class="ycard"><div class="yhead"><div><span class="yy">'+y.year+'</span> <span class="age">('+(LANG==='hi'?'आयु':'age')+' '+y.age+')</span></div>'
-      +'<div class="badge" style="background:'+col+';">'+T({en:rt.t_en,hi:rt.t_hi})+'</div></div>'
+    var personaName = y.persona&&Y.persona[y.persona] ? T(Y.persona[y.persona]) : '';
+    var spotMark = y.spotlight==='best'?' <span style="color:#2B8B5A;font-size:12px;">'+T(Y.spotLabels.bright)+'</span>':y.spotlight==='caution'?' <span style="color:#B8434A;font-size:12px;">'+T(Y.spotLabels.caution)+'</span>':'';
+    return '<div class="ycard"><div class="yhead"><div><span class="yy">'+y.year+'</span> <span class="age">('+(LANG==='hi'?'आयु':'age')+' '+y.age+')</span>'+spotMark+'</div>'
+      +'<div class="badge" style="background:'+col+';">'+personaName+'</div></div>'
       +'<div class="line"><b>'+T(L.period)+':</b> '+gname2(y.maha)+' – '+gname2(y.antar)+' &nbsp;·&nbsp; <b>'+T(L.theme)+':</b> '+themeTxt+'</div>'
       +'<div class="line">'+T(rt)+'</div>'
       +'<div class="domgrid">'+dom(T(Y.domain.career),career)+dom(T(Y.domain.money),money)+dom(T(Y.domain.relationships),rel)+dom(T(Y.domain.health),health)+'</div>'
