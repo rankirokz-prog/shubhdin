@@ -1769,12 +1769,60 @@
     var rahu=G('rahu');
     if(rahu.house===7||rahu.house===12||rahu.house===9||rahu.house===10)foreign.push('rahuPlacement');
     if(G('moon').house===12||jup.house===12)foreign.push('twelfthSupport');
+    // leadership / management potential (Sun + 10th strength + Lagna lord + fixed-sign weight)
+    var leadership = 48;
+    if(dig['sun']==='Exalted'||dig['sun']==='Own Sign')leadership+=10;
+    if(sun.house===1||sun.house===10||sun.house===5||sun.house===11)leadership+=6;
+    if(av.sav[bc.d1[9].rashiIndex]>=30)leadership+=6;                 // strong 10th
+    if(ll&&(dig[lagnaLord]==='Exalted'||dig[lagnaLord]==='Own Sign'))leadership+=5;
+    if(av.sav[bc.d1[0].rashiIndex]>=28)leadership+=4;                 // strong 1st
+    var FIXED=[1,4,7,10];                                             // sthira rashis = steady command
+    if(FIXED.indexOf(bc.lagna.rashiIndex)>=0)leadership+=4;
+    if(dig['jupiter']==='Exalted'||dig['jupiter']==='Own Sign')leadership+=3; // wise authority
+    if(dig['sun']==='Debilitated')leadership-=6;
+    leadership=Math.max(38,Math.min(94,Math.round(leadership)));
+    // wealth sub-dimensions (each 1-5 stars)
+    function starFrom(score,lo,hi){var s=1+Math.round((score-lo)/(hi-lo)*4);return Math.max(1,Math.min(5,s));}
+    var incomeRaw = 50 + (av.sav[bc.d1[10].rashiIndex]-28)*2;        // 11th = gains
+    if(dig[lord11]==='Exalted'||dig[lord11]==='Own Sign')incomeRaw+=8;
+    if(dig['jupiter']==='Exalted'||dig['jupiter']==='Own Sign')incomeRaw+=5;
+    var retentionRaw = 50 + (av.sav[bc.d1[1].rashiIndex]-28)*2;      // 2nd = savings
+    if(dig[lord2]==='Exalted'||dig[lord2]==='Own Sign')retentionRaw+=8;
+    if(dig['saturn']==='Exalted'||dig['saturn']==='Own Sign')retentionRaw+=5; // discipline
+    var sat2=G('saturn'); if(sat2.house===2||sat2.house===11)retentionRaw+=4;
+    var riskRaw = 45;                                                // risk appetite
+    if(mars.house===3||mars.house===11)riskRaw+=10;
+    if(dig['mars']==='Exalted'||dig['mars']==='Own Sign')riskRaw+=8;
+    if(rahu.house===5||rahu.house===11||rahu.house===3)riskRaw+=10;
+    if(dig['saturn']==='Exalted'||dig['saturn']==='Own Sign')riskRaw-=6; // saturn = caution
+    if(FIXED.indexOf(bc.lagna.rashiIndex)>=0)riskRaw-=4;
+    var wealthStars = {
+      income: starFrom(Math.max(30,Math.min(95,incomeRaw)),30,95),
+      retention: starFrom(Math.max(30,Math.min(95,retentionRaw)),30,95),
+      risk: starFrom(Math.max(20,Math.min(90,riskRaw)),20,90)
+    };
+    // careers to AVOID: fields ruled by the person's weakest/afflicted planets
+    var weakPlanets = [];
+    ['sun','moon','mars','mercury','jupiter','venus','saturn'].forEach(function(k){
+      var g=G(k); var pen=0;
+      if(dig[k]==='Debilitated')pen+=2;
+      if(g.combust)pen+=1;
+      if(av.sav[g.rashi.index]<=22)pen+=1;
+      if(votes[k]===undefined && pen>0)pen+=1; // not a career driver AND weak
+      if(pen>=2)weakPlanets.push({key:k,pen:pen});
+    });
+    weakPlanets.sort(function(a,b){return b.pen-a.pen;});
+    var avoidKeys = [];
+    for(var w2=0;w2<weakPlanets.length && avoidKeys.length<3;w2++){
+      // avoid the FIRST field of each weak planet (its most demanding domain)
+      avoidKeys.push(weakPlanets[w2].key+'|0');
+    }
     return {
       fieldKeys: fields, votes: votes, tenthLord: tenthLord, d10LagnaLord: d10LagnaLord,
       govtLean: govtLean, govtScore: govtScore, privScore: privScore,
       entrepreneurship: entre, jobBusiness: jobBusiness,
-      wealthScore: wealthScore, foreign: foreign,
-      d10: d10
+      wealthScore: wealthScore, wealthStars: wealthStars, foreign: foreign,
+      leadership: leadership, avoidKeys: avoidKeys, d10: d10
     };
   }
 
