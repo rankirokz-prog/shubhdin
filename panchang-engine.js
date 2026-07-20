@@ -1813,9 +1813,18 @@
     });
     weakPlanets.sort(function(a,b){return b.pen-a.pen;});
     var avoidKeys = [];
-    for(var w2=0;w2<weakPlanets.length && avoidKeys.length<3;w2++){
-      // avoid the FIRST field of each weak planet (its most demanding domain)
-      avoidKeys.push(weakPlanets[w2].key+'|0');
+    // Show the most-demanding fields of each weak planet (grouped), up to 5 total.
+    // If only one planet is weak, list several of ITS fields rather than a lonely single bullet.
+    if(weakPlanets.length===1){
+      var wk=weakPlanets[0].key;
+      var n=Math.min(4,(CAREER_FIELDS[wk]||{}).en.length);
+      for(var f2=0;f2<n;f2++) avoidKeys.push(wk+'|'+f2);
+    } else {
+      // multiple weak planets: take top 2 fields from each, most-afflicted first, cap 5
+      for(var w2=0;w2<weakPlanets.length && avoidKeys.length<5;w2++){
+        var wk2=weakPlanets[w2].key, cap=weakPlanets[w2].pen>=3?3:2;
+        for(var f3=0;f3<cap && avoidKeys.length<5;f3++) avoidKeys.push(wk2+'|'+f3);
+      }
     }
     return {
       fieldKeys: fields, votes: votes, tenthLord: tenthLord, d10LagnaLord: d10LagnaLord,
