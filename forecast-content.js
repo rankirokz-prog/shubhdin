@@ -36,3 +36,12 @@ Y.spotLabels={
  health:{en:"Health",hi:"स्वास्थ्य"}, travel:{en:"Travel",hi:"यात्रा"}, invest:{en:"Investments",hi:"निवेश"}
 };
 })(typeof window!=='undefined'?window:global);
+
+(function(g){var Y=g.SD_FORECAST;
+Y.houseArea={1:{en:"self, health and personal direction",hi:"स्वयं, स्वास्थ्य एवं व्यक्तिगत दिशा"},2:{en:"wealth, family and speech",hi:"धन, परिवार एवं वाणी"},3:{en:"courage, communication and siblings",hi:"साहस, संवाद एवं सहोदर"},4:{en:"home, property, mother and inner peace",hi:"गृह, संपत्ति, माता एवं मन-शांति"},5:{en:"creativity, children, learning and romance",hi:"सृजन, संतान, विद्या एवं प्रणय"},6:{en:"work, service, health and overcoming rivals",hi:"कार्य, सेवा, स्वास्थ्य एवं शत्रु-विजय"},7:{en:"partnerships, marriage and public dealings",hi:"साझेदारी, विवाह एवं जन-व्यवहार"},8:{en:"transformation, shared resources and research",hi:"रूपांतरण, साझा संसाधन एवं शोध"},9:{en:"fortune, higher learning, dharma and travel",hi:"भाग्य, उच्च विद्या, धर्म एवं यात्रा"},10:{en:"career, status and public achievement",hi:"करियर, प्रतिष्ठा एवं सार्वजनिक उपलब्धि"},11:{en:"gains, income, networks and fulfilled wishes",hi:"लाभ, आय, संपर्क एवं कामना-पूर्ति"},12:{en:"expenses, foreign matters, spirituality and rest",hi:"व्यय, विदेश-विषय, अध्यात्म एवं विश्राम"}};
+Y.themeJoin={
+ strong:{en:"strongly activating",hi:"प्रबलता से सक्रिय करते हुए"},
+ normal:{en:"bringing focus to",hi:"ध्यान केंद्रित करते हुए"},
+ weak:{en:"asking patient effort in",hi:"धैर्यपूर्ण प्रयास माँगते हुए"}
+};
+})(typeof window!=='undefined'?window:global);
