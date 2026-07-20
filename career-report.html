@@ -182,7 +182,8 @@ function generate(){ try {
   if(cw.avoidKeys.length){
     var avoidH=cw.avoidKeys.map(function(ak){var p=ak.split('|');
       return '<div class="fieldrow" style="color:#8B434A;"><div style="font-size:18px;">\u274C</div><div>'+F[p[0]][LANG][+p[1]]+' <span style="font-size:11px;color:#8B5A2B;">('+gname2(p[0])+')</span></div></div>';}).join('');
-    pg('<h2 class="sec">⚠️ '+T(W.moreLabels.avoid)+'</h2><div class="prose">'+T(W.avoidIntro)+'</div>'+avoidH);
+    pg('<h2 class="sec">⚠️ '+T(W.moreLabels.avoid)+'</h2><div class="prose">'+T(W.avoidIntro)+'</div>'+avoidH
+      +'<div class="prose" style="font-size:12px;color:#8B5A2B;margin-top:10px;">'+(LANG==='hi'?'ये क्षेत्र मुख्यतः उन्हीं ग्रहों पर आधारित हैं जो आपकी कुंडली में कम बली हैं — इसलिए एक साथ समूहित हैं।':'These fields rest mainly on the same less-supported planet(s) in your chart, which is why they group together.')+'</div>');
   }
   // FOREIGN + REMEDIES + FOOTER
   var rem=[cw.tenthLord,'sun','saturn','mercury'].filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,4).map(function(k){var r=C.remedy[k];return r?'<div class="yog"><b>'+r.name+'</b> — <span style="color:#8B2B33;">'+r.mantra+'</span><br>'+(LANG==='hi'?r.hi:r.en)+'</div>':'';}).join('');
