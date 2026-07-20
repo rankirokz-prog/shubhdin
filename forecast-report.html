@@ -198,8 +198,21 @@ function generate(){ try {
     var rel=domClass((y.jupiterHouse&&[7,5,11].indexOf(y.jupiterHouse)>=0?1:0) + (y.saturnHouse&&[7].indexOf(y.saturnHouse)>=0?-1:0));
     var health=domClass(sT + (y.saturnHouse&&[1,8].indexOf(y.saturnHouse)>=0?-1:0));
     function dom(label,d){return '<div class="domitem" style="background:'+d.bg+';color:'+d.c+';"><b>'+label+':</b> '+d.lbl+'</div>';}
-    var themeTxt = y.antar&&Y.theme[y.antar] ? T(Y.theme[y.antar]) : (y.maha&&Y.theme[y.maha]?T(Y.theme[y.maha]):'');
     var personaName = y.persona&&Y.persona[y.persona] ? T(Y.persona[y.persona]) : '';
+    function personalTheme(lord){
+      if(!lord||!Y.houseArea) return lord&&Y.theme[lord]?T(Y.theme[lord]):'';
+      var houses=(fc.rulesHouses[lord]||[]).slice();
+      var sits=fc.planetHouse[lord];
+      if(sits && houses.indexOf(sits)<0) houses.push(sits);
+      if(!houses.length) return Y.theme[lord]?T(Y.theme[lord]):'';
+      var pick=houses.slice(0,2);
+      var areas=pick.map(function(hh){return Y.houseArea[hh]?T(Y.houseArea[hh]):'';}).filter(Boolean);
+      var dig=fc.dignity[lord];
+      var join = (dig==='Exalted'||dig==='Own Sign') ? Y.themeJoin.strong : dig==='Debilitated' ? Y.themeJoin.weak : Y.themeJoin.normal;
+      var areaStr = areas.length>1 ? areas[0]+(LANG==='hi'?'; साथ ही ':'; also ')+areas[1] : areas[0];
+      return gname2(lord)+' '+T(join)+' '+areaStr;
+    }
+    var themeTxt = personalTheme(y.antar) || personalTheme(y.maha);
     var spotMark = y.spotlight==='best'?' <span style="color:#2B8B5A;font-size:12px;">'+T(Y.spotLabels.bright)+'</span>':y.spotlight==='caution'?' <span style="color:#B8434A;font-size:12px;">'+T(Y.spotLabels.caution)+'</span>':'';
     return '<div class="ycard"><div class="yhead"><div><span class="yy">'+y.year+'</span> <span class="age">('+(LANG==='hi'?'आयु':'age')+' '+y.age+')</span>'+spotMark+'</div>'
       +'<div class="badge" style="background:'+col+';">'+personaName+'</div></div>'
