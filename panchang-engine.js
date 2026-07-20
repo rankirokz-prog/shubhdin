@@ -1835,6 +1835,109 @@
     };
   }
 
+  // ---- Muhurta search: personalized best dates for an activity ---------------
+  // Scores each day in a range using classical activity rules + the USER'S own
+  // tarabalam (from their birth nakshatra) and chandrabalam (from their moon sign).
+  var MUHURTA_RULES = {
+    griha_pravesh: {
+      nak: [3,4,5,11,12,13,16,20,21,22,23,26], // Rohini,Mrig,Ardra? -> use classical set below
+      goodNak: [3,4,12,13,16,20,21,22,23,25,26], // Rohini,Mrigashira,UPhal,Hasta,Swati,Anuradha,UAshadha,Shravana,Dhanishtha,UBhad,Revati
+      goodTithi: [2,3,5,7,10,11,13],
+      badTithi: [4,9,14,15,30],
+      goodDays: [1,3,4,5],  // Mon,Wed,Thu,Fri
+      badDays: [2],         // avoid Tue
+      needTara: true, needChandra: true, avoidPanchaka: true
+    },
+    business: {
+      goodNak: [0,3,4,6,7,12,13,16,21,22,25,26], // Ashvini,Rohini,Mrig,Punarvasu,Pushya,Hasta,Chitra,Anuradha,Shravana,Dhanishtha,UBhad,Revati
+      goodTithi: [2,3,5,7,10,11,13],
+      badTithi: [4,9,14,15,30],
+      goodDays: [1,3,4,5,0], // Mon,Wed,Thu,Fri,Sun
+      badDays: [],
+      needTara: true, needChandra: true, avoidPanchaka: false
+    },
+    vehicle: {
+      goodNak: [0,6,7,12,13,14,22,23,25,26], // Ashvini,Punarvasu,Pushya,Hasta,Chitra,Swati,Dhanishtha,Shatabhisha,UBhad,Revati
+      goodTithi: [1,2,3,5,7,10,11,13],
+      badTithi: [4,9,14,15,30],
+      goodDays: [1,3,4,5],
+      badDays: [2,6],       // avoid Tue,Sat (common tradition)
+      needTara: true, needChandra: true, avoidPanchaka: false
+    },
+    marriage_muhurta: {
+      goodNak: [1,3,4,6,11,12,13,16,20,21,22,25], // Bharani? use: Rohini,Mrig,UPhal,Hasta,Swati,Anuradha,Mula?,UAshadha,UBhad + others
+      goodTithi: [2,3,5,7,10,11,13],
+      badTithi: [4,9,14,15,30],
+      goodDays: [1,3,4,5,0],
+      badDays: [2],
+      needTara: true, needChandra: true, avoidPanchaka: false
+    }
+  };
+  function findMuhurta(activity, birthDate, lat, lng, fromDate, toDate, maxResults) {
+    var rule = MUHURTA_RULES[activity]; if (!rule) return null;
+    // user's birth nakshatra + moon rashi
+    var bMoon = getGrahas(birthDate).find(function(g){return g.key==='moon';});
+    // find via sidereal moon
+    var ms = moonSidereal(birthDate);
+    var birthNak = Math.floor(ms / (360/27)) % 27;
+    var birthRashi = Math.floor(ms / 30) % 12;
+    var results = [];
+    var oneDay = 86400000;
+    var start = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate(), 1, 0, 0));
+    for (var t = start.getTime(); t <= toDate.getTime(); t += oneDay) {
+      var day = new Date(t + 6*3600000); // midday-ish for stable panchang
+      var p;
+      try { p = getPanchang(new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 6, 0, 0)), lat, lng); }
+      catch(e){ continue; }
+      var score = 0, plus = [], minus = [];
+      var nak = p.nakshatra.segments[0].index;
+      var wd = p.vara.index;
+      var tithiNum = p.tithi.segments[0].number || tithiNumberFromName(p.tithi.segments[0].en, p.tithi.paksha);
+      // nakshatra
+      if (rule.goodNak.indexOf(nak) >= 0) { score += 3; plus.push({en:'Auspicious nakshatra ('+p.nakshatra.segments[0].en+')', hi:'\u0936\u0941\u092D \u0928\u0915\u094D\u0937\u0924\u094D\u0930 ('+p.nakshatra.segments[0].hi+')'}); }
+      // weekday
+      if (rule.badDays.indexOf(wd) >= 0) { score -= 3; minus.push({en:'Unfavourable weekday ('+p.vara.en+')', hi:'\u0905\u0936\u0941\u092D \u0935\u093E\u0930 ('+p.vara.hi+')'}); }
+      else if (rule.goodDays.indexOf(wd) >= 0) { score += 2; plus.push({en:'Favourable weekday ('+p.vara.en+')', hi:'\u0936\u0941\u092D \u0935\u093E\u0930 ('+p.vara.hi+')'}); }
+      // tithi
+      if (rule.badTithi.indexOf(tithiNum) >= 0) { score -= 2; minus.push({en:'Avoid tithi ('+p.tithi.segments[0].en+')', hi:'\u0924\u094D\u092F\u093E\u091C\u094D\u092F \u0924\u093F\u0925\u093F ('+p.tithi.segments[0].hi+')'}); }
+      else if (rule.goodTithi.indexOf(tithiNum) >= 0) { score += 2; plus.push({en:'Auspicious tithi ('+p.tithi.segments[0].en+')', hi:'\u0936\u0941\u092D \u0924\u093F\u0925\u093F ('+p.tithi.segments[0].hi+')'}); }
+      // Bhadra (Vishti karana)
+      if (p.karana.segments[0].en === 'Vishti') { score -= 2; minus.push({en:'Bhadra (Vishti karana) present', hi:'\u092D\u0926\u094D\u0930\u093E (\u0935\u093F\u0937\u094D\u091F\u093F \u0915\u0930\u0923)'}); }
+      // USER tarabalam: is the day's nakshatra good for THIS person?
+      if (rule.needTara) {
+        var tb = p.tarabalam[0];
+        var good = tb.good.some(function(x){return x.index===birthNak;});
+        // tarabalam is computed FROM day nakshatra listing good BIRTH stars; check if user's birth star is in the good list
+        if (good) { score += 3; plus.push({en:'Strong Tarabalam for you', hi:'\u0906\u092A\u0915\u0947 \u0932\u093F\u090F \u092A\u094D\u0930\u092C\u0932 \u0924\u093E\u0930\u093E\u092C\u0932'}); }
+        else { score -= 1; minus.push({en:'Tarabalam not ideal for you', hi:'\u0906\u092A\u0915\u0947 \u0932\u093F\u090F \u0924\u093E\u0930\u093E\u092C\u0932 \u0905\u0928\u0941\u0915\u0942\u0932 \u0928\u0939\u0940\u0902'}); }
+      }
+      // USER chandrabalam: is the day's moon rashi good for THIS person's moon sign?
+      if (rule.needChandra) {
+        var cb = p.chandrabalam[0];
+        var goodC = cb.good.some(function(x){return x.index===birthRashi;});
+        if (goodC) { score += 3; plus.push({en:'Strong Chandrabalam for you', hi:'\u0906\u092A\u0915\u0947 \u0932\u093F\u090F \u092A\u094D\u0930\u092C\u0932 \u091A\u0902\u0926\u094D\u0930\u092C\u0932'}); }
+        else { score -= 1; minus.push({en:'Chandrabalam not ideal for you', hi:'\u0906\u092A\u0915\u0947 \u0932\u093F\u090F \u091A\u0902\u0926\u094D\u0930\u092C\u0932 \u0905\u0928\u0941\u0915\u0942\u0932 \u0928\u0939\u0940\u0902'}); }
+      }
+      // Panchaka (for griha pravesh)
+      if (rule.avoidPanchaka && p.panchaka && p.panchaka.type && p.panchaka.type !== 'None') {
+        var ps = new Date(p.panchaka.start).getTime(), pe = new Date(p.panchaka.end).getTime();
+        if (t >= ps && t <= pe) { score -= 2; minus.push({en:'Panchaka period ('+p.panchaka.type+')', hi:'\u092A\u0902\u091A\u0915 \u0915\u093E\u0932 ('+p.panchaka.type+')'}); }
+      }
+      if (score >= 6) results.push({ date: new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate())),
+        score: score, weekday: p.vara, nakshatra: p.nakshatra.segments[0], tithi: p.tithi.segments[0], paksha: p.tithi.paksha,
+        plus: plus, minus: minus, abhijit: p.abhijit, amritKaal: p.amritKaal });
+    }
+    results.sort(function(a,b){ return b.score - a.score || a.date - b.date; });
+    return { activity: activity, birthNakshatra: NAKSHATRA_NAMES[birthNak], birthRashi: RASHI_EN[birthRashi],
+             results: results.slice(0, maxResults || 8), totalFound: results.length };
+  }
+  function tithiNumberFromName(name, paksha) {
+    var names = ['Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi'];
+    var idx = names.indexOf(name);
+    if (idx < 0) { if (name==='Purnima') return 15; if (name==='Amavasya') return 30; return 1; }
+    return paksha === 'Krishna' ? idx + 16 : idx + 1;
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -2133,6 +2236,8 @@
     getEventWindows,
     getCareerWealth,
     CAREER_FIELDS: CAREER_FIELDS,
+    findMuhurta,
+    MUHURTA_RULES: MUHURTA_RULES,
     MAITRI: MAITRI,
     RASHI_LORD: RASHI_LORD,
     getAshtakavarga,
