@@ -1938,6 +1938,67 @@
     return paksha === 'Krishna' ? idx + 16 : idx + 1;
   }
 
+  // ---- Ten-Year Forecast: per-year composite ---------------------------------
+  // Recombines dasha (maha/antar) + Jupiter/Saturn/Rahu transits from Moon +
+  // event-window signals into a year-by-year outlook with domain leanings.
+  function getYearForecast(birthDate, lat, lng, startYear, numYears) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var dz = getVimshottariDasha(birthDate);
+    var moonG = null; for (var i=0;i<bc.grahas.length;i++) if (bc.grahas[i].key==='moon') moonG=bc.grahas[i];
+    var moonR = moonG.rashi.index;
+    var yrs = numYears || 10;
+    var from = new Date(Date.UTC(startYear,0,1)), to = new Date(Date.UTC(startYear+yrs,0,10));
+    var jt = getTransitPeriods('jupiter', from, to);
+    var st = getTransitPeriods('saturn', from, to);
+    var rt = getTransitPeriods('rahu', from, to);
+    function houseFrom(segs, ys, ye) {
+      var best=null,bl=0;
+      for (var s=0;s<segs.length;s++){
+        var o=Math.min(segs[s].end.getTime(),ye)-Math.max(segs[s].start.getTime(),ys);
+        if(o>bl){bl=o;best=segs[s].rashiIndex;}
+      }
+      return best===null?null:(((best-moonR+12)%12)+1);
+    }
+    function dashaAt(t){
+      for (var m=0;m<dz.mahadashas.length;m++){
+        var md=dz.mahadashas[m];
+        if (md.start.getTime()<=t && md.end.getTime()>t){
+          var al=md.lord;
+          for (var a=0;a<md.antardashas.length;a++){
+            var ad=md.antardashas[a];
+            if (ad.start.getTime()<=t && ad.end.getTime()>t){ al=ad.lord; break; }
+          }
+          return { maha: md.lord, antar: al };
+        }
+      }
+      return null;
+    }
+    // benefic/challenging house-from-moon classification for transits
+    function transitTone(planet, h) {
+      if (h===null) return 0;
+      if (planet==='jupiter') return ([2,5,7,9,11].indexOf(h)>=0)?1:([3,6,10].indexOf(h)>=0?-1:0);
+      if (planet==='saturn')  return ([3,6,11].indexOf(h)>=0)?1:([1,2,4,8,12].indexOf(h)>=0?-1:0);
+      if (planet==='rahu')    return ([3,6,10,11].indexOf(h)>=0)?1:([1,5,8,12].indexOf(h)>=0?-1:0);
+      return 0;
+    }
+    var years = [];
+    for (var y=startYear; y<startYear+yrs; y++){
+      var ys=Date.UTC(y,0,1), ye=Date.UTC(y+1,0,1), mid=new Date((ys+ye)/2);
+      var dsh=dashaAt(mid.getTime());
+      var jh=houseFrom(jt,ys,ye), sh=houseFrom(st,ys,ye), rh=houseFrom(rt,ys,ye);
+      var tone = transitTone('jupiter',jh) + transitTone('saturn',sh) + transitTone('rahu',rh);
+      var rating = tone>=2?'excellent':tone===1?'good':tone===0?'mixed':tone===-1?'testing':'challenging';
+      years.push({
+        year: y, age: y - new Date(birthDate.getTime()+5.5*3600000).getUTCFullYear(),
+        maha: dsh?dsh.maha:null, antar: dsh?dsh.antar:null,
+        jupiterHouse: jh, saturnHouse: sh, rahuHouse: rh,
+        tone: tone, rating: rating
+      });
+    }
+    return { startYear: startYear, years: years, moonRashi: moonG.rashi,
+             birthChart: bc, currentDasha: dashaAt(Date.now()) };
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -2238,6 +2299,7 @@
     CAREER_FIELDS: CAREER_FIELDS,
     findMuhurta,
     MUHURTA_RULES: MUHURTA_RULES,
+    getYearForecast,
     MAITRI: MAITRI,
     RASHI_LORD: RASHI_LORD,
     getAshtakavarga,
