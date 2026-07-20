@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubh Din — Career & Wealth Blueprint</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+body{background:#EFE9DC;font-family:'Noto Serif Devanagari',serif;color:var(--ink);}
+.screen{max-width:720px;margin:24px auto;background:var(--paper);border:1px solid var(--gold2);border-radius:12px;padding:28px;}
+h1.brand{font-size:24px;text-align:center;}
+.sub{text-align:center;color:var(--soft);font-size:13px;margin:4px 0 16px;}
+label{display:block;font-size:12px;color:var(--soft);margin:8px 0 3px;}
+input,select,button{font-family:inherit;font-size:14px;padding:8px 9px;border:1px solid var(--gold2);border-radius:8px;background:#fff;color:var(--ink);width:100%;}
+button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:none;cursor:pointer;margin-top:14px;font-size:15px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.confirm{background:#FFF6E3;border:1px dashed var(--gold);border-radius:10px;padding:12px;margin-top:14px;display:none;font-size:14px;line-height:1.8;}
+.langToggle{display:flex;gap:8px;margin-top:8px;}
+.langToggle button{margin:0;background:#fff;color:var(--ink);border:1px solid var(--gold2);}
+.langToggle button.on{background:var(--ink);color:#FFE8C8;}
+#report{display:none;}
+.page{max-width:794px;margin:16px auto;background:var(--paper);padding:46px 50px;box-shadow:0 2px 14px rgba(92,26,27,.12);position:relative;min-height:1000px;}
+.page::before{content:"";position:absolute;inset:14px;border:1.5px solid var(--gold2);border-radius:4px;pointer-events:none;}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+h2.sec{font-size:21px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 14px;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 16px;}
+th,td{border:1px solid #E4D3AE;padding:6px 8px;text-align:left;}
+th{background:#F8EFD8;font-weight:600;}
+tr:nth-child(even) td{background:#FDF8EC;}
+.prose{font-size:15px;line-height:1.85;text-align:justify;margin-bottom:12px;}
+.idcard{background:#FFF6E3;border:1px solid var(--gold2);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.idcard .t{font-size:11.5px;color:var(--soft);letter-spacing:.5px;}
+.idcard .v{font-size:18px;color:#8B2B33;font-weight:700;margin-top:2px;}
+.yog{background:#FDF8EC;border-left:4px solid var(--gold);padding:10px 13px;margin-bottom:10px;font-size:14.5px;line-height:1.75;}
+.ok{background:#F2F8EF;border-left-color:#5A8B2B;}
+.fieldrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #E4D3AE;font-size:15px;}
+.fieldrow .rank{width:26px;height:26px;border-radius:50%;background:var(--saffron);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.foot{font-size:12px;color:var(--soft);border-top:1px solid var(--gold2);padding-top:10px;margin-top:20px;line-height:1.7;}
+.printbar{max-width:794px;margin:10px auto;text-align:center;}
+.printbar button{width:auto;padding:10px 26px;}
+@media print{body{background:#fff;}.screen,.printbar{display:none !important;}#report{display:block !important;}
+.page{box-shadow:none;margin:0;page-break-after:always;min-height:auto;padding:34px 40px;}.page:last-child{page-break-after:auto;}}
+@page{size:A4;margin:10mm;}
+</style>
+</head>
+<body>
+<div class="screen" id="inputScreen">
+  <h1 class="brand">💼 शुभ दिन — Career & Wealth Blueprint</h1>
+  <div class="sub">Best fields · Govt vs Private · Job vs Business · Wealth windows · D10-based, transparent, no fear</div>
+  <div class="row">
+    <div><label>Name / नाम</label><input id="pname" value=""></div>
+    <div><label>Gender / लिंग</label><select id="pgender"><option>Male</option><option>Female</option></select></div>
+  </div>
+  <div class="row">
+    <div><label>Birth Date</label><input id="bdate" type="date" value="1996-12-06"></div>
+    <div><label>Birth Time (24h)</label><input id="btime" type="time" value="15:47"></div>
+  </div>
+  <div class="row">
+    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"></div>
+    <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
+  </div>
+  <label>Birth Place / जन्म स्थान</label><input id="bplace" value="Narasapur, AP">
+  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button></div>
+  <button onclick="confirmStep()">Check Birth Details → जाँचें</button>
+  <div class="confirm" id="confirmBox">
+    <div id="confirmText"></div>
+    <div class="row">
+      <button style="background:#5A8B2B;" onclick="generate()">✓ Correct — Generate</button>
+      <button style="background:#B8434A;" onclick="document.getElementById('confirmBox').style.display='none'">✗ Fix details</button>
+    </div>
+  </div>
+</div>
+<div class="printbar" id="printbar" style="display:none;"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div id="report"></div>
+
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="report-content.js"></script>
+<script src="career-content.js"></script>
+<script>
+var LANG='en', CTX=null;
+function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';}
+function T(o){return o?(o[LANG]||o.en):'';}
+var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
+function gname2(k){return LANG==='hi'?(GR_HI[k]||k):k.charAt(0).toUpperCase()+k.slice(1);}
+function ist(d){return new Date(d.getTime()+5.5*3600000);}
+function fD(d){return ist(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
+function birthUTC(){
+  var dv=document.getElementById('bdate').value.split('-').map(Number);
+  var tv=document.getElementById('btime').value.split(':').map(Number);
+  return new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000);
+}
+function confirmStep(){
+  var PE=window.PanchangEngine;
+  var b=birthUTC(),lat=+document.getElementById('blat').value,lng=+document.getElementById('blng').value;
+  var bc=PE.getBirthChart(b,lat,lng); var moon=bc.grahas.find(function(x){return x.key==='moon';});
+  CTX={b:b,lat:lat,lng:lng,bc:bc,name:document.getElementById('pname').value||'—',place:document.getElementById('bplace').value};
+  document.getElementById('confirmText').innerHTML=(LANG==='hi'
+    ?'<b>लग्न:</b> '+bc.lagna.hi+' · <b>चंद्र राशि:</b> '+moon.rashi.hi+' · <b>नक्षत्र:</b> '+moon.nakshatra.hi
+    :'<b>Lagna:</b> '+bc.lagna.en+' · <b>Moon:</b> '+moon.rashi.en+' · <b>Nakshatra:</b> '+moon.nakshatra.en)
+    +'<br>'+(LANG==='hi'?'सही हो तो रिपोर्ट बनाएँ (AM/PM जाँचें)':'If correct, generate (check AM/PM)');
+  document.getElementById('confirmBox').style.display='block';
+}
+function generate(){ try {
+  var PE=window.PanchangEngine, W=window.SD_CAREER, C=window.SD_CONTENT;
+  if(!PE||!PE.getCareerWealth){alert('Engine not fully loaded. Please hard-refresh (Ctrl+Shift+R) so the latest panchang-engine.js loads.');return;}
+  if(!W||!C){alert('Content files missing. Ensure career-content.js and report-content.js are in the same folder.');return;}
+  if(!CTX){alert('Please click "Check Birth Details" first.');return;}
+  var b=CTX.b,lat=CTX.lat,lng=CTX.lng,L=W.labels,H='';
+  function pg(inner){H+='<div class="page">'+inner+'</div>';}
+  var cw=PE.getCareerWealth(b,lat,lng);
+  var F=PE.CAREER_FIELDS;
+  var topPlanet=cw.fieldKeys.length?cw.fieldKeys[0].split('|')[0]:cw.tenthLord;
+  // COVER
+  pg('<div class="cover" style="min-height:900px;"><div style="font-size:50px;color:var(--gold);">🕉️</div>'
+    +'<h1 style="font-size:32px;margin:10px 0;">'+T(L.title)+'</h1>'
+    +'<div class="sub" style="font-size:14px;">शुभ दिन · shubhdin.app</div>'
+    +'<div style="font-size:26px;color:#8B2B33;font-weight:700;margin:22px 0 4px;">'+CTX.name+'</div>'
+    +'<div class="sub">'+fD(b)+' · '+CTX.place+'</div>'
+    +'<div class="idcard" style="margin-top:30px;min-width:320px;"><div class="t">'+(LANG==='hi'?'प्रमुख करियर हस्ताक्षर':'PRIMARY CAREER SIGNATURE')+'</div>'
+    +'<div class="v">'+gname2(topPlanet)+'</div></div></div>');
+  // EXECUTIVE SUMMARY
+  var topFields=cw.fieldKeys.slice(0,3).map(function(fk){var p=fk.split('|');return '\u2713 '+F[p[0]][LANG][+p[1]];});
+  pg('<h2 class="sec">\u2728 '+T(L.summary)+'</h2>'
+    +'<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">'
+    +'<div class="idcard ok" style="background:#F2F8EF;"><div class="t" style="color:#2B7A4B;">'+(LANG==='hi'?'शीर्ष क्षेत्र':'TOP FIELDS')+'</div><div style="font-size:14px;line-height:1.9;margin-top:4px;">'+topFields.join('<br>')+'</div></div>'
+    +'<div class="idcard"><div class="t">'+(LANG==='hi'?'मुख्य संकेतक':'KEY INDICATORS')+'</div><div style="font-size:14px;line-height:1.9;margin-top:4px;">'
+      +(LANG==='hi'?'क्षेत्र':'Sector')+': <b>'+(cw.govtLean==='government'?(LANG==='hi'?'शासकीय':'Government'):cw.govtLean==='private'?(LANG==='hi'?'निजी':'Private'):(LANG==='hi'?'संतुलित':'Balanced'))+'</b><br>'
+      +(LANG==='hi'?'उद्यमिता':'Entrepreneurship')+': <b>'+cw.entrepreneurship+'/100</b><br>'
+      +(LANG==='hi'?'धन संभावना':'Wealth')+': <b>'+cw.wealthScore+'/100</b></div></div></div>'
+    +'<div class="idcard"><div class="t">'+(LANG==='hi'?'अनुशंसा':'RECOMMENDATION')+'</div><div class="prose" style="margin:6px 0 0;">'+T(W.planetCareer[topPlanet]).split('.').slice(0,2).join('.')+'.</div></div>');
+  // DASHBOARD
+  function bar(label,v){var col=v>=74?'#2B8B5A':(v>=58?'#E8730C':'#B8434A');
+    return '<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:15px;"><span><b>'+label+'</b></span><b style="color:'+col+';">'+v+'/100</b></div>'
+    +'<div style="background:#EFE9DC;border-radius:7px;height:12px;overflow:hidden;margin-top:4px;"><div style="width:'+v+'%;height:100%;background:'+col+';"></div></div></div>';}
+  pg('<h2 class="sec">📊 '+T(L.dash)+'</h2>'
+    +bar(LANG==='hi'?'उद्यमिता क्षमता':'Entrepreneurship',cw.entrepreneurship)
+    +bar(LANG==='hi'?'धन संभावना':'Wealth Potential',cw.wealthScore)
+    +bar(LANG==='hi'?'शासकीय अनुकूलता':'Govt Sector Fit',Math.min(92,50+cw.govtScore*10))
+    +bar(LANG==='hi'?'निजी क्षेत्र अनुकूलता':'Private Sector Fit',Math.min(92,50+cw.privScore*10))
+    +'<div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+T(L.method)+'</div>');
+  // FIELDS
+  var fieldsH=cw.fieldKeys.map(function(fk,i){var p=fk.split('|');
+    return '<div class="fieldrow"><div class="rank">'+(i+1)+'</div><div>'+F[p[0]][LANG][+p[1]]+' <span style="font-size:11px;color:#8B5A2B;">('+gname2(p[0])+')</span></div></div>';}).join('');
+  pg('<h2 class="sec">🎯 '+T(L.fields)+'</h2><div class="prose" style="font-size:13px;color:#8B5A2B;">'+T(L.fieldsIntro)+'</div>'+fieldsH
+    +'<div class="yog" style="margin-top:14px;">'+T(W.planetCareer[topPlanet])+'</div>');
+  // GOVT vs PRIVATE + JOB vs BUSINESS
+  pg('<h2 class="sec">🏛️ '+T(L.govt)+'</h2><div class="prose">'+T(W.govt[cw.govtLean])+'</div>'
+    +'<h2 class="sec">💼 '+T(L.jobbiz)+'</h2>'
+    +'<div class="idcard"><div class="t">'+T(L.entre)+'</div><div class="v">'+cw.entrepreneurship+' / 100</div>'
+    +'<div style="background:#EFE9DC;border-radius:7px;height:12px;overflow:hidden;margin-top:6px;"><div style="width:'+cw.entrepreneurship+'%;height:100%;background:'+(cw.entrepreneurship>=68?'#2B8B5A':cw.entrepreneurship>=52?'#E8730C':'#B8434A')+';"></div></div></div>'
+    +'<div class="prose">'+T(W.jobbiz[cw.jobBusiness])+'</div>');
+  // WEALTH + WINDOWS
+  var wtier=cw.wealthScore>=74?'high':cw.wealthScore>=58?'moderate':'building';
+  var to=new Date(Date.now()+12*365.25*86400000);
+  var win=PE.getEventWindows('career',b,lat,lng,new Date(),to);
+  var winH=win.windows.slice(0,4).map(function(x){
+    return '<div class="yog ok"><b>'+gname2(x.maha)+' – '+gname2(x.antar)+'</b> · '+fD(x.start)+' → '+fD(x.end)
+      +'<br><span style="font-size:12px;color:#8B5A2B;">'+T(L.whyWin)+': '+x.reasons.map(function(r){return T(r);}).join('; ')+'</span></div>';}).join('');
+  pg('<h2 class="sec">💰 '+T(L.wealthH)+' — '+cw.wealthScore+'/100</h2><div class="prose">'+T(W.wealth[wtier])+'</div>'
+    +'<h2 class="sec">📈 '+T(L.peaks)+'</h2>'+winH);
+  // FOREIGN + REMEDIES + FOOTER
+  var rem=[cw.tenthLord,'sun','saturn','mercury'].filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,4).map(function(k){var r=C.remedy[k];return r?'<div class="yog"><b>'+r.name+'</b> — <span style="color:#8B2B33;">'+r.mantra+'</span><br>'+(LANG==='hi'?r.hi:r.en)+'</div>':'';}).join('');
+  pg('<h2 class="sec">🌏 '+T(L.foreign)+'</h2><div class="prose">'+T(cw.foreign.length?W.foreignYes:W.foreignNo)+'</div>'
+    +'<h2 class="sec">🙏 '+T(L.remedies)+'</h2>'+rem
+    +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
+  document.getElementById('report').innerHTML=H;
+  document.getElementById('report').style.display='block';
+  document.getElementById('printbar').style.display='block';
+  document.getElementById('inputScreen').style.display='none';
+  window.scrollTo(0,0);
+} catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
+</script>
+</body>
+</html>
