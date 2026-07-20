@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubh Din — Child & Family Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+body{background:#EFE9DC;font-family:'Noto Serif Devanagari',serif;color:var(--ink);}
+.screen{max-width:720px;margin:24px auto;background:var(--paper);border:1px solid var(--gold2);border-radius:12px;padding:28px;}
+h1.brand{font-size:23px;text-align:center;}
+.sub{text-align:center;color:var(--soft);font-size:13px;margin:4px 0 16px;}
+label{display:block;font-size:12px;color:var(--soft);margin:8px 0 3px;}
+input,select,button{font-family:inherit;font-size:14px;padding:8px 9px;border:1px solid var(--gold2);border-radius:8px;background:#fff;color:var(--ink);width:100%;}
+button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:none;cursor:pointer;margin-top:14px;font-size:15px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.confirm{background:#FFF6E3;border:1px dashed var(--gold);border-radius:10px;padding:12px;margin-top:14px;display:none;font-size:14px;line-height:1.8;}
+.langToggle{display:flex;gap:8px;margin-top:8px;}
+.langToggle button{margin:0;background:#fff;color:var(--ink);border:1px solid var(--gold2);}
+.langToggle button.on{background:var(--ink);color:#FFE8C8;}
+#report{display:none;}
+.page{max-width:794px;margin:16px auto;background:var(--paper);padding:46px 50px;box-shadow:0 2px 14px rgba(92,26,27,.12);position:relative;min-height:1000px;}
+.page::before{content:"";position:absolute;inset:14px;border:1.5px solid var(--gold2);border-radius:4px;pointer-events:none;}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+h2.sec{font-size:21px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 14px;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 16px;}
+th,td{border:1px solid #E4D3AE;padding:7px 9px;text-align:center;}
+th{background:#F8EFD8;font-weight:600;}
+tr:nth-child(even) td{background:#FDF8EC;}
+.prose{font-size:15px;line-height:1.85;text-align:justify;margin-bottom:12px;}
+.idcard{background:#FFF6E3;border:1px solid var(--gold2);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.idcard .t{font-size:11.5px;color:var(--soft);letter-spacing:.5px;}
+.idcard .v{font-size:18px;color:#8B2B33;font-weight:700;margin-top:2px;}
+.yog{background:#FDF8EC;border-left:4px solid var(--gold);padding:10px 13px;margin-bottom:10px;font-size:14.5px;line-height:1.75;}
+.ok{background:#F2F8EF;border-left-color:#5A8B2B;}
+.syltable td{font-size:16px;font-weight:600;color:#8B2B33;}
+.sylnak{background:#FFF6E3 !important;font-size:13px;color:var(--soft);font-weight:600;}
+.foot{font-size:12px;color:var(--soft);border-top:1px solid var(--gold2);padding-top:10px;margin-top:20px;line-height:1.7;}
+.printbar{max-width:794px;margin:10px auto;text-align:center;}
+.printbar button{width:auto;padding:10px 26px;}
+@media print{body{background:#fff;}.screen,.printbar{display:none !important;}#report{display:block !important;}
+.page{box-shadow:none;margin:0;page-break-after:always;min-height:auto;padding:34px 40px;}.page:last-child{page-break-after:auto;}}
+@page{size:A4;margin:10mm;}
+</style>
+</head>
+<body>
+<div class="screen" id="inputScreen">
+  <h1 class="brand">👶 शुभ दिन — Child & Family Report</h1>
+  <div class="sub">Children prospects · Favourable timing · Auspicious naming syllables · Hope-filled, never a medical verdict</div>
+  <div class="row">
+    <div><label>Name / नाम</label><input id="pname" value=""></div>
+    <div><label>Gender / लिंग</label><select id="pgender"><option>Male</option><option>Female</option></select></div>
+  </div>
+  <div class="row">
+    <div><label>Birth Date</label><input id="bdate" type="date" value="1996-12-06"></div>
+    <div><label>Birth Time (24h)</label><input id="btime" type="time" value="15:47"></div>
+  </div>
+  <div class="row">
+    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"></div>
+    <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
+  </div>
+  <label>Birth Place / जन्म स्थान</label><input id="bplace" value="Narasapur, AP">
+  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button></div>
+  <button onclick="confirmStep()">Check Birth Details → जाँचें</button>
+  <div class="confirm" id="confirmBox">
+    <div id="confirmText"></div>
+    <div class="row">
+      <button style="background:#5A8B2B;" onclick="generate()">✓ Correct — Generate</button>
+      <button style="background:#B8434A;" onclick="document.getElementById('confirmBox').style.display='none'">✗ Fix details</button>
+    </div>
+  </div>
+</div>
+<div class="printbar" id="printbar" style="display:none;"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div id="report"></div>
+
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="report-content.js"></script>
+<script src="child-content.js"></script>
+<script>
+var LANG='en', CTX=null;
+function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';}
+function T(o){return o?(o[LANG]||o.en):'';}
+var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
+function gname2(k){return k?(LANG==='hi'?(GR_HI[k]||k):k.charAt(0).toUpperCase()+k.slice(1)):'';}
+function ist(d){return new Date(d.getTime()+5.5*3600000);}
+function fD(d){return ist(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
+function birthUTC(){
+  var dv=document.getElementById('bdate').value.split('-').map(Number);
+  var tv=document.getElementById('btime').value.split(':').map(Number);
+  return new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000);
+}
+function confirmStep(){
+  var PE=window.PanchangEngine;
+  var b=birthUTC(),lat=+document.getElementById('blat').value,lng=+document.getElementById('blng').value;
+  var bc=PE.getBirthChart(b,lat,lng); var moon=bc.grahas.find(function(x){return x.key==='moon';});
+  CTX={b:b,lat:lat,lng:lng,name:document.getElementById('pname').value||'—',place:document.getElementById('bplace').value};
+  document.getElementById('confirmText').innerHTML=(LANG==='hi'
+    ?'<b>लग्न:</b> '+bc.lagna.hi+' · <b>चंद्र राशि:</b> '+moon.rashi.hi+' · <b>नक्षत्र:</b> '+moon.nakshatra.hi
+    :'<b>Lagna:</b> '+bc.lagna.en+' · <b>Moon:</b> '+moon.rashi.en+' · <b>Nakshatra:</b> '+moon.nakshatra.en)
+    +'<br>'+(LANG==='hi'?'सही हो तो रिपोर्ट बनाएँ (AM/PM जाँचें)':'If correct, generate (check AM/PM)');
+  document.getElementById('confirmBox').style.display='block';
+}
+function generate(){ try {
+  var PE=window.PanchangEngine, K=window.SD_CHILD, C=window.SD_CONTENT;
+  if(!PE||!PE.getChildFamily){alert('Engine not fully loaded. Please hard-refresh (Ctrl+Shift+R).');return;}
+  if(!K||!C){alert('Content files missing. Ensure child-content.js and report-content.js are in the same folder.');return;}
+  if(!CTX){alert('Please click "Check Birth Details" first.');return;}
+  var b=CTX.b,lat=CTX.lat,lng=CTX.lng,L=K.labels,H='';
+  function pg(inner){H+='<div class="page">'+inner+'</div>';}
+  var cf=PE.getChildFamily(b,lat,lng);
+  var band=cf.score>=74?'strong':cf.score>=60?'good':cf.score>=50?'moderate':'tender';
+  var jkey=cf.jupiterDignity==='Exalted'?'exalted':cf.jupiterDignity==='Own Sign'?'own':cf.jupiterDignity==='Debilitated'?'weak':'neutral';
+  // COVER
+  pg('<div class="cover" style="min-height:900px;"><div style="font-size:50px;color:var(--gold);">🕉️</div>'
+    +'<h1 style="font-size:31px;margin:10px 0;">'+T(L.title)+'</h1>'
+    +'<div class="sub" style="font-size:14px;">'+T(L.subtitle)+' · शुभ दिन</div>'
+    +'<div style="font-size:25px;color:#8B2B33;font-weight:700;margin:22px 0 2px;">'+CTX.name+'</div>'
+    +'<div class="sub">'+fD(b)+' · '+CTX.place+'</div>'
+    +'<div class="idcard" style="margin-top:26px;min-width:320px;"><div class="t">'+(LANG==='hi'?'संतान संभावना':'CHILDREN PROSPECTS')+'</div>'
+    +'<div class="v">'+T({en:K.scoreBand[band].t_en,hi:K.scoreBand[band].t_hi})+'</div></div></div>');
+  // EXECUTIVE SUMMARY
+  pg('<h2 class="sec">✨ '+T(L.summary)+'</h2>'
+    +'<div class="idcard"><div class="t">'+T(L.prospects)+'</div><div class="v">'+cf.score+' / 100 — '+T({en:K.scoreBand[band].t_en,hi:K.scoreBand[band].t_hi})+'</div>'
+    +'<div style="background:#EFE9DC;border-radius:7px;height:14px;overflow:hidden;margin-top:8px;"><div style="width:'+cf.score+'%;height:100%;background:'+(cf.score>=74?'#2B8B5A':cf.score>=60?'#E8730C':'#B8434A')+';"></div></div></div>'
+    +'<div class="prose">'+T(K.scoreBand[band])+'</div>'
+    +'<div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+T(L.method)+'</div>');
+  // 5TH HOUSE + JUPITER
+  pg('<h2 class="sec">🪐 '+T(L.fifth)+'</h2><div class="prose" style="font-size:13px;color:#8B5A2B;">'+T(L.fifthIntro)+'</div>'
+    +'<table><tr><th>'+(LANG==='hi'?'कारक':'Factor')+'</th><th>'+(LANG==='hi'?'स्थिति':'Placement')+'</th></tr>'
+    +'<tr><td>'+(LANG==='hi'?'पंचमेश (5वें भाव का स्वामी)':'5th House Lord')+'</td><td>'+gname2(cf.fifthLord)+' ('+cf.fifthLordDignity+')</td></tr>'
+    +'<tr><td>'+(LANG==='hi'?'गुरु (पुत्र कारक)':'Jupiter (Putra Karaka)')+'</td><td>'+cf.jupiterDignity+' · '+(LANG==='hi'?'भाव':'house')+' '+cf.jupiterHouse+'</td></tr>'
+    +'<tr><td>'+(LANG==='hi'?'5वें भाव में ग्रह':'Planets in 5th')+'</td><td>'+(cf.occupants5.length?cf.occupants5.map(gname2).join(', '):(LANG==='hi'?'कोई नहीं':'none'))+'</td></tr></table>'
+    +'<div class="yog">'+T(K.jupiter[jkey])+'</div>');
+  // WINDOWS
+  var to=new Date(Date.now()+12*365.25*86400000);
+  var win=PE.getEventWindows('child',b,lat,lng,new Date(),to);
+  var winH=win.windows.slice(0,4).map(function(x){
+    return '<div class="yog ok"><b>'+gname2(x.maha)+' – '+gname2(x.antar)+'</b> · '+fD(x.start)+' → '+fD(x.end)
+      +'<br><span style="font-size:12px;color:#8B5A2B;">'+T(L.whyWin)+': '+x.reasons.map(function(r){return T(r);}).join('; ')+'</span></div>';}).join('');
+  pg('<h2 class="sec">📅 '+T(L.windows)+'</h2>'+winH);
+  // NAMING SYLLABLES (the beloved feature)
+  var sylH='';
+  if(cf.syllables.length){
+    sylH='<table class="syltable"><tr><th>'+T(L.nakLabel)+'</th><th colspan="4">'+T(L.syllables)+'</th></tr>';
+    cf.syllables.forEach(function(sy){
+      sylH+='<tr><td class="sylnak">'+(LANG==='hi'?sy.nakshatra.hi:sy.nakshatra.en)+'</td>'
+        +sy.letters.map(function(l){return '<td>'+(LANG==='hi'?l.d:l.r)+'</td>';}).join('')+'</tr>';
+    });
+    sylH+='</table>';
+  }
+  pg('<h2 class="sec">🔤 '+T(L.naming)+'</h2><div class="prose">'+T(K.namingIntro)+'</div>'+sylH);
+  // REMEDIES + FOOTER
+  var rem=['jupiter'].map(function(k){var r=C.remedy[k];return r?'<div class="yog"><b>'+r.name+'</b> — <span style="color:#8B2B33;">'+r.mantra+'</span><br>'+(LANG==='hi'?r.hi:r.en)+'</div>':'';}).join('');
+  var santan='<div class="yog"><b>'+(LANG==='hi'?'संतान गोपाल उपासना':'Santan Gopal Upasana')+'</b> — <span style="color:#8B2B33;">ॐ देवकीसुत गोविन्द वासुदेव जगत्पते। देहि मे तनयं कृष्ण त्वामहं शरणं गतः॥</span><br>'
+    +(LANG==='hi'?'संतान-प्राप्ति हेतु परंपरागत मंत्र। गुरुवार से आरंभ कर नित्य जप और बाल-गोपाल की सेवा शुभ मानी जाती है।':'The traditional mantra for the blessing of children. Beginning on a Thursday, daily japa and the worship of Bala Gopala are considered auspicious.')+'</div>';
+  pg('<h2 class="sec">🙏 '+T(L.remedies)+'</h2>'+santan+rem
+    +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
+  document.getElementById('report').innerHTML=H;
+  document.getElementById('report').style.display='block';
+  document.getElementById('printbar').style.display='block';
+  document.getElementById('inputScreen').style.display='none';
+  window.scrollTo(0,0);
+} catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
+</script>
+</body>
+</html>
