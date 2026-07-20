@@ -1981,6 +1981,19 @@
       if (planet==='rahu')    return ([3,6,10,11].indexOf(h)>=0)?1:([1,5,8,12].indexOf(h)>=0?-1:0);
       return 0;
     }
+    // per-planet: which houses it rules from lagna + its dignity (for chart-specific themes)
+    var yg2 = getYogas(birthDate, lat, lng);
+    var digMap = {}; for (var dgi=0;dgi<yg2.dignities.length;dgi++) digMap[yg2.dignities[dgi].key]=yg2.dignities[dgi].dignity;
+    var lagnaIdx = bc.lagna.rashiIndex;
+    var rulesHouses = {}; // planet -> [house numbers it owns]
+    for (var h2=0;h2<12;h2++){
+      var lord = RASHI_LORD[(lagnaIdx + h2) % 12];
+      if (!rulesHouses[lord]) rulesHouses[lord]=[];
+      rulesHouses[lord].push(h2+1);
+    }
+    var planetHouse = {}; // planet -> house it occupies
+    for (var pg2=0;pg2<bc.grahas.length;pg2++) planetHouse[bc.grahas[pg2].key]=bc.grahas[pg2].house;
+
     var years = [];
     var usedPersona = {};
     function pickPersona(rating, jh, sh, rh, maha, antar) {
@@ -2034,7 +2047,8 @@
     years[bestIdx].spotlight='best';
     if (worstIdx!==bestIdx && years[worstIdx].tone<0) years[worstIdx].spotlight='caution';
     return { startYear: startYear, years: years, moonRashi: moonG.rashi,
-             birthChart: bc, currentDasha: dashaAt(Date.now()) };
+             birthChart: bc, currentDasha: dashaAt(Date.now()),
+             rulesHouses: rulesHouses, planetHouse: planetHouse, dignity: digMap };
   }
 
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
