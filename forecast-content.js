@@ -18,3 +18,21 @@ Y.labels={
  disclaimer:{en:"Offered in the spirit of tradition for reflection and planning. Your effort and choices shape how each influence unfolds.",hi:"परंपरा की भावना से चिंतन एवं योजना हेतु प्रस्तुत। आपका परिश्रम और निर्णय ही तय करते हैं कि प्रत्येक प्रभाव कैसे प्रकट होता है।"}
 };
 g.SD_FORECAST=Y;})(typeof window!=='undefined'?window:global);
+
+(function(g){var Y=g.SD_FORECAST;
+Y.persona={harvest:{en:"Harvest Year",hi:"फसल वर्ष"},expansion:{en:"Expansion Year",hi:"विस्तार वर्ष"},opportunity:{en:"Opportunity Year",hi:"अवसर वर्ष"},foundation:{en:"Foundation Year",hi:"नींव वर्ष"},planning:{en:"Planning Year",hi:"योजना वर्ष"},consolidation:{en:"Consolidation Year",hi:"सुदृढ़ीकरण वर्ष"},discipline:{en:"Discipline & Growth Year",hi:"अनुशासन-विकास वर्ष"},reflection:{en:"Reflection Year",hi:"चिंतन वर्ष"},momentum:{en:"Momentum Year",hi:"गति वर्ष"},transition:{en:"Transition Year",hi:"संक्रमण वर्ष"}};
+Y.spotlightBest={en:"This is one of the brightest years of your decade — a rare alignment where your running period and the great benefics move together in your favour. Say yes to the big opportunities; years like this are meant to be used, not waited out.",hi:"यह आपके दशक के सर्वाधिक उज्ज्वल वर्षों में एक है — एक दुर्लभ संरेखण जहाँ आपकी दशा और महान शुभ ग्रह साथ आपके पक्ष में चलते हैं। बड़े अवसरों को 'हाँ' कहें; ऐसे वर्ष प्रयोग हेतु हैं, प्रतीक्षा हेतु नहीं।"};
+Y.spotlightCaution={en:"This is a year to protect rather than expand — several influences test your patience, resources and health at once. This is not misfortune but a Saturn-style checkpoint: guard what you have, avoid big risks, and you cross into brighter years stronger and wiser.",hi:"यह विस्तार नहीं, रक्षा का वर्ष है — अनेक प्रभाव एक साथ आपके धैर्य, संसाधन और स्वास्थ्य की परीक्षा लेते हैं। यह दुर्भाग्य नहीं, शनि-शैली का पड़ाव है: जो है उसकी रक्षा करें, बड़े जोखिम टालें; आप उज्ज्वल वर्षों में अधिक सशक्त और विवेकी होकर प्रवेश करेंगे।"};
+Y.opp={career:{en:"Career advancement or promotion",hi:"करियर उन्नति या पदोन्नति"},business:{en:"Starting or expanding a business",hi:"व्यवसाय आरंभ या विस्तार"},property:{en:"Property or vehicle purchase",hi:"संपत्ति या वाहन क्रय"},marriage:{en:"Marriage or deepening relationships",hi:"विवाह या संबंधों में प्रगाढ़ता"},wealth:{en:"Significant financial gains",hi:"महत्वपूर्ण आर्थिक लाभ"},learning:{en:"Higher study or new skills",hi:"उच्च अध्ययन या नए कौशल"},travel:{en:"Beneficial travel or relocation",hi:"लाभकारी यात्रा या स्थानांतरण"}};
+Y.risk={loans:{en:"Taking large loans or debts",hi:"बड़े ऋण लेना"},speculation:{en:"Speculation and risky investments",hi:"सट्टा एवं जोखिमपूर्ण निवेश"},burnout:{en:"Overwork and burnout",hi:"अति-श्रम एवं थकान"},health:{en:"Neglecting health",hi:"स्वास्थ्य की उपेक्षा"},conflict:{en:"Major disputes or conflicts",hi:"बड़े विवाद या टकराव"},overconfidence:{en:"Overconfidence in decisions",hi:"निर्णयों में अति-आत्मविश्वास"}};
+Y.spotLabels={
+ bright:{en:"✨ Spotlight Year",hi:"✨ विशेष वर्ष"},
+ caution:{en:"⚠️ Caution Year",hi:"⚠️ सतर्कता वर्ष"},
+ opportunities:{en:"Big Opportunities",hi:"बड़े अवसर"},
+ avoid:{en:"Things to Avoid",hi:"क्या टालें"},
+ strategy:{en:"Best Strategy",hi:"श्रेष्ठ रणनीति"},
+ domains:{en:"Life Areas in Detail",hi:"जीवन-क्षेत्र विस्तार से"},
+ career:{en:"Career",hi:"करियर"}, money:{en:"Money",hi:"धन"}, marriage:{en:"Relationships",hi:"संबंध"},
+ health:{en:"Health",hi:"स्वास्थ्य"}, travel:{en:"Travel",hi:"यात्रा"}, invest:{en:"Investments",hi:"निवेश"}
+};
+})(typeof window!=='undefined'?window:global);
