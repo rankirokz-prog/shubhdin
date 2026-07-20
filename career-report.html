@@ -127,7 +127,7 @@ function generate(){ try {
     +'<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">'
     +'<div class="idcard ok" style="background:#F2F8EF;"><div class="t" style="color:#2B7A4B;">'+(LANG==='hi'?'शीर्ष क्षेत्र':'TOP FIELDS')+'</div><div style="font-size:14px;line-height:1.9;margin-top:4px;">'+topFields.join('<br>')+'</div></div>'
     +'<div class="idcard"><div class="t">'+(LANG==='hi'?'मुख्य संकेतक':'KEY INDICATORS')+'</div><div style="font-size:14px;line-height:1.9;margin-top:4px;">'
-      +(LANG==='hi'?'क्षेत्र':'Sector')+': <b>'+(cw.govtLean==='government'?(LANG==='hi'?'शासकीय':'Government'):cw.govtLean==='private'?(LANG==='hi'?'निजी':'Private'):(LANG==='hi'?'संतुलित':'Balanced'))+'</b><br>'
+      +(LANG==='hi'?'नेतृत्व':'Leadership')+': <b>'+cw.leadership+'/100</b><br>'
       +(LANG==='hi'?'उद्यमिता':'Entrepreneurship')+': <b>'+cw.entrepreneurship+'/100</b><br>'
       +(LANG==='hi'?'धन संभावना':'Wealth')+': <b>'+cw.wealthScore+'/100</b></div></div></div>'
     +'<div class="idcard"><div class="t">'+(LANG==='hi'?'अनुशंसा':'RECOMMENDATION')+'</div><div class="prose" style="margin:6px 0 0;">'+T(W.planetCareer[topPlanet]).split('.').slice(0,2).join('.')+'.</div></div>');
@@ -136,11 +136,18 @@ function generate(){ try {
     return '<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:15px;"><span><b>'+label+'</b></span><b style="color:'+col+';">'+v+'/100</b></div>'
     +'<div style="background:#EFE9DC;border-radius:7px;height:12px;overflow:hidden;margin-top:4px;"><div style="width:'+v+'%;height:100%;background:'+col+';"></div></div></div>';}
   pg('<h2 class="sec">📊 '+T(L.dash)+'</h2>'
+    +bar(LANG==='hi'?'नेतृत्व क्षमता':'Leadership',cw.leadership)
     +bar(LANG==='hi'?'उद्यमिता क्षमता':'Entrepreneurship',cw.entrepreneurship)
     +bar(LANG==='hi'?'धन संभावना':'Wealth Potential',cw.wealthScore)
     +bar(LANG==='hi'?'शासकीय अनुकूलता':'Govt Sector Fit',Math.min(92,50+cw.govtScore*10))
     +bar(LANG==='hi'?'निजी क्षेत्र अनुकूलता':'Private Sector Fit',Math.min(92,50+cw.privScore*10))
     +'<div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+T(L.method)+'</div>');
+  // LEADERSHIP PROFILE
+  var W2=W.moreLabels;
+  var leadTxt=cw.leadership>=72?(LANG==='hi'?'आपमें स्वाभाविक नेतृत्व-क्षमता प्रबल है — लोग आपका मार्गदर्शन सहज स्वीकार करते हैं। प्रबंधन, टीम-नेतृत्व या संस्थापक भूमिकाएँ आपके अनुकूल हैं।':'Your leadership potential is strong — people accept your guidance naturally. Management, team-lead or founder roles suit you well.'):cw.leadership>=56?(LANG==='hi'?'आपमें अच्छी नेतृत्व-क्षमता है जो अनुभव के साथ निखरती है। छोटी टीम से आरंभ कर बड़ी ज़िम्मेदारी की ओर बढ़ना उपयुक्त रहेगा।':'You have solid leadership ability that grows with experience. Starting with a small team and building toward larger responsibility suits you.'):(LANG==='hi'?'आपकी शक्ति नेतृत्व से अधिक विशेषज्ञता में है — गहरी दक्षता से प्रभाव बनाना आपका स्वाभाविक मार्ग है। नेतृत्व सीखा जा सकता है, पर विशेषज्ञ के रूप में आप अधिक चमकते हैं।':'Your strength lies more in expertise than command — leading through deep skill is your natural path. Leadership can be learned, but you shine most as a specialist.');
+  pg('<h2 class="sec">🧭 '+T(W2.leadership)+' — '+cw.leadership+'/100</h2>'
+    +'<div style="background:#EFE9DC;border-radius:7px;height:14px;overflow:hidden;margin:0 0 12px;"><div style="width:'+cw.leadership+'%;height:100%;background:'+(cw.leadership>=72?'#2B8B5A':cw.leadership>=56?'#E8730C':'#B8434A')+';"></div></div>'
+    +'<div class="prose">'+leadTxt+'</div>');
   // FIELDS
   var fieldsH=cw.fieldKeys.map(function(fk,i){var p=fk.split('|');
     return '<div class="fieldrow"><div class="rank">'+(i+1)+'</div><div>'+F[p[0]][LANG][+p[1]]+' <span style="font-size:11px;color:#8B5A2B;">('+gname2(p[0])+')</span></div></div>';}).join('');
@@ -152,15 +159,31 @@ function generate(){ try {
     +'<div class="idcard"><div class="t">'+T(L.entre)+'</div><div class="v">'+cw.entrepreneurship+' / 100</div>'
     +'<div style="background:#EFE9DC;border-radius:7px;height:12px;overflow:hidden;margin-top:6px;"><div style="width:'+cw.entrepreneurship+'%;height:100%;background:'+(cw.entrepreneurship>=68?'#2B8B5A':cw.entrepreneurship>=52?'#E8730C':'#B8434A')+';"></div></div></div>'
     +'<div class="prose">'+T(W.jobbiz[cw.jobBusiness])+'</div>');
-  // WEALTH + WINDOWS
+  // WEALTH + SUB-DIMENSIONS + WINDOWS
   var wtier=cw.wealthScore>=74?'high':cw.wealthScore>=58?'moderate':'building';
+  function starRow(label,n){var f='<span style="color:#E8730C;">'+'\u2605'.repeat(n)+'</span><span style="color:#D4A843;">'+'\u2606'.repeat(5-n)+'</span>';
+    return '<div style="display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #E4D3AE;"><span>'+label+'</span><span style="font-size:17px;letter-spacing:2px;">'+f+'</span></div>';}
   var to=new Date(Date.now()+12*365.25*86400000);
   var win=PE.getEventWindows('career',b,lat,lng,new Date(),to);
   var winH=win.windows.slice(0,4).map(function(x){
+    var act=W.action[x.antar]||W.action[x.maha];
+    var doList=act?(LANG==='hi'?act.doHi:act.doEn):[];
+    var avList=act?(LANG==='hi'?act.avoidHi:act.avoidEn):[];
     return '<div class="yog ok"><b>'+gname2(x.maha)+' – '+gname2(x.antar)+'</b> · '+fD(x.start)+' → '+fD(x.end)
-      +'<br><span style="font-size:12px;color:#8B5A2B;">'+T(L.whyWin)+': '+x.reasons.map(function(r){return T(r);}).join('; ')+'</span></div>';}).join('');
+      +(doList.length?'<br><span style="color:#2B7A4B;">'+T(W.moreLabels.doLabel)+':</span> '+doList.map(function(d){return '\u2705 '+d;}).join(' &nbsp; '):'')
+      +(avList.length?'<br><span style="color:#B8434A;">'+T(W.moreLabels.avoidLabel)+':</span> '+avList.map(function(d){return '\u274C '+d;}).join(' &nbsp; '):'')
+      +'</div>';}).join('');
   pg('<h2 class="sec">💰 '+T(L.wealthH)+' — '+cw.wealthScore+'/100</h2><div class="prose">'+T(W.wealth[wtier])+'</div>'
-    +'<h2 class="sec">📈 '+T(L.peaks)+'</h2>'+winH);
+    +'<div class="idcard"><div class="t">'+T(W.moreLabels.wealthDim)+'</div>'
+    +starRow(T(W.moreLabels.income),cw.wealthStars.income)
+    +starRow(T(W.moreLabels.retention),cw.wealthStars.retention)
+    +starRow(T(W.moreLabels.risk),cw.wealthStars.risk)+'</div>');
+  pg('<h2 class="sec">📈 '+T(L.peaks)+'</h2><div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'प्रत्येक अवधि में क्या करें — ज्योतिष को उपयोग में लाने का सीधा मार्गदर्शन:':'What to do in each period — direct guidance on putting astrology to use:')+'</div>'+winH);
+  if(cw.avoidKeys.length){
+    var avoidH=cw.avoidKeys.map(function(ak){var p=ak.split('|');
+      return '<div class="fieldrow" style="color:#8B434A;"><div style="font-size:18px;">\u274C</div><div>'+F[p[0]][LANG][+p[1]]+' <span style="font-size:11px;color:#8B5A2B;">('+gname2(p[0])+')</span></div></div>';}).join('');
+    pg('<h2 class="sec">⚠️ '+T(W.moreLabels.avoid)+'</h2><div class="prose">'+T(W.avoidIntro)+'</div>'+avoidH);
+  }
   // FOREIGN + REMEDIES + FOOTER
   var rem=[cw.tenthLord,'sun','saturn','mercury'].filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,4).map(function(k){var r=C.remedy[k];return r?'<div class="yog"><b>'+r.name+'</b> — <span style="color:#8B2B33;">'+r.mantra+'</span><br>'+(LANG==='hi'?r.hi:r.en)+'</div>':'';}).join('');
   pg('<h2 class="sec">🌏 '+T(L.foreign)+'</h2><div class="prose">'+T(cw.foreign.length?W.foreignYes:W.foreignNo)+'</div>'
