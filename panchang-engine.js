@@ -2139,6 +2139,51 @@
     };
   }
 
+  // ---- Varshaphal: annual solar-return chart (Tajika) -----------------------
+  // Finds the instant the Sun returns to its natal sidereal longitude in a given
+  // year, casts a chart for that moment at the person's current city, and derives
+  // the Muntha and year lord (Varshesh). Marked clearly as Tajika tradition.
+  function getVarshaphal(birthDate, natalLat, natalLng, forYear, curLat, curLng) {
+    var natalSun = sunSidereal(birthDate);
+    // birthday in forYear as search seed (+/- 3 days window)
+    var bi = new Date(birthDate.getTime() + 5.5*3600000);
+    var seed = Date.UTC(forYear, bi.getUTCMonth(), bi.getUTCDate(), bi.getUTCHours(), bi.getUTCMinutes(), 0) - 5.5*3600000;
+    function sunDiff(ms){
+      var d = sunSidereal(new Date(ms)) - natalSun;
+      while (d > 180) d -= 360; while (d < -180) d += 360;
+      return d;
+    }
+    // bisection around seed
+    var lo = seed - 3*86400000, hi = seed + 3*86400000;
+    var flo = sunDiff(lo), fhi = sunDiff(hi);
+    // ensure sign change; widen if needed
+    var guard=0;
+    while (flo*fhi > 0 && guard<6){ lo -= 2*86400000; hi += 2*86400000; flo=sunDiff(lo); fhi=sunDiff(hi); guard++; }
+    var mid=seed;
+    for (var it=0; it<40; it++){
+      mid=(lo+hi)/2; var fm=sunDiff(mid);
+      if (Math.abs(fm) < 1e-6) break;
+      if (flo*fm < 0){ hi=mid; fhi=fm; } else { lo=mid; flo=fm; }
+    }
+    var returnInstant = new Date(mid);
+    var cLat = (curLat!==undefined&&curLat!==null)?curLat:natalLat;
+    var cLng = (curLng!==undefined&&curLng!==null)?curLng:natalLng;
+    var vchart = getBirthChart(returnInstant, cLat, cLng);
+    // completed years since birth
+    var ageYears = forYear - bi.getUTCFullYear();
+    // Muntha: natal lagna sign advanced one rashi per completed year
+    var natalChart = getBirthChart(birthDate, natalLat, natalLng);
+    var munthaIdx = (natalChart.lagna.rashiIndex + ageYears) % 12;
+    var munthaHouse = ((munthaIdx - vchart.lagna.rashiIndex + 12) % 12) + 1;
+    // Year lord (Varshesh) — v1: lord of the varsha lagna sign
+    var varshesh = RASHI_LORD[vchart.lagna.rashiIndex];
+    return {
+      forYear: forYear, returnInstant: returnInstant,
+      chart: vchart, muntha: { rashiIndex: munthaIdx, en: RASHI_EN[munthaIdx], hi: RASHI_HI[munthaIdx], house: munthaHouse },
+      varshesh: varshesh, ageYears: ageYears
+    };
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -2441,6 +2486,7 @@
     MUHURTA_RULES: MUHURTA_RULES,
     getYearForecast,
     getChildFamily,
+    getVarshaphal,
     MAITRI: MAITRI,
     RASHI_LORD: RASHI_LORD,
     getAshtakavarga,
