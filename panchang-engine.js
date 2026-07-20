@@ -1982,19 +1982,57 @@
       return 0;
     }
     var years = [];
+    var usedPersona = {};
+    function pickPersona(rating, jh, sh, rh, maha, antar) {
+      // candidate personas by character, avoiding immediate repeats
+      var cands;
+      if (rating==='excellent') cands=['harvest','expansion','momentum'];
+      else if (rating==='good') cands=['opportunity','expansion','momentum'];
+      else if (rating==='mixed') cands=['foundation','planning','transition'];
+      else if (rating==='testing') cands=['discipline','consolidation','foundation'];
+      else cands=['consolidation','reflection','discipline'];
+      // bias by dominant transit: Jupiter benefic -> harvest/expansion; Saturn strong -> foundation/discipline; Rahu -> transition/momentum
+      if (jh!==null && [2,11].indexOf(jh)>=0) cands.unshift('harvest');
+      if (jh!==null && [5,9].indexOf(jh)>=0) cands.unshift('expansion');
+      if (sh!==null && [1,8,12].indexOf(sh)>=0) cands.unshift('consolidation');
+      if (antar==='ketu'||maha==='ketu') cands.unshift('reflection');
+      if (antar==='mercury') cands.unshift('planning');
+      for (var c=0;c<cands.length;c++) if (!usedPersona[cands[c]]) { usedPersona[cands[c]]=1; return cands[c]; }
+      return cands[0];
+    }
+    function domStars(base, adds) { var s=3+base; for(var a=0;a<adds.length;a++)s+=adds[a]; return Math.max(1,Math.min(5,s)); }
     for (var y=startYear; y<startYear+yrs; y++){
       var ys=Date.UTC(y,0,1), ye=Date.UTC(y+1,0,1), mid=new Date((ys+ye)/2);
       var dsh=dashaAt(mid.getTime());
       var jh=houseFrom(jt,ys,ye), sh=houseFrom(st,ys,ye), rh=houseFrom(rt,ys,ye);
-      var tone = transitTone('jupiter',jh) + transitTone('saturn',sh) + transitTone('rahu',rh);
+      var jTone=transitTone('jupiter',jh), sTone=transitTone('saturn',sh), rTone=transitTone('rahu',rh);
+      var tone = jTone + sTone + rTone;
       var rating = tone>=2?'excellent':tone===1?'good':tone===0?'mixed':tone===-1?'testing':'challenging';
+      var ml=dsh?dsh.maha:null, al=dsh?dsh.antar:null;
+      // domain star ratings (for spotlight pages) — honest, from transit houses + dasha lord
+      var domains = {
+        career: domStars(sTone, [jh&&[10,11,2].indexOf(jh)>=0?1:0, (al==='saturn'||al==='sun'||al==='mars')?1:0]),
+        money: domStars(jTone, [rh&&[2,11].indexOf(rh)>=0?1:0, (al==='jupiter'||al==='venus')?1:0]),
+        marriage: domStars(0, [jh&&[7,5,11].indexOf(jh)>=0?1:0, sh&&sh===7?-1:0, (al==='venus'||al==='moon')?1:0]),
+        health: domStars(sTone, [sh&&[1,8].indexOf(sh)>=0?-1:0, (al==='sun'||al==='mars')?0:0]),
+        travel: domStars(0, [rh&&[3,9,12].indexOf(rh)>=0?1:0, jh&&[9,12].indexOf(jh)>=0?1:0]),
+        invest: domStars(jTone, [rh&&[11].indexOf(rh)>=0?1:0, sh&&[8].indexOf(sh)>=0?-1:0])
+      };
       years.push({
         year: y, age: y - new Date(birthDate.getTime()+5.5*3600000).getUTCFullYear(),
-        maha: dsh?dsh.maha:null, antar: dsh?dsh.antar:null,
+        maha: ml, antar: al,
         jupiterHouse: jh, saturnHouse: sh, rahuHouse: rh,
-        tone: tone, rating: rating
+        jTone: jTone, sTone: sTone, rTone: rTone,
+        tone: tone, rating: rating,
+        persona: pickPersona(rating, jh, sh, rh, ml, al),
+        domains: domains
       });
     }
+    // flag the single best and single worst year for spotlight full pages
+    var bestIdx=0, worstIdx=0;
+    for (var b2=0;b2<years.length;b2++){ if(years[b2].tone>years[bestIdx].tone)bestIdx=b2; if(years[b2].tone<years[worstIdx].tone)worstIdx=b2; }
+    years[bestIdx].spotlight='best';
+    if (worstIdx!==bestIdx && years[worstIdx].tone<0) years[worstIdx].spotlight='caution';
     return { startYear: startYear, years: years, moonRashi: moonG.rashi,
              birthChart: bc, currentDasha: dashaAt(Date.now()) };
   }
