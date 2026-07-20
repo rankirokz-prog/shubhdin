@@ -31,6 +31,36 @@
     'Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta',
     'Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'
   ];
+  const NAME_SYLLABLES = [
+    [{r:"Chu",d:"चू"},{r:"Che",d:"चे"},{r:"Cho",d:"चो"},{r:"La",d:"ला"}],
+    [{r:"Li",d:"ली"},{r:"Lu",d:"लू"},{r:"Le",d:"ले"},{r:"Lo",d:"लो"}],
+    [{r:"A",d:"अ"},{r:"I",d:"ई"},{r:"U",d:"उ"},{r:"E",d:"ए"}],
+    [{r:"O",d:"ओ"},{r:"Va",d:"वा"},{r:"Vi",d:"वी"},{r:"Vu",d:"वू"}],
+    [{r:"Ve",d:"वे"},{r:"Vo",d:"वो"},{r:"Ka",d:"का"},{r:"Ki",d:"की"}],
+    [{r:"Ku",d:"कु"},{r:"Gha",d:"घ"},{r:"Nga",d:"ङ"},{r:"Chha",d:"छ"}],
+    [{r:"Ke",d:"के"},{r:"Ko",d:"को"},{r:"Ha",d:"हा"},{r:"Hi",d:"ही"}],
+    [{r:"Hu",d:"हू"},{r:"He",d:"हे"},{r:"Ho",d:"हो"},{r:"Da",d:"डा"}],
+    [{r:"Di",d:"डी"},{r:"Du",d:"डू"},{r:"De",d:"डे"},{r:"Do",d:"डो"}],
+    [{r:"Ma",d:"मा"},{r:"Mi",d:"मी"},{r:"Mu",d:"मू"},{r:"Me",d:"मे"}],
+    [{r:"Mo",d:"मो"},{r:"Ta",d:"टा"},{r:"Ti",d:"टी"},{r:"Tu",d:"टू"}],
+    [{r:"Te",d:"टे"},{r:"To",d:"टो"},{r:"Pa",d:"पा"},{r:"Pi",d:"पी"}],
+    [{r:"Pu",d:"पू"},{r:"Sha",d:"ष"},{r:"Na",d:"णा"},{r:"Tha",d:"ठ"}],
+    [{r:"Pe",d:"पे"},{r:"Po",d:"पो"},{r:"Ra",d:"रा"},{r:"Ri",d:"री"}],
+    [{r:"Ru",d:"रू"},{r:"Re",d:"रे"},{r:"Ro",d:"रो"},{r:"Ta",d:"ता"}],
+    [{r:"Ti",d:"ती"},{r:"Tu",d:"तू"},{r:"Te",d:"ते"},{r:"To",d:"तो"}],
+    [{r:"Na",d:"ना"},{r:"Ni",d:"नी"},{r:"Nu",d:"नू"},{r:"Ne",d:"ने"}],
+    [{r:"No",d:"नो"},{r:"Ya",d:"या"},{r:"Yi",d:"यी"},{r:"Yu",d:"यू"}],
+    [{r:"Ye",d:"ये"},{r:"Yo",d:"यो"},{r:"Bha",d:"भा"},{r:"Bhi",d:"भी"}],
+    [{r:"Bhu",d:"भू"},{r:"Dha",d:"धा"},{r:"Pha",d:"फा"},{r:"Dha",d:"ढा"}],
+    [{r:"Bhe",d:"भे"},{r:"Bho",d:"भो"},{r:"Ja",d:"जा"},{r:"Ji",d:"जी"}],
+    [{r:"Ju",d:"खी"},{r:"Je",d:"खू"},{r:"Jo",d:"खे"},{r:"Gha",d:"खो"}],
+    [{r:"Ga",d:"गा"},{r:"Gi",d:"गी"},{r:"Gu",d:"गु"},{r:"Ge",d:"गे"}],
+    [{r:"Go",d:"गो"},{r:"Sa",d:"सा"},{r:"Si",d:"सी"},{r:"Su",d:"सू"}],
+    [{r:"Se",d:"से"},{r:"So",d:"सो"},{r:"Da",d:"दा"},{r:"Di",d:"दी"}],
+    [{r:"Du",d:"दू"},{r:"Tha",d:"थ"},{r:"Jha",d:"झ"},{r:"Da",d:"ञ"}],
+    [{r:"De",d:"दे"},{r:"Do",d:"दो"},{r:"Cha",d:"चा"},{r:"Chi",d:"ची"}]
+  ];
+
   const NAKSHATRA_HI = [
     '\u0905\u0936\u094d\u0935\u093f\u0928\u0940','\u092d\u0930\u0923\u0940','\u0915\u0943\u0924\u094d\u0924\u093f\u0915\u093e','\u0930\u094b\u0939\u093f\u0923\u0940','\u092e\u0943\u0917\u0936\u093f\u0930\u093e','\u0906\u0930\u094d\u0926\u094d\u0930\u093e','\u092a\u0941\u0928\u0930\u094d\u0935\u0938\u0941','\u092a\u0941\u0937\u094d\u092f',
     '\u0906\u0936\u094d\u0932\u0947\u0937\u093e','\u092e\u0918\u093e','\u092a\u0942\u0930\u094d\u0935 \u092b\u093e\u0932\u094d\u0917\u0941\u0928\u0940','\u0909\u0924\u094d\u0924\u0930 \u092b\u093e\u0932\u094d\u0917\u0941\u0928\u0940','\u0939\u0938\u094d\u0924','\u091a\u093f\u0924\u094d\u0930\u093e','\u0938\u094d\u0935\u093e\u0924\u093f','\u0935\u093f\u0936\u093e\u0916\u093e',
@@ -2051,6 +2081,64 @@
              rulesHouses: rulesHouses, planetHouse: planetHouse, dignity: digMap };
   }
 
+  // ---- Child & Family analysis (5th house + Jupiter + D7 + naming) -----------
+  function getChildFamily(birthDate, lat, lng) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var d7 = getVarga(birthDate, lat, lng, 7);
+    var av = getAshtakavarga(birthDate, lat, lng);
+    var yg = getYogas(birthDate, lat, lng);
+    var dig = {}; for (var i=0;i<yg.dignities.length;i++) dig[yg.dignities[i].key]=yg.dignities[i].dignity;
+    function G(k){for(var j=0;j<bc.grahas.length;j++) if(bc.grahas[j].key===k) return bc.grahas[j];}
+    // 5th house strength (children/progeny)
+    var fifthRashi = bc.d1[4].rashiIndex;
+    var fifthLord = RASHI_LORD[fifthRashi];
+    var fifthLordG = G(fifthLord);
+    var jup = G('jupiter');
+    var occ5 = bc.d1[4].grahas || [];
+    // score
+    var score = 55;
+    score += (av.sav[fifthRashi]-28)*2;
+    if (dig['jupiter']==='Exalted'||dig['jupiter']==='Own Sign') score += 10;
+    if (dig['jupiter']==='Debilitated') score -= 6;
+    if (dig[fifthLord]==='Exalted'||dig[fifthLord]==='Own Sign') score += 6;
+    if (dig[fifthLord]==='Debilitated') score -= 4;
+    // benefic in 5th
+    var benefics = ['jupiter','venus','mercury','moon'];
+    for (var o=0;o<occ5.length;o++) if (benefics.indexOf(occ5[o])>=0) score += 4;
+    for (var o2=0;o2<occ5.length;o2++) if (['saturn','mars','rahu','ketu'].indexOf(occ5[o2])>=0) score -= 3;
+    // D7 lagna strength
+    var d7fifthLord = RASHI_LORD[(d7.lagna.rashiIndex + 4) % 12];
+    if (dig[d7fifthLord]==='Exalted'||dig[d7fifthLord]==='Own Sign') score += 4;
+    score = Math.max(42, Math.min(94, Math.round(score)));
+    // jupiter house from lagna
+    var jupHouse = jup.house;
+    // naming syllables from D7 lagna nakshatra? classical: from child's own moon nak.
+    // For parent's report we offer syllables from the AUSPICIOUS nakshatras of the 5th lord.
+    // Practical: give syllables tied to Jupiter's nakshatra + 5th-lord's nakshatra as favourable starts.
+    function nakOf(planetKey){
+      var g=G(planetKey); var lon=g.longitude!==undefined?g.longitude:null;
+      // fall back: use sidereal from grahas list order not available; use rashi*... approximate via stored nak if present
+      return g.nakshatra ? g.nakshatra.index : null;
+    }
+    var favNaks = [];
+    var jn = nakOf('jupiter'); if (jn!==null) favNaks.push(jn);
+    var fn = fifthLordG && fifthLordG.nakshatra ? fifthLordG.nakshatra.index : null; if (fn!==null && favNaks.indexOf(fn)<0) favNaks.push(fn);
+    // build syllable suggestions
+    var syllables = [];
+    for (var s2=0;s2<favNaks.length;s2++){
+      var nk=favNaks[s2];
+      if (NAME_SYLLABLES[nk]) {
+        syllables.push({ nakshatra: { index: nk, en: NAKSHATRA_NAMES[nk], hi: NAKSHATRA_HI[nk] },
+                         letters: NAME_SYLLABLES[nk] });
+      }
+    }
+    return {
+      score: score, fifthLord: fifthLord, fifthLordDignity: dig[fifthLord]||'Neutral',
+      jupiterDignity: dig['jupiter']||'Neutral', jupiterHouse: jupHouse,
+      occupants5: occ5, d7: d7, syllables: syllables, favNaks: favNaks
+    };
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -2352,6 +2440,7 @@
     findMuhurta,
     MUHURTA_RULES: MUHURTA_RULES,
     getYearForecast,
+    getChildFamily,
     MAITRI: MAITRI,
     RASHI_LORD: RASHI_LORD,
     getAshtakavarga,
