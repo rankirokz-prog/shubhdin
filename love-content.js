@@ -41,7 +41,7 @@ LV.dnaLabels={
  jealousy:{en:"Jealousy",hi:"ईर्ष्या"},
  independence:{en:"Independence",hi:"स्वतंत्रता"},
  strengthTitle:{en:"Your Greatest Gift",hi:"आपका सर्वोत्तम उपहार"},
- challengeTitle:{en:"Your Love Lesson",hi:"आपका प्रेम पाठ"},
+ challengeTitle:{en:"Your Growth Edge",hi:"आपका विकास-किनारा"},
  physical:{en:"Physical Attraction",hi:"शारीरिक आकर्षण"},
  emotional:{en:"Emotional Bond",hi:"भावनात्मक बंधन"},
  longterm:{en:"Long-term Commitment",hi:"दीर्घकालिक प्रतिबद्धता"},
