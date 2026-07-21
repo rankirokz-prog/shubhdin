@@ -118,12 +118,42 @@ function generate(){ try {
   // COVER
   pg('<div class="cover" style="min-height:900px;"><div class="heart">❦</div>'
     +'<h1 style="font-family:\'Cormorant Garamond\',serif;font-size:40px;margin:10px 0;color:var(--rose);font-weight:600;">'+T(L.title)+'</h1>'
-    +'<div class="sub" style="font-size:14px;">'+T(L.subtitle)+'</div>'
+    +'<div class="sub" style="font-size:14px;">'+T(LV.dnaLabels.subtitle_new)+'</div>'
+    +'<div class="sub" style="font-size:12px;color:var(--soft);">'+T(L.subtitle)+'</div>'
     +'<div style="font-size:26px;color:#6B2440;font-weight:700;margin:22px 0 2px;font-family:\'Cormorant Garamond\',serif;">'+CTX.name+'</div>'
     +'<div class="sub">शुभ दिन · shubhdin.app</div>'
     +'<div class="idcard" style="margin-top:28px;min-width:300px;border-width:1.5px;"><div class="t">'+(LANG==='hi'?'प्रेम कुंडली':'YOUR LOVE CHART')+'</div>'
     +'<div class="v" style="font-size:19px;">'+T({en:LV.scoreBand[band].t_en,hi:LV.scoreBand[band].t_hi})+'</div></div>'
     +'<div class="poetic" style="max-width:480px;">'+T(LV.scoreBand[band]).split('.').slice(0,1).join('.')+'.</div></div>');
+  // ═══ YOUR LOVE DNA (the screenshottable centrepiece — page 2) ═══
+  var DL=LV.dnaLabels, dna=lp.loveDNA, ls0=lp.loveStyle;
+  function dnaStars(n){return '<span style="color:#B03A5B;letter-spacing:2px;">'+'\u2605'.repeat(n)+'</span><span style="color:#E8C4CE;letter-spacing:2px;">'+'\u2606'.repeat(5-n)+'</span>';}
+  function dnaRow(label,n){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0DEE4;"><span style="font-size:15.5px;">'+label+'</span><span style="font-size:18px;">'+dnaStars(n)+'</span></div>';}
+  pg('<div style="text-align:center;"><div class="heart" style="font-size:32px;">❤</div>'
+    +'<h2 class="sec" style="text-align:center;border:none;font-size:30px;">'+T(DL.title)+'</h2></div>'
+    +'<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px;">'
+    +'<div class="idcard"><div class="t">'+T(DL.loveStyleL)+'</div><div class="v" style="font-size:19px;">'+ELEM_ICON[ls0]+' '+T(LV.elements[ls0])+'</div></div>'
+    +'<div class="idcard"><div class="t">'+T(DL.attachmentL)+'</div><div class="v" style="font-size:19px;">'+T(LV.attachments[dna.attachment])+'</div></div></div>'
+    +'<div style="background:#FBEEF2;border:1px solid var(--blush);border-radius:12px;padding:8px 18px;margin-bottom:14px;">'
+    +dnaRow('💬 '+T(DL.communication),dna.communication)
+    +dnaRow('🌹 '+T(DL.romance),dna.romance)
+    +dnaRow('💍 '+T(DL.commitment),dna.commitment)
+    +dnaRow('🤝 '+T(DL.trust),dna.trust)
+    +dnaRow('🦋 '+T(DL.independence),dna.independence)
+    +dnaRow('🔥 '+T(DL.jealousy),dna.jealousy)
+    +'</div>'
+    +'<div class="poetic" style="font-size:15px;margin-top:6px;">'+(LANG==='hi'?'यह आपका अनूठा प्रेम-हस्ताक्षर है — आपकी कुंडली से लिया गया।':'This is your unique love signature — drawn from your birth chart.')+'</div>');
+  // GREATEST STRENGTH + LOVE LESSON (his key ask — personal, derived)
+  var strk=LV.strengths[lp.strengthKey], chlk=LV.challenges[lp.challengeKey];
+  pg('<h2 class="sec">✦ '+(LANG==='hi'?'आपका हृदय, गहराई से':'Your Heart, Up Close')+'</h2>'
+    +'<div style="background:#F2F8EF;border:1px solid #B7D9A8;border-radius:12px;padding:16px 18px;margin-bottom:14px;">'
+    +'<div style="font-size:13px;color:#2B7A4B;letter-spacing:1px;text-transform:uppercase;">❤️ '+T(DL.strengthTitle)+'</div>'
+    +'<div style="font-size:19px;color:#2B7A4B;font-weight:700;margin:4px 0 8px;font-family:\'Cormorant Garamond\',serif;">'+T({en:strk.t_en,hi:strk.t_hi})+'</div>'
+    +'<div class="prose" style="margin:0;">'+T(strk)+'</div></div>'
+    +'<div style="background:#FBF3EE;border:1px solid #E8C9A0;border-radius:12px;padding:16px 18px;">'
+    +'<div style="font-size:13px;color:#B87333;letter-spacing:1px;text-transform:uppercase;">⚠️ '+T(DL.challengeTitle)+'</div>'
+    +'<div style="font-size:19px;color:#B87333;font-weight:700;margin:4px 0 8px;font-family:\'Cormorant Garamond\',serif;">'+T({en:chlk.t_en,hi:chlk.t_hi})+'</div>'
+    +'<div class="prose" style="margin:0;">'+T(chlk)+'</div></div>');
   // YOUR LOVE LANGUAGE
   var ls=lp.loveStyle;
   pg('<h2 class="sec">✦ '+T(L.loveLang)+'</h2>'
@@ -142,18 +172,19 @@ function generate(){ try {
       :'Your Moon rests in '+lp.moonSign.en+' — the deep language of your heart. While your outward love expression is '+T(LV.elements[ls])+' in nature, your inner heart feels in a '+T(LV.elements[hs])+' way. The meeting of these two gives your love both depth and colour.')+'</div>'
     +'<div class="idcard" style="text-align:left;"><div class="t" style="text-align:center;">'+T(L.venusStrength)+'</div>'
     +'<div class="prose" style="margin:8px 0 0;font-size:14px;">'+gname2('venus')+' · '+lp.venusSign.en+' ('+lp.venusDignity+') · '+(LANG==='hi'?'भाव':'house')+' '+lp.venusHouse+'<br>'+venusNote+'</div></div>');
-  // THE ONE YOU'RE MEANT TO FIND
+  // THE ONE YOU'RE MEANT TO FIND (now richer, specific)
   var pe=lp.partnerLordElement;
   pg('<h2 class="sec">✦ '+T(L.idealPartner)+'</h2>'
     +'<div style="text-align:center;"><span class="elembadge" style="background:'+ELEM_COLOR[pe]+';">'+ELEM_ICON[pe]+' '+T(LV.elements[pe])+' '+(LANG==='hi'?'स्वभाव':'nature')+'</span></div>'
-    +'<div class="prose">'+T(LV.partner[pe])+'</div>');
-  // ROMANTIC CHEMISTRY
+    +'<div class="prose">'+T(LV.partnerRich[pe])+'</div>'
+    +'<div class="prose" style="font-size:14px;color:#8B5A6B;">'+T(LV.partner[pe])+'</div>');
+  // ROMANTIC CHEMISTRY (relabeled to instantly-understood terms)
   function bar(label,v){return '<div class="barwrap"><div class="barlbl"><span>'+label+'</span><b style="color:var(--rose);">'+v+'%</b></div><div class="bar"><div style="width:'+v+'%;"></div></div></div>';}
   var passKey=lp.passionScore>=68?'high':'balanced';
   pg('<h2 class="sec">✦ '+T(L.chemistry)+'</h2>'
-    +bar('🔥 '+T(L.passion),lp.passionScore)
-    +bar('🌹 '+T(L.romance),lp.romanceScore)
-    +bar('💍 '+T(L.commitment),lp.commitScore)
+    +bar('🔥 '+T(LV.dnaLabels.physical),lp.passionScore)
+    +bar('❤️ '+T(LV.dnaLabels.emotional),lp.romanceScore)
+    +bar('💍 '+T(LV.dnaLabels.longterm),lp.commitScore)
     +'<div class="prose" style="margin-top:12px;">'+T(LV.passion[passKey])+'</div>');
   // WHEN LOVE BLOOMS
   var to=new Date(Date.now()+10*365.25*86400000);
