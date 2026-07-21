@@ -151,7 +151,7 @@ function generate(){ try {
     +dnaRow('🦋 '+T(DL.independence),dna.independence)
     +dnaRow('🔥 '+T(DL.jealousy),dna.jealousy)
     +'</div>'
-    +'<div class="poetic" style="font-size:15px;margin-top:6px;">'+(LANG==='hi'?'यह आपका अनूठा प्रेम-हस्ताक्षर है — आपकी कुंडली से लिया गया।':'This is your unique love signature — drawn from your birth chart.')+'</div>');
+    +'<div class="poetic" style="font-size:15px;margin-top:6px;">'+(LANG==='hi'?'आपका संबंध व्यक्तित्व — आपकी जन्म कुंडली से लिया गया।':'Your relationship personality, derived from your birth chart.')+'</div>');
   // GREATEST STRENGTH + LOVE LESSON (his key ask — personal, derived)
   var strk=LV.strengths[lp.strengthKey]||LV.strengths.communication, chlk=LV.challenges[lp.challengeKey]||LV.challenges.overthinking;
   pg('<h2 class="sec">✦ '+(LANG==='hi'?'आपका हृदय, गहराई से':'Your Heart, Up Close')+'</h2>'
@@ -186,8 +186,7 @@ function generate(){ try {
   var richP=LV.partnerRich[pe]||LV.partnerRich.air;
   pg('<h2 class="sec">✦ '+T(L.idealPartner)+'</h2>'
     +'<div style="text-align:center;"><span class="elembadge" style="background:'+ELEM_COLOR[pe]+';">'+ELEM_ICON[pe]+' '+T(LV.elements[pe])+' '+(LANG==='hi'?'स्वभाव':'nature')+'</span></div>'
-    +'<div class="prose">'+T(richP)+'</div>'
-    +'<div class="prose" style="font-size:14px;color:#8B5A6B;">'+T(LV.partner[pe])+'</div>');
+    +'<div class="prose">'+T(richP)+'</div>');
   // ROMANTIC CHEMISTRY (relabeled to instantly-understood terms)
   function bar(label,v){return '<div class="barwrap"><div class="barlbl"><span>'+label+'</span><b style="color:var(--rose);">'+v+'%</b></div><div class="bar"><div style="width:'+v+'%;"></div></div></div>';}
   var passKey=lp.passionScore>=68?'high':'balanced';
