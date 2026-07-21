@@ -22,3 +22,10 @@ N.labels={
  disclaimer:{en:"Offered in the spirit of tradition for reflection and planning. Renew each year for a fresh Varshaphal. Your effort and choices shape the year.",hi:"परंपरा की भावना से चिंतन एवं योजना हेतु प्रस्तुत। हर वर्ष नए वर्षफल हेतु नवीनीकरण करें। आपका परिश्रम और निर्णय वर्ष को आकार देते हैं।"}
 };
 g.SD_ANNUAL=N;})(typeof window!=='undefined'?window:global);
+
+(function(g){var N=g.SD_ANNUAL;
+N.monthHint={sun:{focusEn:"authority and health",oppEn:"recognition at work",avoidEn:"ego clashes",focusHi:"अधिकार एवं स्वास्थ्य",oppHi:"कार्य में मान",avoidHi:"अहं-टकराव"},moon:{focusEn:"home and emotions",oppEn:"nurturing connections",avoidEn:"overthinking",focusHi:"गृह एवं भावनाएँ",oppHi:"स्नेह-संबंध",avoidHi:"अति-चिंतन"},mars:{focusEn:"energy and property",oppEn:"bold initiatives",avoidEn:"arguments and haste",focusHi:"ऊर्जा एवं संपत्ति",oppHi:"साहसिक पहल",avoidHi:"विवाद एवं उतावली"},mercury:{focusEn:"communication and finances",oppEn:"networking and deals",avoidEn:"careless paperwork",focusHi:"संवाद एवं वित्त",oppHi:"नेटवर्किंग एवं सौदे",avoidHi:"लापरवाह लेखा-कार्य"},jupiter:{focusEn:"growth and learning",oppEn:"expansion and guidance",avoidEn:"overcommitment",focusHi:"वृद्धि एवं अध्ययन",oppHi:"विस्तार एवं मार्गदर्शन",avoidHi:"अति-प्रतिबद्धता"},venus:{focusEn:"relationships and comfort",oppEn:"romance and creativity",avoidEn:"overindulgence",focusHi:"संबंध एवं सुख",oppHi:"प्रणय एवं सृजन",avoidHi:"अति-भोग"},saturn:{focusEn:"work and discipline",oppEn:"steady foundations",avoidEn:"shortcuts and delays",focusHi:"कार्य एवं अनुशासन",oppHi:"स्थिर नींव",avoidHi:"शॉर्टकट एवं विलंब"},rahu:{focusEn:"ambition and new paths",oppEn:"foreign and tech gains",avoidEn:"risky shortcuts",focusHi:"महत्वाकांक्षा एवं नए मार्ग",oppHi:"विदेश एवं तकनीक लाभ",avoidHi:"जोखिमपूर्ण शॉर्टकट"},ketu:{focusEn:"reflection and research",oppEn:"spiritual focus",avoidEn:"scattered energy",focusHi:"चिंतन एवं शोध",oppHi:"आध्यात्मिक ध्यान",avoidHi:"बिखरी ऊर्जा"}};
+N.mLabels={
+ focus:{en:"Focus",hi:"केंद्र"}, opp:{en:"Opportunity",hi:"अवसर"}, avoid:{en:"Avoid",hi:"टालें"}
+};
+})(typeof window!=='undefined'?window:global);
