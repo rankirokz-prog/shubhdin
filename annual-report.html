@@ -159,21 +159,29 @@ function generate(){ try {
       if(md.start.getTime()<=t&&md.end.getTime()>t){var al=md.lord;
         for(var a=0;a<md.antardashas.length;a++){var ad=md.antardashas[a];if(ad.start.getTime()<=t&&ad.end.getTime()>t){
           var pl=PE.dashaSubPeriods(ad.lord,ad.start.getTime(),ad.end.getTime());
-          for(var p=0;p<pl.length;p++)if(pl[p].start.getTime()<=t&&pl[p].end.getTime()>t)return{maha:md.lord,antar:ad.lord,praty:pl[p].lord};
-          return{maha:md.lord,antar:ad.lord,praty:ad.lord};
+          for(var p=0;p<pl.length;p++)if(pl[p].start.getTime()<=t&&pl[p].end.getTime()>t){
+            var pr=pl[p];
+            // go one level finer (sookshma) so each month gets more individual character
+            var sk=PE.dashaSubPeriods(pr.lord,pr.start.getTime(),pr.end.getTime());
+            for(var s=0;s<sk.length;s++)if(sk[s].start.getTime()<=t&&sk[s].end.getTime()>t)
+              return{maha:md.lord,antar:ad.lord,praty:pr.lord,sookshma:sk[s].lord};
+            return{maha:md.lord,antar:ad.lord,praty:pr.lord,sookshma:pr.lord};
+          }
+          return{maha:md.lord,antar:ad.lord,praty:ad.lord,sookshma:ad.lord};
         }}
-        return{maha:md.lord,antar:al,praty:al};
+        return{maha:md.lord,antar:al,praty:al,sookshma:al};
       }}
     return null;
   }
   var MAITRI=PE.MAITRI||{};
-  function monthTone(d){ // pratyantar lord vs maha lord friendship -> tone
+  function monthTone(d){ // sookshma lord vs maha lord friendship -> tone (finest granularity)
     if(!d)return 0;
-    var rel=(MAITRI[d.maha]&&MAITRI[d.maha][d.praty]!==undefined)?MAITRI[d.maha][d.praty]:1;
-    if(d.praty===d.maha)return 1;
+    var lord=d.sookshma||d.praty;
+    var rel=(MAITRI[d.maha]&&MAITRI[d.maha][lord]!==undefined)?MAITRI[d.maha][lord]:1;
+    if(lord===d.maha)return 1;
     var ben=['jupiter','venus','mercury','moon'];
-    var b1=ben.indexOf(d.praty)>=0?1:0;
-    return (rel===2?1:rel===0?-1:0)+b1-(['saturn','rahu','ketu','mars'].indexOf(d.praty)>=0?1:0);
+    var b1=ben.indexOf(lord)>=0?1:0;
+    return (rel===2?1:rel===0?-1:0)+b1-(['saturn','rahu','ketu','mars'].indexOf(lord)>=0?1:0);
   }
   var mcards=[];
   for(var mo=0;mo<12;mo++){
@@ -182,9 +190,19 @@ function generate(){ try {
     var tone=monthTone(d);
     var col=tone>0?'#2B8B5A':tone<0?'#B8434A':'#E8A317';
     var lbl=tone>0?T(L.favourable):tone<0?T(L.care):T(L.steady);
+    var ruler=d?(d.sookshma||d.praty):null;
+    var hint=ruler&&N.monthHint[ruler]?N.monthHint[ruler]:null;
+    var ML=N.mLabels;
+    var hintHtml='';
+    if(hint){
+      hintHtml='<div style="font-size:11.5px;line-height:1.55;margin-top:4px;">'
+        +'<span style="color:#8B5A2B;">'+T(ML.focus)+':</span> '+(LANG==='hi'?hint.focusHi:hint.focusEn)+'<br>'
+        +'<span style="color:#2B7A4B;">'+T(ML.opp)+':</span> '+(LANG==='hi'?hint.oppHi:hint.oppEn)+'<br>'
+        +'<span style="color:#B8434A;">'+T(ML.avoid)+':</span> '+(LANG==='hi'?hint.avoidHi:hint.avoidEn)+'</div>';
+    }
     mcards.push('<div class="mcard"><div class="mh"><span>'+(LANG==='hi'?MONTHS_HI[mo]:MONTHS_EN[mo])+'</span><span class="mdot" style="background:'+col+';"></span></div>'
-      +'<div style="font-size:12px;color:var(--soft);">'+(d?gname2(d.antar)+' / '+gname2(d.praty):'')+'</div>'
-      +'<div style="font-size:12.5px;color:'+col+';font-weight:600;">'+lbl+'</div></div>');
+      +'<div style="font-size:11px;color:var(--soft);">'+(d?gname2(d.praty)+' / '+gname2(ruler):'')+' · <span style="color:'+col+';font-weight:600;">'+lbl+'</span></div>'
+      +hintHtml+'</div>');
   }
   pg('<h2 class="sec">📆 '+T(L.months)+'</h2><div class="mgrid">'+mcards.join('')+'</div>');
   // AUSPICIOUS DATES (griha/business-neutral: use business rules as general auspicious)
