@@ -114,6 +114,14 @@ function generate(){ try {
   var b=CTX.b,lat=CTX.lat,lng=CTX.lng,L=LV.labels,H='';
   function pg(inner){H+='<div class="page">'+inner+'</div>';}
   var lp=PE.getLoveProfile(b,lat,lng);
+  // Guard: older cached engine may lack loveDNA — detect and warn, or build a safe fallback
+  if(!lp.loveDNA){
+    if(!confirm('Your browser is using an older cached version of the engine.\n\nClick OK to continue with a simplified report, or Cancel and then hard-refresh the page (Ctrl+Shift+R) to get the full Love DNA page.')){return;}
+    var fs2=lp.loveStyle||'air';
+    lp.loveDNA={communication:3,trust:3,jealousy:3,romance:3,independence:3,commitment:3,attachment:'secure'};
+    lp.strengthKey=lp.strengthKey||(fs2==='water'?'emotionalSafety':fs2==='earth'?'loyalty':fs2==='air'?'communication':'affection');
+    lp.challengeKey=lp.challengeKey||(fs2==='water'||fs2==='air'?'overthinking':'expectations');
+  }
   var band=lp.score>=76?'radiant':lp.score>=60?'warm':'tender';
   // COVER
   pg('<div class="cover" style="min-height:900px;"><div class="heart">❦</div>'
@@ -126,14 +134,15 @@ function generate(){ try {
     +'<div class="v" style="font-size:19px;">'+T({en:LV.scoreBand[band].t_en,hi:LV.scoreBand[band].t_hi})+'</div></div>'
     +'<div class="poetic" style="max-width:480px;">'+T(LV.scoreBand[band]).split('.').slice(0,1).join('.')+'.</div></div>');
   // ═══ YOUR LOVE DNA (the screenshottable centrepiece — page 2) ═══
-  var DL=LV.dnaLabels, dna=lp.loveDNA, ls0=lp.loveStyle;
-  function dnaStars(n){return '<span style="color:#B03A5B;letter-spacing:2px;">'+'\u2605'.repeat(n)+'</span><span style="color:#E8C4CE;letter-spacing:2px;">'+'\u2606'.repeat(5-n)+'</span>';}
+  var DL=LV.dnaLabels, dna=lp.loveDNA||{}, ls0=lp.loveStyle||'air';
+  var attKey=(dna.attachment&&LV.attachments[dna.attachment])?dna.attachment:'secure';
+  function dnaStars(n){n=n||3;return '<span style="color:#B03A5B;letter-spacing:2px;">'+'\u2605'.repeat(n)+'</span><span style="color:#E8C4CE;letter-spacing:2px;">'+'\u2606'.repeat(5-n)+'</span>';}
   function dnaRow(label,n){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F0DEE4;"><span style="font-size:15.5px;">'+label+'</span><span style="font-size:18px;">'+dnaStars(n)+'</span></div>';}
   pg('<div style="text-align:center;"><div class="heart" style="font-size:32px;">❤</div>'
     +'<h2 class="sec" style="text-align:center;border:none;font-size:30px;">'+T(DL.title)+'</h2></div>'
     +'<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px;">'
     +'<div class="idcard"><div class="t">'+T(DL.loveStyleL)+'</div><div class="v" style="font-size:19px;">'+ELEM_ICON[ls0]+' '+T(LV.elements[ls0])+'</div></div>'
-    +'<div class="idcard"><div class="t">'+T(DL.attachmentL)+'</div><div class="v" style="font-size:19px;">'+T(LV.attachments[dna.attachment])+'</div></div></div>'
+    +'<div class="idcard"><div class="t">'+T(DL.attachmentL)+'</div><div class="v" style="font-size:19px;">'+T(LV.attachments[attKey])+'</div></div></div>'
     +'<div style="background:#FBEEF2;border:1px solid var(--blush);border-radius:12px;padding:8px 18px;margin-bottom:14px;">'
     +dnaRow('💬 '+T(DL.communication),dna.communication)
     +dnaRow('🌹 '+T(DL.romance),dna.romance)
@@ -144,7 +153,7 @@ function generate(){ try {
     +'</div>'
     +'<div class="poetic" style="font-size:15px;margin-top:6px;">'+(LANG==='hi'?'यह आपका अनूठा प्रेम-हस्ताक्षर है — आपकी कुंडली से लिया गया।':'This is your unique love signature — drawn from your birth chart.')+'</div>');
   // GREATEST STRENGTH + LOVE LESSON (his key ask — personal, derived)
-  var strk=LV.strengths[lp.strengthKey], chlk=LV.challenges[lp.challengeKey];
+  var strk=LV.strengths[lp.strengthKey]||LV.strengths.communication, chlk=LV.challenges[lp.challengeKey]||LV.challenges.overthinking;
   pg('<h2 class="sec">✦ '+(LANG==='hi'?'आपका हृदय, गहराई से':'Your Heart, Up Close')+'</h2>'
     +'<div style="background:#F2F8EF;border:1px solid #B7D9A8;border-radius:12px;padding:16px 18px;margin-bottom:14px;">'
     +'<div style="font-size:13px;color:#2B7A4B;letter-spacing:1px;text-transform:uppercase;">❤️ '+T(DL.strengthTitle)+'</div>'
@@ -173,10 +182,11 @@ function generate(){ try {
     +'<div class="idcard" style="text-align:left;"><div class="t" style="text-align:center;">'+T(L.venusStrength)+'</div>'
     +'<div class="prose" style="margin:8px 0 0;font-size:14px;">'+gname2('venus')+' · '+lp.venusSign.en+' ('+lp.venusDignity+') · '+(LANG==='hi'?'भाव':'house')+' '+lp.venusHouse+'<br>'+venusNote+'</div></div>');
   // THE ONE YOU'RE MEANT TO FIND (now richer, specific)
-  var pe=lp.partnerLordElement;
+  var pe=lp.partnerLordElement||'air';
+  var richP=LV.partnerRich[pe]||LV.partnerRich.air;
   pg('<h2 class="sec">✦ '+T(L.idealPartner)+'</h2>'
     +'<div style="text-align:center;"><span class="elembadge" style="background:'+ELEM_COLOR[pe]+';">'+ELEM_ICON[pe]+' '+T(LV.elements[pe])+' '+(LANG==='hi'?'स्वभाव':'nature')+'</span></div>'
-    +'<div class="prose">'+T(LV.partnerRich[pe])+'</div>'
+    +'<div class="prose">'+T(richP)+'</div>'
     +'<div class="prose" style="font-size:14px;color:#8B5A6B;">'+T(LV.partner[pe])+'</div>');
   // ROMANTIC CHEMISTRY (relabeled to instantly-understood terms)
   function bar(label,v){return '<div class="barwrap"><div class="barlbl"><span>'+label+'</span><b style="color:var(--rose);">'+v+'%</b></div><div class="bar"><div style="width:'+v+'%;"></div></div></div>';}
