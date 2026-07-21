@@ -2184,6 +2184,67 @@
     };
   }
 
+  // ---- Love & Relationship analysis (single chart) --------------------------
+  // 5th house (romance) + 7th house (partnership) + Venus (love karaka) + Moon
+  // (heart) -> love style, ideal-partner traits, love-life score, timing.
+  function getLoveProfile(birthDate, lat, lng) {
+    var bc = getBirthChart(birthDate, lat, lng);
+    var d9 = getVarga(birthDate, lat, lng, 9);
+    var av = getAshtakavarga(birthDate, lat, lng);
+    var yg = getYogas(birthDate, lat, lng);
+    var dig = {}; for (var i=0;i<yg.dignities.length;i++) dig[yg.dignities[i].key]=yg.dignities[i].dignity;
+    function G(k){for(var j=0;j<bc.grahas.length;j++) if(bc.grahas[j].key===k) return bc.grahas[j];}
+    var venus=G('venus'), moon=G('moon'), mars=G('mars');
+    // love-life score: 5th + 7th SAV, Venus dignity, benefics involved
+    var fifthR=bc.d1[4].rashiIndex, seventhR=bc.d1[6].rashiIndex;
+    var score=52;
+    score += (av.sav[fifthR]-28)*1.5;
+    score += (av.sav[seventhR]-28)*1.5;
+    if (dig['venus']==='Exalted'||dig['venus']==='Own Sign') score+=8;
+    if (dig['venus']==='Debilitated') score-=5;
+    var benefics=['jupiter','venus','mercury','moon'];
+    var occ5=bc.d1[4].grahas||[], occ7=bc.d1[6].grahas||[];
+    for (var o=0;o<occ5.length;o++) if(benefics.indexOf(occ5[o])>=0)score+=3;
+    for (var o2=0;o2<occ7.length;o2++) if(benefics.indexOf(occ7[o2])>=0)score+=3;
+    // jupiter aspect to venus/7th softens
+    if (dig['jupiter']==='Exalted'||dig['jupiter']==='Own Sign') score+=3;
+    score=Math.max(45,Math.min(95,Math.round(score)));
+    // love style: from Venus sign element + Moon sign
+    var venusSign=venus.rashi.index, moonSign=moon.rashi.index;
+    var FIRE=[0,4,8],EARTH=[1,5,9],AIR=[2,6,10],WATER=[3,7,11];
+    function element(idx){return FIRE.indexOf(idx)>=0?'fire':EARTH.indexOf(idx)>=0?'earth':AIR.indexOf(idx)>=0?'air':'water';}
+    var loveStyle=element(venusSign);
+    var heartStyle=element(moonSign);
+    // ideal partner: 7th lord sign element + 7th house sign
+    var seventhLord=RASHI_LORD[seventhR];
+    var seventhLordG=G(seventhLord);
+    var partnerElement=element(seventhR);
+    var partnerLordElement = seventhLordG?element(seventhLordG.rashi.index):partnerElement;
+    // Venus house placement -> where love is found
+    var venusHouse=venus.house;
+    // attraction temperature: Mars-Venus interplay
+    var passionScore=50;
+    if (dig['mars']==='Exalted'||dig['mars']==='Own Sign')passionScore+=8;
+    if (dig['venus']==='Exalted'||dig['venus']==='Own Sign')passionScore+=8;
+    var mvRel=(MAITRI['mars']&&MAITRI['mars']['venus']!==undefined)?MAITRI['mars']['venus']:1;
+    passionScore+=(mvRel===2?8:mvRel===0?-4:2);
+    if (mars.house===venus.house)passionScore+=6;
+    passionScore=Math.max(40,Math.min(95,passionScore));
+    // romance vs commitment leaning
+    var romanceScore=Math.max(40,Math.min(95,50+(av.sav[fifthR]-28)*2+(loveStyle==='fire'||loveStyle==='air'?6:0)));
+    var commitScore=Math.max(40,Math.min(95,50+(av.sav[seventhR]-28)*2+(dig['saturn']==='Own Sign'||dig['saturn']==='Exalted'?6:0)+(loveStyle==='earth'||loveStyle==='water'?6:0)));
+    // love timing windows (reuse marriage significators but framed as love/relationship)
+    return {
+      score: score, loveStyle: loveStyle, heartStyle: heartStyle,
+      venusSign: {index:venusSign, en:RASHI_EN[venusSign], hi:RASHI_HI[venusSign]},
+      venusDignity: dig['venus']||'Neutral', venusHouse: venusHouse,
+      moonSign: {index:moonSign, en:RASHI_EN[moonSign], hi:RASHI_HI[moonSign]},
+      seventhLord: seventhLord, partnerElement: partnerElement, partnerLordElement: partnerLordElement,
+      passionScore: passionScore, romanceScore: romanceScore, commitScore: commitScore,
+      occupants7: occ7, d9: d9
+    };
+  }
+
   // ---- Kundli K6b: Ashtakavarga (BPHS) --------------------------------------
   // Each of the 7 planets receives benefic bindus from 8 contributors (7 planets
   // + Lagna): from each contributor's rashi, specific house-counts (classical
@@ -2487,6 +2548,7 @@
     getYearForecast,
     getChildFamily,
     getVarshaphal,
+    getLoveProfile,
     MAITRI: MAITRI,
     RASHI_LORD: RASHI_LORD,
     getAshtakavarga,
