@@ -2234,47 +2234,87 @@
     var romanceScore=Math.max(40,Math.min(95,50+(av.sav[fifthR]-28)*2+(loveStyle==='fire'||loveStyle==='air'?6:0)));
     var commitScore=Math.max(40,Math.min(95,50+(av.sav[seventhR]-28)*2+(dig['saturn']==='Own Sign'||dig['saturn']==='Exalted'?6:0)+(loveStyle==='earth'||loveStyle==='water'?6:0)));
     // ---- LOVE DNA: derived personality traits (each 1-5 stars) ----
+    // Wider spread: multiple weighted signals across a broad range so charts
+    // produce memorable CONTRAST rather than clustering at 3 stars.
     function star(x){return Math.max(1,Math.min(5,Math.round(x)));}
-    // Communication: Mercury dignity + air element + 3rd house
-    var merc=G('mercury');
-    var commStar=star(3+(dig['mercury']==='Exalted'||dig['mercury']==='Own Sign'?1.5:dig['mercury']==='Debilitated'?-1:0)+(loveStyle==='air'?1:0)+(av.sav[bc.d1[2].rashiIndex]>=28?0.5:0));
-    // Trust/loyalty: fixed signs + Saturn/Jupiter dignity + water/earth
-    var FIXED=[1,4,7,10];
-    var trustStar=star(3+(FIXED.indexOf(moonSign)>=0?1:0)+(dig['saturn']==='Own Sign'||dig['saturn']==='Exalted'?1:0)+(loveStyle==='earth'||loveStyle==='water'?0.5:0)+(dig['jupiter']==='Own Sign'||dig['jupiter']==='Exalted'?0.5:0));
-    // Jealousy/possessiveness: Mars/Rahu influence + water + Scorpio emphasis
-    var jealStar=star(2.5+(mars.house===7||mars.house===5||mars.house===8?1:0)+(loveStyle==='water'?0.8:0)+(moonSign===7?1:0)+(dig['mars']==='Debilitated'?0.5:0)-(dig['jupiter']==='Own Sign'||dig['jupiter']==='Exalted'?0.5:0));
-    // Romance/affection: Venus dignity + 5th house + fire/water
-    var romStar=star(3+(dig['venus']==='Exalted'||dig['venus']==='Own Sign'?1.5:dig['venus']==='Debilitated'?-1:0)+(av.sav[fifthR]>=28?0.7:0)+(loveStyle==='fire'||loveStyle==='water'?0.5:0));
-    // Independence vs closeness (attachment proxy): airy/fiery = more independent, watery/earthy = more bonded
-    var indepStar=star(3+(loveStyle==='air'||loveStyle==='fire'?1:0)-(loveStyle==='water'?0.5:0)+(mars.house===1||G('sun').house===1?0.5:0));
-    // Attachment style (secure/anxious/independent/deep) from trust vs jealousy vs independence
+    var merc=G('mercury'), sat=G('saturn'), rahu=G('rahu'), jup=G('jupiter'), sun=G('sun');
+    var FIXED=[1,4,7,10], MOVABLE=[0,3,6,9];
+    // COMMUNICATION: Mercury dignity/house + air + 3rd SAV + combustion
+    var commRaw=2.6;
+    commRaw += dig['mercury']==='Exalted'?1.7:dig['mercury']==='Own Sign'?1.2:dig['mercury']==='Debilitated'?-1.5:0;
+    commRaw += loveStyle==='air'?1.2:loveStyle==='fire'?0.4:loveStyle==='water'?-0.4:0;
+    commRaw += av.sav[bc.d1[2].rashiIndex]>=30?0.9:av.sav[bc.d1[2].rashiIndex]<=24?-0.7:0;
+    commRaw += (merc.house===1||merc.house===3||merc.house===5)?0.6:0;
+    if(merc.combust)commRaw-=0.8;
+    var commStar=star(commRaw);
+    // TRUST/LOYALTY: fixed signs + Saturn/Jupiter + earth/water - movable Venus
+    var trustRaw=2.6;
+    trustRaw += FIXED.indexOf(moonSign)>=0?1.4:MOVABLE.indexOf(moonSign)>=0?-0.8:0;
+    trustRaw += (dig['saturn']==='Own Sign'||dig['saturn']==='Exalted')?1.2:dig['saturn']==='Debilitated'?-0.7:0;
+    trustRaw += (loveStyle==='earth'||loveStyle==='water')?0.9:loveStyle==='fire'?-0.4:0;
+    trustRaw += (dig['jupiter']==='Own Sign'||dig['jupiter']==='Exalted')?0.7:0;
+    trustRaw += FIXED.indexOf(venusSign)>=0?0.5:MOVABLE.indexOf(venusSign)>=0?-0.5:0;
+    var trustStar=star(trustRaw);
+    // JEALOUSY/POSSESSIVENESS: Mars/Rahu placement + water + Scorpio - Jupiter/fire
+    var jealRaw=2.2;
+    jealRaw += (mars.house===7||mars.house===8||mars.house===5||mars.house===4)?1.3:0;
+    jealRaw += loveStyle==='water'?1.1:loveStyle==='air'?-0.9:0;
+    jealRaw += (moonSign===7||venusSign===7)?1.2:0;
+    jealRaw += (rahu.house===7||rahu.house===5)?0.8:0;
+    jealRaw += (mars.house===venus.house)?0.6:0;
+    jealRaw -= (dig['jupiter']==='Own Sign'||dig['jupiter']==='Exalted')?1.0:0;
+    jealRaw -= loveStyle==='fire'?0.4:0;
+    var jealStar=star(jealRaw);
+    // ROMANCE/AFFECTION: Venus dignity/house + 5th SAV + fire/water
+    var romRaw=2.6;
+    romRaw += dig['venus']==='Exalted'?1.8:dig['venus']==='Own Sign'?1.3:dig['venus']==='Debilitated'?-1.6:0;
+    romRaw += av.sav[fifthR]>=30?1.1:av.sav[fifthR]<=24?-0.8:0;
+    romRaw += (loveStyle==='fire'||loveStyle==='water')?0.8:loveStyle==='earth'?-0.4:0;
+    romRaw += (venus.house===1||venus.house===5||venus.house===7)?0.7:0;
+    var romStar=star(romRaw);
+    // INDEPENDENCE: air/fire + Sun/Mars angular + movable - water
+    var indepRaw=2.5;
+    indepRaw += (loveStyle==='air'||loveStyle==='fire')?1.4:loveStyle==='water'?-1.1:0;
+    indepRaw += (mars.house===1||sun.house===1||sun.house===10)?1.0:0;
+    indepRaw += MOVABLE.indexOf(moonSign)>=0?0.8:FIXED.indexOf(moonSign)>=0?-0.6:0;
+    indepRaw += (dig['sun']==='Exalted'||dig['sun']==='Own Sign')?0.6:0;
+    var indepStar=star(indepRaw);
+    // COMMITMENT: 7th SAV + Saturn + fixed + earth/water
+    var commitRaw=2.6;
+    commitRaw += av.sav[seventhR]>=30?1.3:av.sav[seventhR]<=24?-0.9:0;
+    commitRaw += (dig['saturn']==='Own Sign'||dig['saturn']==='Exalted')?1.1:0;
+    commitRaw += FIXED.indexOf(moonSign)>=0?1.0:MOVABLE.indexOf(moonSign)>=0?-0.7:0;
+    commitRaw += (loveStyle==='earth'||loveStyle==='water')?0.7:0;
+    commitRaw += (jup.house===7||sat.house===7)?0.5:0;
+    var commitStarV=star(commitRaw);
+    // Attachment style from the spread traits
     var attachment;
-    if (trustStar>=4 && jealStar<=3) attachment='secure';
-    else if (jealStar>=4) attachment='anxious';
+    if (jealStar>=4) attachment='anxious';
+    else if (trustStar>=4 && jealStar<=2) attachment='secure';
     else if (indepStar>=4 && trustStar>=3) attachment='independent';
+    else if (trustStar>=4) attachment='secure';
     else attachment='deep';
     var loveDNA = { communication: commStar, trust: trustStar, jealousy: jealStar,
-                    romance: romStar, independence: indepStar, commitment: star(commitScore/20),
+                    romance: romStar, independence: indepStar, commitment: commitStarV,
                     attachment: attachment };
-    // ---- Greatest strength (derived from highest trait) ----
-    var strengthKey;
-    var maxT=Math.max(commStar,trustStar,romStar,indepStar,loveDNA.commitment);
-    if (maxT===commStar && commStar>=4) strengthKey='communication';
-    else if (maxT===trustStar) strengthKey='loyalty';
-    else if (maxT===romStar) strengthKey='affection';
-    else if (maxT===loveDNA.commitment) strengthKey='devotion';
-    else if (maxT===indepStar) strengthKey='independence';
-    else strengthKey='emotionalDepth';
-    // secondary strength by element
-    if (loveStyle==='water' && strengthKey!=='emotionalDepth') strengthKey='emotionalSafety';
-    // ---- Love lesson / challenge (derived from weakest or most-excessive trait) ----
+    // ---- Greatest strength (highest positive trait; jealousy excluded) ----
+    var traitPairs=[['communication',commStar],['loyalty',trustStar],['affection',romStar],['devotion',commitStarV],['independence',indepStar]];
+    traitPairs.sort(function(a,b){return b[1]-a[1];});
+    var strengthKey=traitPairs[0][0];
+    if (loveStyle==='water' && (traitPairs[0][0]==='affection'||traitPairs[0][0]==='devotion')) strengthKey='emotionalSafety';
+    else if (loveStyle==='water' && romStar>=4) strengthKey='emotionalDepth';
+    // ---- Love lesson (excess jealousy, or weakest trait) ----
     var challengeKey;
     if (jealStar>=4) challengeKey='possessive';
-    else if (commStar<=2) challengeKey='expressing';
-    else if (loveStyle==='water' || loveStyle==='air') challengeKey='overthinking';
-    else if (indepStar>=4 && trustStar<4) challengeKey='guarded';
-    else if (romStar<=2) challengeKey='reassurance';
-    else challengeKey='expectations';
+    else {
+      var weakest=traitPairs[traitPairs.length-1];
+      if (weakest[0]==='communication' && commStar<=2) challengeKey='expressing';
+      else if (weakest[0]==='affection' && romStar<=2) challengeKey='reassurance';
+      else if (weakest[0]==='loyalty' && indepStar>=4) challengeKey='guarded';
+      else if (indepStar>=4 && trustStar<=3) challengeKey='guarded';
+      else if (loveStyle==='water'||loveStyle==='air') challengeKey='overthinking';
+      else challengeKey='expectations';
+    }
     return {
       score: score, loveStyle: loveStyle, heartStyle: heartStyle,
       venusSign: {index:venusSign, en:RASHI_EN[venusSign], hi:RASHI_HI[venusSign]},
