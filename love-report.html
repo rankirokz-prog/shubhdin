@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubh Din — Your Love Story</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#4A1628;--rose:#B03A5B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFCF8;--soft:#8B5A6B;--blush:#E8A0B4;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+body{background:#F0E6E9;font-family:'Noto Serif Devanagari',serif;color:var(--ink);}
+.screen{max-width:640px;margin:24px auto;background:var(--paper);border:1px solid var(--blush);border-radius:14px;padding:28px;}
+h1.brand{font-size:23px;text-align:center;color:var(--rose);}
+.sub{text-align:center;color:var(--soft);font-size:13px;margin:4px 0 16px;}
+label{display:block;font-size:12px;color:var(--soft);margin:8px 0 3px;}
+input,select,button{font-family:inherit;font-size:14px;padding:8px 9px;border:1px solid var(--blush);border-radius:8px;background:#fff;color:var(--ink);width:100%;}
+button{background:linear-gradient(135deg,#C24E6E,#8B2848);color:#FFF0F4;border:none;cursor:pointer;margin-top:14px;font-size:15px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.confirm{background:#FBEEF2;border:1px dashed var(--rose);border-radius:10px;padding:12px;margin-top:14px;display:none;font-size:14px;line-height:1.8;}
+.langToggle{display:flex;gap:8px;margin-top:8px;}
+.langToggle button{margin:0;background:#fff;color:var(--ink);border:1px solid var(--blush);}
+.langToggle button.on{background:var(--rose);color:#FFF0F4;}
+#report{display:none;}
+.page{max-width:794px;margin:16px auto;background:var(--paper);padding:48px 52px;box-shadow:0 2px 16px rgba(74,22,40,.14);position:relative;min-height:1000px;}
+.page::before{content:"";position:absolute;inset:14px;border:1.5px solid var(--blush);border-radius:6px;pointer-events:none;}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+h2.sec{font-family:'Cormorant Garamond','Noto Serif Devanagari',serif;font-size:26px;color:var(--rose);border-bottom:1.5px solid var(--blush);padding-bottom:6px;margin:6px 0 16px;font-weight:600;}
+.prose{font-size:15.5px;line-height:1.95;text-align:justify;margin-bottom:12px;}
+.poetic{font-family:'Cormorant Garamond','Noto Serif Devanagari',serif;font-size:18px;line-height:1.9;font-style:italic;color:#6B2440;text-align:center;margin:14px 20px;}
+.idcard{background:#FBEEF2;border:1px solid var(--blush);border-radius:12px;padding:14px 16px;margin-bottom:12px;text-align:center;}
+.idcard .t{font-size:11.5px;color:var(--soft);letter-spacing:1px;text-transform:uppercase;}
+.idcard .v{font-size:22px;color:var(--rose);font-weight:700;margin-top:4px;}
+.elembadge{display:inline-block;font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;border-radius:20px;padding:4px 20px;margin:8px 0;font-weight:600;}
+.barwrap{margin:14px 0;}
+.barlbl{display:flex;justify-content:space-between;font-size:15px;margin-bottom:4px;}
+.bar{background:#F0DEE4;border-radius:8px;height:13px;overflow:hidden;}
+.bar>div{height:100%;background:linear-gradient(90deg,#E8A0B4,#B03A5B);}
+.season{background:#FBEEF2;border-left:4px solid var(--rose);padding:11px 14px;margin-bottom:10px;font-size:14.5px;line-height:1.75;border-radius:0 8px 8px 0;}
+.foot{font-size:12px;color:var(--soft);border-top:1px solid var(--blush);padding-top:10px;margin-top:20px;line-height:1.7;text-align:center;}
+.heart{color:var(--rose);font-size:40px;}
+.printbar{max-width:794px;margin:10px auto;text-align:center;}
+.printbar button{width:auto;padding:10px 26px;}
+@media print{body{background:#fff;}.screen,.printbar{display:none !important;}#report{display:block !important;}
+.page{box-shadow:none;margin:0;page-break-after:always;min-height:auto;padding:36px 42px;}.page:last-child{page-break-after:auto;}
+.season{page-break-inside:avoid;}}
+@page{size:A4;margin:10mm;}
+</style>
+</head>
+<body>
+<div class="screen" id="inputScreen">
+  <h1 class="brand">💗 शुभ दिन — Your Love Story</h1>
+  <div class="sub">How you love · Who you're meant to find · When love blooms · Written in your stars</div>
+  <div class="row">
+    <div><label>Name / नाम</label><input id="pname" value=""></div>
+    <div><label>Gender / लिंग</label><select id="pgender"><option>Female</option><option>Male</option></select></div>
+  </div>
+  <div class="row">
+    <div><label>Birth Date</label><input id="bdate" type="date" value="1996-12-06"></div>
+    <div><label>Birth Time (24h)</label><input id="btime" type="time" value="15:47"></div>
+  </div>
+  <div class="row">
+    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"></div>
+    <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
+  </div>
+  <label>Birth Place / जन्म स्थान</label><input id="bplace" value="Narasapur, AP">
+  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button></div>
+  <button onclick="confirmStep()">Reveal My Love Story → देखें</button>
+  <div class="confirm" id="confirmBox">
+    <div id="confirmText"></div>
+    <div class="row">
+      <button style="background:#5A8B2B;" onclick="generate()">✓ Correct — Reveal</button>
+      <button style="background:#B8434A;" onclick="document.getElementById('confirmBox').style.display='none'">✗ Fix details</button>
+    </div>
+  </div>
+</div>
+<div class="printbar" id="printbar" style="display:none;"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div id="report"></div>
+
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="report-content.js"></script>
+<script src="love-content.js"></script>
+<script>
+var LANG='en', CTX=null;
+function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';}
+function T(o){return o?(o[LANG]||o.en):'';}
+var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
+function gname2(k){return k?(LANG==='hi'?(GR_HI[k]||k):k.charAt(0).toUpperCase()+k.slice(1)):'';}
+function ist(d){return new Date(d.getTime()+5.5*3600000);}
+function fD(d){return ist(d).toLocaleDateString('en-IN',{month:'short',year:'numeric',timeZone:'UTC'});}
+var ELEM_COLOR={fire:'#D2603A',earth:'#8B7245',air:'#5B8CA8',water:'#4A7A9B'};
+var ELEM_ICON={fire:'🔥',earth:'🌱',air:'🌬️',water:'🌊'};
+function birthUTC(){
+  var dv=document.getElementById('bdate').value.split('-').map(Number);
+  var tv=document.getElementById('btime').value.split(':').map(Number);
+  return new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000);
+}
+function confirmStep(){
+  var PE=window.PanchangEngine;
+  var b=birthUTC(),lat=+document.getElementById('blat').value,lng=+document.getElementById('blng').value;
+  var bc=PE.getBirthChart(b,lat,lng); var moon=bc.grahas.find(function(x){return x.key==='moon';});
+  CTX={b:b,lat:lat,lng:lng,name:document.getElementById('pname').value||'—',place:document.getElementById('bplace').value};
+  document.getElementById('confirmText').innerHTML=(LANG==='hi'
+    ?'<b>लग्न:</b> '+bc.lagna.hi+' · <b>चंद्र:</b> '+moon.rashi.hi+' · <b>शुक्र राशि:</b> '+bc.grahas.find(function(x){return x.key==='venus';}).rashi.hi
+    :'<b>Lagna:</b> '+bc.lagna.en+' · <b>Moon:</b> '+moon.rashi.en+' · <b>Venus:</b> '+bc.grahas.find(function(x){return x.key==='venus';}).rashi.en)
+    +'<br>'+(LANG==='hi'?'सही हो तो प्रेम-कथा देखें (AM/PM जाँचें)':'If correct, reveal your love story (check AM/PM)');
+  document.getElementById('confirmBox').style.display='block';
+}
+function generate(){ try {
+  var PE=window.PanchangEngine, LV=window.SD_LOVE, C=window.SD_CONTENT;
+  if(!PE||!PE.getLoveProfile){alert('Engine not fully loaded. Please hard-refresh (Ctrl+Shift+R).');return;}
+  if(!LV||!C){alert('Content files missing. Ensure love-content.js and report-content.js are in the same folder.');return;}
+  if(!CTX){alert('Please click "Reveal My Love Story" first.');return;}
+  var b=CTX.b,lat=CTX.lat,lng=CTX.lng,L=LV.labels,H='';
+  function pg(inner){H+='<div class="page">'+inner+'</div>';}
+  var lp=PE.getLoveProfile(b,lat,lng);
+  var band=lp.score>=76?'radiant':lp.score>=60?'warm':'tender';
+  // COVER
+  pg('<div class="cover" style="min-height:900px;"><div class="heart">❦</div>'
+    +'<h1 style="font-family:\'Cormorant Garamond\',serif;font-size:40px;margin:10px 0;color:var(--rose);font-weight:600;">'+T(L.title)+'</h1>'
+    +'<div class="sub" style="font-size:14px;">'+T(L.subtitle)+'</div>'
+    +'<div style="font-size:26px;color:#6B2440;font-weight:700;margin:22px 0 2px;font-family:\'Cormorant Garamond\',serif;">'+CTX.name+'</div>'
+    +'<div class="sub">शुभ दिन · shubhdin.app</div>'
+    +'<div class="idcard" style="margin-top:28px;min-width:300px;border-width:1.5px;"><div class="t">'+(LANG==='hi'?'प्रेम कुंडली':'YOUR LOVE CHART')+'</div>'
+    +'<div class="v" style="font-size:19px;">'+T({en:LV.scoreBand[band].t_en,hi:LV.scoreBand[band].t_hi})+'</div></div>'
+    +'<div class="poetic" style="max-width:480px;">'+T(LV.scoreBand[band]).split('.').slice(0,1).join('.')+'.</div></div>');
+  // YOUR LOVE LANGUAGE
+  var ls=lp.loveStyle;
+  pg('<h2 class="sec">✦ '+T(L.loveLang)+'</h2>'
+    +'<div style="text-align:center;"><span class="elembadge" style="background:'+ELEM_COLOR[ls]+';">'+ELEM_ICON[ls]+' '+T(LV.elements[ls])+'</span></div>'
+    +'<div class="prose">'+T(LV.loveStyle[ls])+'</div>');
+  // THE NATURE OF YOUR HEART (Moon) + Venus strength
+  var hs=lp.heartStyle;
+  var venusNote=lp.venusDignity==='Own Sign'||lp.venusDignity==='Exalted'
+    ?(LANG==='hi'?'आपका शुक्र विशेष रूप से बली है — प्रेम, आकर्षण और सौंदर्य आपके जीवन में स्वाभाविक रूप से प्रवाहित होते हैं।':'Your Venus is especially strong — love, attraction and beauty flow naturally through your life.')
+    :lp.venusDignity==='Debilitated'
+    ?(LANG==='hi'?'आपका शुक्र कोमल स्थिति में है — शुक्रवार को श्वेत/गुलाबी पुष्प अर्पण और सौंदर्य की सराहना इसे सशक्त करती है।':'Your Venus rests in a tender placement — offering white or pink flowers on Fridays and cultivating beauty strengthens it.')
+    :(LANG==='hi'?'आपका शुक्र संतुलित स्थिति में है, प्रेम को स्थिर आधार देता है।':'Your Venus holds a balanced placement, giving love a steady foundation.');
+  pg('<h2 class="sec">✦ '+T(L.yourHeart)+'</h2>'
+    +'<div class="prose">'+(LANG==='hi'
+      ?'आपका चंद्रमा '+lp.moonSign.hi+' में है — यह आपके हृदय की गहन भाषा है। जहाँ आपकी प्रेम-अभिव्यक्ति '+T(LV.elements[ls])+'-स्वभाव की है, वहीं आपका अंतर्मन '+T(LV.elements[hs])+'-स्वभाव से अनुभव करता है। इन दोनों का मेल आपको प्रेम में गहराई और रंग देता है।'
+      :'Your Moon rests in '+lp.moonSign.en+' — the deep language of your heart. While your outward love expression is '+T(LV.elements[ls])+' in nature, your inner heart feels in a '+T(LV.elements[hs])+' way. The meeting of these two gives your love both depth and colour.')+'</div>'
+    +'<div class="idcard" style="text-align:left;"><div class="t" style="text-align:center;">'+T(L.venusStrength)+'</div>'
+    +'<div class="prose" style="margin:8px 0 0;font-size:14px;">'+gname2('venus')+' · '+lp.venusSign.en+' ('+lp.venusDignity+') · '+(LANG==='hi'?'भाव':'house')+' '+lp.venusHouse+'<br>'+venusNote+'</div></div>');
+  // THE ONE YOU'RE MEANT TO FIND
+  var pe=lp.partnerLordElement;
+  pg('<h2 class="sec">✦ '+T(L.idealPartner)+'</h2>'
+    +'<div style="text-align:center;"><span class="elembadge" style="background:'+ELEM_COLOR[pe]+';">'+ELEM_ICON[pe]+' '+T(LV.elements[pe])+' '+(LANG==='hi'?'स्वभाव':'nature')+'</span></div>'
+    +'<div class="prose">'+T(LV.partner[pe])+'</div>');
+  // ROMANTIC CHEMISTRY
+  function bar(label,v){return '<div class="barwrap"><div class="barlbl"><span>'+label+'</span><b style="color:var(--rose);">'+v+'%</b></div><div class="bar"><div style="width:'+v+'%;"></div></div></div>';}
+  var passKey=lp.passionScore>=68?'high':'balanced';
+  pg('<h2 class="sec">✦ '+T(L.chemistry)+'</h2>'
+    +bar('🔥 '+T(L.passion),lp.passionScore)
+    +bar('🌹 '+T(L.romance),lp.romanceScore)
+    +bar('💍 '+T(L.commitment),lp.commitScore)
+    +'<div class="prose" style="margin-top:12px;">'+T(LV.passion[passKey])+'</div>');
+  // WHEN LOVE BLOOMS
+  var to=new Date(Date.now()+10*365.25*86400000);
+  var win=PE.getEventWindows('marriage',b,lat,lng,new Date(),to);
+  var seasons=win.windows.slice(0,3).map(function(x){
+    return '<div class="season"><b style="font-family:\'Cormorant Garamond\',serif;font-size:16px;">'+fD(x.start)+' — '+fD(x.end)+'</b>'
+      +'<br><span style="font-size:12.5px;color:#8B5A6B;">'+T(L.whyWin)+': '+x.reasons.map(function(r){return T(r);}).join('; ')+'</span></div>';}).join('');
+  pg('<h2 class="sec">✦ '+T(L.whenLove)+'</h2><div class="prose">'+T(L.whenLoveIntro)+'</div>'+seasons
+    +'<div class="prose" style="font-size:11.5px;color:#8B5A6B;">'+T(L.method)+'</div>');
+  // REMEDIES + CLOSING
+  var vr=C.remedy['venus'];
+  var rem=vr?'<div class="season"><b>'+vr.name+'</b> — <span style="color:var(--rose);">'+vr.mantra+'</span><br>'+(LANG==='hi'?vr.hi:vr.en)+'</div>':'';
+  pg('<h2 class="sec">✦ '+T(L.remedies)+'</h2>'
+    +'<div class="prose" style="font-size:13.5px;">'+(LANG==='hi'?'शुक्र प्रेम, सौंदर्य और मधुरता का ग्रह है। इसे प्रसन्न रखना संबंधों में माधुर्य लाता है:':'Venus is the planet of love, beauty and sweetness. Honouring it brings tenderness to your relationships:')+'</div>'+rem
+    +'<div class="poetic" style="margin-top:24px;">'+(LANG==='hi'?'"तारे झुकाव देते हैं; बाध्य नहीं करते। आपका खुला हृदय ही सबसे सच्ची प्रेम-कथा लिखता है।"':'"The stars incline; they do not compel. Your open heart writes the truest love story of all."')+'</div>'
+    +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
+  document.getElementById('report').innerHTML=H;
+  document.getElementById('report').style.display='block';
+  document.getElementById('printbar').style.display='block';
+  document.getElementById('inputScreen').style.display='none';
+  window.scrollTo(0,0);
+} catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
+</script>
+</body>
+</html>
