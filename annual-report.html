@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubh Din — Annual Forecast</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
+body{background:#EFE9DC;font-family:'Noto Serif Devanagari',serif;color:var(--ink);}
+.screen{max-width:720px;margin:24px auto;background:var(--paper);border:1px solid var(--gold2);border-radius:12px;padding:28px;}
+h1.brand{font-size:23px;text-align:center;}
+.sub{text-align:center;color:var(--soft);font-size:13px;margin:4px 0 16px;}
+label{display:block;font-size:12px;color:var(--soft);margin:8px 0 3px;}
+input,select,button{font-family:inherit;font-size:14px;padding:8px 9px;border:1px solid var(--gold2);border-radius:8px;background:#fff;color:var(--ink);width:100%;}
+button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:none;cursor:pointer;margin-top:14px;font-size:15px;}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.note{font-size:12px;color:var(--soft);border-top:1px dashed var(--gold2);margin:14px 0 4px;padding-top:10px;}
+.confirm{background:#FFF6E3;border:1px dashed var(--gold);border-radius:10px;padding:12px;margin-top:14px;display:none;font-size:14px;line-height:1.8;}
+.langToggle{display:flex;gap:8px;margin-top:8px;}
+.langToggle button{margin:0;background:#fff;color:var(--ink);border:1px solid var(--gold2);}
+.langToggle button.on{background:var(--ink);color:#FFE8C8;}
+#report{display:none;}
+.page{max-width:794px;margin:16px auto;background:var(--paper);padding:46px 50px;box-shadow:0 2px 14px rgba(92,26,27,.12);position:relative;min-height:1000px;}
+.page::before{content:"";position:absolute;inset:14px;border:1.5px solid var(--gold2);border-radius:4px;pointer-events:none;}
+.cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+h2.sec{font-size:21px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 14px;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:8px 0 16px;}
+th,td{border:1px solid #E4D3AE;padding:7px 9px;text-align:left;}
+th{background:#F8EFD8;font-weight:600;}
+tr:nth-child(even) td{background:#FDF8EC;}
+.prose{font-size:15px;line-height:1.85;text-align:justify;margin-bottom:12px;}
+.idcard{background:#FFF6E3;border:1px solid var(--gold2);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
+.idcard .t{font-size:11.5px;color:var(--soft);letter-spacing:.5px;}
+.idcard .v{font-size:18px;color:#8B2B33;font-weight:700;margin-top:2px;}
+.yog{background:#FDF8EC;border-left:4px solid var(--gold);padding:10px 13px;margin-bottom:10px;font-size:14.5px;line-height:1.75;}
+.ok{background:#F2F8EF;border-left-color:#5A8B2B;}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mcard{border:1px solid var(--gold2);border-radius:9px;padding:9px 11px;font-size:13px;background:#FDF8EC;}
+.mcard .mh{display:flex;justify-content:space-between;align-items:center;font-weight:700;color:#8B2B33;margin-bottom:3px;}
+.mdot{width:11px;height:11px;border-radius:50%;display:inline-block;}
+.foot{font-size:12px;color:var(--soft);border-top:1px solid var(--gold2);padding-top:10px;margin-top:20px;line-height:1.7;}
+.printbar{max-width:794px;margin:10px auto;text-align:center;}
+.printbar button{width:auto;padding:10px 26px;}
+@media print{body{background:#fff;}.screen,.printbar{display:none !important;}#report{display:block !important;}
+.page{box-shadow:none;margin:0;page-break-after:always;min-height:auto;padding:34px 40px;}.page:last-child{page-break-after:auto;}
+.mcard,.yog{page-break-inside:avoid;}}
+@page{size:A4;margin:10mm;}
+</style>
+</head>
+<body>
+<div class="screen" id="inputScreen">
+  <h1 class="brand">📅 शुभ दिन — Annual Forecast</h1>
+  <div class="sub">Varshaphal solar-return · Year lord · Muntha · Month-by-month · Renew every year</div>
+  <div class="row">
+    <div><label>Name / नाम</label><input id="pname" value=""></div>
+    <div><label>Forecast year / वर्ष</label><input id="foryear" type="number" value="2026"></div>
+  </div>
+  <div class="row">
+    <div><label>Birth Date</label><input id="bdate" type="date" value="1996-12-06"></div>
+    <div><label>Birth Time (24h)</label><input id="btime" type="time" value="15:47"></div>
+  </div>
+  <div class="row">
+    <div><label>Birth Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"></div>
+    <div><label>Birth Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
+  </div>
+  <div class="note">आप अभी कहाँ रहते हैं? (वर्षफल हेतु) / Where do you live now? (for Varshaphal)</div>
+  <div class="row">
+    <div><label>Current Latitude</label><input id="clat" type="number" step="0.0001" value="16.7"></div>
+    <div><label>Current Longitude</label><input id="clng" type="number" step="0.0001" value="81.1"></div>
+  </div>
+  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button></div>
+  <button onclick="confirmStep()">Generate My Year → बनाएँ</button>
+  <div class="confirm" id="confirmBox">
+    <div id="confirmText"></div>
+    <div class="row">
+      <button style="background:#5A8B2B;" onclick="generate()">✓ Correct — Generate</button>
+      <button style="background:#B8434A;" onclick="document.getElementById('confirmBox').style.display='none'">✗ Fix details</button>
+    </div>
+  </div>
+</div>
+<div class="printbar" id="printbar" style="display:none;"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div id="report"></div>
+
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="report-content.js"></script>
+<script src="annual-content.js"></script>
+<script>
+var LANG='en', CTX=null;
+function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';}
+function T(o){return o?(o[LANG]||o.en):'';}
+var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
+function gname2(k){return k?(LANG==='hi'?(GR_HI[k]||k):k.charAt(0).toUpperCase()+k.slice(1)):'';}
+function ist(d){return new Date(d.getTime()+5.5*3600000);}
+function fD(d){return ist(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
+function fDT(d){return ist(d).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'UTC'});}
+var MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var MONTHS_HI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
+function birthUTC(){
+  var dv=document.getElementById('bdate').value.split('-').map(Number);
+  var tv=document.getElementById('btime').value.split(':').map(Number);
+  return new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000);
+}
+function confirmStep(){
+  var PE=window.PanchangEngine;
+  var b=birthUTC(),lat=+document.getElementById('blat').value,lng=+document.getElementById('blng').value;
+  var bc=PE.getBirthChart(b,lat,lng); var moon=bc.grahas.find(function(x){return x.key==='moon';});
+  CTX={b:b,lat:lat,lng:lng,clat:+document.getElementById('clat').value,clng:+document.getElementById('clng').value,
+       name:document.getElementById('pname').value||'—',forYear:parseInt(document.getElementById('foryear').value)||new Date().getFullYear()};
+  document.getElementById('confirmText').innerHTML=(LANG==='hi'
+    ?'<b>लग्न:</b> '+bc.lagna.hi+' · <b>चंद्र:</b> '+moon.rashi.hi+' · <b>वर्ष:</b> '+CTX.forYear
+    :'<b>Lagna:</b> '+bc.lagna.en+' · <b>Moon:</b> '+moon.rashi.en+' · <b>Year:</b> '+CTX.forYear)
+    +'<br>'+(LANG==='hi'?'सही हो तो '+CTX.forYear+' का वर्षफल बनाएँ (AM/PM जाँचें)':'If correct, generate '+CTX.forYear+' Varshaphal (check AM/PM)');
+  document.getElementById('confirmBox').style.display='block';
+}
+function generate(){ try {
+  var PE=window.PanchangEngine, N=window.SD_ANNUAL, C=window.SD_CONTENT;
+  if(!PE||!PE.getVarshaphal){alert('Engine not fully loaded. Please hard-refresh (Ctrl+Shift+R).');return;}
+  if(!N||!C){alert('Content files missing. Ensure annual-content.js and report-content.js are in the same folder.');return;}
+  if(!CTX){alert('Please click "Generate My Year" first.');return;}
+  var b=CTX.b,L=N.labels,H='';
+  function pg(inner){H+='<div class="page">'+inner+'</div>';}
+  var vp=PE.getVarshaphal(b,CTX.lat,CTX.lng,CTX.forYear,CTX.clat,CTX.clng);
+  var vLord=vp.varshesh;
+  // COVER
+  pg('<div class="cover" style="min-height:900px;"><div style="font-size:50px;color:var(--gold);">🕉️</div>'
+    +'<h1 style="font-size:30px;margin:10px 0;">'+T(L.title)+' '+CTX.forYear+'</h1>'
+    +'<div class="sub" style="font-size:14px;">'+T(L.subtitle)+' · शुभ दिन</div>'
+    +'<div style="font-size:25px;color:#8B2B33;font-weight:700;margin:22px 0 2px;">'+CTX.name+'</div>'
+    +'<div class="sub">'+(LANG==='hi'?'आयु':'Turning age')+' '+vp.ageYears+'</div>'
+    +'<div class="idcard" style="margin-top:26px;min-width:320px;"><div class="t">'+T(L.yearLord)+'</div>'
+    +'<div class="v">'+gname2(vLord)+'</div></div></div>');
+  // EXEC SUMMARY
+  var mh=vp.muntha.house;
+  var favMuntha=[1,5,9,10,11].indexOf(mh)>=0;
+  pg('<h2 class="sec">✨ '+T(L.summary)+'</h2>'
+    +'<div class="idcard"><div class="t">'+T(L.yearLord)+'</div><div class="v">'+gname2(vLord)+'</div>'
+    +'<div style="font-size:13px;color:#8B5A2B;margin-top:4px;">'+T(N.varshesh[vLord]).split('.').slice(0,1).join('.')+'.</div></div>'
+    +'<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
+    +'<div class="idcard"><div class="t">'+T(L.varshaLagna)+'</div><div class="v" style="font-size:16px;">'+(LANG==='hi'?vp.chart.lagna.hi:vp.chart.lagna.en)+'</div></div>'
+    +'<div class="idcard'+(favMuntha?' ok':'')+'" style="'+(favMuntha?'background:#F2F8EF;':'')+'"><div class="t">'+T(L.munthaLabel)+'</div><div class="v" style="font-size:16px;">'+(LANG==='hi'?vp.muntha.hi:vp.muntha.en)+' · '+(LANG==='hi'?'भाव':'H')+mh+'</div></div></div>'
+    +'<div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+T(L.method)+'</div>');
+  // YEAR CHARACTER (varshesh) + MUNTHA FOCUS
+  pg('<h2 class="sec">🎭 '+T(L.yearTheme)+'</h2><div class="prose">'+T(N.varshesh[vLord])+'</div>'
+    +'<h2 class="sec">🎯 '+T(L.munthaTheme)+'</h2><div class="prose">'+T(N.muntha[mh])+'</div>');
+  // VARSHAPHAL CHART TABLE
+  var posRows=vp.chart.grahas.map(function(g){
+    return '<tr><td>'+gname2(g.key)+'</td><td>'+(LANG==='hi'?g.rashi.hi:g.rashi.en)+'</td><td>'+g.house+'</td><td>'+(LANG==='hi'?g.nakshatra.hi:g.nakshatra.en)+'</td></tr>';
+  }).join('');
+  pg('<h2 class="sec">🪐 '+T(L.chart)+'</h2>'
+    +'<div class="prose" style="font-size:13px;color:#8B5A2B;">'+T(L.solarReturn)+': '+fDT(vp.returnInstant)+'</div>'
+    +'<table><tr><th>'+(LANG==='hi'?'ग्रह':'Planet')+'</th><th>'+(LANG==='hi'?'राशि':'Sign')+'</th><th>'+(LANG==='hi'?'भाव':'House')+'</th><th>'+(LANG==='hi'?'नक्षत्र':'Nakshatra')+'</th></tr>'+posRows+'</table>');
+  // MONTH-BY-MONTH (dasha-of-month based tone)
+  var dz=PE.getVimshottariDasha(b);
+  function dashaAtMonth(t){
+    for(var m=0;m<dz.mahadashas.length;m++){var md=dz.mahadashas[m];
+      if(md.start.getTime()<=t&&md.end.getTime()>t){var al=md.lord;
+        for(var a=0;a<md.antardashas.length;a++){var ad=md.antardashas[a];if(ad.start.getTime()<=t&&ad.end.getTime()>t){
+          var pl=PE.dashaSubPeriods(ad.lord,ad.start.getTime(),ad.end.getTime());
+          for(var p=0;p<pl.length;p++)if(pl[p].start.getTime()<=t&&pl[p].end.getTime()>t)return{maha:md.lord,antar:ad.lord,praty:pl[p].lord};
+          return{maha:md.lord,antar:ad.lord,praty:ad.lord};
+        }}
+        return{maha:md.lord,antar:al,praty:al};
+      }}
+    return null;
+  }
+  var MAITRI=PE.MAITRI||{};
+  function monthTone(d){ // pratyantar lord vs maha lord friendship -> tone
+    if(!d)return 0;
+    var rel=(MAITRI[d.maha]&&MAITRI[d.maha][d.praty]!==undefined)?MAITRI[d.maha][d.praty]:1;
+    if(d.praty===d.maha)return 1;
+    var ben=['jupiter','venus','mercury','moon'];
+    var b1=ben.indexOf(d.praty)>=0?1:0;
+    return (rel===2?1:rel===0?-1:0)+b1-(['saturn','rahu','ketu','mars'].indexOf(d.praty)>=0?1:0);
+  }
+  var mcards=[];
+  for(var mo=0;mo<12;mo++){
+    var mt=Date.UTC(CTX.forYear,mo,15);
+    var d=dashaAtMonth(mt);
+    var tone=monthTone(d);
+    var col=tone>0?'#2B8B5A':tone<0?'#B8434A':'#E8A317';
+    var lbl=tone>0?T(L.favourable):tone<0?T(L.care):T(L.steady);
+    mcards.push('<div class="mcard"><div class="mh"><span>'+(LANG==='hi'?MONTHS_HI[mo]:MONTHS_EN[mo])+'</span><span class="mdot" style="background:'+col+';"></span></div>'
+      +'<div style="font-size:12px;color:var(--soft);">'+(d?gname2(d.antar)+' / '+gname2(d.praty):'')+'</div>'
+      +'<div style="font-size:12.5px;color:'+col+';font-weight:600;">'+lbl+'</div></div>');
+  }
+  pg('<h2 class="sec">📆 '+T(L.months)+'</h2><div class="mgrid">'+mcards.join('')+'</div>');
+  // AUSPICIOUS DATES (griha/business-neutral: use business rules as general auspicious)
+  var fromD=new Date(Date.UTC(CTX.forYear,0,1)), toD=new Date(Date.UTC(CTX.forYear,11,31));
+  var mh2=PE.findMuhurta('business',b,CTX.clat,CTX.clng,fromD,toD,6);
+  var dts=mh2.results.slice(0,6).map(function(r){
+    return '<div class="yog ok" style="font-size:13.5px;"><b>'+fD(r.date)+'</b> · '+(LANG==='hi'?r.nakshatra.hi:r.nakshatra.en)+' · '+(LANG==='hi'?r.weekday.hi:r.weekday.en)+'</div>';
+  }).join('');
+  pg('<h2 class="sec">🗓️ '+T(L.bestDates)+'</h2>'
+    +'<div class="prose" style="font-size:13px;color:#8B5A2B;">'+(LANG==='hi'?'इस वर्ष के सामान्यतः शुभ दिन (आपके तारा-बल सहित):':'Generally auspicious days this year (with your personal star-strength):')+'</div>'+dts);
+  // REMEDIES + FOOTER (year lord remedy)
+  var rem=[vLord].map(function(k){var r=C.remedy[k];return r?'<div class="yog"><b>'+r.name+'</b> — <span style="color:#8B2B33;">'+r.mantra+'</span><br>'+(LANG==='hi'?r.hi:r.en)+'</div>':'';}).join('');
+  pg('<h2 class="sec">🙏 '+T(L.remedies)+'</h2>'
+    +'<div class="prose" style="font-size:13px;">'+(LANG==='hi'?'इस वर्ष के स्वामी '+gname2(vLord)+' को प्रसन्न रखना वर्ष भर शुभ फल देता है:':'Strengthening this year\u2019s lord, '+gname2(vLord)+', supports auspicious results all year:')+'</div>'+rem
+    +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
+  document.getElementById('report').innerHTML=H;
+  document.getElementById('report').style.display='block';
+  document.getElementById('printbar').style.display='block';
+  document.getElementById('inputScreen').style.display='none';
+  window.scrollTo(0,0);
+} catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
+</script>
+</body>
+</html>
