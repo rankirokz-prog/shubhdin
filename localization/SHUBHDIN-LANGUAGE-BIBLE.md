@@ -1,7 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 1.8 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 1.9 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v1.9 changelog:** §12 extended — engine ARRAY data indexed by [LANG] is a fourth source of text and a crash risk, not just a translation gap.
 **v1.8 changelog:** Fallback chain CHANGED to lang→en→hi (§1.4 rationale) and §14 stale-file detection added, after a stale content file rendered a Telugu report in Hindi.
 **v1.7 changelog:** §13 — mantras and their deity labels are never localized (native-reviewer ruling).
 **v1.6 changelog:** §12.3 — SD_UI is now INLINED into each report page by embed-ui.js; no separate upload exists to forget. Two rounds of review were spent reviewing the English fallback because ui-strings.js never reached the server.
