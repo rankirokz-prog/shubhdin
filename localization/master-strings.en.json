@@ -1,0 +1,2648 @@
+{
+ "_meta": {
+  "version": "1.0",
+  "scope": "paid reports only (Bible rule: free kundli after pipeline proven)",
+  "generated": "2026-07-21T19:23:37.483Z",
+  "blocks": 420,
+  "approxWords": 5651,
+  "byReport": {
+   "love": 85,
+   "marriage": 52,
+   "career": 63,
+   "muhurta": 28,
+   "forecast": 95,
+   "child": 27,
+   "annual": 70
+  }
+ },
+ "strings": [
+  {
+   "report": "love",
+   "key": "love.loveStyle.fire.en",
+   "en": "You love the way a flame loves — brightly, boldly, all at once. When your heart is drawn to someone, there is no half-measure: you pursue, you adore, you burn beautifully. Yours is a love that feels like being chosen by the sun. Give that fire a worthy hearth, and it will warm a lifetime.",
+   "hi_current": "आप वैसे प्रेम करते हैं जैसे अग्नि प्रेम करती है — उज्ज्वल, निर्भीक, एक साथ पूर्ण। जब हृदय किसी की ओर खिंचता है, तब आधा-अधूरा कुछ नहीं होता: आप पाते हैं, पूजते हैं, सुंदरता से जलते हैं। आपका प्रेम सूर्य द्वारा चुने जाने-सा अनुभव देता है। इस अग्नि को योग्य आश्रय दें, यह जीवन भर उष्मा देगी।"
+  },
+  {
+   "report": "love",
+   "key": "love.loveStyle.earth.en",
+   "en": "You love the way the earth loves — patiently, faithfully, and for keeps. You are not swept away by fleeting sparks; you build something that lasts, stone by tender stone. To be loved by you is to feel safe, cherished and quietly certain. Yours is the rarest gift of all: a love that stays.",
+   "hi_current": "आप वैसे प्रेम करते हैं जैसे धरती प्रेम करती है — धैर्यपूर्वक, निष्ठा से, सदा के लिए। क्षणिक चिंगारियाँ आपको नहीं बहातीं; आप कुछ ऐसा रचते हैं जो टिके, कोमल पत्थर-दर-पत्थर। आपके प्रेम में सुरक्षा, स्नेह और शांत निश्चय का अनुभव है। आपका प्रेम सबसे दुर्लभ उपहार है: वह प्रेम जो ठहरता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.loveStyle.air.en",
+   "en": "You love the way the wind loves — through words, laughter and meeting of minds. For you, the deepest romance begins as conversation that never wants to end. You need a partner who is also a friend, a mind that dances with yours. When you find someone who truly gets you, the connection is electric and endless.",
+   "hi_current": "आप वैसे प्रेम करते हैं जैसे पवन प्रेम करती है — शब्दों, हँसी और मनों के मिलन से। आपके लिए गहनतम प्रणय उस संवाद से आरंभ होता है जो कभी समाप्त नहीं होना चाहता। आपको ऐसा साथी चाहिए जो मित्र भी हो, एक मन जो आपके संग नाचे। जब कोई सचमुच आपको समझता है, तब वह जुड़ाव विद्युत-सा और अनंत होता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.loveStyle.water.en",
+   "en": "You love the way the ocean loves — deeply, intuitively, with your whole soul. You feel everything, and when you give your heart, you give its very depths. You sense what your beloved needs before they speak it. Yours is a tender, devoted, romantic love — and the right person will treasure how profoundly you feel.",
+   "hi_current": "आप वैसे प्रेम करते हैं जैसे सागर प्रेम करता है — गहराई से, सहजबोध से, पूरी आत्मा से। आप सब कुछ अनुभव करते हैं, और जब हृदय देते हैं, तब उसकी गहराइयाँ दे देते हैं। प्रिय की आवश्यकता उनके कहने से पहले भाँप लेते हैं। आपका प्रेम कोमल, समर्पित, रोमांटिक है — और सही व्यक्ति इस गहन अनुभूति को अनमोल मानेगा।"
+  },
+  {
+   "report": "love",
+   "key": "love.partner.fire.en",
+   "en": "Your heart is destined to be lit by a partner of fire — someone spirited, confident and radiant, who walks into a room and changes its temperature. This is a soul with courage and warmth, who will inspire you and match your intensity. Look for the one whose presence feels like sunrise.",
+   "hi_current": "आपका हृदय अग्नि-स्वभाव के साथी से प्रज्वलित होने को है — कोई उत्साही, आत्मविश्वासी और तेजस्वी, जो कक्ष में प्रवेश करते ही उसका ताप बदल दे। यह साहस और उष्मा वाली आत्मा है, जो आपको प्रेरित करेगी और आपकी तीव्रता से मेल खाएगी। उसे खोजें जिसकी उपस्थिति सूर्योदय-सी लगे।"
+  },
+  {
+   "report": "love",
+   "key": "love.partner.earth.en",
+   "en": "The one who is meant for you carries the steadiness of earth — grounded, dependable and beautifully real. This is a partner who shows love through devotion and presence rather than grand words; who builds a home with you, not just a romance. Look for the one who feels like coming home.",
+   "hi_current": "जो आपके लिए बना है, वह धरती की स्थिरता रखता है — व्यावहारिक, विश्वसनीय और सुंदरता से वास्तविक। यह साथी भव्य शब्दों से नहीं, समर्पण और उपस्थिति से प्रेम दर्शाता है; जो आपके संग केवल प्रणय नहीं, घर बनाता है। उसे खोजें जो घर लौटने-सा लगे।"
+  },
+  {
+   "report": "love",
+   "key": "love.partner.air.en",
+   "en": "Your other half is a spirit of air — bright, witty and endlessly interesting, a mind that will enchant yours. This is someone you can talk to for hours, who makes you laugh and think in the same breath. Chemistry, for you, is intellectual before it is anything else. Look for the one whose words feel like music.",
+   "hi_current": "आपका दूसरा आधा पवन-स्वभाव की आत्मा है — प्रखर, विनोदी और अनंत रोचक, एक मन जो आपके मन को मोहित करे। यह कोई ऐसा है जिससे आप घंटों बात कर सकें, जो एक ही साँस में हँसाए और सोचने पर विवश करे। आपके लिए आकर्षण सबसे पहले बौद्धिक होता है। उसे खोजें जिसके शब्द संगीत-से लगें।"
+  },
+  {
+   "report": "love",
+   "key": "love.partner.water.en",
+   "en": "Destiny is guiding you toward a soul of water — deep, feeling and gently intuitive, someone who loves with tenderness and understands without asking. This is a partner who will hold your heart safely and meet your emotional world with their own. Look for the one whose eyes feel like they already know you.",
+   "hi_current": "भाग्य आपको जल-स्वभाव की आत्मा की ओर ले जा रहा है — गहरी, संवेदनशील और कोमल सहजबोध वाली, कोई जो कोमलता से प्रेम करे और बिना पूछे समझे। यह साथी आपके हृदय को सुरक्षित थामेगा और आपके भाव-जगत से अपने भाव-जगत से मिलेगा। उसे खोजें जिसकी आँखें पहले से आपको जानती-सी लगें।"
+  },
+  {
+   "report": "love",
+   "key": "love.scoreBand.radiant.t_en",
+   "en": "Your chart glows with the promise of love",
+   "hi_current": "आपकी कुंडली प्रेम के वचन से दमकती है"
+  },
+  {
+   "report": "love",
+   "key": "love.scoreBand.radiant.en",
+   "en": "The houses of romance and partnership are richly blessed in your chart — love is not a question of if, but of when and how beautifully. You are made for deep connection, and the stars have written warmth into your story. Trust your heart; it is well-guided.",
+   "hi_current": "आपकी कुंडली में प्रणय और साझेदारी के भाव समृद्ध रूप से आशीर्वादित हैं — प्रेम 'यदि' का नहीं, 'कब और कितनी सुंदरता से' का प्रश्न है। आप गहन जुड़ाव के लिए बने हैं, और तारों ने आपकी कथा में उष्मा लिखी है। हृदय पर भरोसा रखें; वह सुमार्गित है।"
+  },
+  {
+   "report": "love",
+   "key": "love.scoreBand.warm.t_en",
+   "en": "Love flows warmly through your chart",
+   "hi_current": "प्रेम आपकी कुंडली में उष्मा से बहता है"
+  },
+  {
+   "report": "love",
+   "key": "love.scoreBand.warm.en",
+   "en": "Your chart carries a warm and favourable current for love — genuine connection comes to you, especially in the blessed periods ahead. Relationships bring you growth and joy. With an open and patient heart, love finds its way to you beautifully.",
+   "hi_current": "आपकी कुंडली प्रेम हेतु उष्ण और अनुकूल धारा रखती है — सच्चा जुड़ाव आपके पास आता है, विशेषकर आगामी शुभ अवधियों में। संबंध आपको विकास और आनंद देते हैं। खुले और धैर्यवान हृदय से, प्रेम सुंदरता से आप तक पहुँचता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.scoreBand.tender.t_en",
+   "en": "Your love story unfolds in its own gentle time",
+   "hi_current": "आपकी प्रेम-कथा अपने कोमल समय में खुलती है"
+  },
+  {
+   "report": "love",
+   "key": "love.scoreBand.tender.en",
+   "en": "Love, for you, ripens like fruit in its season — it asks for a little patience, and rewards it richly. The tender areas of your chart are an invitation to self-love and readiness, so that when the right soul arrives, you are whole to receive them. The blessed windows ahead hold real promise.",
+   "hi_current": "आपके लिए प्रेम ऋतु के फल-सा पकता है — यह थोड़ा धैर्य माँगता है, और उसे भरपूर फल देता है। आपकी कुंडली के कोमल क्षेत्र आत्म-प्रेम और तत्परता का निमंत्रण हैं, ताकि जब सही आत्मा आए, आप उसे पाने को पूर्ण हों। आगे की शुभ अवधियाँ सच्चा वचन रखती हैं।"
+  },
+  {
+   "report": "love",
+   "key": "love.passion.high.en",
+   "en": "There is a magnetic, passionate fire in your romantic nature — attraction comes alive powerfully when your heart is engaged.",
+   "hi_current": "आपकी प्रणय-प्रकृति में चुंबकीय, उत्कट अग्नि है — जब हृदय जुड़ता है, आकर्षण प्रबलता से जाग उठता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.passion.balanced.en",
+   "en": "Your passion runs warm and steady — a beautiful balance of desire and tenderness that makes love feel both exciting and safe.",
+   "hi_current": "आपकी उत्कटता उष्ण और स्थिर बहती है — इच्छा और कोमलता का सुंदर संतुलन जो प्रेम को रोमांचक और सुरक्षित दोनों बनाता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.elements.fire.en",
+   "en": "Fire",
+   "hi_current": "अग्नि"
+  },
+  {
+   "report": "love",
+   "key": "love.elements.earth.en",
+   "en": "Earth",
+   "hi_current": "पृथ्वी"
+  },
+  {
+   "report": "love",
+   "key": "love.elements.air.en",
+   "en": "Air",
+   "hi_current": "वायु"
+  },
+  {
+   "report": "love",
+   "key": "love.elements.water.en",
+   "en": "Water",
+   "hi_current": "जल"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.title.en",
+   "en": "Your Love Story",
+   "hi_current": "आपकी प्रेम कथा"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.subtitle.en",
+   "en": "How you love, who you seek, and when love blooms",
+   "hi_current": "आप कैसे प्रेम करते हैं, किसे खोजते हैं, और प्रेम कब खिलता है"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.loveLang.en",
+   "en": "Your Love Language",
+   "hi_current": "आपकी प्रेम भाषा"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.yourHeart.en",
+   "en": "The Nature of Your Heart",
+   "hi_current": "आपके हृदय का स्वभाव"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.idealPartner.en",
+   "en": "The One You're Meant to Find",
+   "hi_current": "जिसे आप पाने को हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.chemistry.en",
+   "en": "Your Romantic Chemistry",
+   "hi_current": "आपका प्रणय रसायन"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.passion.en",
+   "en": "Passion",
+   "hi_current": "उत्कटता"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.romance.en",
+   "en": "Romance",
+   "hi_current": "प्रणय"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.commitment.en",
+   "en": "Commitment",
+   "hi_current": "प्रतिबद्धता"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.whenLove.en",
+   "en": "When Love Blooms",
+   "hi_current": "प्रेम कब खिलता है"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.whenLoveIntro.en",
+   "en": "The stars mark certain seasons when love flowers most readily for you. In these blessed windows, hearts open, meetings feel fated, and existing bonds deepen:",
+   "hi_current": "तारे कुछ ऋतुएँ अंकित करते हैं जब प्रेम आपके लिए सर्वाधिक सहजता से खिलता है। इन शुभ अवधियों में हृदय खुलते हैं, भेंट नियत लगती है, और विद्यमान बंधन प्रगाढ़ होते हैं:"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.whyWin.en",
+   "en": "Why this season",
+   "hi_current": "यह ऋतु क्यों"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.remedies.en",
+   "en": "To Invite Love's Grace",
+   "hi_current": "प्रेम की कृपा हेतु"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.venusStrength.en",
+   "en": "Venus, the planet of love, in your chart",
+   "hi_current": "प्रेम-ग्रह शुक्र, आपकी कुंडली में"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.method.en",
+   "en": "Drawn from Venus (the planet of love), your Moon (the heart), and the 5th and 7th houses of romance and union in your chart. Verify against your free Kundli report.",
+   "hi_current": "शुक्र (प्रेम-ग्रह), आपके चंद्र (हृदय), और आपकी कुंडली के प्रणय-मिलन के 5वें व 7वें भाव से लिया गया। निःशुल्क कुंडली रिपोर्ट से सत्यापित करें।"
+  },
+  {
+   "report": "love",
+   "key": "love.labels.disclaimer.en",
+   "en": "Offered in the spirit of tradition and wonder. The stars incline; they do not compel. Your open heart writes the truest love story of all.",
+   "hi_current": "परंपरा और विस्मय की भावना से प्रस्तुत। तारे झुकाव देते हैं; बाध्य नहीं करते। आपका खुला हृदय ही सबसे सच्ची प्रेम-कथा लिखता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.partnerRich.fire.en",
+   "en": "You'll be naturally drawn toward someone bold, passionate and full of life — a person whose confidence and warmth light up every room. You're attracted to spirit and drive, to someone who takes the lead and isn't afraid to chase what they want. Grand gestures and adventure will matter to you more than quiet routine; you want a love that feels alive.",
+   "hi_current": "आप स्वाभाविक रूप से किसी निर्भीक, भावुक और जीवंत व्यक्ति की ओर खिंचेंगे — जिसका आत्मविश्वास और उष्मा हर कक्ष को रोशन कर दे। आप उत्साह और प्रेरणा से आकर्षित होते हैं, किसी ऐसे से जो नेतृत्व ले और जो चाहे उसे पाने से न डरे। भव्य भाव-प्रदर्शन और रोमांच आपके लिए शांत दिनचर्या से अधिक मायने रखेंगे; आप जीवंत प्रेम चाहते हैं।"
+  },
+  {
+   "report": "love",
+   "key": "love.partnerRich.earth.en",
+   "en": "You'll naturally be drawn toward someone stable, dependable and genuinely present — a person who shows love through actions rather than words. You value loyalty, patience and the quiet security of knowing someone will stay. Consistency matters to you more than flashy romance; you want a partner who builds a real life with you, day by steady day.",
+   "hi_current": "आप स्वाभाविक रूप से किसी स्थिर, विश्वसनीय और सच्चे रूप से उपस्थित व्यक्ति की ओर खिंचेंगे — जो शब्दों से नहीं, कर्मों से प्रेम दर्शाए। आप निष्ठा, धैर्य और इस शांत सुरक्षा को महत्व देते हैं कि कोई ठहरेगा। आपके लिए दिखावटी प्रणय से अधिक निरंतरता मायने रखती है; आप ऐसा साथी चाहते हैं जो आपके संग दिन-प्रतिदिन वास्तविक जीवन बनाए।"
+  },
+  {
+   "report": "love",
+   "key": "love.partnerRich.air.en",
+   "en": "You'll naturally be drawn toward someone curious, expressive, witty and mentally stimulating — a partner who can talk with you for hours and never bore you. Shared conversations, laughter and intellectual connection will matter to you far more than grand romantic gestures. You fall for minds, not just faces; the right person will feel like your favourite conversation that never ends.",
+   "hi_current": "आप स्वाभाविक रूप से किसी जिज्ञासु, अभिव्यंजक, विनोदी और बौद्धिक रूप से उत्तेजक व्यक्ति की ओर खिंचेंगे — जो आपसे घंटों बात कर सके और कभी उबाए नहीं। साझा संवाद, हँसी और बौद्धिक जुड़ाव आपके लिए भव्य रोमांटिक भाव-प्रदर्शनों से कहीं अधिक मायने रखेंगे। आप चेहरों पर नहीं, मनों पर मोहित होते हैं; सही व्यक्ति आपकी प्रिय, कभी न समाप्त होने वाली बातचीत-सा लगेगा।"
+  },
+  {
+   "report": "love",
+   "key": "love.partnerRich.water.en",
+   "en": "You'll naturally be drawn toward someone deep, sensitive and emotionally attuned — a person who understands your feelings without needing them explained. You crave genuine emotional intimacy, gentleness and a soul who feels as deeply as you do. Surface-level connection won't satisfy you; you want a partner who meets you in the tender, unspoken places of the heart.",
+   "hi_current": "आप स्वाभाविक रूप से किसी गहरे, संवेदनशील और भावनात्मक रूप से समरस व्यक्ति की ओर खिंचेंगे — जो आपकी भावनाओं को बिना समझाए समझे। आप सच्ची भावनात्मक अंतरंगता, कोमलता और ऐसी आत्मा चाहते हैं जो आपके समान गहराई से अनुभव करे। सतही जुड़ाव आपको संतुष्ट नहीं करेगा; आप ऐसा साथी चाहते हैं जो आपसे हृदय के कोमल, अनकहे स्थलों में मिले।"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.communication.t_en",
+   "en": "You communicate beautifully in love",
+   "hi_current": "आप प्रेम में सुंदर संवाद करते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.communication.en",
+   "en": "Your greatest gift is your ability to express yourself and truly listen. You can talk through anything, put feelings into words, and make your partner feel heard. This is rarer than you know — many relationships fail for want of exactly what comes naturally to you.",
+   "hi_current": "आपका सबसे बड़ा उपहार है स्वयं को व्यक्त करने और सच्चे मन से सुनने की क्षमता। आप किसी भी बात पर संवाद कर सकते हैं, भावनाओं को शब्द दे सकते हैं, और साथी को सुना हुआ महसूस करा सकते हैं। यह आपकी सोच से अधिक दुर्लभ है — अनेक संबंध ठीक उसी के अभाव में टूटते हैं जो आपको स्वाभाविक रूप से आता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.loyalty.t_en",
+   "en": "Loyalty is your greatest strength",
+   "hi_current": "निष्ठा आपकी सबसे बड़ी शक्ति है"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.loyalty.en",
+   "en": "Once you give your heart, you give it completely. Your steadfast loyalty and reliability make you the kind of partner people feel safe with. In a world of fleeting connections, your constancy is a treasure — you love like someone who intends to stay.",
+   "hi_current": "एक बार हृदय देने पर, आप उसे पूर्णतः दे देते हैं। आपकी अटल निष्ठा और विश्वसनीयता आपको ऐसा साथी बनाती है जिसके साथ लोग सुरक्षित अनुभव करते हैं। क्षणिक जुड़ावों के संसार में, आपकी स्थिरता एक निधि है — आप उस भाँति प्रेम करते हैं जो ठहरने का इरादा रखता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.affection.t_en",
+   "en": "You love with warmth and generosity",
+   "hi_current": "आप उष्मा और उदारता से प्रेम करते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.affection.en",
+   "en": "Your greatest gift is affection freely given — you make love feel warm, romantic and alive. You know how to cherish someone, to make ordinary moments feel special. Your partner never has to wonder if they are loved; you show it beautifully.",
+   "hi_current": "आपका सबसे बड़ा उपहार है मुक्त रूप से दिया गया स्नेह — आप प्रेम को उष्ण, रोमांटिक और जीवंत बनाते हैं। आप किसी को संजोना जानते हैं, साधारण क्षणों को विशेष बनाना जानते हैं। आपके साथी को कभी संदेह नहीं करना पड़ता कि वे प्रिय हैं; आप इसे सुंदरता से दर्शाते हैं।"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.devotion.t_en",
+   "en": "Your devotion runs deep",
+   "hi_current": "आपका समर्पण गहरा है"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.devotion.en",
+   "en": "Your greatest strength is commitment — when you choose someone, you are all in. You take love seriously and build it to last. This depth of devotion is the foundation of the lasting, meaningful partnership your heart truly seeks.",
+   "hi_current": "आपकी सबसे बड़ी शक्ति है प्रतिबद्धता — जब आप किसी को चुनते हैं, तब पूर्णतः समर्पित होते हैं। आप प्रेम को गंभीरता से लेते हैं और उसे टिकाऊ बनाते हैं। समर्पण की यह गहराई उस स्थायी, सार्थक साझेदारी की नींव है जिसे आपका हृदय सचमुच खोजता है।"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.emotionalSafety.t_en",
+   "en": "You create emotional safety for others",
+   "hi_current": "आप दूसरों के लिए भावनात्मक सुरक्षा रचते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.emotionalSafety.en",
+   "en": "Your greatest gift is making people feel safe. Your partner can be fully themselves with you — vulnerable, open, unguarded. This emotional safety is the soil in which real intimacy grows, and you offer it naturally. It is a profound and rare gift.",
+   "hi_current": "आपका सबसे बड़ा उपहार है लोगों को सुरक्षित अनुभव कराना। आपका साथी आपके साथ पूर्णतः स्वयं हो सकता है — सुभेद्य, खुला, निश्शंक। यह भावनात्मक सुरक्षा वह भूमि है जिसमें सच्ची अंतरंगता उगती है, और आप इसे स्वाभाविक रूप से देते हैं। यह गहन और दुर्लभ उपहार है।"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.independence.t_en",
+   "en": "You bring healthy independence to love",
+   "hi_current": "आप प्रेम में स्वस्थ स्वतंत्रता लाते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.independence.en",
+   "en": "Your greatest strength is that you love without losing yourself. You bring a whole, self-assured person into the relationship, which paradoxically makes your love stronger. You don't cling — you choose, freely and daily, and that freedom is deeply attractive.",
+   "hi_current": "आपकी सबसे बड़ी शक्ति है कि आप स्वयं को खोए बिना प्रेम करते हैं। आप संबंध में एक पूर्ण, आत्मविश्वासी व्यक्ति लाते हैं, जो विरोधाभासी रूप से आपके प्रेम को अधिक सशक्त बनाता है। आप चिपकते नहीं — आप मुक्त भाव से, प्रतिदिन चुनते हैं, और वह स्वतंत्रता गहन आकर्षक है।"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.emotionalDepth.t_en",
+   "en": "You love with remarkable depth",
+   "hi_current": "आप उल्लेखनीय गहराई से प्रेम करते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.strengths.emotionalDepth.en",
+   "en": "Your greatest gift is the sheer depth of your feeling. You love wholeheartedly and sense what your partner needs before they speak it. This emotional richness makes your love profound and unforgettable to those fortunate enough to receive it.",
+   "hi_current": "आपका सबसे बड़ा उपहार है आपकी अनुभूति की विशुद्ध गहराई। आप पूर्ण हृदय से प्रेम करते हैं और साथी की आवश्यकता उनके कहने से पहले भाँप लेते हैं। यह भावनात्मक समृद्धि आपके प्रेम को उन लोगों के लिए गहन और अविस्मरणीय बनाती है जो इसे पाने का सौभाग्य रखते हैं।"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.overthinking.t_en",
+   "en": "You may overthink emotions",
+   "hi_current": "आप भावनाओं पर अधिक विचार कर सकते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.overthinking.en",
+   "en": "Your rich inner world is a gift, but it can lead you to analyse feelings — yours and theirs — more than needed. Sometimes love asks you to feel rather than decode, to trust rather than interpret. Practise letting a moment simply be; not everything needs solving.",
+   "hi_current": "आपका समृद्ध अंतर्जगत एक उपहार है, पर यह आपको भावनाओं का — अपनी और उनकी — आवश्यकता से अधिक विश्लेषण करा सकता है। कभी-कभी प्रेम आपसे अनुभव करने को कहता है, विश्लेषण नहीं; भरोसा करने को, व्याख्या नहीं। किसी क्षण को केवल रहने देने का अभ्यास करें; हर बात का समाधान आवश्यक नहीं।"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.possessive.t_en",
+   "en": "You may love a little too tightly",
+   "hi_current": "आप कुछ अधिक कसकर प्रेम कर सकते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.possessive.en",
+   "en": "Your love runs deep and protective, but it can tip into possessiveness or jealousy when you fear loss. The truth is, love held loosely stays longest. Trust your partner the way you'd want to be trusted; giving space is itself a form of love.",
+   "hi_current": "आपका प्रेम गहरा और रक्षात्मक है, पर हानि के भय में यह अधिकार-भाव या ईर्ष्या में बदल सकता है। सत्य यह है कि शिथिलता से थामा प्रेम सबसे लंबा ठहरता है। साथी पर वैसे भरोसा करें जैसे आप चाहेंगे कि आप पर हो; स्थान देना स्वयं प्रेम का एक रूप है।"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.expressing.t_en",
+   "en": "You may hold your feelings inside",
+   "hi_current": "आप भावनाएँ भीतर रख सकते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.expressing.en",
+   "en": "You feel deeply, but expressing those feelings aloud doesn't always come easily. Your partner cannot read a heart that stays silent. Practise saying the tender things — 'I missed you', 'I'm grateful for you'. Small spoken words build enormous closeness.",
+   "hi_current": "आप गहराई से अनुभव करते हैं, पर उन भावनाओं को स्वर देना सदा सहज नहीं होता। आपका साथी उस हृदय को नहीं पढ़ सकता जो मौन रहता है। कोमल बातें कहने का अभ्यास करें — 'मैंने तुम्हें याद किया', 'मैं तुम्हारे लिए आभारी हूँ'। छोटे बोले गए शब्द विशाल निकटता बनाते हैं।"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.guarded.t_en",
+   "en": "You may guard your heart too carefully",
+   "hi_current": "आप हृदय की अधिक सावधानी से रक्षा कर सकते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.guarded.en",
+   "en": "Your independence is a strength, but it can become a wall that keeps love at arm's length. Real intimacy asks for vulnerability — letting someone truly in, even at the risk of being hurt. The bravest thing your strong heart can do is soften.",
+   "hi_current": "आपकी स्वतंत्रता एक शक्ति है, पर यह ऐसी दीवार बन सकती है जो प्रेम को दूर रखे। सच्ची अंतरंगता सुभेद्यता माँगती है — किसी को सचमुच भीतर आने देना, आहत होने के जोखिम पर भी। आपका सशक्त हृदय जो सबसे साहसी कार्य कर सकता है, वह है कोमल होना।"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.reassurance.t_en",
+   "en": "You may seek frequent reassurance",
+   "hi_current": "आप बार-बार आश्वासन खोज सकते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.reassurance.en",
+   "en": "Your loving heart sometimes needs more reassurance than a partner naturally offers, and unspoken doubts can quietly grow. Learn to reassure yourself of your own worth; you are deeply lovable. Security that comes from within makes love lighter and sweeter for both.",
+   "hi_current": "आपका प्रेममय हृदय कभी-कभी उससे अधिक आश्वासन चाहता है जितना साथी स्वाभाविक रूप से देता है, और अनकहे संदेह चुपचाप बढ़ सकते हैं। स्वयं को अपने मूल्य का आश्वासन देना सीखें; आप गहन रूप से प्रेम-योग्य हैं। भीतर से आई सुरक्षा प्रेम को दोनों के लिए हल्का और मधुर बनाती है।"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.expectations.t_en",
+   "en": "You may expect a great deal from love",
+   "hi_current": "आप प्रेम से बहुत अपेक्षा कर सकते हैं"
+  },
+  {
+   "report": "love",
+   "key": "love.challenges.expectations.en",
+   "en": "You hold a beautiful, idealistic picture of love — which is lovely, but real people are gloriously imperfect. Allowing your partner room to be human, rather than to match an ideal, is where lasting happiness lives. Cherish the real over the perfect.",
+   "hi_current": "आप प्रेम का एक सुंदर, आदर्शवादी चित्र रखते हैं — जो प्यारा है, पर वास्तविक लोग गौरवपूर्ण रूप से अपूर्ण होते हैं। साथी को आदर्श से मेल खाने के बजाय मनुष्य होने का स्थान देना — वहीं स्थायी सुख बसता है। पूर्ण के ऊपर वास्तविक को संजोएँ।"
+  },
+  {
+   "report": "love",
+   "key": "love.attachments.secure.en",
+   "en": "Secure",
+   "hi_current": "सुरक्षित"
+  },
+  {
+   "report": "love",
+   "key": "love.attachments.anxious.en",
+   "en": "Devoted-Anxious",
+   "hi_current": "समर्पित-चिंतित"
+  },
+  {
+   "report": "love",
+   "key": "love.attachments.independent.en",
+   "en": "Independent",
+   "hi_current": "स्वतंत्र"
+  },
+  {
+   "report": "love",
+   "key": "love.attachments.deep.en",
+   "en": "Deep-Feeling",
+   "hi_current": "गहन-संवेदी"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.title.en",
+   "en": "Your Love DNA",
+   "hi_current": "आपका प्रेम DNA"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.loveStyleL.en",
+   "en": "Love Style",
+   "hi_current": "प्रेम शैली"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.attachmentL.en",
+   "en": "Attachment",
+   "hi_current": "लगाव"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.communication.en",
+   "en": "Communication",
+   "hi_current": "संवाद"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.romance.en",
+   "en": "Romance",
+   "hi_current": "प्रणय"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.commitment.en",
+   "en": "Commitment",
+   "hi_current": "प्रतिबद्धता"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.trust.en",
+   "en": "Trust",
+   "hi_current": "विश्वास"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.jealousy.en",
+   "en": "Jealousy",
+   "hi_current": "ईर्ष्या"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.independence.en",
+   "en": "Independence",
+   "hi_current": "स्वतंत्रता"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.strengthTitle.en",
+   "en": "Your Greatest Gift",
+   "hi_current": "आपका सर्वोत्तम उपहार"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.challengeTitle.en",
+   "en": "Your Growth Edge",
+   "hi_current": "आपका विकास-किनारा"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.physical.en",
+   "en": "Physical Attraction",
+   "hi_current": "शारीरिक आकर्षण"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.emotional.en",
+   "en": "Emotional Bond",
+   "hi_current": "भावनात्मक बंधन"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.longterm.en",
+   "en": "Long-term Commitment",
+   "hi_current": "दीर्घकालिक प्रतिबद्धता"
+  },
+  {
+   "report": "love",
+   "key": "love.dnaLabels.subtitle_new.en",
+   "en": "Discover Your Relationship Personality",
+   "hi_current": "अपना संबंध व्यक्तित्व जानें"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.emotional.t_en",
+   "en": "Emotional Compatibility",
+   "hi_current": "भावनात्मक अनुकूलता"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.emotional.strong.en",
+   "en": "Your Moons speak the same language — feelings are understood here often before they are spoken. This bond can weather storms because the hearts genuinely translate each other.",
+   "hi_current": "आपके चंद्रमा एक ही भाषा बोलते हैं — भावनाएँ यहाँ प्रायः कहे जाने से पहले समझ ली जाती हैं। यह बंधन तूफ़ान झेल सकता है क्योंकि हृदय सचमुच एक-दूसरे का अनुवाद करते हैं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.emotional.avg.en",
+   "en": "Your emotional natures differ enough to keep learning alive — with listening, each becomes the other's missing vocabulary. Give feelings words, and closeness grows steadily.",
+   "hi_current": "आपकी भाव-प्रकृतियाँ इतनी भिन्न हैं कि सीखना जीवित रहे — सुनने से, प्रत्येक दूसरे की अधूरी शब्दावली बन जाता है। भावनाओं को शब्द दीजिए, निकटता क्रमशः बढ़ेगी।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.emotional.care.en",
+   "en": "Your Moons feel life differently — one may need words where the other needs silence. This asks for patience, not alarm: agree on small rituals of reassurance, and the difference becomes depth.",
+   "hi_current": "आपके चंद्रमा जीवन को भिन्न ढंग से अनुभव करते हैं — एक को शब्द चाहिए तो दूसरे को मौन। यह चिंता नहीं, धैर्य माँगता है: आश्वासन की छोटी रीतियाँ तय कीजिए, भिन्नता गहराई बन जाएगी।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.communication.t_en",
+   "en": "Communication & Understanding",
+   "hi_current": "संवाद एवं समझ"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.communication.strong.en",
+   "en": "Mercury blesses your conversations — humour, planning and problem-solving flow easily between you. Decisions made talking together will usually be your best ones.",
+   "hi_current": "बुध आपके संवादों को आशीर्वाद देते हैं — हास्य, योजना और समाधान आपके बीच सहज बहते हैं। साथ बैठकर लिए निर्णय प्रायः आपके श्रेष्ठतम होंगे।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.communication.avg.en",
+   "en": "Your thinking styles are complementary rather than identical — one sees the forest, the other the trees. Summarize decisions aloud and confirm; misunderstandings then rarely survive a day.",
+   "hi_current": "आपकी विचार-शैलियाँ समान नहीं, पूरक हैं — एक वन देखता है, दूसरा वृक्ष। निर्णय बोलकर दोहराएँ और पुष्टि करें; ग़लतफ़हमियाँ फिर एक दिन भी नहीं टिकतीं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.communication.care.en",
+   "en": "Mercury asks you both to work at translation — assumptions are this pairing's only enemy. Write important things down, ask twice, tease gently: the effort itself becomes intimacy.",
+   "hi_current": "बुध आप दोनों से अनुवाद का श्रम माँगते हैं — इस जोड़ी का एकमात्र शत्रु 'मान लेना' है। महत्वपूर्ण बातें लिखें, दो बार पूछें, सस्नेह हँसें: यही प्रयास आत्मीयता बन जाता है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.romance.t_en",
+   "en": "Romance & Attraction",
+   "hi_current": "प्रणय एवं आकर्षण"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.romance.strong.en",
+   "en": "Venus and Mars dance well between your charts — attraction here is natural and renewing. Keep courting each other after marriage; this pairing rewards it richly.",
+   "hi_current": "आपकी कुंडलियों के बीच शुक्र-मंगल का नृत्य सधा हुआ है — आकर्षण यहाँ स्वाभाविक और नित-नूतन है। विवाह के बाद भी एक-दूसरे को रिझाते रहिए; यह जोड़ी इसका भरपूर फल देती है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.romance.avg.en",
+   "en": "Attraction is present and steady, glowing brighter with shared experiences than grand gestures. Invest in small daily affections — they are this pairing's true currency.",
+   "hi_current": "आकर्षण उपस्थित और स्थिर है, जो भव्य प्रदर्शनों से अधिक साझा अनुभवों से चमकता है। छोटे नित्य स्नेह में निवेश कीजिए — वही इस जोड़ी की सच्ची मुद्रा है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.romance.care.en",
+   "en": "The Venus–Mars weave asks for conscious tending — romance here is a garden, not a wildfire. Schedule beauty into the calendar and protect couple-time; tended, this garden blooms for decades.",
+   "hi_current": "शुक्र-मंगल का ताना-बाना सचेत देखभाल माँगता है — यहाँ प्रणय जंगल की आग नहीं, उपवन है। सौंदर्य को समय दीजिए और दांपत्य-क्षण सुरक्षित रखिए; सिंचित यह उपवन दशकों खिलता है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.family.t_en",
+   "en": "Family Adjustment",
+   "hi_current": "पारिवारिक सामंजस्य"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.family.strong.en",
+   "en": "Your temperaments (Gana) and sign-relation (Bhakoot) support easy blending of families — festivals, in-laws and shared duties should find natural rhythm around you two.",
+   "hi_current": "आपके स्वभाव (गण) और राशि-संबंध (भकूट) परिवारों के सहज मिलन का समर्थन करते हैं — पर्व, ससुराल और साझा कर्तव्य आपके चारों ओर स्वाभाविक लय पा लेंगे।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.family.avg.en",
+   "en": "Family blending will be mostly smooth with occasional tuning — agree early on boundaries and festivals, and honour both houses equally; harmony then becomes habit.",
+   "hi_current": "पारिवारिक मिलन प्रायः सहज रहेगा, कभी-कभी संतुलन माँगेगा — सीमाएँ और पर्व पहले तय करें, दोनों कुलों का समान मान रखें; सामंजस्य फिर स्वभाव बन जाता है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.family.care.en",
+   "en": "Family adjustment is this match's practice-ground — differing temperaments can pull toward respective homes. A united front, decided privately and spoken jointly, dissolves most friction before it starts.",
+   "hi_current": "पारिवारिक सामंजस्य इस संबंध की साधना-भूमि है — भिन्न स्वभाव अपने-अपने घरों की ओर खींच सकते हैं। एकांत में तय और साथ में कहा गया साझा मत अधिकांश घर्षण को जन्म से पहले घोल देता है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.finance.t_en",
+   "en": "Financial Compatibility",
+   "hi_current": "आर्थिक अनुकूलता"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.finance.strong.en",
+   "en": "Your wealth-lords cooperate — earning, saving and spending instincts align well. Joint financial goals set early can compound into genuine prosperity together.",
+   "hi_current": "आपके धनेश सहयोगी हैं — अर्जन, बचत और व्यय की प्रवृत्तियाँ मेल खाती हैं। शीघ्र तय किए साझा आर्थिक लक्ष्य मिलकर सच्ची समृद्धि में चक्रवृद्धि हो सकते हैं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.finance.avg.en",
+   "en": "Money styles differ mildly — likely one saves where the other invests in experiences. A simple shared budget with personal allowances keeps both natures honoured and the treasury growing.",
+   "hi_current": "धन-शैलियाँ हल्की भिन्न हैं — संभवतः एक बचाता है, दूसरा अनुभवों में लगाता है। निजी छूट सहित सरल साझा बजट दोनों प्रकृतियों का मान रखता है और कोष बढ़ाता है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.finance.care.en",
+   "en": "Finances ask for structure in this pairing — unspoken money expectations are the risk, not money itself. Decide contributions, savings and family support openly each year; clarity here is love made practical.",
+   "hi_current": "इस जोड़ी में धन व्यवस्था माँगता है — जोखिम धन नहीं, अनकही अपेक्षाएँ हैं। योगदान, बचत और पारिवारिक सहयोग प्रतिवर्ष खुलकर तय करें; यहाँ स्पष्टता ही व्यावहारिक प्रेम है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.children.t_en",
+   "en": "Children & Legacy",
+   "hi_current": "संतान एवं वंश"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.children.strong.en",
+   "en": "Both fifth houses and the Saptamsa charts lean supportive — the blessing of children and joy through them is classically indicated for this union.",
+   "hi_current": "दोनों पंचम भाव और सप्तांश चक्र अनुकूल झुकाव रखते हैं — इस संबंध हेतु संतान-सुख और उनसे आनंद के शास्त्रीय संकेत हैं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.children.avg.en",
+   "en": "Children prospects are steady — timing matters more than possibility. The favourable windows chapter of this report highlights the classically supported periods.",
+   "hi_current": "संतान-योग स्थिर हैं — संभावना से अधिक महत्व समय का है। इस रिपोर्ट का शुभ-खिड़की अध्याय शास्त्र-समर्थित अवधियाँ दर्शाता है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.domains.children.care.en",
+   "en": "The fifth-house weave asks for patience and, per tradition, Santan Gopal upasana — many revered family lines began exactly so. Medical wisdom and mantra walk well together; neither replaces the other.",
+   "hi_current": "पंचम भाव का ताना-बाना धैर्य और परंपरानुसार संतान-गोपाल उपासना माँगता है — अनेक पूज्य वंश ऐसे ही आरंभ हुए। चिकित्सा-विवेक और मंत्र साथ-साथ चलते हैं; कोई किसी का विकल्प नहीं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Varna.en",
+   "en": "Spiritual ego compatibility — who naturally leads in matters of principle.",
+   "hi_current": "आध्यात्मिक अहं-अनुकूलता — सिद्धांत के विषयों में स्वाभाविक अग्रता किसकी।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Vashya.en",
+   "en": "Mutual influence — how naturally you two sway each other.",
+   "hi_current": "परस्पर प्रभाव — आप दोनों एक-दूसरे को कितनी सहजता से प्रभावित करते हैं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Tara.en",
+   "en": "Destiny-star harmony — health and fortune flowing between the birth stars.",
+   "hi_current": "तारा-अनुकूलता — जन्म नक्षत्रों के बीच बहता स्वास्थ्य और सौभाग्य।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Yoni.en",
+   "en": "Instinctive and physical harmony of natures.",
+   "hi_current": "प्रकृतियों की सहज एवं शारीरिक अनुकूलता।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Graha Maitri.en",
+   "en": "Friendship of the Moon-sign lords — the minds' natural alliance.",
+   "hi_current": "राश्याधिपतियों की मैत्री — मनों का स्वाभाविक गठबंधन।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Gana.en",
+   "en": "Temperament class (Deva/Manushya/Rakshasa) — daily-life energy match.",
+   "hi_current": "गण (देव/मनुष्य/राक्षस) — दैनिक जीवन-ऊर्जा का मेल।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Bhakoot.en",
+   "en": "Moon-sign distance — emotional and material life-rhythm alignment.",
+   "hi_current": "राशियों की परस्पर दूरी — भाव एवं भौतिक जीवन-लय का संरेखण।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.koota.Nadi.en",
+   "en": "Constitutional stream — classical health-of-progeny consideration.",
+   "hi_current": "नाड़ी — संतति-स्वास्थ्य का शास्त्रीय विचार।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.verdict.excellent.en",
+   "en": "An excellent union by classical measure — the charts embrace each other. Proceed with joy and gratitude.",
+   "hi_current": "शास्त्रीय मापदंड से उत्तम संबंध — कुंडलियाँ एक-दूसरे का आलिंगन करती हैं। हर्ष और कृतज्ञता से आगे बढ़ें।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.verdict.verygood.en",
+   "en": "A very good match — strengths clearly outweigh the points needing care. With the noted attentions, this union is well blessed.",
+   "hi_current": "अति उत्तम मिलान — शक्तियाँ ध्यान-योग्य बिंदुओं से स्पष्ट भारी हैं। उल्लिखित सावधानियों सहित यह संबंध सुआशीर्वादित है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.verdict.acceptable.en",
+   "en": "An acceptable match with real foundations — the effective score after cancellations shows workable harmony. The care-points below are a to-do list, not a verdict.",
+   "hi_current": "वास्तविक आधार वाला स्वीकार्य मिलान — परिहारों के बाद प्रभावी अंक कार्यसाध्य सामंजस्य दिखाते हैं। नीचे के ध्यान-बिंदु कार्य-सूची हैं, निर्णय नहीं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.verdict.care.en",
+   "en": "This match asks for careful consideration — tradition advises elder counsel, the listed remedies, and honest conversation between families before proceeding.",
+   "hi_current": "यह मिलान सावधान विचार माँगता है — परंपरा गुरुजन-परामर्श, उल्लिखित उपाय और परिवारों के बीच निष्कपट संवाद की सलाह देती है।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.title.en",
+   "en": "Marriage Compatibility Report",
+   "hi_current": "विवाह अनुकूलता रिपोर्ट"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.couple.en",
+   "en": "Prepared for",
+   "hi_current": "हेतु प्रस्तुत"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.dash.en",
+   "en": "Compatibility Dashboard",
+   "hi_current": "अनुकूलता डैशबोर्ड"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.guna.en",
+   "en": "Guna Milan — with Cancellation Analysis",
+   "hi_current": "गुण मिलान — परिहार विश्लेषण सहित"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.raw.en",
+   "en": "Raw score",
+   "hi_current": "मूल अंक"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.eff.en",
+   "en": "Effective score (after classical cancellations)",
+   "hi_current": "प्रभावी अंक (शास्त्रीय परिहारों के बाद)"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.cancelled.en",
+   "en": "CANCELLED",
+   "hi_current": "परिहार सिद्ध"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.stands.en",
+   "en": "needs care",
+   "hi_current": "ध्यान आवश्यक"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.manglik.en",
+   "en": "Mangal Dosha — Two-Chart Analysis",
+   "hi_current": "मंगल दोष — द्वि-कुंडली विश्लेषण"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.windows.en",
+   "en": "Favourable Marriage Windows",
+   "hi_current": "विवाह हेतु शुभ अवधियाँ"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.whyWin.en",
+   "en": "Why this window",
+   "hi_current": "यह अवधि क्यों"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.strengths.en",
+   "en": "Major Strengths of this Union",
+   "hi_current": "इस संबंध की प्रमुख शक्तियाँ"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.carePts.en",
+   "en": "Points Needing Care",
+   "hi_current": "ध्यान-योग्य बिंदु"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.remedies.en",
+   "en": "Remedies as Sadhana",
+   "hi_current": "उपाय — साधना रूप में"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.method.en",
+   "en": "Every score derives from the computed tables in this report — koota points, lord friendships, dignities and dashas. Nothing is invented.",
+   "hi_current": "प्रत्येक अंक इसी रिपोर्ट की गणना-सारणियों से व्युत्पन्न है — कूट अंक, ग्रह-मैत्री, गरिमा और दशाएँ। कुछ भी मनगढ़ंत नहीं।"
+  },
+  {
+   "report": "marriage",
+   "key": "marriage.labels.disclaimer.en",
+   "en": "Offered in the spirit of tradition for reflection. Marriage is a decision of hearts and families — your judgement remains supreme.",
+   "hi_current": "परंपरा की भावना से चिंतन हेतु प्रस्तुत। विवाह हृदयों और परिवारों का निर्णय है — आपका विवेक ही सर्वोपरि है।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.sun.en",
+   "en": "Your chart carries the Sun's authority-signature — you are built to lead, decide and be seen. Roles with visible responsibility, government connection or command suit your nature; you shine brightest when accountable at the top.",
+   "hi_current": "आपकी कुंडली में सूर्य की अधिकार-मुद्रा है — आप नेतृत्व, निर्णय और प्रतिष्ठा के लिए बने हैं। दृश्य उत्तरदायित्व, शासकीय संबंध या आदेश वाली भूमिकाएँ आपके स्वभाव के अनुकूल हैं; शीर्ष पर उत्तरदायी होने पर आप सर्वाधिक चमकते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.moon.en",
+   "en": "The Moon's public-connect signature marks your work — you thrive where people, care and daily needs meet. Roles serving the public, nurturing, or tied to food, travel and hospitality flow naturally, for your instinct reads what people feel.",
+   "hi_current": "चंद्र की जन-संपर्क मुद्रा आपके कार्य पर अंकित है — जहाँ लोग, देखभाल और नित्य आवश्यकताएँ मिलती हैं वहाँ आप फलते हैं। जन-सेवा, पोषण, या अन्न-यात्रा-आतिथ्य से जुड़ी भूमिकाएँ सहज बहती हैं, क्योंकि आपका बोध पढ़ लेता है कि लोग क्या अनुभव करते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.mars.en",
+   "en": "Mars gives your career an engineer-warrior edge — decisive, technical, unafraid of pressure. Fields needing courage, machinery, defence, surgery or land respond to you; you excel where others hesitate and action decides the outcome.",
+   "hi_current": "मंगल आपके कर्म को अभियंता-योद्धा की धार देता है — निर्णायक, तकनीकी, दबाव से निर्भय। साहस, यंत्र, रक्षा, शल्य या भूमि माँगने वाले क्षेत्र आपके अनुकूल हैं; जहाँ अन्य ठिठकें और कर्म परिणाम तय करे, वहाँ आप श्रेष्ठ हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.mercury.en",
+   "en": "Mercury stamps your work with intelligence and commerce — analysis, communication and trade are your native tongue. Business, IT, writing, accounting and consulting suit you; your mind turns information into value faster than most.",
+   "hi_current": "बुध आपके कार्य पर बुद्धि और वाणिज्य की छाप लगाता है — विश्लेषण, संवाद और व्यापार आपकी मातृभाषा हैं। व्यवसाय, आईटी, लेखन, लेखांकन और परामर्श आपके अनुकूल; आपका मन सूचना को अधिकांश से तेज़ मूल्य में बदल देता है।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.jupiter.en",
+   "en": "Jupiter blesses your career with wisdom and trust — you are the natural teacher, counsellor and guide. Education, law, finance, advisory and dharmic work prosper in your hands; people bring you their important decisions, and that trust is your true capital.",
+   "hi_current": "गुरु आपके कर्म को ज्ञान और विश्वास से आशीर्वादित करते हैं — आप स्वाभाविक शिक्षक, परामर्शदाता और मार्गदर्शक हैं। शिक्षा, विधि, वित्त, परामर्श और धार्मिक कार्य आपके हाथों फलते हैं; लोग अपने महत्वपूर्ण निर्णय आपके पास लाते हैं, वही विश्वास आपकी सच्ची पूँजी है।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.venus.en",
+   "en": "Venus gives your work beauty, taste and harmony — you create what pleases and connects. Arts, design, luxury, media, beauty and hospitality suit your gifts; you turn aesthetics into livelihood and make collaboration effortless.",
+   "hi_current": "शुक्र आपके कार्य को सौंदर्य, रुचि और सामंजस्य देता है — आप वह रचते हैं जो भाता और जोड़ता है। कला, डिज़ाइन, वैभव, मीडिया, सौंदर्य और आतिथ्य आपकी प्रतिभा के अनुकूल; आप सौंदर्य को आजीविका बनाते और सहयोग को सहज करते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.saturn.en",
+   "en": "Saturn builds your career on discipline and endurance — you master what others abandon. Service, operations, infrastructure, government roles and manufacturing reward your patience; slow and steady, you rise to durable authority that outlasts trends.",
+   "hi_current": "शनि आपके कर्म को अनुशासन और सहनशक्ति पर गढ़ते हैं — जो अन्य छोड़ दें उसमें आप प्रभुता पाते हैं। सेवा, संचालन, आधारभूत ढाँचा, शासकीय भूमिकाएँ और विनिर्माण आपके धैर्य को फल देते हैं; धीरे-धीरे आप उस स्थायी अधिकार तक चढ़ते हैं जो प्रचलनों से आगे टिकता है।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.rahu.en",
+   "en": "Rahu points your career toward the new and the borderless — technology, foreign connections, aviation and emerging industries. You thrive at frontiers others fear; unconventional paths and global reach can bring sudden, outsized rises when pursued ethically.",
+   "hi_current": "राहु आपके कर्म को नए और असीम की ओर मोड़ता है — तकनीक, विदेश-संबंध, विमानन और उभरते उद्योग। जहाँ अन्य डरें उन सीमांतों पर आप फलते हैं; नैतिकता से चलने पर अपरंपरागत मार्ग और वैश्विक पहुँच आकस्मिक, विशाल उत्थान ला सकते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.planetCareer.ketu.en",
+   "en": "Ketu gives your work depth and specialization — research, healing, pharmaceuticals and niche mastery call you. You see what others miss and go deeper than most dare; your career flourishes in focused expertise rather than broad generalism.",
+   "hi_current": "केतु आपके कार्य को गहराई और विशेषज्ञता देता है — शोध, चिकित्सा, औषध और विशिष्ट प्रभुता आपको पुकारते हैं। जो अन्य चूकें वह आप देख लेते हैं और अधिकांश के साहस से गहरे उतरते हैं; आपका कर्म व्यापक सामान्यता नहीं, केंद्रित विशेषज्ञता में फलता है।"
+  },
+  {
+   "report": "career",
+   "key": "career.govt.government.en",
+   "en": "Your chart leans toward government or institutional service — the Sun and Saturn favour stable, authority-backed roles. Public sector, PSUs, administration and large established institutions suit your temperament and offer the security and status your chart seeks.",
+   "hi_current": "आपकी कुंडली शासकीय या संस्थागत सेवा की ओर झुकी है — सूर्य और शनि स्थिर, अधिकार-समर्थित भूमिकाओं के पक्ष में हैं। लोक-क्षेत्र, सार्वजनिक उपक्रम, प्रशासन और बड़ी स्थापित संस्थाएँ आपके स्वभाव के अनुकूल हैं और वह सुरक्षा तथा प्रतिष्ठा देती हैं जो आपकी कुंडली खोजती है।"
+  },
+  {
+   "report": "career",
+   "key": "career.govt.private.en",
+   "en": "Your chart leans toward the private sector and enterprise — Mercury and Venus favour dynamic, merit-driven environments. Corporates, startups, professional practice and skill-based roles suit you; you grow fastest where performance is rewarded directly.",
+   "hi_current": "आपकी कुंडली निजी क्षेत्र और उद्यम की ओर झुकी है — बुध और शुक्र गतिशील, योग्यता-आधारित वातावरण के पक्ष में हैं। कॉर्पोरेट, स्टार्टअप, व्यावसायिक अभ्यास और कौशल-आधारित भूमिकाएँ आपके अनुकूल; जहाँ निष्पादन का सीधा पुरस्कार हो, वहाँ आप सर्वाधिक तेज़ बढ़ते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.govt.balanced.en",
+   "en": "Your chart is balanced between government stability and private dynamism — you can succeed in either. Early-career security in an established institution followed by independent or private growth later is a pattern that suits such charts well.",
+   "hi_current": "आपकी कुंडली शासकीय स्थिरता और निजी गतिशीलता के बीच संतुलित है — आप दोनों में सफल हो सकते हैं। आरंभ में स्थापित संस्था में सुरक्षा और बाद में स्वतंत्र या निजी विकास — ऐसा क्रम इन कुंडलियों के लिए उपयुक्त रहता है।"
+  },
+  {
+   "report": "career",
+   "key": "career.jobbiz.business-leaning.en",
+   "en": "Your entrepreneurship indicators are strong — a capable Lagna lord, courageous Mars and supportive trade houses suggest you are built to build. Business or independent practice can bring both wealth and fulfilment; partner wisely and your ventures can outgrow any salary.",
+   "hi_current": "आपके उद्यमिता-संकेत प्रबल हैं — सक्षम लग्नेश, साहसी मंगल और सहायक व्यापार-भाव दर्शाते हैं कि आप निर्माण के लिए बने हैं। व्यवसाय या स्वतंत्र अभ्यास धन और संतोष दोनों ला सकता है; विवेक से साझेदारी करें, आपके उद्यम किसी वेतन से आगे बढ़ सकते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.jobbiz.either (slight business edge).en",
+   "en": "Your chart supports both employment and enterprise, with a slight edge toward independence. A wise path: master your craft in a job first, build capital and networks, then step into business from strength rather than necessity.",
+   "hi_current": "आपकी कुंडली नौकरी और उद्यम दोनों का समर्थन करती है, स्वतंत्रता की ओर हल्के झुकाव के साथ। विवेकपूर्ण मार्ग: पहले नौकरी में अपने कौशल में प्रभुता पाएँ, पूँजी और संपर्क बनाएँ, फिर आवश्यकता से नहीं, शक्ति से व्यवसाय में उतरें।"
+  },
+  {
+   "report": "career",
+   "key": "career.jobbiz.job-leaning.en",
+   "en": "Your chart favours structured employment where your talents are supported by a stable platform — a strong, secure position lets you excel without the volatility of ownership. Rise through expertise and reliability; senior salaried roles can bring you great prosperity and peace.",
+   "hi_current": "आपकी कुंडली संरचित नौकरी के पक्ष में है जहाँ स्थिर मंच आपकी प्रतिभा को सहारा दे — सुदृढ़, सुरक्षित पद आपको स्वामित्व की अस्थिरता बिना श्रेष्ठ बनने देता है। विशेषज्ञता और विश्वसनीयता से चढ़ें; वरिष्ठ वेतनभोगी भूमिकाएँ आपको बड़ी समृद्धि और शांति दे सकती हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.wealth.high.en",
+   "en": "Your wealth indicators are strong — well-supported 2nd and 11th houses with benefic backing suggest money flows and accumulates well across life. Multiple income streams and disciplined investment can build genuine, lasting affluence.",
+   "hi_current": "आपके धन-संकेत प्रबल हैं — सुसमर्थित द्वितीय और एकादश भाव शुभ समर्थन सहित दर्शाते हैं कि जीवन भर धन अच्छी तरह बहता और संचित होता है। अनेक आय-स्रोत और अनुशासित निवेश सच्ची, स्थायी समृद्धि बना सकते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.wealth.moderate.en",
+   "en": "Your wealth indicators are steady — prosperity comes through consistent effort rather than sudden windfalls. Careful saving, avoiding debt and investing in your primary skill turn a good income into real security over time.",
+   "hi_current": "आपके धन-संकेत स्थिर हैं — समृद्धि आकस्मिक लाभ से नहीं, निरंतर प्रयास से आती है। सावधान बचत, ऋण से बचाव और अपने मुख्य कौशल में निवेश समय के साथ अच्छी आय को वास्तविक सुरक्षा में बदल देते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.wealth.building.en",
+   "en": "Your wealth grows through patience and structure — early effort lays foundations that pay later. Tradition advises Lakshmi upasana on Fridays, disciplined saving and avoiding speculation; steady hands build the surest fortunes.",
+   "hi_current": "आपका धन धैर्य और व्यवस्था से बढ़ता है — आरंभिक प्रयास वे नींव रखता है जो बाद में फल देती है। परंपरा शुक्रवार को लक्ष्मी-उपासना, अनुशासित बचत और सट्टे से बचाव की सलाह देती है; स्थिर हाथ सबसे निश्चित समृद्धि बनाते हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.foreignYes.en",
+   "en": "Your chart carries foreign-connection potential — Rahu and 12th-house factors favour work abroad, with international companies, or in global trade. Opportunities across borders can significantly elevate your career; stay open to them.",
+   "hi_current": "आपकी कुंडली विदेश-संबंध की संभावना रखती है — राहु और द्वादश-भाव कारक विदेश में, अंतर्राष्ट्रीय कंपनियों के साथ, या वैश्विक व्यापार में कार्य के पक्ष में हैं। सीमा-पार अवसर आपके कर्म को अत्यधिक ऊँचा उठा सकते हैं; उनके प्रति खुले रहें।"
+  },
+  {
+   "report": "career",
+   "key": "career.foreignNo.en",
+   "en": "Your career is primarily rooted in your home region, where your networks and strengths are concentrated. This is a stability, not a limit — deep local roots often build more durable success than scattered distant ventures.",
+   "hi_current": "आपका कर्म मुख्यतः अपने क्षेत्र में जड़ित है, जहाँ आपके संपर्क और शक्तियाँ केंद्रित हैं। यह सीमा नहीं, स्थिरता है — गहरी स्थानीय जड़ें प्रायः बिखरे दूरस्थ उद्यमों से अधिक स्थायी सफलता बनाती हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.title.en",
+   "en": "Career & Wealth Blueprint",
+   "hi_current": "करियर एवं धन ब्लूप्रिंट"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.summary.en",
+   "en": "Executive Summary",
+   "hi_current": "सारांश"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.dash.en",
+   "en": "Career & Wealth Dashboard",
+   "hi_current": "करियर एवं धन डैशबोर्ड"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.fields.en",
+   "en": "Your Best Career Fields",
+   "hi_current": "आपके सर्वोत्तम करियर क्षेत्र"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.fieldsIntro.en",
+   "en": "Ranked from your 10th house, its lord, the Dashamsa (D10) chart and your strongest planets:",
+   "hi_current": "आपके दशम भाव, उसके स्वामी, दशमांश (D10) चक्र और प्रबलतम ग्रहों से क्रमबद्ध:"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.govt.en",
+   "en": "Government vs Private",
+   "hi_current": "शासकीय बनाम निजी"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.jobbiz.en",
+   "en": "Job vs Business",
+   "hi_current": "नौकरी बनाम व्यवसाय"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.entre.en",
+   "en": "Entrepreneurship Score",
+   "hi_current": "उद्यमिता अंक"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.wealthH.en",
+   "en": "Wealth Potential",
+   "hi_current": "धन संभावना"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.peaks.en",
+   "en": "Career Growth & Wealth Windows",
+   "hi_current": "करियर वृद्धि एवं धन अवधियाँ"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.whyWin.en",
+   "en": "Why this window",
+   "hi_current": "यह अवधि क्यों"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.foreign.en",
+   "en": "Foreign & Global Opportunities",
+   "hi_current": "विदेश एवं वैश्विक अवसर"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.remedies.en",
+   "en": "Remedies as Sadhana",
+   "hi_current": "उपाय — साधना रूप में"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.method.en",
+   "en": "Every rating derives from the computed chart, D10 and Ashtakavarga tables — nothing is invented; verify against the free Kundli report.",
+   "hi_current": "प्रत्येक अंक गणना-कृत कुंडली, D10 और अष्टकवर्ग सारणियों से व्युत्पन्न है — कुछ भी मनगढ़ंत नहीं; निःशुल्क कुंडली रिपोर्ट से सत्यापित करें।"
+  },
+  {
+   "report": "career",
+   "key": "career.labels.disclaimer.en",
+   "en": "Offered in the spirit of tradition for reflection. Your effort, skill and choices remain the true architects of your career.",
+   "hi_current": "परंपरा की भावना से चिंतन हेतु प्रस्तुत। आपका परिश्रम, कौशल और निर्णय ही आपके करियर के सच्चे शिल्पी हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.action.sun.doEn",
+   "en": [
+    "Seek leadership roles or promotions",
+    "Take on visible responsibility",
+    "Connect with authority figures"
+   ],
+   "hi_current": [
+    "नेतृत्व भूमिका या पदोन्नति माँगें",
+    "दृश्य उत्तरदायित्व लें",
+    "वरिष्ठों से संपर्क बनाएँ"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.sun.avoidEn",
+   "en": [
+    "Avoid ego clashes with seniors"
+   ],
+   "hi_current": [
+    "वरिष्ठों से अहं-टकराव से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.moon.doEn",
+   "en": [
+    "Strengthen public/client relationships",
+    "Move into people-facing roles",
+    "Trust your instincts on timing"
+   ],
+   "hi_current": [
+    "जन/ग्राहक संबंध मज़बूत करें",
+    "जन-संपर्क भूमिका लें",
+    "समय पर अंतर्ज्ञान पर भरोसा रखें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.moon.avoidEn",
+   "en": [
+    "Avoid isolating yourself"
+   ],
+   "hi_current": [
+    "स्वयं को अलग-थलग करने से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.mars.doEn",
+   "en": [
+    "Launch bold initiatives",
+    "Take on technical or competitive challenges",
+    "Negotiate assertively"
+   ],
+   "hi_current": [
+    "साहसिक पहल आरंभ करें",
+    "तकनीकी या स्पर्धात्मक चुनौती लें",
+    "दृढ़ता से वार्ता करें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.mars.avoidEn",
+   "en": [
+    "Avoid impulsive resignations"
+   ],
+   "hi_current": [
+    "आवेगी त्यागपत्र से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.mercury.doEn",
+   "en": [
+    "Change jobs or switch roles",
+    "Learn new skills / certifications",
+    "Ask for a promotion or raise"
+   ],
+   "hi_current": [
+    "नौकरी या भूमिका बदलें",
+    "नए कौशल/प्रमाणपत्र सीखें",
+    "पदोन्नति या वेतनवृद्धि माँगें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.mercury.avoidEn",
+   "en": [
+    "Avoid long career breaks"
+   ],
+   "hi_current": [
+    "लंबे करियर-अवकाश से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.jupiter.doEn",
+   "en": [
+    "Pursue higher studies or teaching",
+    "Take advisory or mentoring roles",
+    "Expand into finance/consulting"
+   ],
+   "hi_current": [
+    "उच्च अध्ययन या शिक्षण करें",
+    "परामर्श या मार्गदर्शन भूमिका लें",
+    "वित्त/परामर्श में विस्तार करें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.jupiter.avoidEn",
+   "en": [
+    "Avoid over-committing on scope"
+   ],
+   "hi_current": [
+    "अत्यधिक कार्यभार लेने से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.venus.doEn",
+   "en": [
+    "Enter creative or client-facing work",
+    "Build your professional brand",
+    "Grow partnerships and networks"
+   ],
+   "hi_current": [
+    "सृजन या ग्राहक-मुखी कार्य करें",
+    "पेशेवर पहचान बनाएँ",
+    "साझेदारी व नेटवर्क बढ़ाएँ"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.venus.avoidEn",
+   "en": [
+    "Avoid mixing romance with work deals"
+   ],
+   "hi_current": [
+    "कार्य-सौदों में प्रणय मिलाने से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.saturn.doEn",
+   "en": [
+    "Build long-term foundations",
+    "Take on structured, senior responsibility",
+    "Invest in durable skills"
+   ],
+   "hi_current": [
+    "दीर्घकालिक नींव बनाएँ",
+    "संरचित, वरिष्ठ उत्तरदायित्व लें",
+    "टिकाऊ कौशल में निवेश करें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.saturn.avoidEn",
+   "en": [
+    "Avoid shortcuts and job-hopping"
+   ],
+   "hi_current": [
+    "शॉर्टकट व बार-बार नौकरी बदलने से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.rahu.doEn",
+   "en": [
+    "Explore foreign or tech opportunities",
+    "Take unconventional bold bets",
+    "Scale ambitiously but ethically"
+   ],
+   "hi_current": [
+    "विदेश या तकनीक अवसर खोजें",
+    "अपरंपरागत साहसी दाँव लें",
+    "नैतिकता से महत्वाकांक्षी विस्तार करें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.rahu.avoidEn",
+   "en": [
+    "Avoid unverified shortcuts"
+   ],
+   "hi_current": [
+    "असत्यापित शॉर्टकट से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.ketu.doEn",
+   "en": [
+    "Deepen niche expertise",
+    "Pursue research or specialization",
+    "Simplify and focus your work"
+   ],
+   "hi_current": [
+    "विशिष्ट विशेषज्ञता गहराएँ",
+    "शोध या विशेषज्ञता करें",
+    "कार्य सरल व केंद्रित करें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.action.ketu.avoidEn",
+   "en": [
+    "Avoid scattering across too many roles"
+   ],
+   "hi_current": [
+    "बहुत अधिक भूमिकाओं में बिखरने से बचें"
+   ]
+  },
+  {
+   "report": "career",
+   "key": "career.avoidIntro.en",
+   "en": "These fields lean on planets that are less supported in your chart — not a prediction of failure, but simply where you would swim against your own current. Your energy returns more where your strengths already point.",
+   "hi_current": "ये क्षेत्र आपकी कुंडली में कम समर्थित ग्रहों पर निर्भर हैं — यह विफलता की भविष्यवाणी नहीं, बस वहाँ है जहाँ आप अपनी ही धारा के विरुद्ध तैरेंगे। आपकी ऊर्जा वहाँ अधिक लौटती है जहाँ आपकी शक्तियाँ पहले से संकेत करती हैं।"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.leadership.en",
+   "en": "Leadership & Management Potential",
+   "hi_current": "नेतृत्व एवं प्रबंधन क्षमता"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.wealthDim.en",
+   "en": "Wealth Profile",
+   "hi_current": "धन प्रोफ़ाइल"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.income.en",
+   "en": "Income Potential",
+   "hi_current": "आय क्षमता"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.retention.en",
+   "en": "Wealth Retention",
+   "hi_current": "धन-संचय"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.risk.en",
+   "en": "Risk Appetite",
+   "hi_current": "जोखिम-प्रवृत्ति"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.avoid.en",
+   "en": "Careers That May Not Suit You",
+   "hi_current": "जो करियर आपके अनुकूल नहीं"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.action.en",
+   "en": "What To Do — and When",
+   "hi_current": "क्या करें — और कब"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.doLabel.en",
+   "en": "Favourable actions",
+   "hi_current": "अनुकूल कार्य"
+  },
+  {
+   "report": "career",
+   "key": "career.moreLabels.avoidLabel.en",
+   "en": "Better to avoid",
+   "hi_current": "टालना बेहतर"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.griha_pravesh.en",
+   "en": "Griha Pravesh",
+   "hi_current": "गृह प्रवेश"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.griha_pravesh.descEn",
+   "en": "Entering a new home for the first time. The muhurta ensures the household deity, prosperity and peace settle in with you. Tradition weighs nakshatra, tithi, weekday, and — most importantly for a personal reading — your own Tarabalam and Chandrabalam.",
+   "hi_current": "नए घर में प्रथम प्रवेश। मुहूर्त सुनिश्चित करता है कि गृह-देवता, समृद्धि और शांति आपके साथ बसें। परंपरा नक्षत्र, तिथि, वार और — व्यक्तिगत गणना हेतु सर्वाधिक महत्वपूर्ण — आपके तारा-बल एवं चंद्र-बल का विचार करती है।"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.business.en",
+   "en": "Business / Shop Opening",
+   "hi_current": "व्यापार / दुकान आरंभ"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.business.descEn",
+   "en": "Beginning a new venture, shop, office or commercial activity. An auspicious start invites steady growth, good cash-flow and lasting goodwill. Mercury-friendly and benefic days are preferred, aligned with your personal star-strength.",
+   "hi_current": "नया उद्यम, दुकान, कार्यालय या व्यावसायिक कार्य आरंभ करना। शुभ आरंभ स्थिर वृद्धि, अच्छा नकदी-प्रवाह और स्थायी सद्भाव आमंत्रित करता है। बुध-अनुकूल और शुभ दिन, आपके व्यक्तिगत तारा-बल के अनुरूप, वरीय हैं।"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.vehicle.en",
+   "en": "Vehicle Purchase",
+   "hi_current": "वाहन क्रय"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.vehicle.descEn",
+   "en": "Buying a car, two-wheeler or any vehicle. A good muhurta is traditionally believed to protect the vehicle and its travellers, and to make the purchase fruitful. Swift, benefic nakshatras and your favourable Moon-strength are chosen.",
+   "hi_current": "कार, दुपहिया या कोई वाहन क्रय करना। शुभ मुहूर्त परंपरा में वाहन तथा यात्रियों की रक्षा और क्रय को फलदायी बनाने वाला माना जाता है। चपल, शुभ नक्षत्र और आपका अनुकूल चंद्र-बल चुना जाता है।"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.marriage_muhurta.en",
+   "en": "Marriage Ceremony",
+   "hi_current": "विवाह मुहूर्त"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.activities.marriage_muhurta.descEn",
+   "en": "Selecting the wedding date itself. Beyond compatibility, the ceremony's muhurta blesses the union's beginning. Benefic nakshatras, auspicious tithis and both partners' star-strength ideally align — here we screen by the primary person's balams.",
+   "hi_current": "विवाह की तिथि का चयन। अनुकूलता से परे, समारोह का मुहूर्त संबंध के आरंभ को आशीर्वाद देता है। शुभ नक्षत्र, शुभ तिथियाँ और दोनों का तारा-बल आदर्श रूप से मिलते हैं — यहाँ हम मुख्य व्यक्ति के बलों से छाँटते हैं।"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.title.en",
+   "en": "Personalized Muhurta Report",
+   "hi_current": "व्यक्तिगत मुहूर्त रिपोर्ट"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.subtitle.en",
+   "en": "Your best dates — computed from your own chart",
+   "hi_current": "आपके सर्वोत्तम दिन — आपकी कुंडली से गणना"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.forActivity.en",
+   "en": "For",
+   "hi_current": "हेतु"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.range.en",
+   "en": "Search period",
+   "hi_current": "खोज अवधि"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.yourStars.en",
+   "en": "Your birth star & Moon sign",
+   "hi_current": "आपका जन्म नक्षत्र एवं चंद्र राशि"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.bestDates.en",
+   "en": "Your Most Auspicious Dates",
+   "hi_current": "आपके सर्वाधिक शुभ दिन"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.found.en",
+   "en": "favourable days found in this period; the strongest are shown first",
+   "hi_current": "इस अवधि में शुभ दिन मिले; सर्वाधिक प्रबल पहले दर्शाए गए हैं"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.why.en",
+   "en": "Why this date suits you",
+   "hi_current": "यह दिन आपके लिए क्यों"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.caution.en",
+   "en": "Minor cautions",
+   "hi_current": "लघु सावधानियाँ"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.abhijit.en",
+   "en": "Abhijit Muhurta (daily auspicious window)",
+   "hi_current": "अभिजित मुहूर्त (दैनिक शुभ काल)"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.amrit.en",
+   "en": "Amrit Kaal",
+   "hi_current": "अमृत काल"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.rank.en",
+   "en": "Rank",
+   "hi_current": "क्रम"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.nakshatra.en",
+   "en": "Nakshatra",
+   "hi_current": "नक्षत्र"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.tithi.en",
+   "en": "Tithi",
+   "hi_current": "तिथि"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.day.en",
+   "en": "Day",
+   "hi_current": "वार"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.score.en",
+   "en": "Suitability",
+   "hi_current": "अनुकूलता"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.topPick.en",
+   "en": "Top Recommendation",
+   "hi_current": "शीर्ष अनुशंसा"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.noResults.en",
+   "en": "No strongly auspicious dates were found in this exact range. Try widening the date range — auspicious windows are sometimes a few weeks apart.",
+   "hi_current": "इस अवधि में कोई अत्यधिक शुभ दिन नहीं मिला। कृपया अवधि बढ़ाएँ — शुभ काल कभी-कभी कुछ सप्ताह के अंतराल पर आते हैं।"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.method.en",
+   "en": "Each date is scored on nakshatra, tithi, weekday and Bhadra — then filtered by YOUR personal Tarabalam (from your birth star) and Chandrabalam (from your Moon sign). This personal filtering is what generic calendars cannot do.",
+   "hi_current": "प्रत्येक दिन नक्षत्र, तिथि, वार और भद्रा पर अंकित होता है — फिर आपके व्यक्तिगत तारा-बल (जन्म नक्षत्र से) और चंद्र-बल (चंद्र राशि से) से छाँटा जाता है। यही व्यक्तिगत छँटाई सामान्य पंचांग नहीं कर सकते।"
+  },
+  {
+   "report": "muhurta",
+   "key": "muhurta.labels.disclaimer.en",
+   "en": "Offered in the spirit of tradition. For major ceremonies, do also consult your family priest, who may refine timing to the hour.",
+   "hi_current": "परंपरा की भावना से प्रस्तुत। बड़े समारोहों हेतु अपने कुल-पुरोहित से भी परामर्श करें, जो समय को घंटे तक परिष्कृत कर सकते हैं।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.excellent.t_en",
+   "en": "An excellent year",
+   "hi_current": "उत्कृष्ट वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.excellent.en",
+   "en": "Benefic transits align strongly with your running period — expansion, opportunity and visible progress mark this year. Act boldly; the cosmos supports forward motion.",
+   "hi_current": "शुभ गोचर आपकी चल रही दशा से प्रबल मेल खाते हैं — विस्तार, अवसर और दृश्य प्रगति इस वर्ष की पहचान हैं। साहसपूर्वक कार्य करें; ब्रह्मांड आगे बढ़ने का समर्थन करता है।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.good.t_en",
+   "en": "A favourable year",
+   "hi_current": "अनुकूल वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.good.en",
+   "en": "Supportive influences outweigh the challenges — steady growth, good relationships and progress on goals are indicated. A year to build on with confidence.",
+   "hi_current": "सहायक प्रभाव चुनौतियों से भारी हैं — स्थिर वृद्धि, अच्छे संबंध और लक्ष्यों पर प्रगति के संकेत हैं। आत्मविश्वास से निर्माण का वर्ष।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.mixed.t_en",
+   "en": "A mixed year",
+   "hi_current": "मिश्रित वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.mixed.en",
+   "en": "A balanced year of both openings and lessons — progress comes with effort. Focus on your strengths, stay patient through slower phases, and steady work pays off.",
+   "hi_current": "अवसरों और पाठों का संतुलित वर्ष — प्रगति परिश्रम से आती है। अपनी शक्तियों पर ध्यान दें, धीमे चरणों में धैर्य रखें; स्थिर कार्य फल देता है।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.testing.t_en",
+   "en": "A year of growth through effort",
+   "hi_current": "परिश्रम से विकास का वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.testing.en",
+   "en": "Some transits test your patience and foundations — this is Saturn-style growth, not misfortune. Discipline, health-care and steady effort turn this year into lasting strength.",
+   "hi_current": "कुछ गोचर आपके धैर्य और नींव की परीक्षा लेते हैं — यह दुर्भाग्य नहीं, शनि-शैली का विकास है। अनुशासन, स्वास्थ्य-देखभाल और स्थिर प्रयास इस वर्ष को स्थायी शक्ति में बदलते हैं।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.challenging.t_en",
+   "en": "A year to consolidate",
+   "hi_current": "सुदृढ़ीकरण का वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.ratings.challenging.en",
+   "en": "Several influences ask for caution and consolidation rather than expansion. Protect your health and resources, avoid big risks, lean on remedies — and you emerge stronger for the years ahead.",
+   "hi_current": "अनेक प्रभाव विस्तार के बजाय सावधानी और सुदृढ़ीकरण माँगते हैं। स्वास्थ्य व संसाधन सुरक्षित रखें, बड़े जोखिम टालें, उपायों का सहारा लें — और आगामी वर्षों हेतु अधिक सशक्त होकर निकलें।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.domain.career.en",
+   "en": "Career & Work",
+   "hi_current": "करियर एवं कार्य"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.domain.money.en",
+   "en": "Money & Wealth",
+   "hi_current": "धन एवं संपत्ति"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.domain.relationships.en",
+   "en": "Relationships & Family",
+   "hi_current": "संबंध एवं परिवार"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.domain.health.en",
+   "en": "Health & Energy",
+   "hi_current": "स्वास्थ्य एवं ऊर्जा"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.sun.en",
+   "en": "authority, recognition and dealings with those in power",
+   "hi_current": "अधिकार, प्रतिष्ठा और सत्ताधारियों से व्यवहार"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.moon.en",
+   "en": "emotional matters, home, mother and public connection",
+   "hi_current": "भावनात्मक विषय, गृह, माता और जन-संपर्क"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.mars.en",
+   "en": "energy, courage, property and bold initiative",
+   "hi_current": "ऊर्जा, साहस, संपत्ति और साहसिक पहल"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.mercury.en",
+   "en": "communication, learning, business and skill-building",
+   "hi_current": "संवाद, अध्ययन, व्यापार और कौशल-निर्माण"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.jupiter.en",
+   "en": "wisdom, growth, teachers, finance and good fortune",
+   "hi_current": "ज्ञान, वृद्धि, गुरुजन, वित्त और सौभाग्य"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.venus.en",
+   "en": "relationships, comforts, arts and financial pleasures",
+   "hi_current": "संबंध, सुख, कला और आर्थिक आनंद"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.saturn.en",
+   "en": "discipline, responsibility, hard work and lasting foundations",
+   "hi_current": "अनुशासन, उत्तरदायित्व, परिश्रम और स्थायी नींव"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.rahu.en",
+   "en": "ambition, foreign matters, technology and unconventional gains",
+   "hi_current": "महत्वाकांक्षा, विदेश-विषय, तकनीक और अपरंपरागत लाभ"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.theme.ketu.en",
+   "en": "introspection, spirituality, research and letting go",
+   "hi_current": "अंतर्मुखता, अध्यात्म, शोध और त्याग"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.action.excellent.en",
+   "en": "Launch important initiatives, invest in growth, take opportunities",
+   "hi_current": "महत्वपूर्ण पहल आरंभ करें, वृद्धि में निवेश करें, अवसर लें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.action.good.en",
+   "en": "Advance your goals steadily, strengthen key relationships",
+   "hi_current": "लक्ष्यों को स्थिर रूप से आगे बढ़ाएँ, प्रमुख संबंध मज़बूत करें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.action.mixed.en",
+   "en": "Focus on strengths, avoid overextension, keep steady routines",
+   "hi_current": "शक्तियों पर ध्यान दें, अति से बचें, स्थिर दिनचर्या रखें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.action.testing.en",
+   "en": "Prioritize health and discipline, avoid major risks, be patient",
+   "hi_current": "स्वास्थ्य व अनुशासन को प्राथमिकता दें, बड़े जोखिम टालें, धैर्य रखें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.action.challenging.en",
+   "en": "Consolidate, protect resources, practise remedies, avoid big changes",
+   "hi_current": "सुदृढ़ करें, संसाधन सुरक्षित रखें, उपाय करें, बड़े बदलाव टालें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.title.en",
+   "en": "10-Year Life Forecast",
+   "hi_current": "10-वर्षीय जीवन भविष्यवाणी"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.subtitle.en",
+   "en": "Year by year — dasha, transits and what to do",
+   "hi_current": "वर्ष-दर-वर्ष — दशा, गोचर और क्या करें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.overview.en",
+   "en": "Your Decade at a Glance",
+   "hi_current": "आपका दशक एक दृष्टि में"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.period.en",
+   "en": "Running period",
+   "hi_current": "चल रही दशा"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.theme.en",
+   "en": "Year theme",
+   "hi_current": "वर्ष का स्वर"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.domains.en",
+   "en": "Life Areas This Year",
+   "hi_current": "इस वर्ष जीवन-क्षेत्र"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.action.en",
+   "en": "What to do",
+   "hi_current": "क्या करें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.jupiter.en",
+   "en": "Jupiter",
+   "hi_current": "गुरु"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.saturn.en",
+   "en": "Saturn",
+   "hi_current": "शनि"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.rahu.en",
+   "en": "Rahu",
+   "hi_current": "राहु"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.favourable.en",
+   "en": "Favourable",
+   "hi_current": "अनुकूल"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.attention.en",
+   "en": "Needs attention",
+   "hi_current": "ध्यान आवश्यक"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.steady.en",
+   "en": "Steady",
+   "hi_current": "स्थिर"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.method.en",
+   "en": "Each year blends your Vimshottari dasha (maha & antar lords) with the house-positions of Jupiter, Saturn and Rahu counted from your Moon — the classical gochara method. Verify placements in your free Kundli report.",
+   "hi_current": "प्रत्येक वर्ष आपकी विंशोत्तरी दशा (महा व अंतर स्वामी) को चंद्र से गिने गुरु, शनि और राहु के भाव-स्थान से जोड़ता है — शास्त्रीय गोचर पद्धति। स्थितियाँ निःशुल्क कुंडली रिपोर्ट में सत्यापित करें।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.labels.disclaimer.en",
+   "en": "Offered in the spirit of tradition for reflection and planning. Your effort and choices shape how each influence unfolds.",
+   "hi_current": "परंपरा की भावना से चिंतन एवं योजना हेतु प्रस्तुत। आपका परिश्रम और निर्णय ही तय करते हैं कि प्रत्येक प्रभाव कैसे प्रकट होता है।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.harvest.en",
+   "en": "Harvest Year",
+   "hi_current": "फसल वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.expansion.en",
+   "en": "Expansion Year",
+   "hi_current": "विस्तार वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.opportunity.en",
+   "en": "Opportunity Year",
+   "hi_current": "अवसर वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.foundation.en",
+   "en": "Foundation Year",
+   "hi_current": "नींव वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.planning.en",
+   "en": "Planning Year",
+   "hi_current": "योजना वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.consolidation.en",
+   "en": "Consolidation Year",
+   "hi_current": "सुदृढ़ीकरण वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.discipline.en",
+   "en": "Discipline & Growth Year",
+   "hi_current": "अनुशासन-विकास वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.reflection.en",
+   "en": "Reflection Year",
+   "hi_current": "चिंतन वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.momentum.en",
+   "en": "Momentum Year",
+   "hi_current": "गति वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.persona.transition.en",
+   "en": "Transition Year",
+   "hi_current": "संक्रमण वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotlightBest.en",
+   "en": "This is one of the brightest years of your decade — a rare alignment where your running period and the great benefics move together in your favour. Say yes to the big opportunities; years like this are meant to be used, not waited out.",
+   "hi_current": "यह आपके दशक के सर्वाधिक उज्ज्वल वर्षों में एक है — एक दुर्लभ संरेखण जहाँ आपकी दशा और महान शुभ ग्रह साथ आपके पक्ष में चलते हैं। बड़े अवसरों को 'हाँ' कहें; ऐसे वर्ष प्रयोग हेतु हैं, प्रतीक्षा हेतु नहीं।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotlightCaution.en",
+   "en": "This is a year to protect rather than expand — several influences test your patience, resources and health at once. This is not misfortune but a Saturn-style checkpoint: guard what you have, avoid big risks, and you cross into brighter years stronger and wiser.",
+   "hi_current": "यह विस्तार नहीं, रक्षा का वर्ष है — अनेक प्रभाव एक साथ आपके धैर्य, संसाधन और स्वास्थ्य की परीक्षा लेते हैं। यह दुर्भाग्य नहीं, शनि-शैली का पड़ाव है: जो है उसकी रक्षा करें, बड़े जोखिम टालें; आप उज्ज्वल वर्षों में अधिक सशक्त और विवेकी होकर प्रवेश करेंगे।"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.opp.career.en",
+   "en": "Career advancement or promotion",
+   "hi_current": "करियर उन्नति या पदोन्नति"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.opp.business.en",
+   "en": "Starting or expanding a business",
+   "hi_current": "व्यवसाय आरंभ या विस्तार"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.opp.property.en",
+   "en": "Property or vehicle purchase",
+   "hi_current": "संपत्ति या वाहन क्रय"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.opp.marriage.en",
+   "en": "Marriage or deepening relationships",
+   "hi_current": "विवाह या संबंधों में प्रगाढ़ता"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.opp.wealth.en",
+   "en": "Significant financial gains",
+   "hi_current": "महत्वपूर्ण आर्थिक लाभ"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.opp.learning.en",
+   "en": "Higher study or new skills",
+   "hi_current": "उच्च अध्ययन या नए कौशल"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.opp.travel.en",
+   "en": "Beneficial travel or relocation",
+   "hi_current": "लाभकारी यात्रा या स्थानांतरण"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.risk.loans.en",
+   "en": "Taking large loans or debts",
+   "hi_current": "बड़े ऋण लेना"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.risk.speculation.en",
+   "en": "Speculation and risky investments",
+   "hi_current": "सट्टा एवं जोखिमपूर्ण निवेश"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.risk.burnout.en",
+   "en": "Overwork and burnout",
+   "hi_current": "अति-श्रम एवं थकान"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.risk.health.en",
+   "en": "Neglecting health",
+   "hi_current": "स्वास्थ्य की उपेक्षा"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.risk.conflict.en",
+   "en": "Major disputes or conflicts",
+   "hi_current": "बड़े विवाद या टकराव"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.risk.overconfidence.en",
+   "en": "Overconfidence in decisions",
+   "hi_current": "निर्णयों में अति-आत्मविश्वास"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.bright.en",
+   "en": "✨ Spotlight Year",
+   "hi_current": "✨ विशेष वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.caution.en",
+   "en": "⚠️ Caution Year",
+   "hi_current": "⚠️ सतर्कता वर्ष"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.opportunities.en",
+   "en": "Big Opportunities",
+   "hi_current": "बड़े अवसर"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.avoid.en",
+   "en": "Things to Avoid",
+   "hi_current": "क्या टालें"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.strategy.en",
+   "en": "Best Strategy",
+   "hi_current": "श्रेष्ठ रणनीति"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.domains.en",
+   "en": "Life Areas in Detail",
+   "hi_current": "जीवन-क्षेत्र विस्तार से"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.career.en",
+   "en": "Career",
+   "hi_current": "करियर"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.money.en",
+   "en": "Money",
+   "hi_current": "धन"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.marriage.en",
+   "en": "Relationships",
+   "hi_current": "संबंध"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.health.en",
+   "en": "Health",
+   "hi_current": "स्वास्थ्य"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.travel.en",
+   "en": "Travel",
+   "hi_current": "यात्रा"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.spotLabels.invest.en",
+   "en": "Investments",
+   "hi_current": "निवेश"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.1.en",
+   "en": "self, health and personal direction",
+   "hi_current": "स्वयं, स्वास्थ्य एवं व्यक्तिगत दिशा"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.2.en",
+   "en": "wealth, family and speech",
+   "hi_current": "धन, परिवार एवं वाणी"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.3.en",
+   "en": "courage, communication and siblings",
+   "hi_current": "साहस, संवाद एवं सहोदर"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.4.en",
+   "en": "home, property, mother and inner peace",
+   "hi_current": "गृह, संपत्ति, माता एवं मन-शांति"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.5.en",
+   "en": "creativity, children, learning and romance",
+   "hi_current": "सृजन, संतान, विद्या एवं प्रणय"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.6.en",
+   "en": "work, service, health and overcoming rivals",
+   "hi_current": "कार्य, सेवा, स्वास्थ्य एवं शत्रु-विजय"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.7.en",
+   "en": "partnerships, marriage and public dealings",
+   "hi_current": "साझेदारी, विवाह एवं जन-व्यवहार"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.8.en",
+   "en": "transformation, shared resources and research",
+   "hi_current": "रूपांतरण, साझा संसाधन एवं शोध"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.9.en",
+   "en": "fortune, higher learning, dharma and travel",
+   "hi_current": "भाग्य, उच्च विद्या, धर्म एवं यात्रा"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.10.en",
+   "en": "career, status and public achievement",
+   "hi_current": "करियर, प्रतिष्ठा एवं सार्वजनिक उपलब्धि"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.11.en",
+   "en": "gains, income, networks and fulfilled wishes",
+   "hi_current": "लाभ, आय, संपर्क एवं कामना-पूर्ति"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.houseArea.12.en",
+   "en": "expenses, foreign matters, spirituality and rest",
+   "hi_current": "व्यय, विदेश-विषय, अध्यात्म एवं विश्राम"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.themeJoin.strong.en",
+   "en": "strongly activating",
+   "hi_current": "प्रबलता से सक्रिय करते हुए"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.themeJoin.normal.en",
+   "en": "bringing focus to",
+   "hi_current": "ध्यान केंद्रित करते हुए"
+  },
+  {
+   "report": "forecast",
+   "key": "forecast.themeJoin.weak.en",
+   "en": "asking patient effort in",
+   "hi_current": "धैर्यपूर्ण प्रयास माँगते हुए"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.strong.t_en",
+   "en": "Strong blessings for children",
+   "hi_current": "संतान हेतु प्रबल आशीर्वाद"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.strong.en",
+   "en": "Your chart carries strong indications for the blessing of children — the 5th house and Jupiter, the significator of progeny, are well-placed. The joy of parenthood is warmly promised, and children may bring pride and fortune to the family.",
+   "hi_current": "आपकी कुंडली में संतान-सुख के प्रबल संकेत हैं — पंचम भाव और संतान-कारक गुरु शुभ स्थित हैं। माता-पिता बनने का आनंद सस्नेह वचनित है, और संतान परिवार में गौरव और सौभाग्य ला सकती है।"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.good.t_en",
+   "en": "Favourable for children",
+   "hi_current": "संतान हेतु अनुकूल"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.good.en",
+   "en": "Your chart is favourable for children — the significators are supportive, and the path to parenthood is smooth in the indicated periods. Timing matters more than possibility here; the favourable windows chapter shows the classically supported years.",
+   "hi_current": "आपकी कुंडली संतान हेतु अनुकूल है — कारक सहायक हैं, और संकेतित अवधियों में माता-पिता बनने का मार्ग सहज है। यहाँ संभावना से अधिक महत्व समय का है; शुभ-अवधि अध्याय शास्त्र-समर्थित वर्ष दर्शाता है।"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.moderate.t_en",
+   "en": "Blessings through patience",
+   "hi_current": "धैर्य से आशीर्वाद"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.moderate.en",
+   "en": "Your chart indicates the blessing of children comes with some patience — the significators ask for the right timing and, per tradition, the grace of Santan Gopal upasana. Many revered family lines began exactly so; medical wisdom and prayer walk well together.",
+   "hi_current": "आपकी कुंडली दर्शाती है कि संतान-सुख कुछ धैर्य से आता है — कारक सही समय और परंपरानुसार संतान-गोपाल उपासना की कृपा माँगते हैं। अनेक पूज्य वंश ऐसे ही आरंभ हुए; चिकित्सा-विवेक और प्रार्थना साथ चलते हैं।"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.tender.t_en",
+   "en": "A tender area — patience and grace",
+   "hi_current": "कोमल क्षेत्र — धैर्य एवं कृपा"
+  },
+  {
+   "report": "child",
+   "key": "child.scoreBand.tender.en",
+   "en": "This is a tender area of your chart that asks for patience, faith and care. Challenging placements are never a verdict — they are an invitation to remedies, medical guidance and trust. With Santan Gopal upasana and the right timing, hope remains bright; consult both physicians and your family priest.",
+   "hi_current": "यह आपकी कुंडली का कोमल क्षेत्र है जो धैर्य, आस्था और देखभाल माँगता है। चुनौतीपूर्ण स्थितियाँ कभी निर्णय नहीं — वे उपाय, चिकित्सा-मार्गदर्शन और विश्वास का निमंत्रण हैं। संतान-गोपाल उपासना और सही समय से आशा उज्ज्वल रहती है; चिकित्सक और कुल-पुरोहित दोनों से परामर्श करें।"
+  },
+  {
+   "report": "child",
+   "key": "child.jupiter.exalted.en",
+   "en": "Jupiter, the great blessing-giver and significator of children, is exceptionally strong in your chart — a most auspicious placement for progeny, wisdom passing to the next generation, and joy through children.",
+   "hi_current": "गुरु, महान आशीर्वाद-दाता और संतान-कारक, आपकी कुंडली में असाधारण रूप से बली हैं — संतान, अगली पीढ़ी तक ज्ञान-संचरण और संतान से आनंद हेतु अत्यंत शुभ स्थिति।"
+  },
+  {
+   "report": "child",
+   "key": "child.jupiter.own.en",
+   "en": "Jupiter sits in dignity in your chart — a strong, supportive placement for children and family happiness. The significator of progeny blesses this area of life well.",
+   "hi_current": "गुरु आपकी कुंडली में स्वगृही हैं — संतान और पारिवारिक सुख हेतु प्रबल, सहायक स्थिति। संतान-कारक इस जीवन-क्षेत्र को भली-भाँति आशीर्वादित करते हैं।"
+  },
+  {
+   "report": "child",
+   "key": "child.jupiter.neutral.en",
+   "en": "Jupiter, the significator of children, holds a workable position in your chart. Its blessings flow well when supported by the favourable timing periods and traditional upasana.",
+   "hi_current": "संतान-कारक गुरु आपकी कुंडली में कार्यसाध्य स्थिति रखते हैं। शुभ-अवधि और परंपरागत उपासना के सहयोग से इनका आशीर्वाद अच्छी तरह प्रवाहित होता है।"
+  },
+  {
+   "report": "child",
+   "key": "child.jupiter.weak.en",
+   "en": "Jupiter, the significator of children, is somewhat challenged in your chart — this asks for its strengthening through Guru upasana (Thursday worship, yellow offerings) and patience. Remedies genuinely help this placement.",
+   "hi_current": "संतान-कारक गुरु आपकी कुंडली में कुछ चुनौतीपूर्ण हैं — यह गुरु-उपासना (गुरुवार पूजन, पीत अर्पण) और धैर्य से इनके सशक्तीकरण की माँग करता है। उपाय इस स्थिति में सचमुच सहायक हैं।"
+  },
+  {
+   "report": "child",
+   "key": "child.namingIntro.en",
+   "en": "In the Hindu tradition, a child's name is chosen to begin with a syllable drawn from the nakshatra (birth star) under which the child is born — this aligns the name with the child's cosmic vibration and is believed to support their fortune. Below are the auspicious starting syllables tied to the favourable nakshatras in your chart. When your child is born, their own birth-nakshatra will give the final syllable; a family priest can confirm it precisely.",
+   "hi_current": "हिंदू परंपरा में, संतान का नाम उस नक्षत्र से लिए गए अक्षर से आरंभ किया जाता है जिसमें संतान का जन्म होता है — यह नाम को संतान के ब्रह्मांडीय स्पंदन से जोड़ता है और उनके सौभाग्य का समर्थक माना जाता है। नीचे आपकी कुंडली के शुभ नक्षत्रों से जुड़े शुभ आरंभिक अक्षर हैं। संतान के जन्म पर उनका अपना जन्म-नक्षत्र अंतिम अक्षर देगा; कुल-पुरोहित इसे सटीक रूप से पुष्टि कर सकते हैं।"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.title.en",
+   "en": "Child & Family Report",
+   "hi_current": "संतान एवं परिवार रिपोर्ट"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.subtitle.en",
+   "en": "Progeny prospects, timing and auspicious naming",
+   "hi_current": "संतान संभावना, समय एवं शुभ नामकरण"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.summary.en",
+   "en": "Executive Summary",
+   "hi_current": "सारांश"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.prospects.en",
+   "en": "Children Prospects",
+   "hi_current": "संतान संभावना"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.fifth.en",
+   "en": "The 5th House & Jupiter",
+   "hi_current": "पंचम भाव एवं गुरु"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.fifthIntro.en",
+   "en": "In Vedic astrology, the 5th house governs children and Jupiter is their natural significator (Putra Karaka). Here is how they sit in your chart:",
+   "hi_current": "वैदिक ज्योतिष में पंचम भाव संतान का कारक है और गुरु उनके नैसर्गिक कारक (पुत्र कारक) हैं। आपकी कुंडली में इनकी स्थिति इस प्रकार है:"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.windows.en",
+   "en": "Favourable Periods for Children",
+   "hi_current": "संतान हेतु शुभ अवधियाँ"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.whyWin.en",
+   "en": "Why this period",
+   "hi_current": "यह अवधि क्यों"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.naming.en",
+   "en": "Auspicious Naming Syllables",
+   "hi_current": "शुभ नामकरण अक्षर"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.nakLabel.en",
+   "en": "Nakshatra",
+   "hi_current": "नक्षत्र"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.syllables.en",
+   "en": "Favourable starting sounds",
+   "hi_current": "शुभ आरंभिक अक्षर"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.remedies.en",
+   "en": "Remedies & Blessings",
+   "hi_current": "उपाय एवं आशीर्वाद"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.method.en",
+   "en": "Every rating derives from your computed 5th house strength (Ashtakavarga), Jupiter's dignity, and the Saptamsa (D7) chart — verify against your free Kundli report.",
+   "hi_current": "प्रत्येक अंक आपके गणना-कृत पंचम भाव बल (अष्टकवर्ग), गुरु की गरिमा और सप्तांश (D7) चक्र से व्युत्पन्न है — निःशुल्क कुंडली रिपोर्ट से सत्यापित करें।"
+  },
+  {
+   "report": "child",
+   "key": "child.labels.disclaimer.en",
+   "en": "Offered in the spirit of tradition and hope, never as a medical statement. For family planning, please consult qualified physicians alongside spiritual guidance.",
+   "hi_current": "परंपरा और आशा की भावना से प्रस्तुत, कभी चिकित्सा-कथन के रूप में नहीं। परिवार-नियोजन हेतु कृपया आध्यात्मिक मार्गदर्शन के साथ योग्य चिकित्सकों से भी परामर्श करें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.sun.en",
+   "en": "A year ruled by the Sun — themes of authority, recognition, health and self-assertion dominate. Leadership opportunities, dealings with government or seniors, and a stronger sense of purpose mark the twelve months. Guard against ego and pace your energy.",
+   "hi_current": "सूर्य-शासित वर्ष — अधिकार, प्रतिष्ठा, स्वास्थ्य और आत्म-प्रकटन के स्वर प्रबल हैं। नेतृत्व अवसर, शासन या वरिष्ठों से व्यवहार, और प्रबल उद्देश्य-बोध इन बारह महीनों की पहचान हैं। अहं से बचें और ऊर्जा संतुलित रखें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.moon.en",
+   "en": "A year ruled by the Moon — emotions, home, mother, and public connection take centre stage. It is a year of nurturing and being nurtured, of travel and shifting moods. Protect your peace of mind and stay close to well-wishers.",
+   "hi_current": "चंद्र-शासित वर्ष — भावनाएँ, गृह, माता और जन-संपर्क केंद्र में हैं। यह पोषण देने-पाने, यात्रा और बदलते भावों का वर्ष है। मन की शांति सुरक्षित रखें और शुभचिंतकों के निकट रहें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.mars.en",
+   "en": "A year ruled by Mars — energy, courage, property and bold action define it. Excellent for initiatives requiring drive, competition and technical skill; take care with anger, haste and disputes. Channel the fire into disciplined effort.",
+   "hi_current": "मंगल-शासित वर्ष — ऊर्जा, साहस, संपत्ति और साहसिक कर्म इसे परिभाषित करते हैं। प्रेरणा, स्पर्धा और तकनीकी कौशल वाली पहल हेतु उत्तम; क्रोध, उतावली और विवाद से सावधान रहें। इस अग्नि को अनुशासित प्रयास में लगाएँ।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.mercury.en",
+   "en": "A year ruled by Mercury — communication, learning, business and intellect flourish. A fine year for study, trade, writing and negotiation; ideas flow and networks expand. Stay organized and verify details in all agreements.",
+   "hi_current": "बुध-शासित वर्ष — संवाद, अध्ययन, व्यापार और बुद्धि फलते हैं। अध्ययन, व्यापार, लेखन और वार्ता हेतु उत्तम वर्ष; विचार बहते हैं और संपर्क बढ़ते हैं। व्यवस्थित रहें और सभी समझौतों में विवरण जाँचें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.jupiter.en",
+   "en": "A year ruled by Jupiter — the most auspicious of year lords. Wisdom, growth, good fortune, teachers, finance and family blessings flow generously. A wonderful year to expand, learn, marry, or begin ventures. Give generously and act with faith.",
+   "hi_current": "गुरु-शासित वर्ष — वर्ष-स्वामियों में सर्वाधिक शुभ। ज्ञान, वृद्धि, सौभाग्य, गुरुजन, वित्त और पारिवारिक आशीर्वाद उदारता से बहते हैं। विस्तार, अध्ययन, विवाह या उद्यम-आरंभ हेतु अद्भुत वर्ष। उदार दान दें और आस्था से कार्य करें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.venus.en",
+   "en": "A year ruled by Venus — relationships, comforts, arts, and financial pleasures blossom. Romance, marriage, beauty, luxury and creative pursuits are favoured; enjoyment comes easily. Savour in moderation and invest in lasting beauty.",
+   "hi_current": "शुक्र-शासित वर्ष — संबंध, सुख, कला और आर्थिक आनंद फलते हैं। प्रणय, विवाह, सौंदर्य, वैभव और सृजन पक्ष में हैं; आनंद सहज आता है। संयम से रस लें और स्थायी सौंदर्य में निवेश करें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.saturn.en",
+   "en": "A year ruled by Saturn — discipline, responsibility, and lasting foundations are the themes. Progress is steady rather than swift; hard work now builds durable results. Protect health, honour commitments, and avoid shortcuts. Patience is richly rewarded.",
+   "hi_current": "शनि-शासित वर्ष — अनुशासन, उत्तरदायित्व और स्थायी नींव इसके स्वर हैं। प्रगति तीव्र नहीं, स्थिर है; अभी का परिश्रम टिकाऊ फल बनाता है। स्वास्थ्य सुरक्षित रखें, वचन निभाएँ, शॉर्टकट टालें। धैर्य भरपूर फल देता है।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.rahu.en",
+   "en": "A year ruled by Rahu — ambition, foreign matters, technology and unconventional gains rise. Sudden opportunities and unusual paths appear; the year rewards boldness tempered with ethics. Verify shortcuts and stay grounded amid rapid change.",
+   "hi_current": "राहु-शासित वर्ष — महत्वाकांक्षा, विदेश-विषय, तकनीक और अपरंपरागत लाभ बढ़ते हैं। आकस्मिक अवसर और असामान्य मार्ग प्रकट होते हैं; वर्ष नैतिकता-युक्त साहस को फल देता है। शॉर्टकट परखें और तीव्र परिवर्तन में स्थिर रहें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.varshesh.ketu.en",
+   "en": "A year ruled by Ketu — introspection, spirituality, research and letting go come to the fore. Material matters may feel secondary to inner growth; it is a fine year for sadhana, study and simplification. Trust your intuition and release what no longer serves.",
+   "hi_current": "केतु-शासित वर्ष — अंतर्मुखता, अध्यात्म, शोध और त्याग प्रमुख होते हैं। भौतिक विषय आंतरिक विकास के आगे गौण लग सकते हैं; साधना, अध्ययन और सरलीकरण हेतु उत्तम वर्ष। अंतर्ज्ञान पर भरोसा रखें और जो अनुपयोगी है उसे छोड़ें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.1.en",
+   "en": "The Muntha in the 1st house energizes your whole year — vitality, initiative and personal prominence are strong. A year to lead and to put yourself forward.",
+   "hi_current": "प्रथम भाव में मुंथा आपके पूरे वर्ष को ऊर्जा देती है — जीवन-शक्ति, पहल और व्यक्तिगत प्रमुखता प्रबल हैं। नेतृत्व और स्वयं को आगे रखने का वर्ष।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.2.en",
+   "en": "The Muntha in the 2nd house turns the year toward wealth, family and speech — earnings and savings gain focus, and family matters are prominent.",
+   "hi_current": "द्वितीय भाव में मुंथा वर्ष को धन, परिवार और वाणी की ओर मोड़ती है — अर्जन-बचत पर ध्यान बढ़ता है, पारिवारिक विषय प्रमुख रहते हैं।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.3.en",
+   "en": "The Muntha in the 3rd house favours courage, effort and communication — a year of initiative, short travels and progress through your own drive.",
+   "hi_current": "तृतीय भाव में मुंथा साहस, प्रयास और संवाद के पक्ष में है — पहल, लघु-यात्राओं और स्व-प्रेरणा से प्रगति का वर्ष।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.4.en",
+   "en": "The Muntha in the 4th house centres the year on home, property, mother and inner peace — matters of residence and emotional foundation come forward.",
+   "hi_current": "चतुर्थ भाव में मुंथा वर्ष को गृह, संपत्ति, माता और मन-शांति पर केंद्रित करती है — निवास और भाव-नींव के विषय आगे आते हैं।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.5.en",
+   "en": "The Muntha in the 5th house brings creativity, children, learning and romance into focus — an auspicious placement for joy, education and self-expression.",
+   "hi_current": "पंचम भाव में मुंथा सृजन, संतान, विद्या और प्रणय को केंद्र में लाती है — आनंद, शिक्षा और आत्म-अभिव्यक्ति हेतु शुभ स्थिति।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.6.en",
+   "en": "The Muntha in the 6th house emphasizes work, service and overcoming obstacles — a year to defeat rivals and resolve debts through steady effort; guard health.",
+   "hi_current": "षष्ठ भाव में मुंथा कार्य, सेवा और बाधा-विजय पर बल देती है — स्थिर प्रयास से शत्रु-विजय और ऋण-समाधान का वर्ष; स्वास्थ्य सँभालें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.7.en",
+   "en": "The Muntha in the 7th house highlights partnerships, marriage and public dealings — relationships and collaborations take centre stage this year.",
+   "hi_current": "सप्तम भाव में मुंथा साझेदारी, विवाह और जन-व्यवहार को उजागर करती है — इस वर्ष संबंध और सहयोग केंद्र में रहते हैं।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.8.en",
+   "en": "The Muntha in the 8th house asks for caution and consolidation — a year of transformation where patience, prudence and health-care matter most. Avoid big risks.",
+   "hi_current": "अष्टम भाव में मुंथा सावधानी और सुदृढ़ीकरण माँगती है — रूपांतरण का वर्ष जहाँ धैर्य, विवेक और स्वास्थ्य-देखभाल सर्वाधिक महत्वपूर्ण हैं। बड़े जोखिम टालें।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.9.en",
+   "en": "The Muntha in the 9th house is highly fortunate — fortune, higher learning, dharma and travel are blessed. A year of luck, wisdom and meaningful journeys.",
+   "hi_current": "नवम भाव में मुंथा अत्यंत भाग्यशाली है — भाग्य, उच्च विद्या, धर्म और यात्रा आशीर्वादित हैं। सौभाग्य, ज्ञान और सार्थक यात्राओं का वर्ष।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.10.en",
+   "en": "The Muntha in the 10th house favours career and status — professional achievement, recognition and public standing rise. An excellent year for work goals.",
+   "hi_current": "दशम भाव में मुंथा करियर और प्रतिष्ठा के पक्ष में है — व्यावसायिक उपलब्धि, मान और सार्वजनिक स्थिति बढ़ती है। कार्य-लक्ष्यों हेतु उत्तम वर्ष।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.11.en",
+   "en": "The Muntha in the 11th house is excellent for gains — income, fulfilled wishes, networks and elder siblings prosper. One of the most favourable placements for the year.",
+   "hi_current": "एकादश भाव में मुंथा लाभ हेतु उत्तम है — आय, कामना-पूर्ति, संपर्क और ज्येष्ठ सहोदर फलते हैं। वर्ष हेतु सर्वाधिक अनुकूल स्थितियों में एक।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.muntha.12.en",
+   "en": "The Muntha in the 12th house turns toward expenses, foreign matters, spirituality and rest — a year for inner work, letting go, and careful handling of resources.",
+   "hi_current": "द्वादश भाव में मुंथा व्यय, विदेश-विषय, अध्यात्म और विश्राम की ओर मुड़ती है — आंतरिक कार्य, त्याग और संसाधनों के सावधान प्रबंधन का वर्ष।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.title.en",
+   "en": "Annual Forecast",
+   "hi_current": "वार्षिक भविष्यफल"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.subtitle.en",
+   "en": "Your year ahead — Varshaphal solar-return analysis",
+   "hi_current": "आपका आगामी वर्ष — वर्षफल सौर-प्रत्यावर्तन विश्लेषण"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.forYear.en",
+   "en": "For the year",
+   "hi_current": "वर्ष हेतु"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.summary.en",
+   "en": "Your Year at a Glance",
+   "hi_current": "आपका वर्ष एक दृष्टि में"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.chart.en",
+   "en": "Varshaphal Chart",
+   "hi_current": "वर्षफल कुंडली"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.varshaLagna.en",
+   "en": "Annual Ascendant (Varsha Lagna)",
+   "hi_current": "वार्षिक लग्न (वर्ष लग्न)"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.yearLord.en",
+   "en": "Year Lord (Varshesh)",
+   "hi_current": "वर्ष स्वामी (वर्षेश)"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.munthaLabel.en",
+   "en": "Muntha",
+   "hi_current": "मुंथा"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.solarReturn.en",
+   "en": "Solar Return moment",
+   "hi_current": "सौर प्रत्यावर्तन क्षण"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.yearTheme.en",
+   "en": "The Character of Your Year",
+   "hi_current": "आपके वर्ष का स्वभाव"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.munthaTheme.en",
+   "en": "Where the Year's Focus Falls",
+   "hi_current": "वर्ष का केंद्र कहाँ"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.months.en",
+   "en": "Month-by-Month Outlook",
+   "hi_current": "मासिक भविष्यफल"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.bestDates.en",
+   "en": "Auspicious Dates This Year",
+   "hi_current": "इस वर्ष के शुभ दिन"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.remedies.en",
+   "en": "Remedies for the Year",
+   "hi_current": "वर्ष हेतु उपाय"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.favourable.en",
+   "en": "Favourable",
+   "hi_current": "अनुकूल"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.steady.en",
+   "en": "Steady",
+   "hi_current": "स्थिर"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.care.en",
+   "en": "Take care",
+   "hi_current": "सावधानी"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.method.en",
+   "en": "This forecast is cast from your Varshaphal — the chart of the exact moment the Sun returned to its birth position this year (Tajika tradition) — combined with your running dasha and monthly transits. Placements are verifiable against your free Kundli report.",
+   "hi_current": "यह भविष्यफल आपके वर्षफल से बनाया गया है — इस वर्ष सूर्य के जन्म-स्थिति पर लौटने के ठीक क्षण की कुंडली (ताजिक परंपरा) — आपकी चल रही दशा और मासिक गोचर सहित। स्थितियाँ निःशुल्क कुंडली रिपोर्ट से सत्यापनीय हैं।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.labels.disclaimer.en",
+   "en": "Offered in the spirit of tradition for reflection and planning. Renew each year for a fresh Varshaphal. Your effort and choices shape the year.",
+   "hi_current": "परंपरा की भावना से चिंतन एवं योजना हेतु प्रस्तुत। हर वर्ष नए वर्षफल हेतु नवीनीकरण करें। आपका परिश्रम और निर्णय वर्ष को आकार देते हैं।"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.sun.focusEn",
+   "en": "authority and health",
+   "hi_current": "अधिकार एवं स्वास्थ्य"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.sun.oppEn",
+   "en": "recognition at work",
+   "hi_current": "कार्य में मान"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.sun.avoidEn",
+   "en": "ego clashes",
+   "hi_current": "अहं-टकराव"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.moon.focusEn",
+   "en": "home and emotions",
+   "hi_current": "गृह एवं भावनाएँ"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.moon.oppEn",
+   "en": "nurturing connections",
+   "hi_current": "स्नेह-संबंध"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.moon.avoidEn",
+   "en": "overthinking",
+   "hi_current": "अति-चिंतन"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.mars.focusEn",
+   "en": "energy and property",
+   "hi_current": "ऊर्जा एवं संपत्ति"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.mars.oppEn",
+   "en": "bold initiatives",
+   "hi_current": "साहसिक पहल"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.mars.avoidEn",
+   "en": "arguments and haste",
+   "hi_current": "विवाद एवं उतावली"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.mercury.focusEn",
+   "en": "communication and finances",
+   "hi_current": "संवाद एवं वित्त"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.mercury.oppEn",
+   "en": "networking and deals",
+   "hi_current": "नेटवर्किंग एवं सौदे"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.mercury.avoidEn",
+   "en": "careless paperwork",
+   "hi_current": "लापरवाह लेखा-कार्य"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.jupiter.focusEn",
+   "en": "growth and learning",
+   "hi_current": "वृद्धि एवं अध्ययन"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.jupiter.oppEn",
+   "en": "expansion and guidance",
+   "hi_current": "विस्तार एवं मार्गदर्शन"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.jupiter.avoidEn",
+   "en": "overcommitment",
+   "hi_current": "अति-प्रतिबद्धता"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.venus.focusEn",
+   "en": "relationships and comfort",
+   "hi_current": "संबंध एवं सुख"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.venus.oppEn",
+   "en": "romance and creativity",
+   "hi_current": "प्रणय एवं सृजन"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.venus.avoidEn",
+   "en": "overindulgence",
+   "hi_current": "अति-भोग"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.saturn.focusEn",
+   "en": "work and discipline",
+   "hi_current": "कार्य एवं अनुशासन"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.saturn.oppEn",
+   "en": "steady foundations",
+   "hi_current": "स्थिर नींव"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.saturn.avoidEn",
+   "en": "shortcuts and delays",
+   "hi_current": "शॉर्टकट एवं विलंब"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.rahu.focusEn",
+   "en": "ambition and new paths",
+   "hi_current": "महत्वाकांक्षा एवं नए मार्ग"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.rahu.oppEn",
+   "en": "foreign and tech gains",
+   "hi_current": "विदेश एवं तकनीक लाभ"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.rahu.avoidEn",
+   "en": "risky shortcuts",
+   "hi_current": "जोखिमपूर्ण शॉर्टकट"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.ketu.focusEn",
+   "en": "reflection and research",
+   "hi_current": "चिंतन एवं शोध"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.ketu.oppEn",
+   "en": "spiritual focus",
+   "hi_current": "आध्यात्मिक ध्यान"
+  },
+  {
+   "report": "annual",
+   "key": "annual.monthHint.ketu.avoidEn",
+   "en": "scattered energy",
+   "hi_current": "बिखरी ऊर्जा"
+  },
+  {
+   "report": "annual",
+   "key": "annual.mLabels.focus.en",
+   "en": "Focus",
+   "hi_current": "केंद्र"
+  },
+  {
+   "report": "annual",
+   "key": "annual.mLabels.opp.en",
+   "en": "Opportunity",
+   "hi_current": "अवसर"
+  },
+  {
+   "report": "annual",
+   "key": "annual.mLabels.avoid.en",
+   "en": "Avoid",
+   "hi_current": "टालें"
+  }
+ ]
+}
