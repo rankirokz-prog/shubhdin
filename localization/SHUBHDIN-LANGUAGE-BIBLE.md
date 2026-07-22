@@ -1,7 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 1.1 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
-**v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 by native reviewer (up from 8.2). Added §H5 review-round-2 rulings and §10 Indic typography law.
+**Version 1.2 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v1.2 changelog:** Root cause of broken Devanagari found — Latin-first font stacks force per-character fallback. §10 rewritten with the definitive fix + loanword ruling (प्राइवेट सेक्टर).
 
 ---
 
@@ -255,27 +256,48 @@ regenerate affected blocks. The Bible is living; version it (1.0 → 1.1 ...).
 
 ## 10. INDIC TYPOGRAPHY LAW (applies to ALL Indian languages)
 
-**Never apply `letter-spacing` to text that may contain Indic script.**
+### 10.1 The root cause of broken conjuncts
 
-CSS letter-spacing inserts space between glyph clusters. In Latin script this
-looks elegant; in Devanagari (and Telugu, Kannada, Tamil, Bengali) it separates
-a consonant from its matra/conjunct, producing broken output:
+**Never let a font without the target script sit first in a `font-family` stack.**
 
-- दिल → "दि ल"  ·  बातचीत → "बा तची त"  ·  मुलाक़ात → "मु ला क़ा त"
+If a Latin display font (e.g. `'Cormorant Garamond'`) precedes the Indic font,
+the browser performs **per-character fallback**. A syllable cluster then gets
+shaped across two font runs and splits apart:
 
-This was caught in the first Hindi PDF review and fixed suite-wide (11 removals
-across 8 reports). Star-rating spans (★★★☆☆) may keep letter-spacing — those are
-Latin/symbol glyphs.
+- करियर → "करि यर" · बातचीत → "बा तची त" · विवाह → "वि वा ह" · धार्मिक → "धा र्मि क"
 
-**Companion rules:**
-1. Every `font-family` stack that may render Indic text MUST include the script's
-   font before the generic fallback — e.g. `'Cormorant Garamond','Noto Serif
-   Devanagari',serif`. A display font with no Indic coverage silently falls back
-   to a system font with poor shaping.
-2. Each report carries a `devanagari-print-safety` CSS guard that resets
-   letter-spacing globally and enables ligature/kerning features in print.
-3. When adding a new language, load its Noto font (Noto Serif Telugu, Kannada,
-   Tamil, Bengali, Devanagari for Marathi) and repeat rule 1.
+Adding the Indic font *after* the Latin one does NOT fix this — the Latin font
+must not apply to Indic text at all.
+
+### 10.2 The definitive fix (implemented in all 8 reports)
+
+1. Tag the rendered report with a language class and `lang` attribute:
+   `rep.className='lang-hi'; rep.setAttribute('lang','hi');`
+2. In that mode, force ONE complete Indic font on every element:
+   `#report.lang-hi, #report.lang-hi *{font-family:'Noto Serif Devanagari','Nirmala UI','Mangal',serif !important;}`
+3. In the same rule, neutralise everything that can insert space inside a
+   cluster: `letter-spacing:normal`, `word-spacing:normal`, `word-break:normal`,
+   `overflow-wrap:normal`.
+4. `font-synthesis:none` — faux-bold synthesis can break conjunct shaping.
+5. Avoid `text-align:justify` for Indic prose (use `left`).
+6. Repeat the rule inside `@media print` — print engines re-resolve fonts.
+7. Wait for webfonts before printing: `document.fonts.ready.then(...window.print())`.
+   An unloaded font makes the PDF engine substitute and break shaping.
+8. `letter-spacing` may remain ONLY on pure-symbol spans (★★★☆☆).
+
+### 10.3 Per-language font (when adding a language)
+
+Load the matching Noto family and repeat 10.2: Devanagari (Hindi, Marathi),
+Noto Serif Telugu, Kannada, Tamil, Bengali.
+
+### 10.4 Loanword ruling
+
+Where an English term is what users actually think in, keep the loanword in
+native script rather than coining pure-Sanskrit equivalents:
+
+- ❌ निजी क्षेत्र अनुकूलता → ✅ **प्राइवेट सेक्टर में सफलता**
+- ❌ शासकीय अनुकूलता → ✅ **सरकारी नौकरी में सफलता**
+- Also natural: सर्टिफ़िकेशन, प्रमोशन, कमिटमेंट, रोमांस, DNA, PDF
 
 ---
 
