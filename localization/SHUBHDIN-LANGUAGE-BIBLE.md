@@ -1,7 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 1.6 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 1.7 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v1.7 changelog:** §13 — mantras and their deity labels are never localized (native-reviewer ruling).
 **v1.6 changelog:** §12.3 — SD_UI is now INLINED into each report page by embed-ui.js; no separate upload exists to forget. Two rounds of review were spent reviewing the English fallback because ui-strings.js never reached the server.
 **v1.5 changelog:** §12.2 added — localization helpers must degrade to English, never to blank; a missing shared file must be loud, not silent.
 **v1.4 changelog:** Telugu review (7.8–8.2) exposed that ~35% of a report is NOT in content.js — added §12 THREE SOURCES OF TEXT + the ui-strings.js terms/UI layer.
@@ -401,5 +402,24 @@ wrong, but it weakens the feeling of a bespoke reading.
 Reviewer-suggested Hindi variants to seed the "mixed year" pool:
 *"यह वर्ष नए अनुभव देगा…"* · *"इस वर्ष धीरे-धीरे प्रगति होगी…"* ·
 *"इस साल धैर्य सबसे बड़ा साथी रहेगा…"*
+
+---
+
+
+## 13. MANTRAS ARE NEVER LOCALIZED
+
+Mantras stay in **Sanskrit, in Devanagari**, in every language edition — their
+power is held to be in the exact sound, so transliterating or translating them
+is both religiously wrong and commercially wrong (users expect the Sanskrit).
+
+The **deity/planet label attached to a mantra** also stays Sanskrit-romanized
+and is *not* swapped for the localized planet name, because the label names the
+deity being invoked in that very mantra:
+
+- ✅ `Shukra — ॐ शुं शुक्राय नमः`  (correct in EN, HI, TE, and every future language)
+- ❌ `శుక్రుడు — ॐ शुं शुक्राय नमः` (label localized away from the mantra's deity)
+
+This applies to all nine graha mantras, Santan Gopal, and any stotra or
+sankalpa text added later. **Only the surrounding guidance prose is localized.**
 
 ---
