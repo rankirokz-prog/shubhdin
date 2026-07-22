@@ -140,11 +140,33 @@ function setLang(l){LANG=l;['en','hi','te'].forEach(function(x){var b=document.g
 function T(o){return o?(o[LANG]||o.hi||o.en):'';}
 
 var UI=null;
-function U(path){ // UI/terms lookup with lang fallback
+
+var UI_FB={ // English fallbacks so a missing ui-strings.js degrades, never blanks
+ 'common.lagna':'Lagna','common.moonSign':'Moon','common.venusSign':'Venus',
+ 'common.house':'house','common.nature':'nature','common.age':'age',
+ 'love.loveChart':'YOUR LOVE CHART','love.heartUpClose':'Your Heart, Up Close',
+ 'love.dnaSignature':'Your relationship personality, derived from your birth chart.',
+ 'love.revealCheck':'If correct, reveal your love story (check AM/PM)',
+ 'love.moonRestsPre':'Your Moon rests in ',
+ 'love.moonRestsPost':' — the deep language of your heart. While your outward love expression is ',
+ 'love.moonMid':' in nature, your inner heart feels in a ',
+ 'love.moonEnd':' way. The meeting of these two gives your love both depth and colour.',
+ 'love.venusStrong':'Your Venus is especially strong — love, attraction and beauty flow naturally through your life.',
+ 'love.venusWeak':'Your Venus rests in a tender placement — honouring beauty on Fridays strengthens it.',
+ 'love.venusNeutral':'Your Venus holds a balanced placement, giving love a steady foundation.',
+ 'love.venusRemedyIntro':'Venus is the planet of love, beauty and sweetness. Honouring it brings tenderness to your relationships:',
+ 'love.closingQuote':'"The stars incline; they do not compel. Your open heart writes the truest love story of all."',
+ 'reason.ageWindow':'Within the traditional age window','reason.antarLord':'Antar lord','reason.mahaLord':'Maha lord',
+ 'reason.jupTransit':'Jupiter transits house','reason.fromMoon':'from your Moon',
+ 'reason.seventhLord':'lord of your 7th house','reason.karaka':'natural karaka',
+ 'reason.occupies':'occupies your 7th house','reason.d9lagna':'D9 lagna lord','reason.d9seventh':'D9 7th lord'
+};
+function U(path){ // UI/terms lookup; falls back to English, never blank
   if(!UI)UI=window.SD_UI||{};
   var parts=path.split('.'),o=UI;
   for(var i=0;i<parts.length;i++){o=o?o[parts[i]]:null;}
-  return o?(o[LANG]||o.hi||o.en||''):'';
+  if(o&&(o[LANG]||o.hi||o.en))return o[LANG]||o.hi||o.en;
+  return UI_FB[path]||'';
 }
 function TT(obj){ // title fields: t_en/t_hi/t_te
   if(!obj)return '';
@@ -208,6 +230,7 @@ function generate(){ try {
   if(!PE||!PE.getLoveProfile){alert('Engine not fully loaded. Please hard-refresh (Ctrl+Shift+R).');return;}
   if(!LV||!C){alert('Content files missing. Ensure love-content.js and report-content.js are in the same folder.');return;}
   if(!CTX){alert('Please click "Reveal My Love Story" first.');return;}
+  if(!window.SD_UI){alert('ui-strings.js is missing from the server. Upload it beside love-report.html, then hard-refresh (Ctrl+Shift+R). The report will render in English until then.');}
   var b=CTX.b,lat=CTX.lat,lng=CTX.lng,L=LV.labels,H='';
   function pg(inner){H+='<div class="page">'+inner+'</div>';}
   var lp=PE.getLoveProfile(b,lat,lng);
@@ -297,7 +320,8 @@ function generate(){ try {
     +'<div class="prose" style="font-size:11.5px;color:#8B5A6B;">'+T(L.method)+'</div>');
   // REMEDIES + CLOSING
   var vr=C.remedy['venus'];
-  var rem=vr?'<div class="season"><b>'+vr.name+'</b> — <span style="color:var(--rose);">'+vr.mantra+'</span><br>'+(LANG==='hi'?vr.hi:vr.en)+'</div>':'';
+  var vrText=(window.SD_UI&&SD_UI.remedy&&SD_UI.remedy['venus']&&SD_UI.remedy['venus'][LANG])||(vr?(LANG==='hi'?vr.hi:vr.en):'');
+  var rem=vr?'<div class="season"><b>'+vr.name+'</b> — <span style="color:var(--rose);">'+vr.mantra+'</span><br>'+vrText+'</div>':'';
   pg('<h2 class="sec">✦ '+T(L.remedies)+'</h2>'
     +'<div class="prose" style="font-size:13.5px;">'+U('love.venusRemedyIntro')+'</div>'+rem
     +'<div class="poetic" style="margin-top:24px;">'+(LANG==='hi'?'"तारे झुकाव देते हैं; बाध्य नहीं करते। आपका खुला हृदय ही सबसे सच्ची प्रेम-कथा लिखता है।"':'"The stars incline; they do not compel. Your open heart writes the truest love story of all."')+'</div>'
