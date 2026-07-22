@@ -1,7 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 1.7 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 1.8 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v1.8 changelog:** Fallback chain CHANGED to lang→en→hi (§1.4 rationale) and §14 stale-file detection added, after a stale content file rendered a Telugu report in Hindi.
 **v1.7 changelog:** §13 — mantras and their deity labels are never localized (native-reviewer ruling).
 **v1.6 changelog:** §12.3 — SD_UI is now INLINED into each report page by embed-ui.js; no separate upload exists to forget. Two rounds of review were spent reviewing the English fallback because ui-strings.js never reached the server.
 **v1.5 changelog:** §12.2 added — localization helpers must degrade to English, never to blank; a missing shared file must be loud, not silent.
@@ -41,8 +42,11 @@ have written this sentence?"* If no — rewrite it.
 3. **One source of truth per language:** `master-strings.<lang>.json`, regenerated
    into `*-content.<lang>.js` files by script. Hand-editing generated JS files is
    forbidden — edit the master JSON, regenerate.
-4. **Fallback chain:** chosen language → Hindi → English. A missing key must never
-   crash or show blank; it falls back.
+4. **Fallback chain:** chosen language → **English** → Hindi. A missing key must
+   never crash or show blank; it falls back.
+   *(Changed in v1.8. Falling back to Hindi made a Telugu report render as Hindi,
+   which reads as a wrong-language bug rather than a missing string. English is
+   universally legible to the audience; another Indic script is not.)*
 5. **Terms dictionary is separate from prose.** Planet names, rashi names,
    dignities, weekdays, months, and UI labels live in a per-language TERMS table
    (~100 entries, hand-curated once). Prose blocks reference meaning; the terms
@@ -421,5 +425,29 @@ deity being invoked in that very mantra:
 
 This applies to all nine graha mantras, Santan Gopal, and any stotra or
 sankalpa text added later. **Only the surrounding guidance prose is localized.**
+
+---
+
+
+## 14. STALE-FILE DETECTION (fail loudly)
+
+Three review rounds were lost to a file that never reached the server — twice
+`ui-strings.js`, once `<report>-content.js`. In each case the page degraded
+silently and the reviewer scored the fallback, not the work.
+
+**Required in every report page:**
+1. At generate time, probe a known key for the selected language:
+   `if (LANG!=='en' && !SD_X.labels.title[LANG]) alert(...)`.
+   The alert must **name the exact file** to upload and say the report will
+   render in English until then.
+2. Combined with the §1.4 chain (lang→en→hi), a stale file now produces
+   *English + an explicit warning* — obviously wrong, never quietly wrong.
+3. Shared data is inlined (§12.3), so the only per-report deployment artifacts
+   are: `<report>-report.html` + `<report>-content.js`. Nothing else.
+
+**Reviewer protocol:** if a review reports whole sections in the wrong language,
+suspect deployment before translation. Ask for one screenshot of the cover; if
+the inline-sourced strings are correct but content-sourced strings are not, the
+content file is stale.
 
 ---
