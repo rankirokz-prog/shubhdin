@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shubh Din — Annual Forecast</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
@@ -52,6 +52,29 @@ tr:nth-child(even) td{background:#FDF8EC;}
 body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 .stars,.scorepill{letter-spacing:2px;}
 @media print{*{-webkit-font-feature-settings:"liga" 1,"kern" 1;font-feature-settings:"liga" 1,"kern" 1;}}
+
+/* ── DEVANAGARI SHAPING SAFETY ──────────────────────────────────────────────
+   A Latin-first font stack (e.g. 'Cormorant Garamond' first) forces the browser
+   into PER-CHARACTER font fallback for Hindi. Shaping a syllable cluster across
+   two font runs splits matras/conjuncts:  करियर → "करि यर",  बातचीत → "बा तची त".
+   Fix: when the report renders in Hindi, use ONE complete Devanagari font for
+   everything, and disable anything that can insert space inside a cluster. */
+#report.lang-hi, #report.lang-hi *{
+  font-family:'Noto Serif Devanagari','Nirmala UI','Mangal','Kokila',serif !important;
+  letter-spacing:normal !important;
+  word-spacing:normal !important;
+  word-break:normal !important;
+  overflow-wrap:normal !important;
+  font-synthesis:none;               /* faux-bold can break conjunct shaping */
+  text-rendering:optimizeLegibility;
+}
+#report.lang-hi .prose{text-align:left;}   /* justify stretches Indic awkwardly */
+@media print{
+  #report.lang-hi, #report.lang-hi *{
+    font-family:'Noto Serif Devanagari','Nirmala UI','Mangal',serif !important;
+    letter-spacing:normal !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -85,7 +108,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
     </div>
   </div>
 </div>
-<div class="printbar" id="printbar" style="display:none;"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div class="printbar" id="printbar" style="display:none;"><button onclick="sdPrint()">🖨️ Print / Save as PDF</button></div>
 <div id="report"></div>
 
 <script src="astronomy.min.js"></script>
@@ -93,6 +116,19 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 <script src="report-content.js"></script>
 <script src="annual-content.js"></script>
 <script>
+
+function sdPrint(){
+  // Ensure webfonts are fully loaded before PDF export — an unloaded Devanagari
+  // font makes the print engine substitute and break shaping.
+  try{
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(function(){ setTimeout(function(){ window.print(); }, 60); });
+      return;
+    }
+  }catch(e){}
+  window.print();
+}
+
 var LANG='en', CTX=null;
 function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';}
 function T(o){return o?(o[LANG]||o.en):'';}
@@ -224,7 +260,10 @@ function generate(){ try {
     +'<div class="prose" style="font-size:13px;">'+(LANG==='hi'?'इस वर्ष के स्वामी '+gname2(vLord)+' को प्रसन्न रखना वर्ष भर शुभ फल देता है:':'Strengthening this year\u2019s lord, '+gname2(vLord)+', supports auspicious results all year:')+'</div>'+rem
     +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
   document.getElementById('report').innerHTML=H;
-  document.getElementById('report').style.display='block';
+  var rep=document.getElementById('report');
+  rep.className=(LANG==='hi'?'lang-hi':'lang-en');
+  rep.setAttribute('lang',LANG==='hi'?'hi':'en');
+  rep.style.display='block';
   document.getElementById('printbar').style.display='block';
   document.getElementById('inputScreen').style.display='none';
   window.scrollTo(0,0);
