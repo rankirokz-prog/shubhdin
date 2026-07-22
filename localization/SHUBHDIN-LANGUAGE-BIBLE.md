@@ -1,7 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 1.2 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 1.3 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v1.3 changelog:** Added §9.1 Telugu Constitution (గ్రాంథిక vs వ్యావహారిక — Telugu's equivalent of the शुद्ध-हिंदी trap) and §11 variation-pool design for cross-report phrase repetition.
 **v1.2 changelog:** Root cause of broken Devanagari found — Latin-first font stacks force per-character fallback. §10 rewritten with the definitive fix + loanword ruling (प्राइवेट सेक्टर).
 
 ---
@@ -301,6 +302,68 @@ native script rather than coining pure-Sanskrit equivalents:
 
 ---
 
+## 9.1 TELUGU CONSTITUTION (తెలుగు)
+
+**Reviewer: Ram (native speaker) — zero review cost, fastest validation loop.**
+
+### T1. The Telugu trap: గ్రాంథిక vs వ్యావహారిక
+
+Telugu has a formal literary register (గ్రాంథిక) and a spoken/modern register
+(వ్యావహారిక). Writing గ్రాంథిక is *exactly* the same mistake as over-Sanskritised
+Hindi — technically correct, humanly cold. **All Shubh Din prose uses వ్యావహారిక.**
+
+| ❌ Avoid (గ్రాంథిక) | ✅ Use (వ్యావహారిక) |
+|---|---|
+| కలదు / గలదు | ఉంది |
+| చున్నది / యున్నది | ఉంది / అవుతోంది |
+| ఒసగును | ఇస్తుంది |
+| ప్రణయము | ప్రేమ |
+| హృదయము | గుండె / మనసు |
+| -ము endings (ప్రేమము, బంధము) | -ం endings (ప్రేమ, బంధం) |
+| వివాహము | పెళ్లి (prose) / వివాహం (formal headings) |
+| సంభాషణము | మాటలు / మాట్లాడటం |
+| ధనము | డబ్బు |
+| అభిలాష | కోరిక |
+
+**Rule of thumb:** if it sounds like a 1950s Telugu textbook or a stage drama,
+rewrite it the way a Hyderabad or Vijayawada 26-year-old would actually say it.
+
+### T2. Preferred everyday vocabulary
+
+ప్రేమ · బంధం · అనుబంధం · నమ్మకం · మనసు · గుండె · మాటలు · కలిసి · తోడు ·
+జీవితం · ఆనందం · అర్థం చేసుకోవడం · భరోసా · ఓపిక · మంచి సమయం · అదృష్టం
+
+### T3. Keep in Sanskrit (astrology register — sounds premium in Telugu too)
+
+జాతకం · లగ్నం · దశ · అంతర్దశ · గోచారం · భావం · రాశి · నక్షత్రం · యోగం · దోషం ·
+ముహూర్తం · తిథి · వారం · పంచాంగం · వర్షఫలం · నవాంశ · సప్తాంశ · దశాంశ ·
+అష్టకవర్గం · గుణ మిలనం · తారాబలం · చంద్రబలం
+
+Planets: సూర్యుడు · చంద్రుడు · కుజుడు · బుధుడు · గురువు · శుక్రుడు · శని · రాహువు · కేతువు
+
+*Note:* Telugu speakers say **జాతకం** far more naturally than కుండలి for the
+birth chart — prefer జాతకం in prose, జాతక చక్రం for the diagram.
+
+### T4. Keep in English (same as universal list, plus)
+
+DNA · PDF · Score · Dashboard · ప్రైవేట్ · సెక్టార్ · ప్రమోషన్ · సర్టిఫికేషన్ ·
+కమిట్‌మెంట్ · రొమాన్స్ — young Telugu speakers use these daily; coining pure
+Telugu equivalents sounds stilted (mirrors Hindi ruling §10.4).
+
+### T5. Few-shot examples
+
+- ❌ మీ జాతకమునందు ప్రేమ యోగములు కలవు → ✅ **మీ జాతకంలో ప్రేమకు మంచి యోగాలు ఉన్నాయి.**
+- ❌ మీరు సుందరముగా సంభాషించెదరు → ✅ **మీ మనసులో ఉన్నది మీరు స్పష్టంగా చెప్పగలరు.**
+- ❌ ప్రణయ రసాయనము → ✅ **మీ ప్రేమ స్వభావం**
+- ❌ మీరు వాయువు ప్రేమించునట్లు ప్రేమింతురు → ✅ **మీకు ప్రేమ మంచి మాటలతో మొదలవుతుంది.**
+
+### T6. Typography
+
+Load `Noto Serif Telugu`; apply §10.2's single-font rule with `lang-te`.
+Telugu also breaks under per-character fallback — same law applies.
+
+---
+
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
 *(To be authored per-language before that language's generation begins — same
@@ -311,3 +374,29 @@ table. The universal sections 0–7 already apply to all.)*
 *This document is the constitution for every localization decision. When in
 doubt: rewrite, don't translate; relatable beats poetic; astrology Sanskrit
 stays, exam Sanskrit goes.*
+
+## 11. VARIATION POOLS (planned — repeat-customer polish)
+
+**Problem:** a customer buying several reports may meet the same sentence twice
+(e.g. a "mixed year" line in Forecast and a similar band line in Annual). Not
+wrong, but it weakens the feeling of a bespoke reading.
+
+**Design (not yet implemented):**
+
+1. A string value may be an **array of equivalent phrasings** instead of a single
+   string, in the `-strings.<lang>.json` source:
+   `"forecast.ratings.mixed.en": ["...", "...", "..."]`
+2. Selection is **deterministic from the chart**, never random — e.g.
+   `idx = (birthJulianDay + keyHash) % pool.length`. The same person regenerating
+   the same report always sees identical text (trust), while different people —
+   and the same person's *different* reports — see different phrasings.
+3. Pools are only worth adding to high-frequency, cross-report keys: year/score
+   band descriptions, generic action lines, closing lines. Never to
+   chart-specific analysis, which is already unique.
+4. Write 3 variants per pooled key, all obeying the same Constitution.
+
+Reviewer-suggested Hindi variants to seed the "mixed year" pool:
+*"यह वर्ष नए अनुभव देगा…"* · *"इस वर्ष धीरे-धीरे प्रगति होगी…"* ·
+*"इस साल धैर्य सबसे बड़ा साथी रहेगा…"*
+
+---
