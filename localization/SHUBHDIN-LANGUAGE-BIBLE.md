@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 1.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 1.1 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 by native reviewer (up from 8.2). Added §H5 review-round-2 rulings and §10 Indic typography law.
 
 ---
 
@@ -170,6 +171,24 @@ The words modern Hindi speakers actually use — build sentences from these:
 - ❌ प्रणय रसायन
 - ✅ आपका प्रेम स्वभाव  *(or)*  आपका प्रेम संतुलन
 
+## H5. REVIEW ROUND 2 RULINGS (from 9.4–9.6 scoring pass)
+
+Additional avoid/prefer pairs discovered in the Love report review:
+
+| ❌ Avoid | ✅ Use instead | Why |
+|---|---|---|
+| बली | मज़बूत / बलवान | "बली" is uncommon in everyday Hindi |
+| प्रेम कथा | प्रेम कहानी / लव स्टोरी / प्रेम यात्रा | "कथा" reads literary/formal |
+| प्रेम में सीख | आपके लिए एक सलाह / प्रेम में क्या सीखना है | warmer, less instructional |
+
+**Confirmed-good patterns to reuse in all future Hindi work** (reviewer praised
+these explicitly — treat as positive case law):
+- `आपकी कुंडली में प्रेम के प्रबल योग हैं।` — astrology register done right
+- `आपके लिए प्यार की शुरुआत अच्छी बातचीत से होती है।` — sounds like a real person
+- `कुछ समय ऐसे होते हैं जब सितारे प्यार के लिए ख़ास मेहरबान रहते हैं।` — natural warmth
+- `आपका प्रेम DNA` — keep English loanwords young readers already use
+- `जानिए आपका प्रेम व्यक्तित्व` — imperative "जानिए" beats noun-phrase headlines
+
 ## H4. LOCALIZED TERMS TABLE (spec — fixes "Venus · Tula (Own Sign)" leaks)
 
 Hand-curated once, used by all reports:
@@ -231,6 +250,34 @@ regenerate affected blocks. The Bible is living; version it (1.0 → 1.1 ...).
 2. **Telugu** — home market; Ram is the native reviewer (zero review cost, fastest validation of the whole pipeline)
 3. Tamil · Kannada · Marathi · Bengali — by user analytics
 - English remains canonical source, always.
+
+---
+
+## 10. INDIC TYPOGRAPHY LAW (applies to ALL Indian languages)
+
+**Never apply `letter-spacing` to text that may contain Indic script.**
+
+CSS letter-spacing inserts space between glyph clusters. In Latin script this
+looks elegant; in Devanagari (and Telugu, Kannada, Tamil, Bengali) it separates
+a consonant from its matra/conjunct, producing broken output:
+
+- दिल → "दि ल"  ·  बातचीत → "बा तची त"  ·  मुलाक़ात → "मु ला क़ा त"
+
+This was caught in the first Hindi PDF review and fixed suite-wide (11 removals
+across 8 reports). Star-rating spans (★★★☆☆) may keep letter-spacing — those are
+Latin/symbol glyphs.
+
+**Companion rules:**
+1. Every `font-family` stack that may render Indic text MUST include the script's
+   font before the generic fallback — e.g. `'Cormorant Garamond','Noto Serif
+   Devanagari',serif`. A display font with no Indic coverage silently falls back
+   to a system font with poor shaping.
+2. Each report carries a `devanagari-print-safety` CSS guard that resets
+   letter-spacing globally and enables ligature/kerning features in print.
+3. When adding a new language, load its Noto font (Noto Serif Telugu, Kannada,
+   Tamil, Bengali, Devanagari for Marathi) and repeat rule 1.
+
+---
 
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
