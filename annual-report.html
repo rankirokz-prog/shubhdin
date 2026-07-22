@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shubh Din — Annual Forecast</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#5C1A1B;--gold:#B8860B;--gold2:#D4A843;--paper:#FFFDF6;--soft:#8B5A2B;--saffron:#E8730C;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;}
@@ -75,6 +76,17 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
     letter-spacing:normal !important;
   }
 }
+
+/* Telugu: same single-font shaping law as Devanagari (§10.2 / §T6) */
+#report.lang-te, #report.lang-te *{
+  font-family:'Noto Serif Telugu','Gautami','Nirmala UI',serif !important;
+  letter-spacing:normal !important; word-spacing:normal !important;
+  word-break:normal !important; overflow-wrap:normal !important;
+  font-synthesis:none; text-rendering:optimizeLegibility;
+}
+#report.lang-te .prose{text-align:left;}
+@media print{#report.lang-te, #report.lang-te *{
+  font-family:'Noto Serif Telugu','Gautami','Nirmala UI',serif !important;letter-spacing:normal !important;}}
 </style>
 </head>
 <body>
@@ -98,7 +110,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
     <div><label>Current Latitude</label><input id="clat" type="number" step="0.0001" value="16.7"></div>
     <div><label>Current Longitude</label><input id="clng" type="number" step="0.0001" value="81.1"></div>
   </div>
-  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button></div>
+  <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button><button id="lTe" onclick="setLang('te')">తెలుగు</button></div>
   <button onclick="confirmStep()">Generate My Year → बनाएँ</button>
   <div class="confirm" id="confirmBox">
     <div id="confirmText"></div>
@@ -130,7 +142,7 @@ function sdPrint(){
 }
 
 var LANG='en', CTX=null;
-function setLang(l){LANG=l;document.getElementById('lEn').className=l==='en'?'on':'';document.getElementById('lHi').className=l==='hi'?'on':'';}
+function setLang(l){LANG=l;['en','hi','te'].forEach(function(x){var b=document.getElementById('l'+x.charAt(0).toUpperCase()+x.slice(1));if(b)b.className=(l===x?'on':'');});}
 function T(o){return o?(o[LANG]||o.en):'';}
 var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
 function gname2(k){return k?(LANG==='hi'?(GR_HI[k]||k):k.charAt(0).toUpperCase()+k.slice(1)):'';}
@@ -261,8 +273,8 @@ function generate(){ try {
     +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
   document.getElementById('report').innerHTML=H;
   var rep=document.getElementById('report');
-  rep.className=(LANG==='hi'?'lang-hi':'lang-en');
-  rep.setAttribute('lang',LANG==='hi'?'hi':'en');
+  rep.className='lang-'+LANG;
+  rep.setAttribute('lang',LANG);
   rep.style.display='block';
   document.getElementById('printbar').style.display='block';
   document.getElementById('inputScreen').style.display='none';
