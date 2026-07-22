@@ -108,7 +108,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
   <div class="confirm" id="confirmBox">
     <div id="confirmText"></div>
     <div class="row">
-      <button style="background:#5A8B2B;" onclick="generate()">✓ Correct — Reveal</button>
+      <button style="background:#5A8B2B;" onclick="generate()" id="btnReveal">✓ Correct — Reveal</button>
       <button style="background:#B8434A;" onclick="document.getElementById('confirmBox').style.display='none'">✗ Fix details</button>
     </div>
   </div>
@@ -119,6 +119,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 <script src="astronomy.min.js"></script>
 <script src="panchang-engine.js"></script>
 <script src="report-content.js"></script>
+<script src="ui-strings.js"></script>
 <script src="love-content.js"></script>
 <script>
 
@@ -136,9 +137,50 @@ function sdPrint(){
 
 var LANG='en', CTX=null;
 function setLang(l){LANG=l;['en','hi','te'].forEach(function(x){var b=document.getElementById('l'+x.charAt(0).toUpperCase()+x.slice(1));if(b)b.className=(l===x?'on':'');});}
-function T(o){return o?(o[LANG]||o.en):'';}
+function T(o){return o?(o[LANG]||o.hi||o.en):'';}
+
+var UI=null;
+function U(path){ // UI/terms lookup with lang fallback
+  if(!UI)UI=window.SD_UI||{};
+  var parts=path.split('.'),o=UI;
+  for(var i=0;i<parts.length;i++){o=o?o[parts[i]]:null;}
+  return o?(o[LANG]||o.hi||o.en||''):'';
+}
+function TT(obj){ // title fields: t_en/t_hi/t_te
+  if(!obj)return '';
+  return obj['t_'+LANG]||obj.t_hi||obj.t_en||'';
+}
+
+function locReason(r){
+  if(!r)return '';
+  if(LANG!=='te')return T(r);
+  var e=r.en||'';
+  // rebuild the known engine reason patterns in Telugu from the terms table
+  var m1=e.match(/^Antar lord (\w+) — (.+)$/);
+  var m2=e.match(/^Maha lord (\w+) — (.+)$/);
+  function role(t){
+    if(/7th house/.test(t)&&/lord/.test(t))return U('reason.seventhLord');
+    if(/natural karaka/.test(t))return U('reason.karaka');
+    if(/occupies/.test(t))return U('reason.occupies');
+    if(/D9 lagna/.test(t))return U('reason.d9lagna');
+    if(/D9 7th/.test(t))return U('reason.d9seventh');
+    return t;
+  }
+  if(m1)return U('reason.antarLord')+' '+gname2(m1[1])+' — '+role(m1[2]);
+  if(m2)return U('reason.mahaLord')+' '+gname2(m2[1])+' — '+role(m2[2]);
+  var m3=e.match(/^Jupiter transits house (\d+) from your Moon$/);
+  if(m3)return U('reason.jupTransit')+' '+m3[1]+' '+U('reason.fromMoon');
+  if(/traditional age window/.test(e))return U('reason.ageWindow');
+  return T(r);
+}
+function term(kind,val){ // engine value -> localized term
+  if(!UI)UI=window.SD_UI||{};
+  var m=UI[kind]&&UI[kind][val];
+  return m?(m[LANG]||m.en||val):val;
+}
+
 var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
-function gname2(k){return k?(LANG==='hi'?(GR_HI[k]||k):k.charAt(0).toUpperCase()+k.slice(1)):'';}
+function gname2(k){if(!k)return '';var t=term('planet',k);return t!==k?t:(k.charAt(0).toUpperCase()+k.slice(1));}
 function ist(d){return new Date(d.getTime()+5.5*3600000);}
 function fD(d){return ist(d).toLocaleDateString('en-IN',{month:'short',year:'numeric',timeZone:'UTC'});}
 var ELEM_COLOR={fire:'#D2603A',earth:'#8B7245',air:'#5B8CA8',water:'#4A7A9B'};
@@ -153,10 +195,12 @@ function confirmStep(){
   var b=birthUTC(),lat=+document.getElementById('blat').value,lng=+document.getElementById('blng').value;
   var bc=PE.getBirthChart(b,lat,lng); var moon=bc.grahas.find(function(x){return x.key==='moon';});
   CTX={b:b,lat:lat,lng:lng,name:document.getElementById('pname').value||'—',place:document.getElementById('bplace').value};
-  document.getElementById('confirmText').innerHTML=(LANG==='hi'
-    ?'<b>लग्न:</b> '+bc.lagna.hi+' · <b>चंद्र:</b> '+moon.rashi.hi+' · <b>शुक्र राशि:</b> '+bc.grahas.find(function(x){return x.key==='venus';}).rashi.hi
-    :'<b>Lagna:</b> '+bc.lagna.en+' · <b>Moon:</b> '+moon.rashi.en+' · <b>Venus:</b> '+bc.grahas.find(function(x){return x.key==='venus';}).rashi.en)
-    +'<br>'+(LANG==='hi'?'सही हो तो प्रेम-कथा देखें (AM/PM जाँचें)':'If correct, reveal your love story (check AM/PM)');
+  var venusR=bc.grahas.find(function(x){return x.key==='venus';}).rashi.en;
+  document.getElementById('confirmText').innerHTML=
+    '<b>'+U('common.lagna')+':</b> '+term('rashi',bc.lagna.en)
+    +' · <b>'+U('common.moonSign')+':</b> '+term('rashi',moon.rashi.en)
+    +' · <b>'+U('common.venusSign')+':</b> '+term('rashi',venusR)
+    +'<br>'+U('love.revealCheck');
   document.getElementById('confirmBox').style.display='block';
 }
 function generate(){ try {
@@ -183,8 +227,8 @@ function generate(){ try {
     +'<div class="sub" style="font-size:12px;color:var(--soft);">'+T(L.subtitle)+'</div>'
     +'<div style="font-size:26px;color:#6B2440;font-weight:700;margin:22px 0 2px;font-family:\'Cormorant Garamond\',\'Noto Serif Devanagari\',serif;">'+CTX.name+'</div>'
     +'<div class="sub">शुभ दिन · shubhdin.app</div>'
-    +'<div class="idcard" style="margin-top:28px;min-width:300px;border-width:1.5px;"><div class="t">'+(LANG==='hi'?'प्रेम कुंडली':'YOUR LOVE CHART')+'</div>'
-    +'<div class="v" style="font-size:19px;">'+T({en:LV.scoreBand[band].t_en,hi:LV.scoreBand[band].t_hi})+'</div></div>'
+    +'<div class="idcard" style="margin-top:28px;min-width:300px;border-width:1.5px;"><div class="t">'+U('love.loveChart')+'</div>'
+    +'<div class="v" style="font-size:19px;">'+TT(LV.scoreBand[band])+'</div></div>'
     +'<div class="poetic" style="max-width:480px;">'+T(LV.scoreBand[band]).split('.').slice(0,1).join('.')+'.</div></div>');
   // ═══ YOUR LOVE DNA (the screenshottable centrepiece — page 2) ═══
   var DL=LV.dnaLabels, dna=lp.loveDNA||{}, ls0=lp.loveStyle||'air';
@@ -207,14 +251,14 @@ function generate(){ try {
     +'<div class="poetic" style="font-size:15px;margin-top:6px;">'+(LANG==='hi'?'आपका संबंध व्यक्तित्व — आपकी जन्म कुंडली से लिया गया।':'Your relationship personality, derived from your birth chart.')+'</div>');
   // GREATEST STRENGTH + LOVE LESSON (his key ask — personal, derived)
   var strk=LV.strengths[lp.strengthKey]||LV.strengths.communication, chlk=LV.challenges[lp.challengeKey]||LV.challenges.overthinking;
-  pg('<h2 class="sec">✦ '+(LANG==='hi'?'आपका हृदय, गहराई से':'Your Heart, Up Close')+'</h2>'
+  pg('<h2 class="sec">✦ '+U('love.heartUpClose')+'</h2>'
     +'<div style="background:#F2F8EF;border:1px solid #B7D9A8;border-radius:12px;padding:16px 18px;margin-bottom:14px;">'
     +'<div style="font-size:13px;color:#2B7A4B;text-transform:uppercase;">❤️ '+T(DL.strengthTitle)+'</div>'
-    +'<div style="font-size:19px;color:#2B7A4B;font-weight:700;margin:4px 0 8px;font-family:\'Cormorant Garamond\',\'Noto Serif Devanagari\',serif;">'+T({en:strk.t_en,hi:strk.t_hi})+'</div>'
+    +'<div style="font-size:19px;color:#2B7A4B;font-weight:700;margin:4px 0 8px;">'+TT(strk)+'</div>'
     +'<div class="prose" style="margin:0;">'+T(strk)+'</div></div>'
     +'<div style="background:#FBF3EE;border:1px solid #E8C9A0;border-radius:12px;padding:16px 18px;">'
     +'<div style="font-size:13px;color:#B87333;text-transform:uppercase;">⚠️ '+T(DL.challengeTitle)+'</div>'
-    +'<div style="font-size:19px;color:#B87333;font-weight:700;margin:4px 0 8px;font-family:\'Cormorant Garamond\',\'Noto Serif Devanagari\',serif;">'+T({en:chlk.t_en,hi:chlk.t_hi})+'</div>'
+    +'<div style="font-size:19px;color:#B87333;font-weight:700;margin:4px 0 8px;">'+TT(chlk)+'</div>'
     +'<div class="prose" style="margin:0;">'+T(chlk)+'</div></div>');
   // YOUR LOVE LANGUAGE
   var ls=lp.loveStyle;
@@ -223,22 +267,17 @@ function generate(){ try {
     +'<div class="prose">'+T(LV.loveStyle[ls])+'</div>');
   // THE NATURE OF YOUR HEART (Moon) + Venus strength
   var hs=lp.heartStyle;
-  var venusNote=lp.venusDignity==='Own Sign'||lp.venusDignity==='Exalted'
-    ?(LANG==='hi'?'आपका शुक्र बहुत मज़बूत है — प्रेम, आकर्षण और सौंदर्य आपके जीवन में स्वाभाविक रूप से प्रवाहित होते हैं।':'Your Venus is especially strong — love, attraction and beauty flow naturally through your life.')
-    :lp.venusDignity==='Debilitated'
-    ?(LANG==='hi'?'आपका शुक्र कोमल स्थिति में है — शुक्रवार को श्वेत/गुलाबी पुष्प अर्पण और सौंदर्य की सराहना इसे सशक्त करती है।':'Your Venus rests in a tender placement — offering white or pink flowers on Fridays and cultivating beauty strengthens it.')
-    :(LANG==='hi'?'आपका शुक्र संतुलित स्थिति में है, प्रेम को स्थिर आधार देता है।':'Your Venus holds a balanced placement, giving love a steady foundation.');
+  var venusNote=(lp.venusDignity==='Own Sign'||lp.venusDignity==='Exalted')?U('love.venusStrong')
+    :lp.venusDignity==='Debilitated'?U('love.venusWeak'):U('love.venusNeutral');
   pg('<h2 class="sec">✦ '+T(L.yourHeart)+'</h2>'
-    +'<div class="prose">'+(LANG==='hi'
-      ?'आपका चंद्रमा '+lp.moonSign.hi+' में है — यह आपके हृदय की गहन भाषा है। जहाँ आपकी प्रेम-अभिव्यक्ति '+T(LV.elements[ls])+'-स्वभाव की है, वहीं आपका अंतर्मन '+T(LV.elements[hs])+'-स्वभाव से अनुभव करता है। इन दोनों का मेल आपको प्रेम में गहराई और रंग देता है।'
-      :'Your Moon rests in '+lp.moonSign.en+' — the deep language of your heart. While your outward love expression is '+T(LV.elements[ls])+' in nature, your inner heart feels in a '+T(LV.elements[hs])+' way. The meeting of these two gives your love both depth and colour.')+'</div>'
+    +'<div class="prose">'+(U('love.moonRestsPre')+term('rashi',lp.moonSign.en)+U('love.moonRestsPost')+T(LV.elements[ls])+U('love.moonMid')+T(LV.elements[hs])+U('love.moonEnd'))+'</div>'
     +'<div class="idcard" style="text-align:left;"><div class="t" style="text-align:center;">'+T(L.venusStrength)+'</div>'
-    +'<div class="prose" style="margin:8px 0 0;font-size:14px;">'+gname2('venus')+' · '+lp.venusSign.en+' ('+lp.venusDignity+') · '+(LANG==='hi'?'भाव':'house')+' '+lp.venusHouse+'<br>'+venusNote+'</div></div>');
+    +'<div class="prose" style="margin:8px 0 0;font-size:14px;">'+gname2('venus')+' · '+term('rashi',lp.venusSign.en)+' ('+term('dignity',lp.venusDignity)+') · '+U('common.house')+' '+lp.venusHouse+'<br>'+venusNote+'</div></div>');
   // THE ONE YOU'RE MEANT TO FIND (now richer, specific)
   var pe=lp.partnerLordElement||'air';
   var richP=LV.partnerRich[pe]||LV.partnerRich.air;
   pg('<h2 class="sec">✦ '+T(L.idealPartner)+'</h2>'
-    +'<div style="text-align:center;"><span class="elembadge" style="background:'+ELEM_COLOR[pe]+';">'+ELEM_ICON[pe]+' '+T(LV.elements[pe])+' '+(LANG==='hi'?'स्वभाव':'nature')+'</span></div>'
+    +'<div style="text-align:center;"><span class="elembadge" style="background:'+ELEM_COLOR[pe]+';">'+ELEM_ICON[pe]+' '+T(LV.elements[pe])+' '+U('common.nature')+'</span></div>'
     +'<div class="prose">'+T(richP)+'</div>');
   // ROMANTIC CHEMISTRY (relabeled to instantly-understood terms)
   function bar(label,v){return '<div class="barwrap"><div class="barlbl"><span>'+label+'</span><b style="color:var(--rose);">'+v+'%</b></div><div class="bar"><div style="width:'+v+'%;"></div></div></div>';}
@@ -253,14 +292,14 @@ function generate(){ try {
   var win=PE.getEventWindows('marriage',b,lat,lng,new Date(),to);
   var seasons=win.windows.slice(0,3).map(function(x){
     return '<div class="season"><b style="font-family:\'Cormorant Garamond\',\'Noto Serif Devanagari\',serif;font-size:16px;">'+fD(x.start)+' — '+fD(x.end)+'</b>'
-      +'<br><span style="font-size:12.5px;color:#8B5A6B;">'+T(L.whyWin)+': '+x.reasons.map(function(r){return T(r);}).join('; ')+'</span></div>';}).join('');
+      +'<br><span style="font-size:12.5px;color:#8B5A6B;">'+T(L.whyWin)+': '+x.reasons.map(function(r){return locReason(r);}).join('; ')+'</span></div>';}).join('');
   pg('<h2 class="sec">✦ '+T(L.whenLove)+'</h2><div class="prose">'+T(L.whenLoveIntro)+'</div>'+seasons
     +'<div class="prose" style="font-size:11.5px;color:#8B5A6B;">'+T(L.method)+'</div>');
   // REMEDIES + CLOSING
   var vr=C.remedy['venus'];
   var rem=vr?'<div class="season"><b>'+vr.name+'</b> — <span style="color:var(--rose);">'+vr.mantra+'</span><br>'+(LANG==='hi'?vr.hi:vr.en)+'</div>':'';
   pg('<h2 class="sec">✦ '+T(L.remedies)+'</h2>'
-    +'<div class="prose" style="font-size:13.5px;">'+(LANG==='hi'?'शुक्र प्रेम, सौंदर्य और मधुरता का ग्रह है। इसे प्रसन्न रखना संबंधों में माधुर्य लाता है:':'Venus is the planet of love, beauty and sweetness. Honouring it brings tenderness to your relationships:')+'</div>'+rem
+    +'<div class="prose" style="font-size:13.5px;">'+U('love.venusRemedyIntro')+'</div>'+rem
     +'<div class="poetic" style="margin-top:24px;">'+(LANG==='hi'?'"तारे झुकाव देते हैं; बाध्य नहीं करते। आपका खुला हृदय ही सबसे सच्ची प्रेम-कथा लिखता है।"':'"The stars incline; they do not compel. Your open heart writes the truest love story of all."')+'</div>'
     +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
   document.getElementById('report').innerHTML=H;
