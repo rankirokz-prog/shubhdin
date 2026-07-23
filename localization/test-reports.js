@@ -87,6 +87,28 @@ function runReport(name) {
       if (!rep || rep.length < 200) problems.push(`${name}/${lang}: report empty (${rep.length} chars)`);
       const realAlerts = alerts.filter(a => !/hard-refresh|does not contain/i.test(a));
       if (realAlerts.length) problems.push(`${name}/${lang}: alert → ${realAlerts[0].slice(0, 80)}`);
+
+      // OUTPUT LANGUAGE SCAN — the check the native reviewer performs:
+      // in a non-English report, any Latin-script phrase not on the allowlist is a leak.
+      if (lang !== 'en' && rep) {
+        const text = rep.replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ')
+                        .replace(/&[a-z]+;/g, ' ');
+        const ALLOW = /^(DNA|PDF|D\d+|SAV|BAV|IST|AM|PM|Rs|OK|shubhdin(\.app)?|www|[A-Z]{1,3}\d*|v\d+|Q\d)$/;
+        // user-typed values (names, places) render as typed — not leaks
+        const USER = new Set(Object.values(DEFAULTS).flatMap(v => String(v).split(/[,\s]+/)));
+        const leaks = new Set();
+        for (const m of text.matchAll(/[A-Za-z][A-Za-z'’\-]{3,}(?:\s+[A-Za-z][A-Za-z'’\-]*)*/g)) {
+          const phrase = m[0].trim();
+          const words = phrase.split(/\s+/);
+          if (words.every(w => ALLOW.test(w) || USER.has(w))) continue;
+          const at = text.indexOf(phrase);
+          const ctx = text.slice(Math.max(0, at - 25), at + phrase.length + 25).replace(/\s+/g, ' ');
+          leaks.add(phrase.slice(0, 40) + '  ⟪' + ctx.slice(0, 90) + '⟫');
+        }
+        if (leaks.size) {
+          problems.push(`${name}/${lang}: ${leaks.size} ENGLISH LEAK(S) → ` + [...leaks].slice(0, 6).join(' | '));
+        }
+      }
     } catch (e) {
       problems.push(`${name}/${lang}: THREW ${e && (e.message || e.toString()) || 'non-Error: '+JSON.stringify(e)}`);
     }
