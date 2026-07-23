@@ -93,11 +93,11 @@ function runReport(name) {
       if (lang !== 'en' && rep) {
         const text = rep.replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ')
                         .replace(/&[a-z]+;/g, ' ');
-        const ALLOW = /^(DNA|PDF|D\d+|SAV|BAV|IST|AM|PM|Rs|OK|shubhdin(\.app)?|www|[A-Z]{1,3}\d*|v\d+|Q\d)$/;
+        const ALLOW = /^(DNA|PDF|D\d+|SAV|BAV|IST|AM|PM|Rs|OK|shubhdin(\.app)?|www|app|com|[A-Z]{1,3}\d*|v\d+|Q\d)$/;
         // user-typed values (names, places) render as typed — not leaks
         const USER = new Set(Object.values(DEFAULTS).flatMap(v => String(v).split(/[,\s]+/)));
         const leaks = new Set();
-        for (const m of text.matchAll(/[A-Za-z][A-Za-z'’\-]{3,}(?:\s+[A-Za-z][A-Za-z'’\-]*)*/g)) {
+        for (const m of text.matchAll(/[A-Za-z][A-Za-z'’\-]{2,}(?:\s+[A-Za-z][A-Za-z'’\-]*)*/g)) {
           const phrase = m[0].trim();
           const words = phrase.split(/\s+/);
           if (words.every(w => ALLOW.test(w) || USER.has(w))) continue;
