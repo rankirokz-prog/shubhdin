@@ -7,7 +7,7 @@
 
 const fs = require('fs');
 
-const ALL = ['love', 'marriage', 'career', 'muhurta', 'forecast', 'child', 'annual'];
+const ALL = ['love', 'marriage', 'career', 'muhurta', 'forecast', 'child', 'annual', 'kundli'];
 const LANGS = ['en', 'hi', 'te'];
 
 const DEFAULTS = {
@@ -60,7 +60,9 @@ function runReport(name) {
     global.window = win;
     const AST = require('./astronomy.min.js');
     win.Astronomy = AST; global.Astronomy = AST;
-    for (const f of ['./panchang-engine.js', './report-content.js', `./${name}-content.js`]) {
+    const files = ['./panchang-engine.js', './report-content.js'];
+    if (name !== 'kundli') files.push(`./${name}-content.js`);
+    for (const f of files) {
       delete require.cache[require.resolve(f)];
       require(f);
     }
@@ -106,7 +108,7 @@ function runReport(name) {
           leaks.add(phrase.slice(0, 40) + '  ⟪' + ctx.slice(0, 90) + '⟫');
         }
         if (leaks.size) {
-          problems.push(`${name}/${lang}: ${leaks.size} ENGLISH LEAK(S) → ` + [...leaks].slice(0, 6).join(' | '));
+          problems.push(`${name}/${lang}: ${leaks.size} ENGLISH LEAK(S) → ` + [...leaks].slice(0, 60).join('\n        '));
         }
       }
     } catch (e) {
