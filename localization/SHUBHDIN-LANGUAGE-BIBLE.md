@@ -1,7 +1,9 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 1.9 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 2.1 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v2.1 changelog:** §15 added — every report must pass `node test-reports.js`, which executes the real page script in every language. Data-level checks are insufficient.
+**v2.0 changelog:** §13 refined (mantra label follows report language) and §14.1 added — the audit must catch FIELD-REFERENCE ternaries, not just quoted literals.
 **v1.9 changelog:** §12 extended — engine ARRAY data indexed by [LANG] is a fourth source of text and a crash risk, not just a translation gap.
 **v1.8 changelog:** Fallback chain CHANGED to lang→en→hi (§1.4 rationale) and §14 stale-file detection added, after a stale content file rendered a Telugu report in Hindi.
 **v1.7 changelog:** §13 — mantras and their deity labels are never localized (native-reviewer ruling).
@@ -417,12 +419,18 @@ Mantras stay in **Sanskrit, in Devanagari**, in every language edition — their
 power is held to be in the exact sound, so transliterating or translating them
 is both religiously wrong and commercially wrong (users expect the Sanskrit).
 
-The **deity/planet label attached to a mantra** also stays Sanskrit-romanized
-and is *not* swapped for the localized planet name, because the label names the
-deity being invoked in that very mantra:
+The **mantra text** never changes. The **deity label** attached to it follows the
+report's language, using that language's name for the same deity (never a
+translation of the planet's astronomical name):
 
-- ✅ `Shukra — ॐ शुं शुक्राय नमः`  (correct in EN, HI, TE, and every future language)
-- ❌ `శుక్రుడు — ॐ शुं शुक्राय नमः` (label localized away from the mantra's deity)
+- EN: `Guru — ॐ बृं बृहस्पतये नमः` (Sanskrit-romanized, not "Jupiter")
+- HI: `गुरु — ॐ बृं बृहस्पतये नमः`
+- TE: `గురువు — ॐ बृं बृहस्पतये नमः`
+
+*(Revised in v2.0 on native-reviewer feedback: a Sanskrit-romanized label inside
+an otherwise fully-Telugu report reads as an untranslated leftover. The deity is
+the same; only its written form follows the reader.)* Implemented as
+`SD_UI.mantraLabel[planet]`.
 
 This applies to all nine graha mantras, Santan Gopal, and any stotra or
 sankalpa text added later. **Only the surrounding guidance prose is localized.**
@@ -450,5 +458,68 @@ silently and the reviewer scored the fallback, not the work.
 suspect deployment before translation. Ask for one screenshot of the cover; if
 the inline-sourced strings are correct but content-sourced strings are not, the
 content file is stale.
+
+---
+
+### 14.1 The audit must catch field-reference ternaries
+
+The English-leak audit originally matched only ternaries ending in a **quoted
+literal**: `LANG==='hi' ? 'हिंदी' : 'English'`. It missed the equally common
+**field-reference** form:
+
+```js
+(LANG==='hi' ? hint.focusHi : hint.focusEn)   // Telugu data exists but is never read
+```
+
+This shipped an Annual report whose month grid showed English hints while the
+rest of the page was Telugu — the `focusTe` values existed in the content file
+and were simply never accessed.
+
+**Both patterns must be swept:**
+```
+LANG==='hi'\s*\?\s*'[^']*'\s*:\s*'[^']*'                    # quoted literals
+LANG==='hi'\s*\?\s*[\w.\[\]]*(?:Hi|hi)\s*:\s*[\w.\[\]]*(?:En|en)   # field references
+```
+
+**Correct fix:** a language-suffix helper, never a two-way ternary —
+`hint[field + LangSuffix] || hint[field + 'En']`.
+
+**Exception:** a field-reference ternary is acceptable *only* as the final
+fallback inside an overlay expression, e.g.
+`SD_UI.remedy[k][LANG] || (LANG==='hi' ? r.hi : r.en)`.
+
+**And simulate the page's real access path.** My simulation read
+`monthHint[k].focusTe` directly and passed, while the page read `focusEn`.
+Simulations must replicate the page's actual helpers verbatim.
+
+---
+
+
+## 15. THE ONLY SUFFICIENT TEST: execute the real page
+
+Three separate bug classes reached the reviewer despite passing my checks:
+
+| Bug | Why data checks missed it |
+|---|---|
+| `CAREER_FIELDS[planet]['te']` undefined → crash | data existed; the *indexing* threw |
+| `hint.focusEn` read instead of `focusTe` | data existed; the *access path* was wrong |
+| `var U = SD_MUHURTA` shadowing the `U()` helper | helpers were correct in isolation; *scope* broke them |
+
+Each was invisible to a check that inspected content files or re-implemented the
+page's helpers. Only running the page's own code exposes them.
+
+**`test-reports.js` is mandatory before any handoff.** It:
+1. extracts each report's real inline + main `<script>`;
+2. runs it inside `with(window){…}` — reproducing browser global scope, so
+   shadowing and bare-global bugs behave exactly as in production;
+3. stubs `document`/`window`, fills the real input IDs;
+4. calls the page's own `setLang()`, `confirmStep()`, `generate()` for **every**
+   supported language;
+5. fails on any thrown error, any unexpected `alert()`, or an empty report.
+
+`node test-reports.js` runs all reports; `node test-reports.js career` runs one.
+**Adding a language means adding it to `LANGS` and re-running.** A syntax check,
+a data audit, and a hand-written simulation are all necessary but none is
+sufficient.
 
 ---
