@@ -196,9 +196,9 @@ function ist(d){return new Date(d.getTime()+5.5*3600000);}
 function fD(d){return ist(d).toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
 function fT(d){return ist(d).toISOString().slice(11,16);}
 function renderActs(){
-  var U=window.SD_MUHURTA; var g=document.getElementById('actGrid'); g.innerHTML='';
-  Object.keys(U.activities).forEach(function(k){
-    var a=U.activities[k];
+  var MU=window.SD_MUHURTA; var g=document.getElementById('actGrid'); g.innerHTML='';
+  Object.keys(MU.activities).forEach(function(k){
+    var a=MU.activities[k];
     var d=document.createElement('div');
     d.className='actbtn'+(k===ACT?' on':'');
     d.innerHTML='<span class="ic">'+a.icon+'</span>'+fld(a,'');
@@ -222,7 +222,7 @@ function confirmStep(){
   var bc=PE.getBirthChart(b,lat,lng); var moon=bc.grahas.find(function(x){return x.key==='moon';});
   CTX={b:b,lat:lat,lng:lng,name:document.getElementById('pname').value||'—',place:document.getElementById('bplace').value,
        from:document.getElementById('fromd').value,to:document.getElementById('tod').value};
-  var U=window.SD_MUHURTA; var a=U.activities[ACT];
+  var MU=window.SD_MUHURTA; var a=MU.activities[ACT];
   document.getElementById('confirmText').innerHTML=
     '<b>'+fld(a,'')+'</b> · '+CTX.from+' → '+CTX.to+'<br>'
     +'<b>'+U('muhurta.birthStar')+':</b> '+term('nakshatra',moon.nakshatra.en)+' · <b>'+U('muhurta.moonSignL')+':</b> '+term('rashi',moon.rashi.en)
@@ -230,13 +230,13 @@ function confirmStep(){
   document.getElementById('confirmBox').style.display='block';
 }
 function generate(){ try {
-  var PE=window.PanchangEngine, U=window.SD_MUHURTA;
+  var PE=window.PanchangEngine, MU=window.SD_MUHURTA;
   if(!PE||!PE.findMuhurta){alert('Engine not fully loaded. Please hard-refresh (Ctrl+Shift+R) so the latest panchang-engine.js loads.');return;}
-  if(!U){alert('Content file missing. Ensure muhurta-content.js is in the same folder.');return;}
+  if(!MU){alert('Content file missing. Ensure muhurta-content.js is in the same folder.');return;}
   if(!CTX){alert('Please click "Find My Best Dates" first.');return;}
   if(LANG!=='en'){var _p=(window.SD_MUHURTA&&SD_MUHURTA.labels&&SD_MUHURTA.labels.title)||null;
     if(!_p||!_p[LANG]){alert('The file muhurta-content.js on the server does not contain '+(LANG==='te'?'Telugu':LANG)+' text.\n\nUpload the latest muhurta-content.js and hard-refresh (Ctrl+Shift+R).');}}
-  var L=U.labels, a=U.activities[ACT], H='';
+  var L=MU.labels, a=MU.activities[ACT], H='';
   function pg(inner){H+='<div class="page">'+inner+'</div>';}
   var fromD=new Date(CTX.from+'T00:00:00Z'), toD=new Date(CTX.to+'T00:00:00Z');
   var res=PE.findMuhurta(ACT,CTX.b,CTX.lat,CTX.lng,fromD,toD,10);
