@@ -1,7 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 2.1 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 2.2 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v2.2 changelog:** §16 — the harness now scans the RENDERED OUTPUT for English, exactly as the native reviewer does. This closes the recurring-leak pattern at its root.
 **v2.1 changelog:** §15 added — every report must pass `node test-reports.js`, which executes the real page script in every language. Data-level checks are insufficient.
 **v2.0 changelog:** §13 refined (mantra label follows report language) and §14.1 added — the audit must catch FIELD-REFERENCE ternaries, not just quoted literals.
 **v1.9 changelog:** §12 extended — engine ARRAY data indexed by [LANG] is a fourth source of text and a crash risk, not just a translation gap.
@@ -521,5 +522,38 @@ page's helpers. Only running the page's own code exposes them.
 **Adding a language means adding it to `LANGS` and re-running.** A syntax check,
 a data audit, and a hand-written simulation are all necessary but none is
 sufficient.
+
+---
+
+
+## 16. OUTPUT-LANGUAGE SCAN (why leaks kept recurring, and the fix)
+
+Five rounds of native review each found English the previous fix missed. The
+root cause was structural: **every check I ran verified a *source* of text
+(content files, inline strings, engine data, scope), while the reviewer reads
+the *output*.** Each newly-discovered source class leaked once before being
+fixed: content → inline ternaries → title pairs → engine strings → engine
+arrays → field-reference ternaries → scope shadowing → engine reason templates
+→ date formatting → a role string the engine had never emitted in testing
+("D7 5th lord").
+
+The source list is open-ended. The output is not.
+
+**Rule: `test-reports.js` scans the generated HTML of every non-English render
+and FAILS on any Latin-script phrase** not on the allowlist (DNA, PDF, D-charts,
+AM/PM, brand, user-typed names/places). The scan prints surrounding context so
+single-word leaks are diagnosable. No report ships until the scan is clean in
+every language.
+
+Categories this forced into the terms table, now available to all languages:
+muhurta reason templates (10) · panchaka types (5) · paksha (2) · koota names
+(8) · parihara reason strings · localized short months + weekdays for date
+formatting · mantra deity labels · the Dhanishta spelling alias (engine
+spelling ≠ classical spelling — always take terms from engine output, never
+from memory).
+
+**Answer to "are we learning?":** each individual fix was real, but fixing
+sources one at a time could never terminate — only checking the artifact the
+reviewer checks could. That check now exists and runs before every handoff.
 
 ---
