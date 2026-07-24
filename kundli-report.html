@@ -192,6 +192,9 @@ g.SD_UI=U;})(typeof window!=='undefined'?window:global);
 
 
 
+
+
+
 <script src="report-content.js"></script>
 <script>
 
@@ -494,7 +497,7 @@ function generate(){
   dosHtml+='<div class="dos'+(ks.present?'':' ok')+'"><b>'+U('kundli.k050')+':</b> '+(ks.present?T(C.dosha.kaalSarpYes).replace('{type}',ks.type):T(C.dosha.kaalSarpNo))+'</div>';
   dosHtml+='<div class="dos'+(ss.active?'':' ok')+'"><b>'+U('kundli.k051')+':</b> '+(ss.active?T(C.dosha.sadeSatiActive).replace('{phase}',ss.currentPhase):T(C.dosha.sadeSatiNo))+'</div>';
   var ssT='<table><tr><th>'+U('kundli.k052')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>'
-    +ss.periods.map(function(x){return '<tr><td>'+term('ssPhase',x.phase)+' ('+T(x)+')</td><td>'+fD(x.start)+'</td><td>'+fD(x.end)+'</td></tr>';}).join('')+'</table>';
+    +ss.periods.map(function(x){return '<tr><td>'+term('ssPhase',x.phase)+' ('+term('rashi',x.en)+')</td><td>'+fD(x.start)+'</td><td>'+fD(x.end)+'</td></tr>';}).join('')+'</table>';
   pg('<h2 class="sec">\u2728 '+T(L.yogasFound)+'</h2>'+yogHtml
     +'<h2 class="sec">\u2696\uFE0F '+T(L.doshas)+'</h2>'+dosHtml
     +'<h2 class="sec">\uD83E\uDE90 '+T(L.sadeSati)+'</h2>'+ssT);
