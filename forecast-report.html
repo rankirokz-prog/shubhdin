@@ -173,9 +173,13 @@ U.kpanch={sunriseSet:{en:"Sunrise / Sunset",hi:"सूर्योदय / स�
 U.arch={sun:{te:"రాజ తేజం"},moon:{te:"పోషక ప్రవాహం"},mars:{te:"యోధ శక్తి"},mercury:{te:"చురుకైన బుద్ధి"},jupiter:{te:"గురు అనుగ్రహం"},venus:{te:"ప్రేమ కళాకారుడు"},saturn:{te:"కాల శిల్పి"},rahu:{te:"ఛాయా ఆకాంక్ష"},ketu:{te:"మోక్ష బాణం"}};U.klbl={mulankLbl:{en:"Mulank / Driver (born on {d})",hi:"मूलांक (जन्म दिनांक {d})",te:"మూలాంకం (పుట్టిన తేదీ {d})"},bhagyankLbl:{en:"Bhagyank / Destiny (full date)",hi:"भाग्यांक (पूर्ण जन्मतिथि)",te:"భాగ్యాంకం (పూర్తి పుట్టిన తేదీ)"},tithiL:{en:"Tithi",hi:"तिथि",te:"తిథి"},masaL:{en:"Amanta / Purnimanta month",hi:"अमांत / पूर्णिमांत मास",te:"అమాంత / పూర్ణిమాంత మాసం"}};
 U.clab={te:{sun:"సూర్య",moon:"చంద్ర",mars:"కుజ",mercury:"బుధ",jupiter:"గురు",venus:"శుక్ర",saturn:"శని",lagna:"లగ్న"}};U.rabbr={te:["మే","వృ","మి","క","సిం","కన్","తు","వృశ్","ధ","మక","కుం","మీ"]};U.transitLbl={jupiter:{en:"Jupiter Transit",hi:"गुरु गोचर",te:"గురు గోచారం"},saturn:{en:"Saturn Transit",hi:"शनि गोचर",te:"శని గోచారం"},rahu:{en:"Rahu Transit",hi:"राहु गोचर",te:"రాహు గోచారం"}};
 U.chogh={"Char":{en:"Char",hi:"चर",te:"చర"},"Labh":{en:"Labh",hi:"लाभ",te:"లాభ"},"Amrit":{en:"Amrit",hi:"अमृत",te:"అమృత"},"Kaal":{en:"Kaal",hi:"काल",te:"కాల"},"Shubh":{en:"Shubh",hi:"शुभ",te:"శుభ"},"Rog":{en:"Rog",hi:"रोग",te:"రోగ"},"Udveg":{en:"Udveg",hi:"उद्वेग",te:"ఉద్వేగ"}};
+U.brand={name:{en:"Shubh Din",hi:"शुभ दिन",te:"శుభ్ దిన్"}};
 g.SD_UI=U;})(typeof window!=='undefined'?window:global);
 
 </script><!--/sd-ui-inline-->
+
+
+
 
 
 
@@ -260,7 +264,7 @@ function generate(){ try {
   // COVER
   pg('<div class="cover" style="min-height:900px;"><div style="font-size:50px;color:var(--gold);">🕉️</div>'
     +'<h1 style="font-size:31px;margin:10px 0;">'+U('forecast.titleCover')+'<br><span style="font-size:18px;color:var(--soft);">'+CTX.startYear+' – '+(CTX.startYear+9)+'</span></h1>'
-    +'<div class="sub" style="font-size:14px;">'+U('forecast.subtitle')+' · शुभ दिन</div>'
+    +'<div class="sub" style="font-size:14px;">'+U('forecast.subtitle')+' · '+U('brand.name')+'</div>'
     +'<div style="font-size:25px;color:#8B2B33;font-weight:700;margin:22px 0 2px;">'+CTX.name+'</div>'
     +'<div class="sub">'+CTX.startYear+' – '+(CTX.startYear+9)+' &nbsp;·&nbsp; '+U('forecast.moonSign')+': '+term('rashi',fc.moonRashi.en)+'</div>'
     +(fc.currentDasha?'<div class="idcard" style="margin-top:24px;min-width:300px;"><div class="t">'+T(L.period)+'</div><div class="v">'+gname2(fc.currentDasha.maha)+' – '+gname2(fc.currentDasha.antar)+'</div></div>':'')+'</div>');
@@ -366,7 +370,7 @@ function generate(){ try {
   // FOOTER
   pg('<h2 class="sec">🙏 '+U('forecast.closing')+'</h2>'
     +'<div class="prose">'+U('forecast.closingText')+'</div>'
-    +'<div class="foot">'+T(L.disclaimer)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
+    +'<div class="foot">'+T(L.disclaimer)+'<br><b>'+U('brand.name')+' · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
   document.getElementById('report').innerHTML=H;
   var rep=document.getElementById('report');
   rep.className='lang-'+LANG;
