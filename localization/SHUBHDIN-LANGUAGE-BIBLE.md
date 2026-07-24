@@ -1,7 +1,9 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 2.2 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 2.4 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v2.4 changelog:** Added §9.2 Kannada Constitution — language 4.
+**v2.3 changelog:** §17 added — never text-extract JS string literals containing \\uXXXX escapes; and the free Kundli Hindi still needs the full Bible rewrite.
 **v2.2 changelog:** §16 — the harness now scans the RENDERED OUTPUT for English, exactly as the native reviewer does. This closes the recurring-leak pattern at its root.
 **v2.1 changelog:** §15 added — every report must pass `node test-reports.js`, which executes the real page script in every language. Data-level checks are insufficient.
 **v2.0 changelog:** §13 refined (mantra label follows report language) and §14.1 added — the audit must catch FIELD-REFERENCE ternaries, not just quoted literals.
@@ -376,6 +378,69 @@ Telugu also breaks under per-character fallback — same law applies.
 
 ---
 
+## 9.2 KANNADA CONSTITUTION (ಕನ್ನಡ)
+
+### K1. The Kannada trap: ಗ್ರಾಂಥಿಕ vs ಆಡುಮಾತು
+
+Kannada has a literary/written register (ಗ್ರಾಂಥಿಕ) and the spoken register
+(ಆಡುಮಾತು / ವ್ಯಾವಹಾರಿಕ). Written Kannada in newspapers and books is *already*
+fairly formal, so the trap here is subtler than in Hindi or Telugu: it is not
+archaic verb forms so much as **piling on Sanskrit tatsama words where a native
+Kannada word exists**. All Shubh Din prose uses everyday written Kannada.
+
+| ❌ Avoid (over-Sanskritised / archaic) | ✅ Use (everyday Kannada) |
+|---|---|
+| ಹೃದಯ (in prose) | ಮನಸ್ಸು / ಎದೆ |
+| ಪ್ರಣಯ | ಪ್ರೀತಿ |
+| ಧನ (in prose) | ಹಣ |
+| ವಿವಾಹ (in prose) | ಮದುವೆ |
+| ಸಂಭಾಷಣೆ | ಮಾತು / ಮಾತುಕತೆ |
+| ಗೃಹ | ಮನೆ |
+| ಪುತ್ರ / ಸಂತತಿ | ಮಕ್ಕಳು |
+| ಕಾರ್ಯ | ಕೆಲಸ |
+| ಇರ್ಪುದು / ಗೈಯ್ಯುವುದು / ಒಪ್ಪುವುದು (archaic) | ಇದೆ / ಮಾಡುವುದು |
+| ಆಗಿರ್ಪುದು | ಆಗಿದೆ |
+| ಅಭಿಲಾಷೆ | ಆಸೆ |
+| ಶ್ರವಣ (as "listening") | ಕೇಳುವುದು |
+
+**Rule of thumb:** if it reads like a textbook or a temple inscription rather
+than a well-written Kannada newspaper feature, rewrite it.
+
+### K2. Preferred everyday vocabulary
+
+ಪ್ರೀತಿ · ಬಂಧ · ಸಂಬಂಧ · ನಂಬಿಕೆ · ಮನಸ್ಸು · ಮಾತು · ಜೊತೆ · ಬದುಕು · ಸಂತೋಷ ·
+ಅರ್ಥ ಮಾಡಿಕೊಳ್ಳುವುದು · ಭರವಸೆ · ತಾಳ್ಮೆ · ಒಳ್ಳೆಯ ಸಮಯ · ಅದೃಷ್ಟ · ಶಕ್ತಿ · ಬೆಳವಣಿಗೆ
+
+### K3. Keep in Sanskrit (astrology register — premium in Kannada too)
+
+ಜಾತಕ · ಲಗ್ನ · ದಶಾ · ಅಂತರ್ದಶಾ · ಗೋಚಾರ · ಭಾವ · ರಾಶಿ · ನಕ್ಷತ್ರ · ಯೋಗ · ದೋಷ ·
+ಮುಹೂರ್ತ · ತಿಥಿ · ವಾರ · ಪಂಚಾಂಗ · ವರ್ಷಫಲ · ನವಾಂಶ · ಸಪ್ತಾಂಶ · ದಶಾಂಶ ·
+ಅಷ್ಟಕವರ್ಗ · ಗುಣ ಮಿಲನ · ತಾರಾಬಲ · ಚಂದ್ರಬಲ
+
+Planets: ಸೂರ್ಯ · ಚಂದ್ರ · ಕುಜ · ಬುಧ · ಗುರು · ಶುಕ್ರ · ಶನಿ · ರಾಹು · ಕೇತು
+
+*Note:* Kannada speakers say **ಜಾತಕ** for the birth chart (as in Telugu), not
+ಕುಂಡಲಿ — prefer ಜಾತಕ in prose, ಜಾತಕ ಚಕ್ರ for the diagram.
+
+### K4. Keep in English
+
+DNA · PDF · Score · ಪ್ರೈವೇಟ್ · ಸೆಕ್ಟರ್ · ಪ್ರಮೋಷನ್ · ಸರ್ಟಿಫಿಕೇಶನ್ ·
+ಕಮಿಟ್‌ಮೆಂಟ್ · ರೊಮ್ಯಾನ್ಸ್ — young Kannada speakers use these daily.
+
+### K5. Few-shot examples
+
+- ❌ ನಿಮ್ಮ ಜಾತಕದಲ್ಲಿ ಪ್ರಣಯ ಯೋಗಂಗಳು ಇರ್ಪುವು → ✅ **ನಿಮ್ಮ ಜಾತಕದಲ್ಲಿ ಪ್ರೀತಿಗೆ ಒಳ್ಳೆಯ ಯೋಗಗಳಿವೆ.**
+- ❌ ನೀವು ಸುಂದರವಾಗಿ ಸಂಭಾಷಿಸುವಿರಿ → ✅ **ನಿಮ್ಮ ಮನಸ್ಸಿನಲ್ಲಿ ಇರುವುದನ್ನು ಸ್ಪಷ್ಟವಾಗಿ ಹೇಳಬಲ್ಲಿರಿ.**
+- ❌ ಪ್ರಣಯ ರಸಾಯನ → ✅ **ನಿಮ್ಮ ಪ್ರೀತಿಯ ಸ್ವಭಾವ**
+- ❌ ವಾಯುವಿನಂತೆ ಪ್ರೇಮಿಸುವಿರಿ → ✅ **ನಿಮ್ಮ ಪ್ರೀತಿ ಒಳ್ಳೆಯ ಮಾತುಕತೆಯಿಂದ ಶುರುವಾಗುತ್ತದೆ.**
+
+### K6. Typography
+
+Load `Noto Serif Kannada`; apply §10.2's single-font rule with `lang-kn`.
+Kannada breaks under per-character fallback exactly like Devanagari and Telugu.
+
+---
+
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
 *(To be authored per-language before that language's generation begins — same
@@ -555,5 +620,38 @@ from memory).
 **Answer to "are we learning?":** each individual fix was real, but fixing
 sources one at a time could never terminate — only checking the artifact the
 reviewer checks could. That check now exists and runs before every handoff.
+
+---
+
+
+## 17. NEVER TEXT-EXTRACT JS ESCAPE SEQUENCES
+
+Auto-extracting the Kundli page's 106 ternaries by **regex over the file text**
+captured Hindi that was stored as JavaScript escapes (`\u0906\u092A…`) as
+*literal characters*. Re-emitting them through an escaper that doubles
+backslashes produced `\\u0906`, which renders on screen as the literal text
+`\u0906`. 1070 strings shipped corrupted.
+
+**Rules:**
+1. To harvest strings from a page, **evaluate** the file (or decode escapes
+   explicitly) — never treat `\uXXXX` as content.
+2. After any generated-file write, grep for `\\u[0-9a-f]{4}`; a non-zero count
+   is always a bug.
+3. `test-reports.js` counts backslash-u sequences in rendered output — but the
+   scan only catches Latin leaks, so a corrupted **Devanagari** string passes the
+   language check. Grep the artifact as well as scanning the render.
+
+## 18. FREE KUNDLI HINDI: STILL PRE-BIBLE
+
+The seven paid reports had their Hindi **rewritten** under this Bible. The free
+Kundli's Hindi is the *original* literary prose and was only ever extended, never
+rewritten. A vocabulary scan found 37 literary/over-Sanskritised terms
+(प्रणय ×12, मर्यादित ×5, परिष्कृत ×5, आजीवन ×4, सुदृढ़ ×3, स्व-आसन, शय्या,
+द्विशुभ, चतुर्थांश …). Terminology also drifted (glossary headword पाद but body
+पद — now consistent).
+
+**This is the acquisition funnel and must read like the paid reports.**
+Workflow: add keys to `report-strings.hi.json` → `node apply-kundli-hi.js` →
+`node embed-ui.js all` → `node test-reports.js kundli`.
 
 ---
