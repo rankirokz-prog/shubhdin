@@ -122,9 +122,9 @@ const targets = process.argv.slice(2).length ? process.argv.slice(2) : ALL;
 let all = [];
 for (const t of targets) {
   const p = runReport(t);
-  console.log(p.length === 0 ? `✓ ${t.padEnd(9)} en/hi/te all generate cleanly` : `✗ ${t}`);
+  console.log(p.length === 0 ? `✓ ${t.padEnd(9)} ${LANGS.join('/')} all generate cleanly` : `✗ ${t}`);
   p.forEach(x => console.log('    ' + x));
   all = all.concat(p);
 }
-console.log(all.length === 0 ? '\n✓✓✓ ALL REPORTS EXECUTE CLEANLY IN EN + हिन्दी + తెలుగు' : `\n✗ ${all.length} problem(s)`);
+console.log(all.length === 0 ? '\n✓✓✓ ALL REPORTS EXECUTE CLEANLY IN ' + LANGS.join(' + ').toUpperCase() : `\n✗ ${all.length} problem(s)`);
 process.exit(all.length ? 1 : 0);
