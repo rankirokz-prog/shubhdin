@@ -191,9 +191,11 @@ U.kpanch={sunriseSet:{en:"Sunrise / Sunset",hi:"सूर्योदय / स�
 U.arch={sun:{te:"రాజ తేజం"},moon:{te:"పోషక ప్రవాహం"},mars:{te:"యోధ శక్తి"},mercury:{te:"చురుకైన బుద్ధి"},jupiter:{te:"గురు అనుగ్రహం"},venus:{te:"ప్రేమ కళాకారుడు"},saturn:{te:"కాల శిల్పి"},rahu:{te:"ఛాయా ఆకాంక్ష"},ketu:{te:"మోక్ష బాణం"}};U.klbl={mulankLbl:{en:"Mulank / Driver (born on {d})",hi:"मूलांक (जन्म दिनांक {d})",te:"మూలాంకం (పుట్టిన తేదీ {d})"},bhagyankLbl:{en:"Bhagyank / Destiny (full date)",hi:"भाग्यांक (पूर्ण जन्मतिथि)",te:"భాగ్యాంకం (పూర్తి పుట్టిన తేదీ)"},tithiL:{en:"Tithi",hi:"तिथि",te:"తిథి"},masaL:{en:"Amanta / Purnimanta month",hi:"अमांत / पूर्णिमांत मास",te:"అమాంత / పూర్ణిమాంత మాసం"}};
 U.clab={te:{sun:"సూర్య",moon:"చంద్ర",mars:"కుజ",mercury:"బుధ",jupiter:"గురు",venus:"శుక్ర",saturn:"శని",lagna:"లగ్న"}};U.rabbr={te:["మే","వృ","మి","క","సిం","కన్","తు","వృశ్","ధ","మక","కుం","మీ"]};U.transitLbl={jupiter:{en:"Jupiter Transit",hi:"गुरु गोचर",te:"గురు గోచారం"},saturn:{en:"Saturn Transit",hi:"शनि गोचर",te:"శని గోచారం"},rahu:{en:"Rahu Transit",hi:"राहु गोचर",te:"రాహు గోచారం"}};
 U.chogh={"Char":{en:"Char",hi:"चर",te:"చర"},"Labh":{en:"Labh",hi:"लाभ",te:"లాభ"},"Amrit":{en:"Amrit",hi:"अमृत",te:"అమృత"},"Kaal":{en:"Kaal",hi:"काल",te:"కాల"},"Shubh":{en:"Shubh",hi:"शुभ",te:"శుభ"},"Rog":{en:"Rog",hi:"रोग",te:"రోగ"},"Udveg":{en:"Udveg",hi:"उद्वेग",te:"ఉద్వేగ"}};
+U.brand={name:{en:"Shubh Din",hi:"शुभ दिन",te:"శుభ్ దిన్"}};
 g.SD_UI=U;})(typeof window!=='undefined'?window:global);
 
 </script><!--/sd-ui-inline-->
+
 
 
 
@@ -311,7 +313,7 @@ function southSVG(lagnaR,place,title){
     }
   }
   s+='<text x="'+(W/2)+'" y="'+(W/2-6)+'" text-anchor="middle" font-size="14" fill="#8B2B33" font-weight="700" font-family="serif">'+title+'</text>';
-  s+='<text x="'+(W/2)+'" y="'+(W/2+14)+'" text-anchor="middle" font-size="11" fill="#8B5A2B" font-family="serif">शुभ दिन</text></svg>';
+  s+='<text x="'+(W/2)+'" y="'+(W/2+14)+'" text-anchor="middle" font-size="11" fill="#8B5A2B">'+U('brand.name')+'</text></svg>';
   return s;
 }
 function generate(){
@@ -734,7 +736,7 @@ function generate(){
   var remKeys=['sun','moon','mars','mercury','jupiter','venus','saturn','rahu','ketu'];
   var remH=remKeys.map(function(k){var r=C.remedy[k];return '<div class="rem"><div><b>'+(U('mantraLabel.'+k)||r.name)+'</b><br><span class="m">'+r.mantra+'</span></div><div>'+((window.SD_UI&&SD_UI.remedy&&SD_UI.remedy[k]&&SD_UI.remedy[k][LANG])||T(r))+'</div></div>';}).join('');
   pg('<h2 class="sec">\uD83D\uDE4F '+T(L.remedies)+'</h2><div class="prose" style="color:#5A8B2B;">'+T(L.remedyNote)+'</div>'+remH
-    +'<div class="foot">'+T(L.verify)+'<br><b>शुभ दिन · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'})+'</div>');
+    +'<div class="foot">'+T(L.verify)+'<br><b>'+U('brand.name')+' · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'})+'</div>');
   document.getElementById('report').innerHTML=H;
   var rep=document.getElementById('report');
   rep.className='lang-'+LANG;
