@@ -536,7 +536,7 @@ relies heavily on the pulli (்) — ensure clusters (க்ஷ · ற்ற ·
 - **Use மனம் / மனதின் consistently throughout — not மனசு.** For a premium report
   மனம் reads elegant and neutral; mixing மனம் and மனசு within one report looks
   inconsistent. Oblique stem is மனத்-: மனம் · மனதின் · மனதில் · மனதை · மனதோடு ·
-  மனமான · மனமே. (Supersedes the earlier headings-only split.)
+  மனமான · மனமே. (Supersedes the earlier headings-only split.) **Plural is மனங்கள், never மனம்கள்.**
 - **Avoid "நீங்கள் நினைப்பதை விட அரிது"** (translated) → "இது பலர் நினைப்பதை விட
   அரிதான குணம்" / "எல்லோரிடமும் காணப்படும் குணமல்ல".
 
