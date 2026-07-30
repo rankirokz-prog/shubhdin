@@ -533,8 +533,10 @@ relies heavily on the pulli (்) — ensure clusters (க்ஷ · ற்ற ·
   (e.g. காற்றைப் போல இலகுவாக நீங்கள் காதலிக்கிறீர்கள்).
 - **பாய்/பாய்கிறது ("flows") is banned for abstract nouns** (love, attraction),
   everywhere — not just headlines → வெளிப்படுகின்றன · மலர்கின்றன · இருக்கிறது.
-- **மனம் / மனசு register split:** headings and labels use the refined **மனம்**
-  (உங்கள் மனதின் சுபாவம்); warm body prose keeps the conversational **மனசு**.
+- **Use மனம் / மனதின் consistently throughout — not மனசு.** For a premium report
+  மனம் reads elegant and neutral; mixing மனம் and மனசு within one report looks
+  inconsistent. Oblique stem is மனத்-: மனம் · மனதின் · மனதில் · மனதை · மனதோடு ·
+  மனமான · மனமே. (Supersedes the earlier headings-only split.)
 - **Avoid "நீங்கள் நினைப்பதை விட அரிது"** (translated) → "இது பலர் நினைப்பதை விட
   அரிதான குணம்" / "எல்லோரிடமும் காணப்படும் குணமல்ல".
 
