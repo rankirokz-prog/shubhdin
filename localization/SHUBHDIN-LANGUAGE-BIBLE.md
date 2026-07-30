@@ -2,6 +2,7 @@
 ### The localization constitution for all Shubh Din content
 **Version 2.4 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
+**v2.5 changelog:** Added §9.3 Tamil Constitution — language 5. Native Tamil review still required before go-live (Ram is not a native Tamil speaker).
 **v2.4 changelog:** Added §9.2 Kannada Constitution — language 4.
 **v2.3 changelog:** §17 added — never text-extract JS string literals containing \\uXXXX escapes; and the free Kundli Hindi still needs the full Bible rewrite.
 **v2.2 changelog:** §16 — the harness now scans the RENDERED OUTPUT for English, exactly as the native reviewer does. This closes the recurring-leak pattern at its root.
@@ -438,6 +439,95 @@ DNA · PDF · Score · ಪ್ರೈವೇಟ್ · ಸೆಕ್ಟರ್ · ಪ�
 
 Load `Noto Serif Kannada`; apply §10.2's single-font rule with `lang-kn`.
 Kannada breaks under per-character fallback exactly like Devanagari and Telugu.
+
+---
+
+## 9.3 TAMIL CONSTITUTION (தமிழ்)
+
+**Reviewer: Ram is NOT a native Tamil speaker. The harness zero-leak pass is
+necessary but not sufficient — a native Tamil eye must review rendered PDFs
+before go-live. Flag every Tamil report "harness-clean, awaiting native review."**
+
+### T1. The Tamil trap: செந்தமிழ் vs நடைமுறைத் தமிழ்
+
+Tamil has the widest literary/spoken gap of the four languages. High literary
+Tamil (செந்தமிழ்) piles on archaic verb endings (உளது · ஆகும் · ஆகியுள்ளது) and
+Sanskrit tatsama, while Tamil also has a proud native-word tradition, so
+over-Sanskritising reads as alien. All Shubh Din prose uses everyday written
+Tamil — the warm, clear register of a good Ananda Vikatan / Dinamani feature.
+
+| ❌ Avoid (over-literary / over-Sanskritised) | ✅ Use (everyday Tamil) |
+|---|---|
+| இதயம் (in prose) | மனசு / மனம் |
+| பிரணயம் / காதல் ரசாயனம் | காதல் / அன்பு |
+| தனம் (in prose for money) | பணம் |
+| விவாகம் (in prose) | திருமணம் / கல்யாணம் |
+| சம்பாஷணை | பேச்சு / உரையாடல் |
+| கிருஹம் / மனை (archaic) | வீடு |
+| புத்திரன் / சந்ததி | குழந்தைகள் / பிள்ளைகள் |
+| கார்யம் | வேலை |
+| உளது / ஆகியுள்ளது (piled archaic) | இருக்கிறது |
+| அபிலாஷை | ஆசை |
+
+**Rule of thumb:** if it reads like a palm-leaf grantha or a government gazette
+rather than a warm magazine feature, rewrite it.
+
+### T2. Preferred everyday vocabulary
+
+காதல் · அன்பு · பிணைப்பு · உறவு · நம்பிக்கை · மனசு · பேச்சு · உடன் · வாழ்க்கை ·
+சந்தோஷம் · புரிந்துகொள்வது · பொறுமை · நல்ல நேரம் · அதிர்ஷ்டம் · ஆற்றல் · வளர்ச்சி
+
+### T3. Keep in Tamil astrology register (Sanskrit-derived but naturalised)
+
+ஜாதகம் · லக்னம் · தசை · அந்தர்தசை · கோசாரம் · பாவம் / ஸ்தானம் · ராசி · நட்சத்திரம் ·
+யோகம் · தோஷம் · முகூர்த்தம் · திதி · வாரம் · பஞ்சாங்கம் · வர்ஷபலன் · நவாம்சம் ·
+அஷ்டகவர்க்கம் · பொருத்தம் / குண மிலனம் · தாராபலம் · சந்திரபலம்
+
+**Planets — use the common Tamil names, NOT Sanskrit குஜ/மங்கள்:**
+சூரியன் · சந்திரன் · செவ்வாய் · புதன் · குரு · சுக்கிரன் · சனி · ராகு · கேது
+
+**CRITICAL — Tamil nakshatra names are traditionally DIFFERENT, not Sanskrit
+transliterations.** Use the Tamil names:
+அசுவினி · பரணி · கார்த்திகை · ரோகிணி · மிருகசீரிடம் · திருவாதிரை · புனர்பூசம் ·
+பூசம் · ஆயில்யம் · மகம் · பூரம் · உத்திரம் · அஸ்தம் · சித்திரை · சுவாதி · விசாகம் ·
+அனுஷம் · கேட்டை · மூலம் · பூராடம் · உத்திராடம் · திருவோணம் · அவிட்டம் · சதயம் ·
+பூரட்டாதி · உத்திரட்டாதி · ரேவதி
+
+**Weekdays — native Tamil:** ஞாயிறு · திங்கள் · செவ்வாய் · புதன் · வியாழன் · வெள்ளி · சனி
+
+*Note:* Tamil uses **ஜாதகம்** for the birth chart, **ராசி** for the sign,
+**ஜாதக சக்கரம்** for the diagram. For marriage matching, **பொருத்தம்** is the
+everyday Tamil word; the app's 8-koota guna-milan is shown as குண மிலனம் / பொருத்தம்.
+
+### T4. Keep in English
+
+DNA · PDF · Score · ப்ரைவேட் · செக்டர் · ப்ரமோஷன் · சர்டிஃபிகேஷன் · கமிட்மென்ட் ·
+ரொமான்ஸ் — young Tamil speakers use these daily.
+
+### T5. Few-shot examples
+
+- ❌ உங்கள் ஜாதகத்தில் பிரணய யோகங்கள் உள்ளன → ✅ **உங்கள் ஜாதகத்தில் காதலுக்கு நல்ல யோகங்கள் இருக்கின்றன.**
+- ❌ நீங்கள் அழகாக சம்பாஷிப்பீர்கள் → ✅ **மனசில் இருப்பதை தெளிவாகச் சொல்லத் தெரிந்தவர் நீங்கள்.**
+- ❌ காதல் ரசாயனம் → ✅ **உங்கள் காதலின் சுபாவம்**
+- ❌ வாயுவைப் போல் பிரேமிப்பீர்கள் → ✅ **உங்கள் காதல் நல்ல புரிதலோடு தொடங்கும்.**
+
+### T6. Typography
+
+Load `Noto Serif Tamil`; apply §10.2's single-font rule with `lang-ta`. Tamil
+breaks under Latin-first per-character fallback like the other Indic scripts, and
+relies heavily on the pulli (்) — ensure clusters (க்ஷ · ற்ற · ஞ்ச) render.
+
+### T7. Review-round rulings (native Love pass)
+
+- **Do not overuse அரவணைப்பு.** It is a distinctive/poetic word, so repetition
+  across a report reads as "trying to sound poetic." Rotate with everyday
+  alternatives: அன்பான · பாசமுள்ள · அக்கறையுள்ள · மனதைப் புரிந்துகொள்ளும் · and the
+  verb அரவணைக்கும் (which is fine). Common words like அன்பு repeat invisibly.
+- **Avoid காதல் பாய்கிறது** ("love flows") — forced. Prefer காதல் இயல்பாக மலர்கிறது,
+  or காதலுக்கான நல்ல யோகங்கள் உள்ளன.
+- **Avoid literary நிலையாக(வும்)** in prose → use உறுதியாகவும் / நிலைத்ததாகவும்.
+- Confirmed native and not to be "corrected": காதல் மொழி · காதல் சுபாவம் · the
+  closing quote register.
 
 ---
 
