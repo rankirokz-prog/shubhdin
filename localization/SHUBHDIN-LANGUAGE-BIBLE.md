@@ -528,6 +528,15 @@ relies heavily on the pulli (்) — ensure clusters (க்ஷ · ற்ற ·
 - **Avoid literary நிலையாக(வும்)** in prose → use உறுதியாகவும் / நிலைத்ததாகவும்.
 - Confirmed native and not to be "corrected": காதல் மொழி · காதல் சுபாவம் · the
   closing quote register.
+- **Avoid the "X நேசிப்பது போல் நேசிக்கிறீர்கள்" calque** ("you love the way X
+  loves") — it is English grammar. Use "X போல [adverbs] காதலிக்கிறீர்கள்" instead
+  (e.g. காற்றைப் போல இலகுவாக நீங்கள் காதலிக்கிறீர்கள்).
+- **பாய்/பாய்கிறது ("flows") is banned for abstract nouns** (love, attraction),
+  everywhere — not just headlines → வெளிப்படுகின்றன · மலர்கின்றன · இருக்கிறது.
+- **மனம் / மனசு register split:** headings and labels use the refined **மனம்**
+  (உங்கள் மனதின் சுபாவம்); warm body prose keeps the conversational **மனசு**.
+- **Avoid "நீங்கள் நினைப்பதை விட அரிது"** (translated) → "இது பலர் நினைப்பதை விட
+  அரிதான குணம்" / "எல்லோரிடமும் காணப்படும் குணமல்ல".
 
 ---
 
