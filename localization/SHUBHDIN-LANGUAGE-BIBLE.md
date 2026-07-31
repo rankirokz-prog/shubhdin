@@ -539,6 +539,10 @@ relies heavily on the pulli (்) — ensure clusters (க்ஷ · ற்ற ·
   மனமான · மனமே. (Supersedes the earlier headings-only split.) **Plural is மனங்கள், never மனம்கள்.**
 - **Avoid "நீங்கள் நினைப்பதை விட அரிது"** (translated) → "இது பலர் நினைப்பதை விட
   அரிதான குணம்" / "எல்லோரிடமும் காணப்படும் குணமல்ல".
+- **Avoid முன்செல்/முன்செல்வதற்கு** (calque of "move forward / proceed") →
+  முன்னேறு · முன்னேறுவதற்கு முன் · திருமண முடிவை எடுப்பதற்கு முன்.
+- **Method/verify lines:** prefer "இவை அனைத்தும் கணிக்கப்பட்ட தரவுகளின் அடிப்படையில்
+  வழங்கப்படுகின்றன" over the blunt "எதுவும் கற்பனையல்ல".
 
 ---
 
