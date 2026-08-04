@@ -35,7 +35,8 @@ button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:n
 .cover .name{font-size:30px;color:#8B2B33;margin:26px 0 6px;font-weight:700;}
 .cover .bd{font-size:16px;color:var(--soft);}
 .tagfree{margin-top:34px;font-size:14px;color:var(--gold);border-top:1px solid var(--gold2);border-bottom:1px solid var(--gold2);padding:8px 18px;}
-h2.sec{font-size:22px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 16px;}
+h2.sec{font-size:22px;color:var(--saffron);border-bottom:2px solid var(--gold2);padding-bottom:6px;margin:6px 0 22px;}
+.prhead{display:block;margin-bottom:5px;}
 .dyk{background:#FFF9EE;border:1px solid var(--gold2);border-left:5px solid var(--saffron);border-radius:8px;padding:10px 14px;margin:12px 0;font-size:13.5px;line-height:1.7;}
 .dyk b{color:var(--saffron);}
 table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0 18px;}
@@ -602,8 +603,8 @@ function generate(){
         var rel=(MAITRI_T[md.lord]&&MAITRI_T[md.lord][pr.lord]!==undefined)?MAITRI_T[md.lord][pr.lord]:1;
         if(pr.lord===md.lord)rel=2;
         return '<div style="border-bottom:1px dashed #E4D3AE;padding:7px 2px;font-size:13.5px;line-height:1.65;">'
-          +'<b>'+gname(md.lord)+' – '+gname(a.lord)+' – '+gname(pr.lord)+'</b> '
-          +'<span style="font-size:11.5px;color:#8B5A2B;">('+fD(pr.start)+' → '+fD(pr.end)+')</span><br>'
+          +'<span class="prhead"><b>'+gname(md.lord)+' – '+gname(a.lord)+' – '+gname(pr.lord)+'</b> '
+          +'<span style="font-size:11.5px;color:#8B5A2B;">('+fD(pr.start)+' → '+fD(pr.end)+')</span></span>'
           +U('kundli.k065')+T(C.prFlavor[pr.lord])+'. '
           +T(C.prTone[String(rel)])+'. '
           +U('kundli.k066')+T(C.prGuide[pr.lord])+'.'
