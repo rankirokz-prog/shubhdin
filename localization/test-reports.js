@@ -8,7 +8,7 @@
 const fs = require('fs');
 
 const ALL = ['love', 'marriage', 'career', 'muhurta', 'forecast', 'child', 'annual', 'kundli'];
-const LANGS = ['en', 'hi', 'te', 'kn'];
+const LANGS = ['en', 'hi', 'te', 'kn', 'ta'];
 
 const DEFAULTS = {
   pname: 'Test', bdate: '1996-12-06', btime: '15:47',
