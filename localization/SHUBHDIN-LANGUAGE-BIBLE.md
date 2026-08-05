@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 2.8 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 2.9 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v2.9 changelog:** Added §9.5 Marathi Constitution — language 7, first to share a script with Hindi. Introduces the Hindi-bleed trap, mandatory scan-mr.js + fallback-check.js, the कुंडली-for-branding / पत्रिका-in-report split, and the लग्न marriage/ascendant ambiguity. fallback-check.js is now a REQUIRED step for every language, not just Marathi.
 **v2.8 changelog:** §9.4 B7 extended from the native Career review — everyday-word-over-formal-compound rule (পাবলিক সেক্টর), and varga naming fixed (নবাংশ/দশাংশ/সপ্তাংশ).
 **v2.7 changelog:** §9.4 B7 filled from the native Bengali Love review — জীবনে আসে ruling, আপনার density law (≤3.5/100w), নিজের-reflexive preference, and the confirmed-native list.
 **v2.6 changelog:** Added §9.4 Bengali Constitution — language 6. Rulings fixed up front: কোষ্ঠী as primary term, Arabic numerals only, পঞ্জিকা not পঞ্চাঙ্গ. Native Bengali review required before go-live.
@@ -681,6 +682,115 @@ never `optimizeLegibility` (§10.2).
 - **Typography confirmed clean** on the first Bengali PDF: conjuncts render,
   no glyph collisions, spacing and margins read premium. `Noto Serif Bengali`
   + §10.2 single-font law is correct for Bengali.
+
+## 9.5 MARATHI CONSTITUTION (मराठी)
+
+**Reviewer: Marathi is the FIRST language sharing a script with Hindi. Automated
+scanning alone is insufficient here — §9.5 requires BOTH the automated scan
+(`scan-mr.js` + `fallback-check.js`) AND native human review before go-live.
+No automation detects subtle Hindi-style sentence construction.**
+
+**Product rulings fixed before generation:**
+- **Report terminology: जन्मपत्रिका / पत्रिका.** This is the word a Marathi
+  reader expects across a long report. Do NOT use कुंडली hundreds of times —
+  it reads Hindi-influenced.
+- **Branding / product name / SEO: कुंडली stays.** People search कुंडली and
+  जन्म कुंडली far more than पत्रिका. Product name and search-facing copy keep it.
+  This split is deliberate: SEO outside, native readability inside.
+- **Arabic numerals only** (0123456789). Never Devanagari (०१२३४५६७८९).
+- **पंचांग is correct and stays.** Unlike Bengali (পঞ্জিকা), Marathi uses the
+  same word as Hindi. Do not "fix" it.
+
+### M1. The Marathi trap: Hindi bleed
+
+Every previous language announced a Hindi fallback by being a different script.
+Marathi does not. `T()` resolves `o[LANG] || o.en || o.hi`, so a missing Marathi
+string renders as **plausible Devanagari** and passes every leak scanner. The
+danger is not that Marathi is hard — it is that failure is silent.
+
+| ❌ Hindi | ✅ Marathi |
+|---|---|
+| है · हैं · हूँ | आहे · आहेत · आहे |
+| था · थे · थी | होता · होते · होती |
+| नहीं | नाही |
+| और | आणि |
+| को | ला |
+| के लिए | साठी |
+| आपका · आपकी · आपके | तुमचा · तुमची · तुमचे |
+| करना · करें · किया | करणे · करा · केले |
+| होगा · होगी | होईल |
+| चाहिए | पाहिजे |
+| क्योंकि | कारण |
+| इसलिए | म्हणून |
+| यदि | जर |
+| जबकि | तर · परंतु |
+| हालांकि | तथापि · मात्र |
+| वास्तव में | प्रत्यक्षात · खरंतर |
+| हमेशा | नेहमी |
+| अक्सर | अनेकदा · बऱ्याचदा |
+| शायद | कदाचित |
+
+**`scan-mr.js` is mandatory on every batch before applying.** It matches these at
+word boundaries and reports grammar and vocabulary counts separately.
+
+**What the scanner must NOT flag:** Marathi and Hindi share thousands of
+Sanskrit-derived words — ग्रह, योग, दशा, लग्न, नक्षत्र, सूर्य, गुरु, शनि, बुध, शुक्र.
+These are correct in both. The scanner stays on grammar and function words only.
+
+### M2. ळ is a positive Marathi signal
+
+Marathi has the retroflex ळ, which Hindi lacks entirely. Its presence is weak
+evidence the text is genuinely Marathi: मंगळ · तूळ · वेळ · काळ · जवळ · सकाळ.
+Use it as a sanity check, never as proof — plenty of correct Marathi has none.
+
+### M3. The लग्न ambiguity — handle with care
+
+In Marathi **लग्न means both "marriage" (everyday) and "ascendant" (astrology).**
+This collision exists in no other language in the suite.
+- Astrology context → लग्न is the ascendant. Correct and expected.
+- Marriage context → use **विवाह** in report headings and लग्न only where the
+  everyday sense is unambiguous from surrounding words.
+- In the Marriage report specifically, prefer विवाह for the institution and
+  लग्नपत्रिका / विवाह जुळणी for matching, to avoid a reader parsing
+  "लग्न मेलन" as "ascendant matching".
+
+### M4. Preferred everyday vocabulary
+
+प्रेम · माया · नाते · विश्वास · मन · बोलणे · सोबत · आयुष्य · आनंद · समजूत ·
+संयम · शुभ काळ · नशीब · शक्ती · वाढ · कष्ट · काळजी · संसार
+
+### M5. Keep in the Marathi astrology register
+
+जन्मपत्रिका · पत्रिका · लग्न · दशा · अंतर्दशा · प्रत्यंतर · गोचर · भाव / स्थान ·
+राशी · नक्षत्र · योग · दोष · मुहूर्त · तिथी · वार · **पंचांग** · वर्षफल · नवमांश ·
+अष्टकवर्ग · गुण मेलन · ताराबल · चंद्रबल · साडेसाती
+
+**Planets:** सूर्य (रवि) · चंद्र · **मंगळ** · बुध · **गुरु** · शुक्र · शनि · राहू · केतू
+
+Note **गुरु** for Jupiter — unlike Bengali (বৃহস্পতি), Marathi uses गुरु, matching
+Hindi/Kannada/Tamil. And **मंगळ** with ळ, not मंगल.
+
+**Rashis:** मेष · वृषभ · मिथुन · कर्क · सिंह · कन्या · **तूळ** · वृश्चिक · धनु ·
+मकर · कुंभ · मीन
+
+Note **तूळ**, not Hindi तुला — a genuine Marathi form, not a spelling variant.
+
+**Weekdays:** रविवार · सोमवार · **मंगळवार** · बुधवार · गुरुवार · शुक्रवार · शनिवार
+
+### M6. Keep in English
+
+DNA · PDF · Score · प्रायव्हेट · सेक्टर · प्रमोशन · सर्टिफिकेशन · कमिटमेंट · करिअर
+
+### M7. Typography
+
+No new font needed — `Noto Serif Devanagari` is already loaded in all eight
+reports for Hindi. Apply §10.2's single-font rule with `lang-mr` pointing at the
+same family. `text-rendering:auto`, never `optimizeLegibility` (§10.2) — the
+Devanagari word-duplication bug applies here identically.
+
+### M8. Review-round rulings (native pass)
+
+*To be filled after the first native Marathi review, following the B7 / T7 pattern.*
 
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
