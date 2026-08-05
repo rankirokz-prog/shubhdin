@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 2.6 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 2.7 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v2.7 changelog:** §9.4 B7 filled from the native Bengali Love review — জীবনে আসে ruling, আপনার density law (≤3.5/100w), নিজের-reflexive preference, and the confirmed-native list.
 **v2.6 changelog:** Added §9.4 Bengali Constitution — language 6. Rulings fixed up front: কোষ্ঠী as primary term, Arabic numerals only, পঞ্জিকা not পঞ্চাঙ্গ. Native Bengali review required before go-live.
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
 **v2.5 changelog:** Added §9.3 Tamil Constitution — language 5. Native Tamil review still required before go-live (Ram is not a native Tamil speaker).
@@ -646,9 +647,30 @@ hasanta (্) plus reph and ya-phala forms that per-character Latin-first fallba
 destroys outright. Verify these clusters render before sign-off. `text-rendering:auto`,
 never `optimizeLegibility` (§10.2).
 
-### B7. Review-round rulings (native pass)
+### B7. Review-round rulings (native Love pass)
 
-*To be filled after the first native Bengali review, following the T7 / H5 pattern.*
+- **"কাছে আসে" for things arriving in a life → use "জীবনে আসে".**
+  ❌ সত্যিকারের সম্পর্ক আপনার কাছে আসে → ✅ **সত্যিকারের সম্পর্ক সহজেই জীবনে আসে**
+- **Watch আপনার density.** Bengali leans on আপনার far more than Hindi's आपका,
+  so paragraphs stack it invisibly. Target ≤ 3.5 per 100 words; never 3+ in a
+  block under 45 words. Thin by dropping it where the possessor is obvious, or
+  substituting এই / এমন / এমন মানুষের ক্ষেত্রে. This is prose polish, not grammar —
+  each instance is correct; the accumulation is what reads flat.
+- **Prefer নিজের + verb over bare noun+verb for reflexive actions.**
+  ❌ আপনি মনকে বড় বেশি আগলে রাখতে পারেন → ✅ **আপনি নিজের মনকে খুব বেশি আগলে রাখেন**
+  Also note the reviewer preferred the plain present (রাখেন) over the modal
+  (রাখতে পারেন) for trait descriptions — the modal hedges where Bengali states.
+- **Confirmed native and NOT to be "corrected"** (reviewer flagged these as
+  strong; do not let a later pass flatten them):
+  আপনার ভালোবাসার গল্প · আপনার সম্পর্কের স্বভাব জানুন · কথায়, হাসিতে, মনের সঙ্গে
+  মনের মিলনে · নিজের কথা প্রকাশ করা আর সত্যিকারের মন দিয়ে শোনার ক্ষমতা ·
+  শুধু চেহারার নয় · keeping **DNA** in Latin · কথাবার্তা / রোমান্স / নিষ্ঠা / বিশ্বাস
+  as the Love-DNA labels.
+- **কোষ্ঠী confirmed** by native review as markedly more natural than কুণ্ডলী
+  across a long report. Ruling stands.
+- **Typography confirmed clean** on the first Bengali PDF: conjuncts render,
+  no glyph collisions, spacing and margins read premium. `Noto Serif Bengali`
+  + §10.2 single-font law is correct for Bengali.
 
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
