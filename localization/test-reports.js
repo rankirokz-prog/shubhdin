@@ -102,7 +102,9 @@ function runReport(name) {
         for (const m of text.matchAll(/[A-Za-z][A-Za-z'’\-]{2,}(?:\s+[A-Za-z][A-Za-z'’\-]*)*/g)) {
           const phrase = m[0].trim();
           const words = phrase.split(/\s+/);
-          if (words.every(w => ALLOW.test(w) || USER.has(w))) continue;
+          // Indic genitives attach to Latin names (Bengali "Test-এর"); strip trailing punctuation
+          const clean = w2 => w2.replace(/[-’']+$/, '');
+          if (words.every(w => ALLOW.test(clean(w)) || USER.has(clean(w)))) continue;
           const at = text.indexOf(phrase);
           const ctx = text.slice(Math.max(0, at - 25), at + phrase.length + 25).replace(/\s+/g, ' ');
           leaks.add(phrase.slice(0, 40) + '  ⟪' + ctx.slice(0, 90) + '⟫');
