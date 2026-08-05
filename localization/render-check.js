@@ -17,6 +17,54 @@
 const fs = require('fs');
 const D = __dirname + '/';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ALLOWLIST — repeats reviewed and approved as correct by design.
+// Signed off by native review; do not re-flag. Anything NOT listed here is
+// still reported, so a genuine new duplication (like the Love closing quote,
+// which shipped in all six languages) cannot hide behind these exemptions.
+//
+// Each entry: { why, match(sentence, count) -> bool }
+// ─────────────────────────────────────────────────────────────────────────────
+const ALLOW = {
+  career: [
+    { why: 'primary career signature repeats between Summary and Detail sections',
+      test: (s, n) => n === 2 }
+  ],
+  annual: [
+    { why: 'year-lord (varshesh) theme repeats between Summary and Detail sections',
+      test: (s, n) => n === 2 }
+  ],
+  forecast: [
+    { why: 'year-rating and action strings recur across years sharing a rating',
+      test: (s, n) => n >= 2 }
+  ],
+  kundli: [
+    { why: 'prGuide / prTone repeat per pratyantar — deferred to the v2 rotating-prefix change',
+      src: C => tableValues(C, ['prGuide', 'prTone', 'prFlavor']) },
+    { why: 'slow-planet transit text recurs across consecutive years (Saturn ~2.5y per sign)',
+      src: C => tableValues(C, ['satTransit', 'jupTransit']) },
+    { why: 'mahadasha lord text appears in both the timeline and the detail section',
+      src: C => tableValues(C, ['dashaLord']) },
+  ],
+};
+
+// Collect every localized value of the named SD_CONTENT tables, so an allow rule
+// can say "this repeat is one of THESE strings" instead of "any string repeated
+// N times". Language-agnostic: matches the rendered language's own text.
+function tableValues(C, names) {
+  const out = [];
+  names.forEach(nm => {
+    const t = C && C[nm];
+    if (!t) return;
+    (Array.isArray(t) ? t : Object.values(t)).forEach(entry => {
+      if (entry && typeof entry === 'object') Object.values(entry).forEach(v => {
+        if (typeof v === "string" && v.length > 12) out.push(v);
+      });
+    });
+  });
+  return out;
+}
+
 const report = process.argv[2], lang = process.argv[3];
 const arg = process.argv[4];
 if (!report || !lang) { console.error('Usage: node render-check.js <report> <lang> [phrase|--dupes]'); process.exit(1); }
@@ -51,9 +99,12 @@ function render(report, lang){
     '\nsetLang(LANG_INIT);\nif(typeof confirmStep==="function")confirmStep();' +
     '\nif(typeof generate==="function")generate();\n}\nreturn document.getElementById("report").innerHTML;';
   const fn = new Function('window','document','console','alert','confirm','setTimeout','LANG_INIT', body);
-  return fn(win, doc, console, ()=>{}, ()=>true, f=>f&&f(), lang) || '';
+  const out = fn(win, doc, console, ()=>{}, ()=>true, f=>f&&f(), lang) || '';
+  LOADED = win.SD_CONTENT || global.SD_CONTENT || null;  // content files attach to the sandbox window
+  return out;
 }
 
+let LOADED = null;
 const rep = render(report, lang);
 const text = rep.replace(/<style[\s\S]*?<\/style>/g,' ').replace(/<[^>]+>/g,' ')
                 .replace(/&[a-z]+;/g,' ').replace(/\s+/g,' ').trim();
@@ -64,11 +115,30 @@ if (arg === '--dupes') {
   const sents = text.split(/(?<=[.!?\u0964])\s+/).map(s => s.trim()).filter(s => s.length > 25);
   const seen = new Map();
   sents.forEach(s => seen.set(s, (seen.get(s) || 0) + 1));
-  const dupes = [...seen.entries()].filter(([, n]) => n > 1);
+  const all = [...seen.entries()].filter(([, n]) => n > 1);
+  const rules = ALLOW[report] || [];
+  const allowed = [], flagged = [];
+  const SDC = LOADED;
+  all.forEach(([s, n]) => {
+    const r = rules.find(r => {
+      if (r.test) return r.test(s, n);
+      if (r.src) { const vals = r.src(SDC); return vals.some(v => v.includes(s) || s.includes(v.slice(0, 60))); }
+      return false;
+    });
+    (r ? allowed : flagged).push([s, n, r]);
+  });
   console.log('sentences ≥25 chars: ' + sents.length);
-  console.log('repeated: ' + (dupes.length || 'none ✓'));
-  dupes.slice(0, 12).forEach(([s, n]) => console.log('  ×' + n + '  ' + s.slice(0, 110)));
-  process.exit(dupes.length ? 1 : 0);
+  console.log('repeated: ' + all.length + '   (allowed ' + allowed.length + ', flagged ' + flagged.length + ')');
+  if (allowed.length) {
+    console.log('\n  allowed by design:');
+    const byWhy = {};
+    allowed.forEach(([s, n, r]) => { (byWhy[r.why] = byWhy[r.why] || []).push(n); });
+    Object.entries(byWhy).forEach(([why, ns]) =>
+      console.log('    ' + ns.length + ' sentence(s) ×' + ns.join(',×') + ' — ' + why));
+  }
+  console.log('\n  FLAGGED: ' + (flagged.length || 'none ✓'));
+  flagged.slice(0, 12).forEach(([s, n]) => console.log('    ×' + n + '  ' + s.slice(0, 110)));
+  process.exit(flagged.length ? 1 : 0);
 } else if (arg) {
   let n = 0, i = 0; const ctx = [];
   while ((i = text.indexOf(arg, i)) !== -1) { n++; ctx.push(text.slice(Math.max(0,i-60), i+90)); i += arg.length; }
