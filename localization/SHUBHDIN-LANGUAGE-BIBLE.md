@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 2.4 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 2.6 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v2.6 changelog:** Added §9.4 Bengali Constitution — language 6. Rulings fixed up front: কোষ্ঠী as primary term, Arabic numerals only, পঞ্জিকা not পঞ্চাঙ্গ. Native Bengali review required before go-live.
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
 **v2.5 changelog:** Added §9.3 Tamil Constitution — language 5. Native Tamil review still required before go-live (Ram is not a native Tamil speaker).
 **v2.4 changelog:** Added §9.2 Kannada Constitution — language 4.
@@ -545,6 +546,109 @@ relies heavily on the pulli (்) — ensure clusters (க்ஷ · ற்ற ·
   வழங்கப்படுகின்றன" over the blunt "எதுவும் கற்பனையல்ல".
 
 ---
+
+## 9.4 BENGALI CONSTITUTION (বাংলা)
+
+**Reviewer: Ram is NOT a native Bengali speaker — and Bengali is further from
+Telugu/Kannada than Tamil is. The harness zero-leak pass is structural QA only.
+A native Bengali eye must review rendered PDFs before go-live. Flag every
+Bengali report "harness-clean, awaiting native review."**
+
+**Product rulings fixed before generation (do not revisit mid-language):**
+- **কোষ্ঠী** is the primary word for the birth chart / horoscope, everywhere.
+  কুণ্ডলী only where it is clearly more natural; never mix without reason.
+- **Arabic numerals only** (0123456789). Never Bengali numerals (০১২৩৪৫৬৭৮৯).
+  Degrees, years, dates, bindus, scores, percentages — all Arabic, matching
+  hi/te/kn/ta.
+
+### B1. The Bengali trap: সাধু ভাষা vs চলিত ভাষা
+
+Bengali's literary/spoken split is formalised in a way the other four languages'
+is not. সাধু ভাষা is a complete parallel register with its own verb and pronoun
+forms — and it has been effectively dead in published prose since the 1950s.
+Writing it does not read as elevated; it reads as a pre-Independence textbook.
+All Shubh Din prose uses চলিত ভাষা — the warm, clear register of a good
+Anandabazar / Desh feature.
+
+| ❌ Avoid (সাধু / over-Sanskritised) | ✅ Use (চলিত) |
+|---|---|
+| হইয়াছে · করিয়াছে · রহিয়াছে | হয়েছে · করেছে · রয়েছে |
+| করিবে · হইবে · থাকিবে | করবে · হবে · থাকবে |
+| তাহার · ইহার · যাহা · তাহা | তার · এর · যা · তা |
+| প্রণয় · অনুরাগ (in prose) | ভালোবাসা · প্রেম |
+| ধন (in prose for money) | টাকা · অর্থ |
+| বিবাহ (in prose) | বিয়ে |
+| গৃহ · আলয় | বাড়ি · ঘর |
+| সন্তানসন্ততি · পুত্রকন্যা | সন্তান · ছেলেমেয়ে |
+| কার্য · কর্ম (for a job) | কাজ |
+| বাক্যালাপ · কথোপকথন (stiff) | কথা · কথাবার্তা |
+| অভিলাষ · বাসনা | ইচ্ছা |
+| দেহ | শরীর |
+| নিমিত্ত · হেতু | জন্য · কারণে |
+
+**Rule of thumb:** if a Bengali reader would picture a printed almanac from the
+1940s rather than a warm magazine feature, rewrite it.
+
+**Note on বিবাহ:** correct and expected inside the astrology register
+(বিবাহ যোগ · বিবাহের শুভ সময়). In flowing prose use বিয়ে. Same split as Tamil's
+விவாகம் / திருமணம்.
+
+### B2. Preferred everyday vocabulary
+
+ভালোবাসা · স্নেহ · সম্পর্ক · বিশ্বাস · মন · কথা · সঙ্গে · জীবন · আনন্দ ·
+বোঝাপড়া · ধৈর্য · শুভ সময় · ভাগ্য · শক্তি · উন্নতি · পরিশ্রম · যত্ন · সংসার
+
+### B3. Keep in Bengali astrology register (Sanskrit-derived, fully naturalised)
+
+কোষ্ঠী · লগ্ন · দশা · অন্তর্দশা · প্রত্যন্তর · গোচর · ভাব / স্থান · রাশি · নক্ষত্র ·
+যোগ · দোষ · মুহূর্ত · তিথি · বার · **পঞ্জিকা** · বর্ষফল · নবাংশ · অষ্টকবর্গ ·
+গুণ মিলন · তারাবল · চন্দ্রবল · সাড়েসাতি
+
+**CRITICAL — the almanac is পঞ্জিকা in Bengali, not পঞ্চাঙ্গ.** পঞ্জিকা is the
+word every Bengali household knows (the Gupta Press / Bishuddha Siddhanta
+পঞ্জিকা). Using পঞ্চাঙ্গ marks the text as translated-from-Hindi immediately.
+
+**Planets — common Bengali names:**
+সূর্য (রবি) · চন্দ্র · মঙ্গল · বুধ · **বৃহস্পতি** · শুক্র · শনি · রাহু · কেতু
+
+Bengali astrology says **বৃহস্পতি**, not গুরু, for the planet. গুরু is the teacher.
+
+**Rashis:** মেষ · বৃষ · মিথুন · কর্কট · সিংহ · কন্যা · তুলা · বৃশ্চিক · ধনু ·
+মকর · কুম্ভ · মীন
+
+**Nakshatras — Sanskrit-derived with Bengali orthography (unlike Tamil, these are
+NOT a separate native set):**
+অশ্বিনী · ভরণী · কৃত্তিকা · রোহিণী · মৃগশিরা · আর্দ্রা · পুনর্বসু · পুষ্যা ·
+অশ্লেষা · মঘা · পূর্বফাল্গুনী · উত্তরফাল্গুনী · হস্তা · চিত্রা · স্বাতী · বিশাখা ·
+অনুরাধা · জ্যেষ্ঠা · মূলা · পূর্বাষাঢ়া · উত্তরাষাঢ়া · শ্রবণা · ধনিষ্ঠা · শতভিষা ·
+পূর্বভাদ্রপদ · উত্তরভাদ্রপদ · রেবতী
+
+**Weekdays:** রবিবার · সোমবার · মঙ্গলবার · বুধবার · বৃহস্পতিবার · শুক্রবার · শনিবার
+
+### B4. Keep in English
+
+DNA · PDF · Score · প্রাইভেট · সেক্টর · প্রোমোশন · সার্টিফিকেশন · কমিটমেন্ট ·
+রোমান্স · ক্যারিয়ার — urban Bengali speakers use these daily.
+
+### B5. Few-shot examples
+
+- ❌ আপনার কোষ্ঠীতে প্রণয়যোগ রহিয়াছে → ✅ **আপনার কোষ্ঠীতে ভালোবাসার ভালো যোগ রয়েছে।**
+- ❌ আপনি সুন্দরভাবে বাক্যালাপ করিবেন → ✅ **মনের কথা স্পষ্ট করে বলতে আপনি জানেন।**
+- ❌ ধনলাভের সম্ভাবনা বিদ্যমান → ✅ **আয় বাড়ার ভালো সম্ভাবনা আছে।**
+- ❌ গৃহে শান্তি বিরাজ করিবে → ✅ **ঘরে শান্তি থাকবে।**
+- ❌ পঞ্চাঙ্গ অনুসারে → ✅ **পঞ্জিকা অনুসারে**
+
+### B6. Typography
+
+Load `Noto Serif Bengali`; apply §10.2's single-font rule with `lang-bn`.
+Bengali is conjunct-heavy — ক্ষ · ঞ্চ · ন্ত্র · ষ্ট · দ্ধ · হ্ম — and uses the
+hasanta (্) plus reph and ya-phala forms that per-character Latin-first fallback
+destroys outright. Verify these clusters render before sign-off. `text-rendering:auto`,
+never `optimizeLegibility` (§10.2).
+
+### B7. Review-round rulings (native pass)
+
+*To be filled after the first native Bengali review, following the T7 / H5 pattern.*
 
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
