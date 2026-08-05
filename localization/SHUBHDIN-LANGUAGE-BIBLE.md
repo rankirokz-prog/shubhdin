@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 2.9 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 3.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v3.0 changelog:** §9.5 M8 filled from the native Marathi Love review — सहज-over-ऊबदार in headings, DNA confirmed Latin across bn/ta/mr, पत्रिका ruling confirmed, and the confirmed-native list.
 **v2.9 changelog:** Added §9.5 Marathi Constitution — language 7, first to share a script with Hindi. Introduces the Hindi-bleed trap, mandatory scan-mr.js + fallback-check.js, the कुंडली-for-branding / पत्रिका-in-report split, and the लग्न marriage/ascendant ambiguity. fallback-check.js is now a REQUIRED step for every language, not just Marathi.
 **v2.8 changelog:** §9.4 B7 extended from the native Career review — everyday-word-over-formal-compound rule (পাবলিক সেক্টর), and varga naming fixed (নবাংশ/দশাংশ/সপ্তাংশ).
 **v2.7 changelog:** §9.4 B7 filled from the native Bengali Love review — জীবনে আসে ruling, আপনার density law (≤3.5/100w), নিজের-reflexive preference, and the confirmed-native list.
@@ -788,9 +789,29 @@ reports for Hindi. Apply §10.2's single-font rule with `lang-mr` pointing at th
 same family. `text-rendering:auto`, never `optimizeLegibility` (§10.2) — the
 Devanagari word-duplication bug applies here identically.
 
-### M8. Review-round rulings (native pass)
+### M8. Review-round rulings (native Love pass)
 
-*To be filled after the first native Marathi review, following the B7 / T7 pattern.*
+- **ऊबदार is fine as a descriptor, not as a headline.**
+  ❌ प्रेमाचा ऊबदार प्रवाह (title) → ✅ **प्रेमाचा सहज प्रवाह**
+  "Warm flow" translates literally and reads that way in a heading. ऊबदार stays
+  where it describes a quality (ऊबदार आणि स्थिर, प्रेमाला ऊबदार) — the problem is
+  the literal noun-phrase in display position, not the word.
+- **DNA stays in Latin.** Confirmed across bn / ta / mr; native reviewers in
+  Bengali and Marathi both raised it and both concluded it is widely understood.
+  Do not "improve" it to स्वभाव / रचना in a later pass — it is a product-wide
+  choice (§9.5 M6) and the label is deliberately identical in every language.
+- **Confirmed native and NOT to be "corrected"** (reviewer flagged these as
+  strong): तुमची प्रेमकथा · तुमच्या नात्यांचा स्वभाव जाणून घ्या ·
+  तुम्ही वाऱ्यासारखे प्रेम करता · नाते / जोडीदार / मन / संवाद / स्वातंत्र्य / विश्वास
+  as the relationship vocabulary.
+- **पत्रिका ruling confirmed** by native review as noticeably more natural than
+  कुंडली across a long report — प्रेमपत्रिका, जन्मपत्रिका, पत्रिकेत all read well.
+  Ruling stands; कुंडली remains for branding and SEO only.
+- **Zero Hindi contamination found on the first native pass** (है, हैं, नहीं, और,
+  के लिए, आपका, चाहिए all absent). The scan-mr.js + fallback-check.js pair is
+  doing its job — but the reviewer's standing request holds: a native eye must
+  still confirm tone across a FULL report, because isolated Hindi-style sentence
+  CONSTRUCTION is invisible to word-level scanning.
 
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
