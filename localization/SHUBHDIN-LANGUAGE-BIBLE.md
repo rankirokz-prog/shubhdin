@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 2.7 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 2.8 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v2.8 changelog:** §9.4 B7 extended from the native Career review — everyday-word-over-formal-compound rule (পাবলিক সেক্টর), and varga naming fixed (নবাংশ/দশাংশ/সপ্তাংশ).
 **v2.7 changelog:** §9.4 B7 filled from the native Bengali Love review — জীবনে আসে ruling, আপনার density law (≤3.5/100w), নিজের-reflexive preference, and the confirmed-native list.
 **v2.6 changelog:** Added §9.4 Bengali Constitution — language 6. Rulings fixed up front: কোষ্ঠী as primary term, Arabic numerals only, পঞ্জিকা not পঞ্চাঙ্গ. Native Bengali review required before go-live.
 **v1.1 changelog:** Hindi Love report scored 9.4–9.6/10 (up from 8.2). Added §H5 rulings and §10 Indic typography law.
@@ -668,6 +669,15 @@ never `optimizeLegibility` (§10.2).
   as the Love-DNA labels.
 - **কোষ্ঠী confirmed** by native review as markedly more natural than কুণ্ডলী
   across a long report. Ruling stands.
+- **Register: prefer the everyday word over the formally correct one.**
+  ❌ রাষ্ট্রায়ত্ত সংস্থা (accurate but bureaucratic) → ✅ **পাবলিক সেক্টর**
+  This follows the hi/te precedent (पब्लिक सेक्टर · పబ్లిక్ సెక్టార్) and §9.4 B4,
+  which already keeps সেক্টর in English. Reserve রাষ্ট্রায়ত্ত সংস্থা for text that
+  genuinely means Public Sector Undertakings specifically, not the government
+  sector broadly. General rule: if a formal Bengali compound and a familiar
+  loanword both work, the loanword is more natural for a general reader.
+- **Varga naming is fixed and parallel:** নবাংশ (D9) · **দশাংশ (D10)** · সপ্তাংশ (D7).
+  Confirmed by native review. Keep the Latin D-number in every language.
 - **Typography confirmed clean** on the first Bengali PDF: conjuncts render,
   no glyph collisions, spacing and margins read premium. `Noto Serif Bengali`
   + §10.2 single-font law is correct for Bengali.
