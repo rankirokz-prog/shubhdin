@@ -1,6 +1,11 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 3.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 3.5 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v3.5 changelog:** §9.6 G8 — Gujarati Love report native pass. રમૂજ-over-હાસ્ય ruling, મન density law (≤3.5/100w) with the ચંદ્ર (મન) gloss exempted, confirmed-native list, and dnaSignature phrasing logged as a third provisional item.
+**v3.4 changelog:** §9.6 G8 — પૂનમાંત and લગ્ન/વિવાહ explicitly marked PROVISIONAL, not locked. Both deferred to native review; લગ્ન/વિવાહ to be judged against a fully rendered Marriage report.
+**v3.3 changelog:** §9.6 G8 filled — Gujarati panchang sample APPROVED against a rendered page. Confirmed-native list recorded; two open items logged (masaL label wrapping, પૂનમાંત vs પૂર્ણિમાંત).
+**v3.2 changelog:** §9.6 G0 added — Gujarati calendar vocabulary locked from a Panchang research pass: સુદ/વદ, the -શ tithi ordinals, and the Gujarati month names. અમાસ explicitly exempted from the -શ rule.
+**v3.1 changelog:** Added §9.6 Gujarati Constitution — language 8. Own script, so no Marathi-style silent fallback; the real risk is Marathi grammar in Gujarati letters, handled by scan-gu.js. કુંડળી used throughout with no split — third language, third different answer to the chart-word question.
 **v3.0 changelog:** §9.5 M8 filled from the native Marathi Love review — सहज-over-ऊबदार in headings, DNA confirmed Latin across bn/ta/mr, पत्रिका ruling confirmed, and the confirmed-native list.
 **v2.9 changelog:** Added §9.5 Marathi Constitution — language 7, first to share a script with Hindi. Introduces the Hindi-bleed trap, mandatory scan-mr.js + fallback-check.js, the कुंडली-for-branding / पत्रिका-in-report split, and the लग्न marriage/ascendant ambiguity. fallback-check.js is now a REQUIRED step for every language, not just Marathi.
 **v2.8 changelog:** §9.4 B7 extended from the native Career review — everyday-word-over-formal-compound rule (পাবলিক সেক্টর), and varga naming fixed (নবাংশ/দশাংশ/সপ্তাংশ).
@@ -812,6 +817,178 @@ Devanagari word-duplication bug applies here identically.
   doing its job — but the reviewer's standing request holds: a native eye must
   still confirm tone across a FULL report, because isolated Hindi-style sentence
   CONSTRUCTION is invisible to word-level scanning.
+
+## 9.6 GUJARATI CONSTITUTION (ગુજરાતી)
+
+**Reviewer: Ram is NOT a native Gujarati speaker. Automated scanning proves
+structure only. Native review required before go-live.**
+
+**Product rulings fixed before generation:**
+- **કુંડળી everywhere — app, branding AND report body.** This is the
+  overwhelmingly familiar term for modern Gujarati users. Do NOT split the way
+  Marathi does (કુંડળી branding / પત્રિકા body); Gujarati does not need it.
+- **જન્માક્ષર** is a genuine traditional Gujarati synonym and may appear
+  occasionally for variety — but never as the primary label.
+- **Arabic numerals only** (0123456789). Never Gujarati (૦૧૨૩૪૫૬૭૮૯).
+- **પંચાંગ is correct and stays**, as in Hindi and Marathi.
+
+**NOTE ON THE કુંડળી RULING:** three languages, three different answers —
+Bengali কোষ্ঠী, Marathi કુંડળી-branding/પત્રિકા-body, Gujarati કુંડળી throughout.
+Ask the native reviewer per language. Do not pattern-match from the last one.
+
+### G0. Calendar vocabulary — LOCKED (Gujarati Panchang research pass)
+
+Gujarati has its own everyday almanac vocabulary. Use it, NOT the Sanskrit forms.
+These are foundational: every date the app prints depends on them.
+
+**Paksha — સુદ / વદ**, never શુક્લ / કૃષ્ણ.
+
+**Tithis — the numbered ordinals end in -શ, consistently:**
+
+| | | | |
+|---|---|---|---|
+| 1 પડવો | 2 બીજ | 3 ત્રીજ | 4 ચોથ |
+| 5 પાંચમ | 6 છઠ | 7 સાતમ | 8 આઠમ |
+| 9 નોમ | 10 દશમ | 11 **અગિયારશ** | 12 **બારશ** |
+| 13 **તેરશ** | 14 **ચૌદશ** | 15 અમાસ | — પૂનમ |
+
+**The -શ rule covers the numbered ordinals ONLY.** અમાસ keeps -સ: it is not an
+ordinal, it derives from અમાવસ્યા, and અમાશ is not a word. Do not "regularise" it.
+
+**Months — Gujarati Vikram Samvat names, not the Sanskrit forms:**
+
+ચૈત્ર · વૈશાખ · **જેઠ** · **અષાઢ** · **શ્રાવણ** · **ભાદરવો** · **આસો** ·
+કારતક · **માગશર** · પોષ · **મહા** · **ફાગણ**
+
+અષાઢ and શ્રાવણ are confirmed standard Gujarati and stay as-is (they coincide
+with the Sanskrit forms; that is correct, not an oversight).
+
+### G1. Gujarati does NOT have the Marathi problem
+
+Gujarati has its own script (U+0A80–0AFF). A missed string falling back to
+Hindi renders as obvious foreign Devanagari and is caught instantly — by the
+harness, by the batch scanner, and by any reader. The silent-failure problem
+that forced `scan-mr.js` into existence **does not apply here.**
+`fallback-check.js` still runs as a required gate, unchanged.
+
+### G2. The Gujarati trap: Marathi grammar in Gujarati letters
+
+The real risk is the translator's, not the language's. Gujarati is written
+immediately after Marathi in this project, and the two are neighbouring
+languages sharing thousands of Sanskrit-derived words. The danger is Marathi or
+Hindi **grammar** typed in Gujarati script — perfectly valid characters, wrong
+language. No script check can see it.
+
+| ❌ Marathi-ism | ❌ Hindi-ism | ✅ Gujarati |
+|---|---|---|
+| આહે · આહેત | હૈ · હૈં | **છે** |
+| આણિ | ઔર | **અને** |
+| નાહી | — | **નથી** |
+| તુમચે · તુમચા · તુમચી | આપકા · આપકી · આપકે | **તમારું · તમારો · તમારી** |
+| આપલ્યા | — | **આપણા** |
+| મ્હણૂન | ઇસલિએ | **તેથી** |
+| પાહિજે | ચાહિએ | **જોઈએ** |
+| અસેલ · હોઈલ | હોગા | **હશે · થશે** |
+| -ચ્યા (genitive) | કે લિએ | **ના · ની · નું · માટે** |
+| — | કરના · કરેં · કિયા | **કરવું · કરો · કર્યું** |
+| — | કુછ · ક્યોંકિ · હમેશા | **કંઈક · કારણ કે · હંમેશા** |
+
+**`scan-gu.js` is mandatory on every batch, run UNPIPED so its exit code holds.**
+
+**What the scanner must NOT flag** — these look like Hindi transliterated but
+are correct Gujarati, and flagging them would corrupt good text:
+- **નહીં** — valid Gujarati (no / will not), despite matching Hindi नहीं
+- **પણ** — valid Gujarati (but / also), despite matching Marathi पण
+- All shared Sanskrit vocabulary: ગ્રહ · યોગ · દશા · લગ્ન · નક્ષત્ર · સૂર્ય ·
+  ગુરુ · મંગળ · શનિ · બુધ · શુક્ર
+
+### G3. ળ is shared with Marathi, not a distinguishing signal
+
+Gujarati has the retroflex ળ (U+0AB3), as Marathi does and Hindi does not. It
+confirms the text is not Hindi; it proves nothing about Gujarati vs Marathi.
+Unlike §9.5 M2, do not treat it as a positive signal here.
+
+### G4. Preferred everyday vocabulary
+
+પ્રેમ · લાગણી · સંબંધ · વિશ્વાસ · મન · વાત · સાથે · જીવન · આનંદ · સમજ ·
+ધીરજ · શુભ સમય · નસીબ · શક્તિ · વૃદ્ધિ · મહેનત · કાળજી · સંસાર
+
+### G5. Keep in the Gujarati astrology register
+
+કુંડળી · લગ્ન · દશા · અંતર્દશા · પ્રત્યંતર · ગોચર · ભાવ / સ્થાન · રાશિ ·
+નક્ષત્ર · યોગ · દોષ · મુહૂર્ત · તિથિ · વાર · **પંચાંગ** · વર્ષફળ · નવમાંશ ·
+અષ્ટકવર્ગ · ગુણ મેલાપક · તારાબળ · ચંદ્રબળ · સાડાસાતી
+
+**Planets:** સૂર્ય · ચંદ્ર · **મંગળ** · બુધ · **ગુરુ** · શુક્ર · શનિ · રાહુ · કેતુ
+
+Note **રાહુ / કેતુ** with short u — Marathi writes રાહૂ / કેતૂ. And **ગુરુ** for
+Jupiter, as in Hindi/Marathi/Tamil (not Bengali's বৃহস্পতি).
+
+**Rashis:** મેષ · વૃષભ · મિથુન · કર્ક · સિંહ · કન્યા · **તુલા** · વૃશ્ચિક ·
+**ધન** · મકર · કુંભ · મીન
+
+Note **તુલા** (not Marathi તૂળ) and **ધન** for Sagittarius (not ધનુ).
+
+**Weekdays:** રવિવાર · સોમવાર · મંગળવાર · બુધવાર · ગુરુવાર · શુક્રવાર · શનિવાર
+
+### G6. Keep in English
+
+DNA · PDF · Score · પ્રાઇવેટ · સેક્ટર · પ્રમોશન · સર્ટિફિકેશન · કમિટમેન્ટ · કરિયર
+
+### G7. Typography
+
+Load `Noto Serif Gujarati` — a new font, unlike Marathi which reused Devanagari.
+Apply §10.2's single-font rule with `lang-gu`. `text-rendering:auto`, never
+`optimizeLegibility` (§10.2).
+
+### G8. Review-round rulings (native pass)
+
+**Panchang terminology sample — APPROVED.** The everyday-Gujarati calendar
+decision (§9.6 G0) was confirmed against a rendered page, not a word list:
+શ્રાવણ સુદ પૂનમ · અષાઢ વદ આઠમ · આસો વદ નોમ all read as native Gujarati.
+Typography confirmed clean in `Noto Serif Gujarati` — no broken conjuncts,
+clipping, overlap or awkward spacing. Ruling G0 stands.
+
+- **Confirmed native and NOT to be "corrected"** (reviewer singled these out):
+  શ્રાવણ સુદ પૂનમ · અષાઢ વદ આઠમ · આજનું પંચાંગ · સુદ પક્ષનો દિવસ ·
+  the month set અષાઢ / શ્રાવણ / આસો · the labels તારીખ · વાર · પક્ષ · તિથિ ·
+  નક્ષત્ર · યોગ · કરણ.
+- **AM / PM stays in Latin**, consistent with every other language. No change.
+- **OPEN QA ITEM — label wrapping.** `klbl.masaL` ("અમાંત / પૂનમાંત મહિનો") is
+  noticeably longer than its sibling rows. Not a blocker and NOT to be shortened
+  now, but once the Gujarati reports render, check it does not wrap awkwardly in
+  the 42%-width label column on narrow/phone widths. Same check applies to any
+  other two-word-with-slash label.
+**Love report — native pass.** Tone confirmed warm and conversational, not
+literal Hindi rendered in Gujarati. Cover, DNA page and headings approved.
+
+- **રમૂજ over હાસ્ય in everyday register.**
+  ❌ શબ્દોમાં, હાસ્યમાં → ✅ **શબ્દોમાં, રમૂજમાં**
+- **Watch મન density.** Gujarati reaches for મન constantly (mind / heart /
+  feeling), so paragraphs stack it invisibly. Target ≤ 3.5 per 100 words. Vary
+  with વિચારો · લાગણીઓ · સ્વભાવ · અંતર · દિલ. Each instance is correct; the
+  accumulation is what reads flat. **Exception:** the ચંદ્ર (મન) gloss in
+  `labels.method` must keep મન — it is defining the term, not repeating it.
+- **Confirmed native and NOT to be "corrected"**: તમારી પ્રેમકથા ·
+  તમારી પ્રેમની ભાષા · તમારું મન, નજીકથી · તમારી કુંડળીમાં પ્રેમનો સહજ પ્રવાહ ·
+  DNA kept in Latin.
+- **PROVISIONAL, NOT LOCKED — `love.dnaSignature` phrasing.** Currently
+  "તમારી જન્મકુંડળીમાંથી આવેલો સંબંધોનો સ્વભાવ". Reviewer raised whether
+  જન્મકુંડળીમાંથી **મળતો** or તમારી જન્મકુંડળી **દર્શાવતો** is more idiomatic.
+  **Deliberately unchanged** pending a native ruling — not a bug, and not to be
+  guessed at.
+- **PROVISIONAL, NOT LOCKED — પૂનમાંત vs પૂર્ણિમાંત.** `klbl.masaL` currently
+  reads પૂનમાંત, chosen for consistency with the પૂનમ tithi ruling. The technical
+  Sanskrit form is પૂર્ણિમાંત. A colloquial tithi name and a technical calendar
+  term may legitimately diverge. **Do not change it by analogy** — it awaits a
+  native ruling. This is deliberately NOT in the locked G0 set.
+- **PROVISIONAL, NOT LOCKED — લગ્ન vs વિવાહ.** Gujarati has the same collision
+  Marathi does: લગ્ન means both *ascendant* and *marriage*, and Gujarati leans on
+  the everyday sense harder (લગ્ન કરવું). Current approach, and the safer one:
+  **વિવાહ in marriage-report headings, લગ્ન reserved for the ascendant**, so the
+  two never blur inside a Kundli. But વિવાહ may read formal to a Gujarati ear.
+  **Revisit only after a COMPLETE Marriage report renders** — judge it in a full
+  page, not a term list. Until then this stands as-is.
 
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
