@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 3.9 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 4.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v4.0 changelog:** §9.6 G8 — Gujarati Child APPROVED. Two STYLE REVIEW ONLY items added. The family-priest word was found INCONSISTENT between reports (ગોરમહારાજ in Child, પુરોહિત in Muhurta) — recorded, not changed, since both reports are approved.
 **v3.9 changelog:** §9.6 G8 — Gujarati Forecast APPROVED. Two STYLE REVIEW ONLY items added (ધ્યાન આપવું, મહેનતથી ઘડાવાનું વર્ષ). Process confirmed by reviewer: record style items, never edit after approval.
 **v3.8 changelog:** §9.6 G8 — Gujarati Muhurta APPROVED; terminology confirmed consistent across Panchang, Love, Marriage, Career and Muhurta. કે vs અથવા logged as the seventh provisional item. All open Gujarati items are now stylistic, not corrective.
 **v3.7 changelog:** §9.6 G8 — Gujarati Career report APPROVED as production-ready. નાણાં and કાયદો logged as provisional wording choices for the final native pass.
@@ -994,6 +995,22 @@ Gujarati is settled.
 reviewer confirmed the process of recording rather than changing after approval,
 since a post-approval edit silently un-approves the PDF that was signed off.
 
+**Child & Family report — APPROVED.** Medical disclaimer and the `tender` band
+hedge both confirmed intact.
+
+- **STYLE REVIEW ONLY — શાસ્ત્રીય વયમર્યાદા** (`reason.ageWindow`). Reads
+  formal; verify against a Gujarati reference that this is the most idiomatic
+  wording for the classical age window. **Do not change now.**
+- **STYLE REVIEW ONLY — the family-priest word is INCONSISTENT across reports.**
+  Two different words are currently in use for the same concept:
+    - `child.namingIntro`, `child.scoreBand.tender` → **ઘરના ગોરમહારાજ**
+    - `muhurta.labels.disclaimer` → **ઘરના પુરોહિત**
+  Neither is wrong, and **regional usage varies across Gujarat** — a Saurashtra
+  reader and a Surat reader may expect different words. But a reader who buys
+  both reports sees two words for one person. Needs a native ruling picking ONE
+  form with the widest reach, then aligned in both files.
+  **Do not change now** — both reports are already approved; this is the first
+  item on the style pass that requires a change in more than one file.
 - **STYLE REVIEW ONLY — ધ્યાન આપવું** (`forecast.labels.attention`). Used for the
   yearly rating. Correct and clear; a native ear may prefer ખાસ ધ્યાન આપવું /
   સાવચેતી રાખવી / ધ્યાન રાખવું depending on intended tone. **Do not change now.**
