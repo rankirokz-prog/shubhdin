@@ -1,6 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 3.6 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 3.7 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v3.7 changelog:** §9.6 G8 — Gujarati Career report APPROVED as production-ready. નાણાં and કાયદો logged as provisional wording choices for the final native pass.
+**v3.7 changelog:** §9.6 G8 — Gujarati Career report APPROVED as production-ready. નાણાં and કાયદો logged as provisional for the final native pass.
 **v3.6 changelog:** §9.6 G8 — Gujarati Marriage report APPROVED as production quality. લગ્ન/વિવાહ moved from PROVISIONAL to LOCKED, confirmed against a rendered report. મેળાપક and મનનું જોડાણ logged as new provisional items for the final native pass.
 **v3.5 changelog:** §9.6 G8 — Gujarati Love report native pass. રમૂજ-over-હાસ્ય ruling, મન density law (≤3.5/100w) with the ચંદ્ર (મન) gloss exempted, confirmed-native list, and dnaSignature phrasing logged as a third provisional item.
 **v3.4 changelog:** §9.6 G8 — પૂનમાંત and લગ્ન/વિવાહ explicitly marked PROVISIONAL, not locked. Both deferred to native review; લગ્ન/વિવાહ to be judged against a fully rendered Marriage report.
@@ -978,6 +980,13 @@ literal Hindi rendered in Gujarati. Cover, DNA page and headings approved.
   જન્મકુંડળીમાંથી **મળતો** or તમારી જન્મકુંડળી **દર્શાવતો** is more idiomatic.
   **Deliberately unchanged** pending a native ruling — not a bug, and not to be
   guessed at.
+**Career report — APPROVED as production-ready**, consistent with Love and
+Marriage. દશાંશ (D10), પબ્લિક સેક્ટર and કુંડળી all confirmed in context.
+
+- **PROVISIONAL, NOT LOCKED — નાણાં and કાયદો.** Career-field vocabulary
+  (`careerFields.jupiter`, `career.planetCareer.jupiter`). Held for the final
+  native Gujarati review. **Do not change now** — the Career report was approved
+  with both in place; altering them would invalidate that approval.
 - **PROVISIONAL, NOT LOCKED — પૂનમાંત vs પૂર્ણિમાંત.** `klbl.masaL` currently
   reads પૂનમાંત, chosen for consistency with the પૂનમ tithi ruling. The technical
   Sanskrit form is પૂર્ણિમાંત. A colloquial tithi name and a technical calendar
@@ -989,6 +998,12 @@ literal Hindi rendered in Gujarati. Cover, DNA page and headings approved.
   ascendant.** Confirmed against a fully rendered Marriage report — the condition
   set for this ruling — and approved as production quality. વિવાહ does NOT read
   too formal. This is no longer provisional; do not revisit.
+**Career report — APPROVED as production-ready.** Consistent with Love and
+Marriage in tone and quality.
+
+- **PROVISIONAL, NOT LOCKED — નાણાં** (finance) and **કાયદો** (law), in the
+  careerFields and planetCareer sets. Held for the final native Gujarati review.
+  **Do not change now** — the Career report was approved with them in place.
 - **PROVISIONAL, NOT LOCKED — મેળાપક.** Currently used for "matching"
   (વિવાહ મેળાપક અહેવાલ, ગુણ મેળાપક). Held for the final native Gujarati review.
   **Do not change now** — the Marriage report was approved with it in place.
