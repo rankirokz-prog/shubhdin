@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 3.5 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 3.6 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v3.6 changelog:** §9.6 G8 — Gujarati Marriage report APPROVED as production quality. લગ્ન/વિવાહ moved from PROVISIONAL to LOCKED, confirmed against a rendered report. મેળાપક and મનનું જોડાણ logged as new provisional items for the final native pass.
 **v3.5 changelog:** §9.6 G8 — Gujarati Love report native pass. રમૂજ-over-હાસ્ય ruling, મન density law (≤3.5/100w) with the ચંદ્ર (મન) gloss exempted, confirmed-native list, and dnaSignature phrasing logged as a third provisional item.
 **v3.4 changelog:** §9.6 G8 — પૂનમાંત and લગ્ન/વિવાહ explicitly marked PROVISIONAL, not locked. Both deferred to native review; લગ્ન/વિવાહ to be judged against a fully rendered Marriage report.
 **v3.3 changelog:** §9.6 G8 filled — Gujarati panchang sample APPROVED against a rendered page. Confirmed-native list recorded; two open items logged (masaL label wrapping, પૂનમાંત vs પૂર્ણિમાંત).
@@ -982,13 +983,17 @@ literal Hindi rendered in Gujarati. Cover, DNA page and headings approved.
   Sanskrit form is પૂર્ણિમાંત. A colloquial tithi name and a technical calendar
   term may legitimately diverge. **Do not change it by analogy** — it awaits a
   native ruling. This is deliberately NOT in the locked G0 set.
-- **PROVISIONAL, NOT LOCKED — લગ્ન vs વિવાહ.** Gujarati has the same collision
-  Marathi does: લગ્ન means both *ascendant* and *marriage*, and Gujarati leans on
-  the everyday sense harder (લગ્ન કરવું). Current approach, and the safer one:
-  **વિવાહ in marriage-report headings, લગ્ન reserved for the ascendant**, so the
-  two never blur inside a Kundli. But વિવાહ may read formal to a Gujarati ear.
-  **Revisit only after a COMPLETE Marriage report renders** — judge it in a full
-  page, not a term list. Until then this stands as-is.
+- **LOCKED — લગ્ન vs વિવાહ.** Gujarati has the same collision Marathi does: લગ્ન
+  means both *ascendant* and *marriage*, and Gujarati leans on the everyday sense
+  harder (લગ્ન કરવું). **વિવાહ in marriage-report headings; લગ્ન reserved for the
+  ascendant.** Confirmed against a fully rendered Marriage report — the condition
+  set for this ruling — and approved as production quality. વિવાહ does NOT read
+  too formal. This is no longer provisional; do not revisit.
+- **PROVISIONAL, NOT LOCKED — મેળાપક.** Currently used for "matching"
+  (વિવાહ મેળાપક અહેવાલ, ગુણ મેળાપક). Held for the final native Gujarati review.
+  **Do not change now** — the Marriage report was approved with it in place.
+- **PROVISIONAL, NOT LOCKED — મનનું જોડાણ.** The emotional-compatibility domain
+  title. Held for the final native review alongside મેળાપક. **Do not change now.**
 
 ## 9. TELUGU / TAMIL / KANNADA / MARATHI / BENGALI CONSTITUTIONS
 
