@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 3.8 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 3.9 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v3.9 changelog:** §9.6 G8 — Gujarati Forecast APPROVED. Two STYLE REVIEW ONLY items added (ધ્યાન આપવું, મહેનતથી ઘડાવાનું વર્ષ). Process confirmed by reviewer: record style items, never edit after approval.
 **v3.8 changelog:** §9.6 G8 — Gujarati Muhurta APPROVED; terminology confirmed consistent across Panchang, Love, Marriage, Career and Muhurta. કે vs અથવા logged as the seventh provisional item. All open Gujarati items are now stylistic, not corrective.
 **v3.7 changelog:** §9.6 G8 — Gujarati Career report APPROVED as production-ready. નાણાં and કાયદો logged as provisional wording choices for the final native pass.
 **v3.7 changelog:** §9.6 G8 — Gujarati Career report APPROVED as production-ready. નાણાં and કાયદો logged as provisional for the final native pass.
@@ -989,6 +990,18 @@ Panchang, Love, Marriage, Career and Muhurta.** All remaining items are
 stylistic preferences, not translation errors — the terminology foundation for
 Gujarati is settled.
 
+**Forecast report — APPROVED.** Two further STYLE-ONLY items added below; the
+reviewer confirmed the process of recording rather than changing after approval,
+since a post-approval edit silently un-approves the PDF that was signed off.
+
+- **STYLE REVIEW ONLY — ધ્યાન આપવું** (`forecast.labels.attention`). Used for the
+  yearly rating. Correct and clear; a native ear may prefer ખાસ ધ્યાન આપવું /
+  સાવચેતી રાખવી / ધ્યાન રાખવું depending on intended tone. **Do not change now.**
+- **STYLE REVIEW ONLY — મહેનતથી ઘડાવાનું વર્ષ** (`forecast.ratings.testing.t_en`).
+  Appears several times in the decade summary **by design** — the rating title
+  repeats for every year sharing that rating, and render-check allowlists it.
+  The repetition is not a bug; the phrasing is what may want polish.
+  **Do not change now.**
 - **PROVISIONAL, NOT LOCKED — કે vs અથવા in headings.** Currently કે
   ("દુકાન કે વ્યવસાયનો પ્રારંભ", "સરકારી કે ખાનગી", "નોકરી કે વ્યવસાય").
   A stylistic preference only; both are correct Gujarati. Held for the final
