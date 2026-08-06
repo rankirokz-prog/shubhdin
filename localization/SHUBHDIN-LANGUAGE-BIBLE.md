@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 3.7 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 3.8 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v3.8 changelog:** §9.6 G8 — Gujarati Muhurta APPROVED; terminology confirmed consistent across Panchang, Love, Marriage, Career and Muhurta. કે vs અથવા logged as the seventh provisional item. All open Gujarati items are now stylistic, not corrective.
 **v3.7 changelog:** §9.6 G8 — Gujarati Career report APPROVED as production-ready. નાણાં and કાયદો logged as provisional wording choices for the final native pass.
 **v3.7 changelog:** §9.6 G8 — Gujarati Career report APPROVED as production-ready. નાણાં and કાયદો logged as provisional for the final native pass.
 **v3.6 changelog:** §9.6 G8 — Gujarati Marriage report APPROVED as production quality. લગ્ન/વિવાહ moved from PROVISIONAL to LOCKED, confirmed against a rendered report. મેળાપક and મનનું જોડાણ logged as new provisional items for the final native pass.
@@ -983,6 +984,16 @@ literal Hindi rendered in Gujarati. Cover, DNA page and headings approved.
 **Career report — APPROVED as production-ready**, consistent with Love and
 Marriage. દશાંશ (D10), પબ્લિક સેક્ટર and કુંડળી all confirmed in context.
 
+**Muhurta report — APPROVED. Terminology now confirmed CONSISTENT across
+Panchang, Love, Marriage, Career and Muhurta.** All remaining items are
+stylistic preferences, not translation errors — the terminology foundation for
+Gujarati is settled.
+
+- **PROVISIONAL, NOT LOCKED — કે vs અથવા in headings.** Currently કે
+  ("દુકાન કે વ્યવસાયનો પ્રારંભ", "સરકારી કે ખાનગી", "નોકરી કે વ્યવસાય").
+  A stylistic preference only; both are correct Gujarati. Held for the final
+  native pass. **Do not change now** — four reports were approved with કે in
+  place, and switching would invalidate those approvals.
 - **PROVISIONAL, NOT LOCKED — નાણાં and કાયદો.** Career-field vocabulary
   (`careerFields.jupiter`, `career.planetCareer.jupiter`). Held for the final
   native Gujarati review. **Do not change now** — the Career report was approved
