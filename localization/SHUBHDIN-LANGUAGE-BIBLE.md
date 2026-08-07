@@ -1,6 +1,11 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 6.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 8.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v8.0 changelog:** ASSAMESE RELEASE BLOCKERS CLEARED by research. সাতে সাতি (invented) → সাদে সতী; ঢৈয়া → ধৈয়া; twelve month names confirmed from four sources; tithi register confirmed SANSKRIT (opposite of Gujarati), validating all 16 entries. Choghadiya recorded as likely-not-native — keep but relabel. release-blockers: release 0, warning 2, style 1.
+**v7.3 changelog:** §9.7 G4 added — UNRESEARCHED items flagged honestly during translation rather than asserted as rulings. সাতে সাতি is a guess and is marked as such; Bihu month names need a panjika citation; দেওবাৰ is sourced.
+**v7.2 changelog:** §9.7 G0b — scanner metric relabelled DETECTABLE COVERAGE with the caveat inline, so it is not mistaken for a translation-quality score. Assamese terms batch 1 applied: দেওবাৰ for Sunday and the Bohag-calendar month names recorded as language-specific findings.
+**v7.1 changelog:** §9.7 G0b added — a clean scan is EVIDENCE AGAINST known contamination, not PROOF of good language. Applies to all four scanners. Native review remains the final quality gate.
+**v7.0 changelog:** Added §9.7 Assamese Constitution — language 9, shipped for Northeast representation. Shared-script language (Bengali-Assamese block). জন্মকুণ্ডলী ruled standard from published Assamese sources, NOT Bengali’s কোষ্ঠী; জন্মকুষ্ঠী accepted as synonym but not mixed. Two-layer scanner: ৰ/র character heuristic as early warning, grammar as authoritative. ব check removed — it is ordinary Assamese.
 **v6.0 changelog:** BENGALI and MARATHI CLOSED via research-based review. Bengali: যোটক বিচার featured, k046/k047 aligned (a third term was in use), পুরোহিত confirmed. Marathi: गुरुजी and गुण जुळवणी applied. §9.3b cross-language note added — the priest word resolved differently in all three languages. ALL EIGHT LANGUAGES NOW CLOSED.
 **v5.0 changelog:** GUJARATI CLOSED. Research-based review completed against published Gujarati sources with citations and confidence levels. Two changes applied: ગોર મહારાજ (spaced, both files) and પૂર્ણિમાંત. All other approved wording preserved with evidence recorded. શતભિષા/શત તારકા logged as a known published variant.
 **v4.2 changelog:** §9.6 G8 — પરિહાર consistency audited and CLOSED (26 uses, single term; ઉકેલ hits are the verb, not the noun). Consolidated GUJARATI-REVIEW-LIST.md produced for the native reviewer.
@@ -901,6 +906,207 @@ defensible only from that language's own published usage:
 cross-language recall.** Three languages, one concept, three answers — and the
 Bengali answer is the one a pattern-matcher would have got wrong, because it
 keeps the word the other two rejected.
+
+## 9.7 ASSAMESE CONSTITUTION (অসমীয়া)
+
+**Language 9. Shipped for representation of Northeast India, not commercial
+reach — a legitimate reason, and recorded as such.**
+
+**Reviewer: no native Assamese speaker available. Rulings below are
+research-based, sourced from published Assamese usage with citations — the same
+method that closed Gujarati, Bengali and Marathi. A future native pass can
+overturn any of it.**
+
+### G0. Product rulings — LOCKED (research-based)
+
+- **Birth chart: জন্মকুণ্ডলী** (short form কুণ্ডলী). ★ Sourced.
+  - **Daily Assam** (native Assamese panjika site) menu: ৰাশিগণনা ·
+    **জন্মকুণ্ডলী** · **জন্মকুষ্ঠী** · ৰাশিফল · গুণমিলন
+  - **AstroSage Assamese**: "জন্ম কুণ্ডলী (যাক আমি কুণ্ডলী, জন্ম কুণ্ডলী,
+    জন্ম পত্ৰিকা … আদি নামেৰেও জানোঁ)"
+  - **জন্মকুষ্ঠী is an ACCEPTED SYNONYM**, co-attested by Daily Assam — but
+    **do not mix both through the reports.** জন্মকুণ্ডলী is the standard report
+    term; জন্মকুষ্ঠী may appear as an occasional gloss only.
+  - **NOT কোষ্ঠী.** Every কোষ্ঠী hit in research came from a BENGALI source
+    (Banglapedia, Bengali astrology blogs — all written with র, not ৰ). The
+    Bengali answer does not transfer. **Fourth language, fourth answer to the
+    chart-word question:** কোষ্ঠী (bn) · કુંડળી (gu) · पत्रिका-in-body (mr) ·
+    **কুণ্ডলী (as)**.
+- **পঞ্জিকা** for the almanac — confirmed with heritage. Daily Assam:
+  "শংকৰদেৱৰ সময়ৰ পৰা আজিলৈকে এই পঞ্জীকাৰ ব্যৱহাৰ অসমীয়াৰ দৈনন্দিন জীৱনত
+  গুৰুত্বপূৰ্ণ" — in continuous use since Sankardev's time.
+- **ৰাশিফল** for horoscope — universal across Assamese sources (Sentinel Assam,
+  assamesepanjika.com, Daily Assam, AstroSage Assamese).
+- **Arabic numerals only.** Never Bengali-Assamese (০১২৩৪৫৬৭৮৯).
+
+### G0b. WHAT A CLEAN SCAN DOES AND DOES NOT PROVE
+
+**This applies to every scanner in the project — scan-bn, scan-mr, scan-gu,
+scan-as — and is stated here because Assamese is the language where it is
+easiest to forget.**
+
+A clean `scan-as.js` run is **evidence against known Bengali contamination.**
+It is **not proof of good Assamese.**
+
+What a passing scan actually establishes:
+- none of the ~25 Bengali forms on the list appear
+- no র where ৰ belongs
+- no foreign script, no Bengali-Assamese numerals, no duplicate keys
+
+What it cannot establish:
+- that the sentence CONSTRUCTION is Assamese rather than Bengali word-order
+  wearing Assamese vocabulary
+- that idiom, register and rhythm read naturally to an Assamese ear
+- that a Bengali form NOT on the list slipped through — the list is finite and
+  was assembled from a handful of sources
+- anything at all about the short headings the character layer is blind to,
+  beyond the specific words enumerated
+
+**DETECTABLE COVERAGE is not a quality score.** `scan-as.js` reports the share
+of strings where the scanner COULD see Bengali if it were present. On the terms
+layer this reads **40.5%** — because **77 of 148 terms are byte-identical in
+Bengali and Assamese** (মঙ্গল · বুধ · শনি · কেতু · শুভ). A word that does not
+differ between the two languages is undetectable *by definition*, not badly
+translated. Prose scores far higher, since আপোনাৰ / আৰু / পৰা recur constantly.
+Watch the number across runs: a DROP means a new blind spot, not worse language.
+
+**Native review remains the final language-quality gate.** A scanner can only
+ever refute; it cannot confirm. Every Assamese report ships flagged
+"harness-clean, awaiting native review" until a native pass or a sourced
+research pass says otherwise — the same bar Bengali, Marathi and Gujarati met.
+
+### G1. The Assamese trap: Bengali bleed in a shared script
+
+Assamese uses the Bengali-Assamese script — the **same Unicode block as Bengali**
+(U+0980–09FF). A Bengali fallback renders as plausible Assamese-script text and
+passes every script-purity check, exactly the way Hindi hides inside Marathi.
+And the risk is the translator's: Assamese is written directly after ~810
+Bengali blocks.
+
+`scan-as.js` is **mandatory** on every batch, **run unpiped**, and is built as
+**two independent layers**:
+
+**LAYER 1 — character heuristic (EARLY WARNING, not authoritative).**
+Assamese writes **ৰ** (U+09F0) where Bengali writes **র** (U+09B0). Measured
+against our own 810 Bengali blocks, **92% of Bengali strings carry র**.
+
+⚠ **Do NOT lean on the 92%.** The 4.2% that lack it are almost all SHORT
+strings — **32 of 34 are under 20 characters**: headings, table labels, single
+words (অগ্নি · জল · নিষ্ঠা · কেন এই সময়). Precisely where a fallback is
+hardest to see by eye.
+
+**LAYER 2 — grammar (AUTHORITATIVE).** Bengali function words Assamese never
+uses. These carry the short strings the character layer cannot:
+
+| Bengali ❌ | Assamese ✅ |
+|---|---|
+| আপনার · আপনি · আপনাকে | **আপোনাৰ · আপুনি · আপোনাক** |
+| এবং | **আৰু** |
+| হয়েছে · হয়েছিল | **হৈছে · হৈছিল** |
+| নয় | **নহয়** |
+| থেকে | **পৰা** |
+| জন্য | **বাবে** |
+| তাদের | **তেওঁলোকৰ** |
+| করুন · করেন | **কৰক · কৰে** |
+| হবে | **হ'ব** |
+| সঙ্গে | **সৈতে · লগত** |
+| চেয়ে | **তকৈ** |
+| কেন · কীভাবে · কখন | **কিয় · কেনেকৈ · কেতিয়া** |
+| গেছে | **গৈছে** |
+
+**আপোনাৰ is the highest-value entry** — the reports address the reader
+constantly, so Bengali আপনার would surface dozens of times per report.
+
+### G2. ব is NOT a Bengali marker — do not add that check
+
+Assamese has **three** letters where Bengali has two: **ৰ** (ra), **ব** (ba)
+and **ৱ** (wa). **ব is ordinary Assamese for /b/** — বুধ · বলৱান · বাবে.
+ৱ replaces Bengali ব only for the /w/ sound, never for /b/.
+
+An earlier draft of `scan-as.js` flagged ব as "Bengali, use ৱ" and **fired on
+correct Assamese in its own test fixture**. Removed, with the reasoning in the
+file. **Only র is a reliable character marker.**
+
+### G3. Typography
+
+**No new font.** `Noto Serif Bengali` covers the Assamese script — a
+Marathi-style reuse, not a Gujarati-style new load. Give `lang-as` its own
+shaping rule so it can be tuned independently of `lang-bn` later.
+`text-rendering:auto`, never `optimizeLegibility` (§10.2).
+
+### G4. Research-based rulings — BLOCKERS CLEARED
+
+Sourced from published Assamese usage, filtered by distinctly Assamese
+orthography (ৰ/ৱ) so Bengali results did not contaminate the search.
+**Standing caveat, stronger here than for Gujarati/Marathi: the Assamese web
+corpus is thin, and two rulings rest on a single source.** A native reader, or
+one printed panjika (Assam Sahitya Sabha calendar, any Guwahati-market
+panjika), outranks all of it.
+
+- **CLEARED — Sade Sati is সাদে সতী.** MEDIUM, single source. Asom Live 24
+  (asomlive24.com), Saturn-remedies article in unmistakable Assamese:
+  "ই শনিৰ অশুভ প্ৰভাৱ, যেনে **সাদে সতী** আৰু **ধৈয়া** আদিৰ পৰা সকাহ দিয়ে।"
+  APPLIED to `glossTerm.Sade Sati`, `kundli.k051`, `toc[7]`.
+  **The invented সাতে সাতি was wrong, and wrong in the way invented forms are** —
+  close enough to sound right, different enough to be caught. Upgrade to HIGH on
+  a second attestation.
+- **CLEARED — the twelve month names stand as written.** Four independent
+  sources: Wiktionary's Assamese calendar table, notunpohor.com (with day
+  counts), northguwahati.com "অসমীয়া পঞ্জিকা ২০২৫/২০২৬", assamesecalendars.com.
+  **শাওণ kept** — the two *panjika* sources print শাওণ; **শাওন is a known
+  published variant** (Wiktionary, notunpohor). Panjika-context sources win for
+  a panjika app. আঘোণ confirmed (আঘোন variant exists).
+  The Bihu names are used for LUNAR events too — panjika sites write
+  "কাতিক পূৰ্ণিমা", "আঘোণ অমাবস্যা" — which supports their use in the masa table.
+- **CLEARED — tithi register is SANSKRIT, not colloquial.** HIGH. This is the
+  **opposite of Gujarati**, and it confirms all 16 entries at once.
+  notunpohor.com lists the full set in Assamese orthography: প্ৰতিপদ · দ্বিতীয়া
+  … চতুৰ্দশী · অমাৱস্যা বা পুৰ্ণিমা. dailyassam.com confirms the technical
+  register. **Assamese follows the Bengali panjika tradition here, not the
+  Gujarati colloquial one.** Use the ৱ spellings (অমাৱস্যা, নৱমী) — already
+  correct in the batch; অমাবস্যা with ব also circulates.
+- **ATTESTED — ধৈয়া, not ঢৈয়া.** Same Asom Live 24 sentence. Spelling
+  corrected in `ssPhase.*`. MEDIUM, single source — stands or falls with সাদে সতী.
+- **OPEN (warning) — পাদ vs চৰণ.** No Assamese source found for either. পাদ kept
+  on two indirect grounds: Assamese jyotish tracks the Bengali/Sanskrit register
+  (now PROVEN by the tithi ruling), and Bengali uses পাদ. Honest status:
+  unverified, consistent with the register ruling.
+- **OPEN (warning) — choghadiya is LIKELY NOT native Assamese practice.**
+  goodtime.today's Assamese panchang lists তিথি · নক্ষত্ৰ · সূৰ্যোদয় ·
+  সূৰ্যাস্ত · দুঃমুহূৰ্ত · বৰ্জ্যাম · অমৃত সময় — **no choghadiya**, while
+  durmuhurta/varjyam/amrit ARE present. Assamese panjikas follow the Bengali
+  model; choghadiya is a NW-Indian practice.
+  **Ruling: keep the section** — NRI Assamese users meet choghadiya in
+  pan-Indian apps and may expect it — **but label it a pan-Indian muhurta tool,
+  not native Assamese panjika content.** This is "rethink, not retranslate."
+
+### G4b. Superseded — what was flagged during translation
+
+*(kept for the record: these were the honest flags that triggered the research)*
+
+Items written without a source, recorded honestly rather than passed off as
+rulings. These need the research pass before they can be trusted.
+
+- **⚠ সাতে সাতি (Sade Sati) — GUESSED, not sourced.** Bengali uses সাড়েসাতি;
+  Hindi साढ़े साती. I do not know the Assamese form and wrote a plausible one.
+  **This is exactly the shape of the Gujarati પૂનમાંત failure** — a reasonable-
+  sounding construction with zero verified usage behind it. Search Assamese
+  panjika sources before this ships. Highest-priority unresearched item.
+- **⚠ Bihu-calendar month names — সourced by cultural knowledge, not by a
+  panjika citation.** চ'ত · ব'হাগ · জেঠ · আহাৰ · শাওণ · ভাদ · আহিন · কাতি ·
+  আঘোণ · পুহ · মাঘ · ফাগুন. ব'হাগ (Bohag Bihu) is certain; the full set in a
+  *panjika* context is not. Confirm the whole twelve against an Assamese panjika
+  — every date the app prints depends on it.
+- **✓ দেওবাৰ for Sunday — SOURCED.** assamesepanjika.com date line:
+  "তাৰিখ: ২৬ অক্টোবৰ, দেওবাৰ" (26 Oct was a Sunday). Assamese does NOT use
+  ৰবিবাৰ. High confidence.
+- **পাদ vs চৰণ for nakshatra quarter** — currently পাদ, matching Bengali.
+  Marathi and Gujarati both use চৰণ/ચરણ. Unverified for Assamese.
+
+### G5. Review-round rulings
+
+*To be filled — research-based pass, following the Gujarati / Bengali / Marathi
+pattern.*
 
 ## 9.6 GUJARATI CONSTITUTION (ગુજરાતી)
 
