@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 4.2 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 5.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v5.0 changelog:** GUJARATI CLOSED. Research-based review completed against published Gujarati sources with citations and confidence levels. Two changes applied: ગોર મહારાજ (spaced, both files) and પૂર્ણિમાંત. All other approved wording preserved with evidence recorded. શતભિષા/શત તારકા logged as a known published variant.
 **v4.2 changelog:** §9.6 G8 — પરિહાર consistency audited and CLOSED (26 uses, single term; ઉકેલ hits are the verb, not the noun). Consolidated GUJARATI-REVIEW-LIST.md produced for the native reviewer.
 **v4.1 changelog:** §9.6 G8 — Gujarati Annual APPROVED. Varshaphal vocabulary (વર્ષફળ કુંડળી, વર્ષેશ, મુંથા) added to the style list for verification with practising astrologers.
 **v4.0 changelog:** §9.6 G8 — Gujarati Child APPROVED. Two STYLE REVIEW ONLY items added. The family-priest word was found INCONSISTENT between reports (ગોરમહારાજ in Child, પુરોહિત in Muhurta) — recorded, not changed, since both reports are approved.
@@ -1003,6 +1004,45 @@ hedge both confirmed intact.
 **Annual (Varshaphal) report — APPROVED.** Both senses of લગ્ન confirmed working
 in one report: વર્ષ લગ્ન for the ascendant, વિવાહ for marriage.
 
+### Gujarati review — CLOSED (research-based rulings)
+
+No native Gujarati speaker was available, so these rulings were sourced from
+published Gujarati usage — Gujarati Vishwakosh, Mumbai Samachar, Gujarat
+Samachar, VTV Gujarati, Drik Panchang Gujarati, AstroSage Gujarati,
+gu.wikipedia — with confidence levels recorded. **This substitutes for native
+review; it is not the same thing.** A future native pass may overturn any of it,
+which is why the citations are kept.
+
+- **LOCKED — family priest is ગોર મહારાજ, TWO WORDS.** ★ HIGH confidence.
+  Mumbai Samachar settles the primacy directly: *"પુરોહિત કે શુક્લ તરીકે પણ
+  ઓળખાતા ગોર મહારાજ"* — the person IS ગોર મહારાજ and is *also known as*
+  પુરોહિત. Corroborated across regions: Rajkot/Saurashtra, ETV Navsari
+  (South Gujarat), gu.wikipedia wedding customs. **The regional-variation worry
+  dissolves.** Every source writes it spaced — never ગોરમહારાજ.
+  APPLIED: `muhurta` પુરોહિત → ગોર મહારાજ; `child` joined → spaced. Now
+  consistent in all three occurrences across two reports.
+- **LOCKED — month reckoning is અમાંત / પૂર્ણિમાંત.** MEDIUM-HIGH. Published
+  Gujarati panchangs keep BOTH registers side by side: colloquial in date lines
+  (સુદ/વદ, પૂનમ) and Sanskrit-technical in calendar-system labels. Drik
+  Panchang's own Gujarati vrat lists write પૂર્ણિમા / અમાવસ્યા. **Zero published
+  occurrences of the coinage પૂનમાંત.** APPLIED to `klbl.masaL`.
+  **The પૂનમ tithi ruling (§9.6 G0) is untouched** — the two registers coexist
+  by design, which is exactly what the earlier open question suspected.
+- **KNOWN PUBLISHED VARIANT — શતભિષા vs શત તારકા.** We use **શતભિષા**
+  (Drik-style, and the form that distinguishes Gujarati from Marathi શતતારકા).
+  Prokerala's Gujarati panchang renders it શત તારકા. Both circulate. **Do not
+  file શત તારકા as a bug** if it turns up in another Gujarati source.
+- **CONFIRMED AS-IS with evidence — no change:** વર્ષફળ કુંડળી · વર્ષેશ · મુંથા
+  (AstroSage Gujarati, "પ્રાચીન તાજીક વિધિ") · નાણાં · કાયદો (નાણામંત્રી is the
+  standard press form) · કે in headings (Mumbai Samachar "પુરોહિત કે શુક્લ";
+  અથવા is the formal register) · મેળાપક (Gujarat Samachar "લગ્ન મેળાપક", VTV
+  "નક્ષત્ર મેળાપક") · મનનું જોડાણ · શાસ્ત્રીય વયમર્યાદા (formal register is
+  APPROPRIATE — it is literally citing shastra) · ધ્યાન આપવું · મહેનતથી
+  ઘડાવાનું વર્ષ · જન્મકુંડળીમાંથી આવેલો સ્વભાવ.
+- **Noted for a future native pass only, NOT changed:** ધ્યાન રાખવું may lean
+  marginally more natural than ધ્યાન આપવું for a caution rating; મળતો may flow
+  marginally better than આવેલો in `love.dnaSignature`. Neither justifies
+  un-approving a signed-off report.
 - **CLOSED — પરિહાર is already consistent.** 26 occurrences across all Gujarati
   content, single term, no competing noun. `ઉકેલ` appears 4× but always as the
   VERB ઉકેલવું ("to solve / unravel"), never the remedy noun — a naive substring
