@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 5.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 6.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v6.0 changelog:** BENGALI and MARATHI CLOSED via research-based review. Bengali: যোটক বিচার featured, k046/k047 aligned (a third term was in use), পুরোহিত confirmed. Marathi: गुरुजी and गुण जुळवणी applied. §9.3b cross-language note added — the priest word resolved differently in all three languages. ALL EIGHT LANGUAGES NOW CLOSED.
 **v5.0 changelog:** GUJARATI CLOSED. Research-based review completed against published Gujarati sources with citations and confidence levels. Two changes applied: ગોર મહારાજ (spaced, both files) and પૂર્ણિમાંત. All other approved wording preserved with evidence recorded. શતભિષા/શત તારકા logged as a known published variant.
 **v4.2 changelog:** §9.6 G8 — પરિહાર consistency audited and CLOSED (26 uses, single term; ઉકેલ hits are the verb, not the noun). Consolidated GUJARATI-REVIEW-LIST.md produced for the native reviewer.
 **v4.1 changelog:** §9.6 G8 — Gujarati Annual APPROVED. Varshaphal vocabulary (વર્ષફળ કુંડળી, વર્ષેશ, મુંથા) added to the style list for verification with practising astrologers.
@@ -664,6 +665,35 @@ hasanta (্) plus reph and ya-phala forms that per-character Latin-first fallba
 destroys outright. Verify these clusters render before sign-off. `text-rendering:auto`,
 never `optimizeLegibility` (§10.2).
 
+### B8. Research-based rulings — BENGALI CLOSED
+
+Sourced from published Bengali usage (bn.wikipedia, Drik Panchang Bengali
+panjika, banglapanjika.com, Asianet News Bangla, classic Bengali astrology
+essays), not recall. Confidence levels recorded. A future native pass may
+overturn any of it.
+
+- **APPLIED — যোটক বিচার featured in the matching heading.** ★ HIGH.
+  banglapanjika.com titles its matching tool "যোটক বিচার" with the grading
+  vocabulary অধমযোটক; classic essays: "বিবাহ ও যোটক বিচার". গুণ মিলন is attested
+  and not wrong, but যোটক বিচার is what a panjika-reading household searches for.
+  Now: `marriage.guna` = **গুণ মিলন (যোটক বিচার) — দোষ খণ্ডন সহ**.
+  **Also aligned `k046`** — it read বিবাহ মিলন, a THIRD term for the same
+  concept, and `k047` read গুণ স্কোর. Both now use the same vocabulary.
+- **LOCKED — পুরোহিত is correct; the Gujarati precedent does NOT transfer.**
+  High confidence. Bengali's written referential norm is পুরোহিত (news headlines,
+  bonedi-bari pujo prose, the priest's manual পুরোহিত দর্পণ). **ঠাকুরমশাই appears
+  only as spoken ADDRESS to a priest, never as reference** — wrong slot for
+  report prose. পুরুত is informal speech.
+- **LOCKED — অমান্ত / পূর্ণিমান্ত মাস, confirmed at the highest tier.** High.
+  Drik Panchang's Bengali panjika prints the labels verbatim. No coinage,
+  unlike the Gujarati પૂનમાંત case.
+- **খণ্ডন kept** for dosha cancellation; **দোষ বাতিল** recorded as a known
+  colloquial alternate, NOT a replacement.
+- **Confirmed as-is with evidence:** বর্ষফল কোষ্ঠী · বর্ষাধিপতি (বর্ষেশ) ·
+  নজর দিতে হবে · শাস্ত্রীয় বয়সসীমা (formal register APPROPRIATE — it cites
+  shastra) · অর্থ ও ব্যাংকিং · আইন · সরকারি **না** বেসরকারি (the natural
+  spoken-Bengali alternative construction, চা না কফি).
+
 ### B7. Review-round rulings (native Love pass)
 
 - **"কাছে আসে" for things arriving in a life → use "জীবনে আসে".**
@@ -803,6 +833,35 @@ reports for Hindi. Apply §10.2's single-font rule with `lang-mr` pointing at th
 same family. `text-rendering:auto`, never `optimizeLegibility` (§10.2) — the
 Devanagari word-duplication bug applies here identically.
 
+### M9. Research-based rulings — MARATHI CLOSED
+
+Sourced from published Marathi usage (Marathi Vishwakosh, mr.wikipedia,
+Lokmat, TV9 Marathi, Webdunia Marathi, Sanatan Prabhat, Pune priest services),
+not recall. Confidence levels recorded.
+
+- **APPLIED — घरचे पुरोहित → घरचे गुरुजी.** ★ MED-HIGH. The §9.5 everyday-word
+  rule decides it: Maharashtra priests brand THEMSELVES गुरुजी ("गुरुजी पुणे",
+  "श्री खडके गुरुजी"), and the press uses it referentially in wedding coverage.
+  पुरोहित appears as the formal DEFINITIONAL term ("आचार्य म्हणजे पुरोहित") —
+  correct, but exactly the formally-correct compound the rule says to pass over.
+  **Ruled out:** भटजी (colloquial-to-pejorative, caste-marked in modern print);
+  उपाध्ये (surname / regional specialisation, too narrow).
+  Caveat: गुरुजी also means schoolteacher — context disambiguates completely in
+  a muhurta/puja sentence. Applied in `child` ×2 and `muhurta` ×1, the last as
+  the inflected **गुरुजींशीही**, not a bare swap.
+- **APPLIED — गुण मेलन → गुण जुळवणी.** ★ MED-HIGH. The Marathi press is
+  unanimous on the जुळ- root: Lokmat "३६ गुण जुळवले जातात"; TV9 "अष्टकूट जुळणी";
+  Webdunia "गुण जुळवणे". **मेलन appeared in ZERO sources** — the same coined-form
+  signature as the Gujarati પૂનમાંત finding. Applied in `marriage.guna`, `k046`
+  and `k047` (the last as the inflected **जुळवणीपाशीच**). परिहार untouched.
+- **LOCKED — अमान्त / पौर्णिमान्त महिना, confirmed at encyclopedia level.** High.
+  Marathi Vishwakosh defines both verbatim. The internal-consistency instinct
+  (पौर्णिमा → पौर्णिमान्त) was right.
+- **Confirmed as-is with evidence:** वर्षफल पत्रिका · वर्षाधिपती (वर्षेश) ·
+  लक्ष द्यावे · शास्त्रीय वयोमर्यादा · अर्थ व बँकिंग · कायदा ·
+  सरकारी **की** खासगी (everyday alternative-question construction, चहा की कॉफी —
+  the exact parallel of Gujarati's કે ruling).
+
 ### M8. Review-round rulings (native Love pass)
 
 - **ऊबदार is fine as a descriptor, not as a headline.**
@@ -826,6 +885,22 @@ Devanagari word-duplication bug applies here identically.
   doing its job — but the reviewer's standing request holds: a native eye must
   still confirm tone across a FULL report, because isolated Hindi-style sentence
   CONSTRUCTION is invisible to word-level scanning.
+
+## 9.3b CROSS-LANGUAGE NOTE — the family-priest word
+
+The same slot resolved **differently in all three researched languages**, each
+defensible only from that language's own published usage:
+
+| language | word | why |
+|---|---|---|
+| Gujarati | **ગોર મહારાજ** | everyday referential term; Mumbai Samachar: "પુરોહિત કે શુક્લ તરીકે પણ ઓળખાતા ગોર મહારાજ" |
+| Bengali | **পুরোহিত** | the written referential norm; the everyday-sounding alternatives (ঠাকুরমশাই) are ADDRESS forms, not references |
+| Marathi | **गुरुजी** | priests' own self-designation and the press norm; पुरोहित is correct but a register too formal |
+
+**This is the strongest argument in the project for research-per-language over
+cross-language recall.** Three languages, one concept, three answers — and the
+Bengali answer is the one a pattern-matcher would have got wrong, because it
+keeps the word the other two rejected.
 
 ## 9.6 GUJARATI CONSTITUTION (ગુજરાતી)
 
