@@ -1,6 +1,8 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 4.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 4.2 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v4.2 changelog:** §9.6 G8 — પરિહાર consistency audited and CLOSED (26 uses, single term; ઉકેલ hits are the verb, not the noun). Consolidated GUJARATI-REVIEW-LIST.md produced for the native reviewer.
+**v4.1 changelog:** §9.6 G8 — Gujarati Annual APPROVED. Varshaphal vocabulary (વર્ષફળ કુંડળી, વર્ષેશ, મુંથા) added to the style list for verification with practising astrologers.
 **v4.0 changelog:** §9.6 G8 — Gujarati Child APPROVED. Two STYLE REVIEW ONLY items added. The family-priest word was found INCONSISTENT between reports (ગોરમહારાજ in Child, પુરોહિત in Muhurta) — recorded, not changed, since both reports are approved.
 **v3.9 changelog:** §9.6 G8 — Gujarati Forecast APPROVED. Two STYLE REVIEW ONLY items added (ધ્યાન આપવું, મહેનતથી ઘડાવાનું વર્ષ). Process confirmed by reviewer: record style items, never edit after approval.
 **v3.8 changelog:** §9.6 G8 — Gujarati Muhurta APPROVED; terminology confirmed consistent across Panchang, Love, Marriage, Career and Muhurta. કે vs અથવા logged as the seventh provisional item. All open Gujarati items are now stylistic, not corrective.
@@ -998,6 +1000,18 @@ since a post-approval edit silently un-approves the PDF that was signed off.
 **Child & Family report — APPROVED.** Medical disclaimer and the `tender` band
 hedge both confirmed intact.
 
+**Annual (Varshaphal) report — APPROVED.** Both senses of લગ્ન confirmed working
+in one report: વર્ષ લગ્ન for the ascendant, વિવાહ for marriage.
+
+- **CLOSED — પરિહાર is already consistent.** 26 occurrences across all Gujarati
+  content, single term, no competing noun. `ઉકેલ` appears 4× but always as the
+  VERB ઉકેલવું ("to solve / unravel"), never the remedy noun — a naive substring
+  count reports this as a conflict; it is not one. No action needed.
+- **STYLE REVIEW ONLY — Varshaphal vocabulary: વર્ષફળ કુંડળી · વર્ષેશ · મુંથા.**
+  Verify with practising Gujarati astrologers whether these are the terms they
+  naturally use, or whether regional practice differs. This vocabulary appears
+  in NO other report, so a change would be contained to `annual-strings.gu.json`.
+  Not a blocker; **do not change now** — the Annual report is approved.
 - **STYLE REVIEW ONLY — શાસ્ત્રીય વયમર્યાદા** (`reason.ageWindow`). Reads
   formal; verify against a Gujarati reference that this is the most idiomatic
   wording for the classical age window. **Do not change now.**
