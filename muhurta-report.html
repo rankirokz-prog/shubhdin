@@ -309,6 +309,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 
 
 
+
 <script src="muhurta-content.js"></script>
 <script>
 
@@ -449,7 +450,7 @@ function generate(){ try {
         +'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
         +'<div class="bigdate">'+fD2(r.date)+'</div><div class="scorepill">'+('\u2605'.repeat(stars))+'</div></div>'
         +'<div class="meta">'+T(L.nakshatra)+': <b>'+term('nakshatra',r.nakshatra.en)+'</b> &nbsp;·&nbsp; '+T(L.tithi)+': <b>'+term('tithi',r.tithi.en)+'</b> ('+term('paksha',r.paksha)+') &nbsp;·&nbsp; '+T(L.day)+': <b>'+term('weekday',r.weekday.en)+'</b></div>'
-        +'<div class="why">\u2705 '+r.plus.map(function(p){return locMuReason(p);}).join(' &nbsp; ')+'</div>'
+        +'<div class="why">\u2705 '+r.plus.map(function(p){return locMuReason(p);}).join(' &nbsp;·&nbsp; ')+'</div>'
         +(r.minus.length?'<div class="caution">\u26A0 '+r.minus.map(function(p){return locMuReason(p);}).join('; ')+'</div>':'')
         +'<div class="windows">\u2600 '+T(L.abhijit)+': '+(r.abhijit?fT(r.abhijit.start)+'–'+fT(r.abhijit.end):'—')
         +(r.amritKaal&&r.amritKaal.start?' &nbsp;|&nbsp; \uD83C\uDF19 '+T(L.amrit)+': '+fT(r.amritKaal.start)+'–'+fT(r.amritKaal.end):'')+'</div></div>';
