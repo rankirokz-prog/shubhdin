@@ -92,6 +92,21 @@ $('engv').textContent=PE?('hardened · '+Object.keys(PE).length+' exports'):'NOT
 
 // ---- shared helpers (ported 1:1 from the verified Node suites) -------------
 const ser=o=>JSON.parse(JSON.stringify(o));
+// getDoshas anchors its sadeSati scan window to the CURRENT date (engine line
+// ~1373: refDate || new Date()), so the FIRST period's clipped start and the
+// LAST period's clipped end move forward one day per day. Those two edge
+// fields are definitionally time-dependent and can never match a frozen
+// golden; every interior boundary is a real Saturn ingress and stays checked.
+function normClip(o){
+  if(o==null||typeof o!=='object') return o;
+  if(o.sadeSati&&Array.isArray(o.sadeSati.periods)&&o.sadeSati.periods.length){
+    const ps=o.sadeSati.periods;
+    if(ps[0]&&typeof ps[0]==='object') ps[0].start=null;
+    const L=ps[ps.length-1]; if(L&&typeof L==='object') L.end=null;
+  }
+  for(const k in o) if(o[k]&&typeof o[k]==='object') normClip(o[k]);
+  return o;
+}
 function diff(path,a,b,out){
   if(a===b) return;
   // Numbers: tolerate cross-platform last-bit trig differences (Node vs browser V8).
@@ -207,8 +222,8 @@ suite('golden','2 · Goldens','Byte-exact diff of live output vs 211 frozen snap
     for(const fk of Object.keys(KFNS)){
       if(!g.kundli[cid]||!g.kundli[cid][fk]) continue;
       steps.push({name:'kundli '+cid+'.'+fk,fn:()=>{
-        const c=CHARTS[cid]; const live=ser(KFNS[fk](new Date(c[0]),c[1],c[2]));
-        const out=[]; diff('',g.kundli[cid][fk],live,out);
+        const c=CHARTS[cid]; const live=normClip(ser(KFNS[fk](new Date(c[0]),c[1],c[2])));
+        const out=[]; diff('',normClip(ser(g.kundli[cid][fk])),live,out);
         return out.length===0||out.length+' drifted: '+out.slice(0,2).join(' | ');
       }});
     }
