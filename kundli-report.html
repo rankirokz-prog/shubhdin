@@ -467,6 +467,8 @@ function generate(){
       // class as the text-rendering bug in §10.2.
       var brand = U('brand.name') || 'Shubh Din';
       var ink = '#1A3D6D';
+      var SIZE = 220;   // rendered px on the cover; viewBox stays 200 so all
+                        // geometry scales together. Only knob to turn for size.
       function arc(r, a1, a2, sweep){
         function p(d){ var a = d*Math.PI/180;
           return [(100 + r*Math.cos(a)).toFixed(2), (100 + r*Math.sin(a)).toFixed(2)]; }
@@ -475,7 +477,7 @@ function generate(){
         return 'M '+s1[0]+' '+s1[1]+' A '+r+' '+r+' 0 '+large+' '+sweep+' '+s2[0]+' '+s2[1];
       }
       var dash = ' stroke-dasharray="34 2.2 18 1.6 46 2.6"';
-      return '<svg viewBox="0 0 200 200" width="176" height="176" role="img" aria-label="'+brand+'">'
+      return '<svg viewBox="0 0 200 200" width='+SIZE+' height='+SIZE+' role="img" aria-label="'+brand+'">'
         +'<g transform="rotate(-4 100 100)">'
         +'<path id="sdArcTop" d="'+arc(74,200,340,1)+'" fill="none"/>'
         +'<path id="sdArcBot" d="'+arc(72,145,35,0)+'" fill="none"/>'
