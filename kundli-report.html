@@ -33,6 +33,9 @@ button{background:linear-gradient(135deg,#8B2B33,#5C1A1B);color:#FFE8C8;border:n
 .page::before{content:"";position:absolute;inset:14px;border:1.5px solid var(--gold2);border-radius:4px;pointer-events:none;}
 .cover{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
 .om{font-size:54px;color:var(--gold);}
+  .sdsealwrap{margin:0 0 18px;}
+  .sdstamp{display:block;margin:0 auto;}
+  @media print{.sdstamp{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 .cover h1{font-size:38px;margin:12px 0 4px;}
 .cover .name{font-size:30px;color:#8B2B33;margin:26px 0 6px;font-weight:700;}
 .cover .bd{font-size:16px;color:var(--soft);}
@@ -340,6 +343,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 
 
 
+
 <script src="report-content.js"></script>
 <script>
 
@@ -450,9 +454,48 @@ function generate(){
       +'<div class="sub" style="font-size:15px;">'+(sub||'')+'</div>'
       +'<div class="tagfree" style="margin-top:26px;">'+name+'</div></div>');
   }
+  // ---- COVER SEAL (trial: kundli only) ----
+  // Brand name is HORIZONTAL, never on a curved textPath: curved paths break
+  // Indic conjunct shaping in several renderers — same failure class as the
+  // letter-spacing bug in §10.2. Name comes from U.brand.name so it localises.
+  function sdSeal(){
+      // Vintage postmark seal. Ink #1A3D6D (deep postal blue), 10.3:1 contrast
+      // on the cream page. Brand curves along the top arc via textPath, so it
+      // localises from U.brand.name across all nine languages.
+      // Roughness is stroke-dasharray, NOT an SVG filter: feTurbulence is
+      // unreliable in print engines and could vanish in the PDF — same failure
+      // class as the text-rendering bug in §10.2.
+      var brand = U('brand.name') || 'Shubh Din';
+      var ink = '#1A3D6D';
+      function arc(r, a1, a2, sweep){
+        function p(d){ var a = d*Math.PI/180;
+          return [(100 + r*Math.cos(a)).toFixed(2), (100 + r*Math.sin(a)).toFixed(2)]; }
+        var s1 = p(a1), s2 = p(a2);
+        var large = Math.abs(a2-a1) > 180 ? 1 : 0;
+        return 'M '+s1[0]+' '+s1[1]+' A '+r+' '+r+' 0 '+large+' '+sweep+' '+s2[0]+' '+s2[1];
+      }
+      var dash = ' stroke-dasharray="34 2.2 18 1.6 46 2.6"';
+      return '<svg viewBox="0 0 200 200" width="176" height="176" role="img" aria-label="'+brand+'">'
+        +'<g transform="rotate(-4 100 100)">'
+        +'<path id="sdArcTop" d="'+arc(74,200,340,1)+'" fill="none"/>'
+        +'<path id="sdArcBot" d="'+arc(72,145,35,0)+'" fill="none"/>'
+        +'<circle cx="100" cy="100" r="88" fill="none" stroke="'+ink+'" stroke-width="3.4"'+dash+'/>'
+        +'<circle cx="100" cy="100" r="80" fill="none" stroke="'+ink+'" stroke-width="1.5"'+dash+'/>'
+        +'<circle cx="100" cy="100" r="56" fill="none" stroke="'+ink+'" stroke-width="1.2" opacity=".55"/>'
+        +'<text font-size="17" fill="'+ink+'" letter-spacing="1.5" style="font-weight:700;">'
+        +'<textPath href="#sdArcTop" startOffset="50%" text-anchor="middle">'+brand+'</textPath></text>'
+        +'<text font-size="10.5" fill="'+ink+'" letter-spacing="2.4" opacity=".92" style="font-weight:600;">'
+        +'<textPath href="#sdArcBot" startOffset="50%" text-anchor="middle">SHUBHDIN.APP</textPath></text>'
+        +'<text x="100" y="118" text-anchor="middle" font-size="54" fill="'+ink+'"'
+        +' style="font-family:\'Noto Serif Devanagari\',serif;">\u0950</text>'
+        +'<line x1="62" y1="132" x2="138" y2="132" stroke="'+ink+'" stroke-width="1.1" opacity=".6"/>'
+        +'<line x1="62" y1="68" x2="138" y2="68" stroke="'+ink+'" stroke-width="1.1" opacity=".6"/>'
+        +'</g></svg>';
+    }
+
   // ---- COVER ----
   pg('<div class="cover" style="min-height:900px;">'
-    +'<div class="om">ॐ</div><h1>'+T(L.reportTitle)+'</h1>'
+    +'<div class="sdsealwrap">'+sdSeal()+'</div><h1>'+T(L.reportTitle)+'</h1>'
     +'<div class="sub" style="font-size:15px;">'+T(L.by)+'</div>'
     +'<div class="name">'+name+'</div>'
     +'<div class="bd">'+fD(b)+' · '+fT(b)+' IST<br>'+place+' ('+lat.toFixed(4)+', '+lng.toFixed(4)+')</div>'
