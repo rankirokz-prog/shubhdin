@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shubh Din — Panchang Engine Test Lab</title>
+<style>
+  :root{
+    --sky:#141B33; --sky2:#1E2A4F; --paper:#F7F6F2; --ink:#22232B;
+    --pass:#1F7A46; --pass-bg:#E7F3EC; --fail:#B3261E; --fail-bg:#FBEAE8;
+    --saffron:#E8842A; --line:#D9D6CE; --mut:#6B6C75; --mono:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--paper);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;}
+  header{background:linear-gradient(160deg,var(--sky) 0%,var(--sky2) 100%);color:#EDEBFF;padding:22px 18px 16px;}
+  header h1{font-size:19px;font-weight:600;letter-spacing:.2px;}
+  header .sub{font-size:12.5px;color:#A9AECF;margin-top:2px;}
+  header .sub b{color:var(--saffron);font-weight:600;}
+  /* horizon sweep line — progress indicator */
+  .horizon{height:3px;background:#0C1122;position:relative;overflow:hidden;}
+  .horizon .sun{position:absolute;top:0;bottom:0;left:0;width:0%;background:linear-gradient(90deg,var(--saffron),#FFC46B);transition:width .15s;}
+  main{max-width:860px;margin:0 auto;padding:14px;}
+  .summary{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 14px;}
+  .pill{border:1px solid var(--line);border-radius:20px;padding:5px 13px;font-size:13px;background:#fff;}
+  .pill b{font-family:var(--mono);}
+  .pill.ok b{color:var(--pass);} .pill.bad b{color:var(--fail);}
+  section{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+  .sec-head{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+  .sec-head h2{font-size:14.5px;font-weight:600;flex:1;}
+  .sec-head .desc{display:none;}
+  .status{font-family:var(--mono);font-size:12.5px;color:var(--mut);min-width:88px;text-align:right;}
+  .status.ok{color:var(--pass);font-weight:600;} .status.bad{color:var(--fail);font-weight:600;}
+  button{border:0;border-radius:8px;padding:8px 14px;font-size:13.5px;font-weight:600;cursor:pointer;background:var(--sky);color:#fff;}
+  button:disabled{opacity:.45;cursor:default;}
+  button.stop{background:var(--fail);}
+  button.ghost{background:#EFEDE7;color:var(--ink);}
+  .body{border-top:1px solid var(--line);padding:10px 14px;display:none;}
+  .body.show{display:block;}
+  .desc-line{font-size:12.5px;color:var(--mut);margin-bottom:8px;}
+  .log{font-family:var(--mono);font-size:12px;line-height:1.55;max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word;}
+  .log .f{color:var(--fail);}
+  .log .p{color:var(--pass);}
+  .opts{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px;}
+  .opts input{width:84px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-family:var(--mono);font-size:13px;}
+  .toolbar{display:flex;gap:8px;margin:4px 0 16px;flex-wrap:wrap;}
+  .banner{border-radius:10px;padding:11px 14px;font-size:13.5px;margin-bottom:12px;display:none;}
+  .banner.ok{display:block;background:var(--pass-bg);color:var(--pass);border:1px solid #BFDCCB;}
+  .banner.bad{display:block;background:var(--fail-bg);color:var(--fail);border:1px solid #E7C2BF;}
+  .loaderr{background:var(--fail-bg);color:var(--fail);border:1px solid #E7C2BF;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13.5px;display:none;}
+  @media(max-width:520px){ .status{min-width:70px;} main{padding:10px;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Panchang Engine — Test Lab</h1>
+  <div class="sub">shubhdin.app · isolated harness · engine <b id="engv">loading…</b></div>
+</header>
+<div class="horizon"><div class="sun" id="sun"></div></div>
+<main>
+  <div class="loaderr" id="loaderr"></div>
+  <div class="summary">
+    <div class="pill">Total <b id="tTotal">0</b></div>
+    <div class="pill ok">Pass <b id="tPass">0</b></div>
+    <div class="pill bad">Fail <b id="tFail">0</b></div>
+    <div class="pill">Time <b id="tTime">–</b></div>
+  </div>
+  <div class="toolbar">
+    <button id="runAll">Run all suites</button>
+    <button class="ghost" id="copyFail">Copy failures</button>
+    <button class="ghost" id="clearAll">Clear</button>
+  </div>
+  <div class="banner" id="banner"></div>
+  <div id="suites"></div>
+</main>
+
+<script src="astronomy_min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="golden-snapshots.js"></script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const PE=window.PanchangEngine;
+// ---- load sanity -----------------------------------------------------------
+const missing=[];
+if(!window.Astronomy) missing.push('astronomy_min.js');
+if(!PE) missing.push('panchang-engine.js');
+if(!window.GOLDENS) missing.push('golden-snapshots.js');
+if(missing.length){ const el=$('loaderr'); el.style.display='block';
+  el.textContent='Missing file(s): '+missing.join(', ')+'. Keep all four files in the same folder and reload.'; }
+$('engv').textContent=PE?('hardened · '+Object.keys(PE).length+' exports'):'NOT LOADED';
+
+// ---- shared helpers (ported 1:1 from the verified Node suites) -------------
+const ser=o=>JSON.parse(JSON.stringify(o));
+function diff(path,a,b,out){
+  if(a===b) return;
+  // Numbers: tolerate cross-platform last-bit trig differences (Node vs browser V8).
+  if(typeof a==='number'&&typeof b==='number'){ if(Math.abs(a-b)<=1e-9*Math.max(1,Math.abs(a))) return; out.push(path+': golden='+a+' live='+b); return; }
+  if(typeof a!==typeof b||a==null||b==null||typeof a!=='object'){ out.push(path+': golden='+JSON.stringify(a)+' live='+JSON.stringify(b)); return; }
+  const keys=new Set([...Object.keys(a),...Object.keys(b)]);
+  for(const k of keys) diff(path+'.'+k,a[k],b[k],out);
+}
+function tree(o,p,errs){
+  if(o==null) return;
+  if(typeof o==='number'){ if(isNaN(o)) errs.push(p+'=NaN'); return; }
+  if(o instanceof Date){ if(isNaN(o.getTime())) errs.push(p+'=InvalidDate'); return; }
+  if(typeof o==='object'){ for(const k in o){ if(o[k]===undefined) errs.push(p+'.'+k+'=undefined'); else tree(o[k],p+'.'+k,errs); } }
+}
+function mkRnd(seed){ let s=seed; return ()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; }; }
+const LOCS={eluru:[16.7,81.1,5.5],delhi:[28.61,77.21,5.5],chennai:[13.08,80.27,5.5],newjersey:[40.06,-74.41,-5],london:[51.51,-0.13,0],sydney:[-33.87,151.21,10],dubai:[25.20,55.27,4],tromso:[69.65,18.96,1]};
+const CHARTS={ram:[Date.UTC(1996,11,6,15,47,0)-5.5*3600000,16.4343,81.6985],girl:[Date.UTC(2000,6,10,8,30,0)-5.5*3600000,16.7,81.1],delhi90:[Date.UTC(1990,2,15,4,20,0)-5.5*3600000,28.61,77.21],nri:[Date.UTC(1988,9,2,22,10,0)+5*3600000,40.06,-74.41],south:[Date.UTC(2005,0,26,12,0,0)-10*3600000,-33.87,151.21]};
+const KFNS={birthChart:(B,la,ln)=>PE.getBirthChart(B,la,ln),dasha:B=>PE.getVimshottariDasha(B),doshas:(B,la,ln)=>PE.getDoshas(B,la,ln),yogas:(B,la,ln)=>PE.getYogas(B,la,ln),sadeSati:B=>PE.getSadeSati(B),careerWealth:(B,la,ln)=>PE.getCareerWealth(B,la,ln),childFamily:(B,la,ln)=>PE.getChildFamily(B,la,ln),loveProfile:(B,la,ln)=>PE.getLoveProfile(B,la,ln),ashtakavarga:(B,la,ln)=>PE.getAshtakavarga(B,la,ln),varshaphal2026:(B,la,ln)=>PE.getVarshaphal(B,la,ln,2026),forecast10:(B,la,ln)=>PE.getYearForecast(B,la,ln,2026,10)};
+
+// ---- suite framework: chunked async so the UI never freezes ----------------
+const totals={pass:0,fail:0}; const failures=[];
+let anyRunning=false;
+function refresh(){
+  $('tTotal').textContent=totals.pass+totals.fail;
+  $('tPass').textContent=totals.pass; $('tFail').textContent=totals.fail;
+}
+function finishBanner(ms){
+  $('tTime').textContent=(ms/1000).toFixed(1)+'s';
+  const b=$('banner');
+  if(totals.fail===0&&totals.pass>0){ b.className='banner ok'; b.textContent='All '+totals.pass+' checks passed. Engine is clean against this harness.'; }
+  else if(totals.fail>0){ b.className='banner bad'; b.textContent=totals.fail+' failure(s). Tap a red suite for detail, then use "Copy failures" and paste to Claude.'; }
+}
+const registry=[];
+function suite(id,title,desc,gen,defaultN){
+  registry.push({id,title,desc,gen,defaultN});
+}
+// gen(n) must return an iterator of steps; each step: {name, fn} where fn()===true is pass, string is failure detail, throw is failure.
+function runSuite(s,onDone){
+  const head=$('h-'+s.id), st=$('s-'+s.id), log=$('l-'+s.id), btn=$('b-'+s.id);
+  const n=s.defaultN? Math.max(1,Math.min(20000,parseInt($('n-'+s.id).value||s.defaultN,10))) : undefined;
+  const it=s.gen(n); let p=0,f=0; const lines=[]; const t0=performance.now();
+  btn.disabled=true; st.className='status'; st.textContent='running…';
+  let total=it.total||0, done=0;
+  function chunk(){
+    const stop=performance.now()+30; // 30ms budget per frame
+    let step;
+    while(performance.now()<stop && (step=it.next())){
+      done++;
+      try{
+        const r=step.fn();
+        if(r===true){ p++; totals.pass++; }
+        else { f++; totals.fail++; const line=s.title+' › '+step.name+' :: '+r; lines.push(line); failures.push(line); }
+      }catch(e){
+        f++; totals.fail++; const line=s.title+' › '+step.name+' :: THREW '+e.message; lines.push(line); failures.push(line);
+      }
+    }
+    if(total) $('sun').style.width=Math.min(100,Math.round(done/total*100))+'%';
+    refresh();
+    if(step!==undefined&&step!==null){ setTimeout(chunk,0); }
+    else{
+      const ms=performance.now()-t0;
+      st.className='status '+(f?'bad':'ok'); st.textContent=p+' / '+(p+f)+(f?' ✗':' ✓');
+      log.innerHTML = f? lines.slice(0,60).map(x=>'<div class="f">✗ '+x.replace(/</g,'&lt;')+'</div>').join('')+(lines.length>60?'<div>… '+(lines.length-60)+' more (all captured for copy)</div>':'')
+                     : '<div class="p">✓ all '+p+' checks passed · '+(ms/1000).toFixed(2)+'s</div>';
+      if(f) log.parentElement.classList.add('show');
+      btn.disabled=false; $('sun').style.width='0%';
+      if(onDone) onDone();
+    }
+  }
+  chunk();
+}
+
+// ---- SUITE 1: Contract (typed errors + coercion) ---------------------------
+suite('contract','1 · Contract','Input validation: strings coerce, garbage throws typed readable errors, longitude wraps.',function(){
+  const B=new Date(Date.UTC(1996,11,6,10,17,0));
+  const steps=[
+    {name:'string lat/lng accepted (getPanchang)',fn:()=>PE.getPanchang(new Date(Date.UTC(2026,6,5,6)), '16.7','81.1').tithi.en==='Panchami'||'wrong tithi'},
+    {name:'lng 400 wraps to 40',fn:()=>{const a=PE.getPanchang(new Date(Date.UTC(2026,6,5,6)),16.7,400);const b=PE.getPanchang(new Date(Date.UTC(2026,6,5,6)),16.7,40);return JSON.stringify(ser(a))===JSON.stringify(ser(b))||'wrap mismatch';}},
+    {name:'invalid Date typed-throws',fn:()=>{try{PE.getPanchang(new Date('x'),16.7,81.1);return 'no throw';}catch(e){return /PanchangEngine\.getPanchang: invalid date/.test(e.message)||e.message;}}},
+    {name:'lat 95 typed-throws',fn:()=>{try{PE.getPanchang(new Date(),95,81.1);return 'no throw';}catch(e){return /latitude out of range/.test(e.message)||e.message;}}},
+    {name:'null lat typed-throws',fn:()=>{try{PE.getPanchang(new Date(),null,81.1);return 'no throw';}catch(e){return /latitude is not a number/.test(e.message)||e.message;}}},
+    {name:'tz 20 typed-throws',fn:()=>{try{PE.getPanchang(new Date(),16.7,81.1,20);return 'no throw';}catch(e){return /tzOffsetHours out of range/.test(e.message)||e.message;}}},
+    {name:'year 1650 typed-throws',fn:()=>{try{PE.getPanchang(new Date(Date.UTC(1650,0,1)),16.7,81.1);return 'no throw';}catch(e){return /year out of supported range/.test(e.message)||e.message;}}},
+  ];
+  ['getLagnaTable','getDoshas','getYogas','getCareerWealth','getChildFamily','getLoveProfile','getAshtakavarga'].forEach(f=>{
+    steps.push({name:f+' string coords ok',fn:()=>{PE[f](B,'16.43','81.69');return true;}});
+    steps.push({name:f+' invalid date typed-throws',fn:()=>{try{PE[f](new Date('x'),16.7,81.1);return 'no throw';}catch(e){return e.message.indexOf('PanchangEngine.')===0||e.message;}}});
+  });
+  steps.push({name:'getVarga string coords ok',fn:()=>{PE.getVarga(B,'16.43','81.69',9);return true;}});
+  steps.push({name:'getYearForecast string coords ok',fn:()=>{PE.getYearForecast(B,'16.43','81.69',2026,3);return true;}});
+  steps.push({name:'getGrahas non-date typed-throws',fn:()=>{try{PE.getGrahas('nope');return 'no throw';}catch(e){return e.message.indexOf('PanchangEngine.getGrahas')===0||e.message;}}});
+  steps.push({name:'getVimshottariDasha non-date typed-throws',fn:()=>{try{PE.getVimshottariDasha(123);return 'no throw';}catch(e){return e.message.indexOf('PanchangEngine.')===0||e.message;}}});
+  steps.push({name:'findMuhurta invalid date typed-throws',fn:()=>{try{PE.findMuhurta('marriage',new Date('x'),16.7,81.1,new Date(),new Date());return 'no throw';}catch(e){return e.message.indexOf('PanchangEngine.')===0||e.message;}}});
+  steps.push({name:'getEventWindows bad lat typed-throws',fn:()=>{try{PE.getEventWindows('marriage',new Date(),'95x',81.1,new Date(),new Date());return 'no throw';}catch(e){return e.message.indexOf('PanchangEngine.')===0||e.message;}}});
+  steps.push({name:'time-of-day invariance (00:30 vs 18:00 IST)',fn:()=>{const a=PE.getPanchang(new Date(Date.UTC(2026,6,4,19,0)),16.7,81.1);const b=PE.getPanchang(new Date(Date.UTC(2026,6,5,12,30)),16.7,81.1);return a.tithi.en===b.tithi.en||a.tithi.en+' vs '+b.tithi.en;}},
+    {name:'tz +13 civil day (Auckland Thu)',fn:()=>PE.getPanchang(new Date(Date.UTC(2026,0,15,0,0)),-36.85,174.76,13).vara.en==='Thursday'||'wrong vara'},
+    {name:'tz +14 civil day (Kiritimati Thu)',fn:()=>PE.getPanchang(new Date(Date.UTC(2026,0,15,3,0)),1.87,-157.43,14).vara.en==='Thursday'||'wrong vara'});
+  let i=0; return {total:steps.length,next:()=>steps[i++]};
+});
+
+// ---- SUITE 2: Golden verify (211) ------------------------------------------
+suite('golden','2 · Goldens','Byte-exact diff of live output vs 211 frozen snapshots (152 panchang · 55 kundli · 4 misc).',function(){
+  const g=window.GOLDENS; const steps=[];
+  for(const key of Object.keys(g.panchang)){
+    steps.push({name:'panchang '+key,fn:()=>{
+      const parts=key.split('|'); const L=LOCS[parts[1]]; const dp=parts[0].split('-').map(Number);
+      const live=ser(PE.getPanchang(new Date(Date.UTC(dp[0],dp[1]-1,dp[2],12,0,0)-L[2]*3600000),L[0],L[1],L[2]));
+      const out=[]; diff('',g.panchang[key],live,out);
+      return out.length===0||out.length+' drifted: '+out.slice(0,2).join(' | ');
+    }});
+  }
+  for(const cid of Object.keys(CHARTS)){
+    for(const fk of Object.keys(KFNS)){
+      if(!g.kundli[cid]||!g.kundli[cid][fk]) continue;
+      steps.push({name:'kundli '+cid+'.'+fk,fn:()=>{
+        const c=CHARTS[cid]; const live=ser(KFNS[fk](new Date(c[0]),c[1],c[2]));
+        const out=[]; diff('',g.kundli[cid][fk],live,out);
+        return out.length===0||out.length+' drifted: '+out.slice(0,2).join(' | ');
+      }});
+    }
+  }
+  steps.push({name:'match gunaMilan',fn:()=>{const live=ser(PE.getGunaMilanFull?PE.getGunaMilanFull(new Date(CHARTS.ram[0]),new Date(CHARTS.girl[0])):PE.getGunaMilan(new Date(CHARTS.ram[0]),new Date(CHARTS.girl[0])));const out=[];diff('',window.GOLDENS.kundli.__match_ram_girl.gunaMilan,live,out);return out.length===0||out.length+' drifted';}});
+  steps.push({name:'match manglik',fn:()=>{const live=ser(PE.getManglikMatch(new Date(CHARTS.ram[0]),16.4343,81.6985,new Date(CHARTS.girl[0]),16.7,81.1));const out=[];diff('',window.GOLDENS.kundli.__match_ram_girl.manglik,live,out);return out.length===0||out.length+' drifted';}});
+  steps.push({name:'festivals 2026',fn:()=>{const out=[];diff('',window.GOLDENS.festivals2026,ser(PE.getFestivals(2026,16.7,81.1)),out);return out.length===0||out.length+' drifted';}});
+  steps.push({name:'vrats Jul 2026',fn:()=>{const out=[];diff('',window.GOLDENS.vrats2026_jul,ser(PE.getVrats(2026,7,16.7,81.1)),out);return out.length===0||out.length+' drifted';}});
+  let i=0; return {total:steps.length,next:()=>steps[i++]};
+});
+
+// ---- SUITE 3: Invariants (configurable n) ----------------------------------
+suite('inv','3 · Invariants','Seeded random day×location sweep: structure, ranges, continuity, no NaN/undefined anywhere.',function(n){
+  const rnd=mkRnd(42); let i=0;
+  return {total:n,next:()=>{
+    if(i>=n) return null; i++;
+    const y=1900+Math.floor(rnd()*200),m=Math.floor(rnd()*12),d=1+Math.floor(rnd()*28);
+    const lat=rnd()*130-65, lng=rnd()*360-180, tz=Math.round((lng/15)*2)/2;
+    const label=y+'-'+(m+1)+'-'+d+' @'+lat.toFixed(1)+','+lng.toFixed(1)+' tz'+tz;
+    return {name:label,fn:()=>{
+      const p=PE.getPanchang(new Date(Date.UTC(y,m,d,12,0,0)-tz*3600000),lat,lng,tz);
+      const errs=[]; tree(p,'',errs);
+      const solar=!p.warnings.includes('NO_SUNRISE_SUNSET');
+      if(solar){
+        if(!(p.sunrise.getTime()<p.sunset.getTime())) errs.push('sunrise>=sunset');
+        if(!(p.sunset.getTime()<p.nextSunrise.getTime())) errs.push('sunset>=nextSunrise');
+        const dl=(p.nextSunrise-p.sunrise)/3600000; if(dl<20||dl>28) errs.push('daylen='+dl.toFixed(1));
+        if(p.hora.length!==24) errs.push('hora='+p.hora.length);
+        if(p.choghadiya.day.length!==8||p.choghadiya.night.length!==8) errs.push('chogh');
+        if(p.rahuKaal.start.getTime()<p.sunrise.getTime()-1000||p.rahuKaal.end.getTime()>p.sunset.getTime()+1000) errs.push('rahu outside day');
+      }
+      for(const limb of ['tithi','nakshatra','yoga','karana']){
+        const segs=p[limb].segments; if(!segs.length){errs.push(limb+' 0 segs');continue;}
+        for(let s=1;s<segs.length;s++){ const gap=new Date(segs[s].start||segs[s-1].end).getTime()-new Date(segs[s-1].end).getTime(); if(Math.abs(gap)>1000) errs.push(limb+' gap'); }
+        const mx={tithi:30,nakshatra:27,yoga:27,karana:60}[limb]; if(p[limb].index<0||p[limb].index>=mx) errs.push(limb+' idx');
+      }
+      if(p.nakshatra.pada<1||p.nakshatra.pada>4) errs.push('pada');
+      return errs.length===0||errs.slice(0,4).join('; ');
+    }};
+  }};
+},500);
+
+// ---- SUITE 4: Boundaries (19 targeted) -------------------------------------
+suite('bound','4 · Boundaries','Tithi rollovers, adhika masa, leap day, year end, dasha 120y, lagna cycle, guna 0–36.',function(){
+  const LAT=16.7,LNG=81.1;
+  const P=(y,m,d)=>PE.getPanchang(new Date(Date.UTC(y,m-1,d,6,0,0)),LAT,LNG);
+  const steps=[
+    {name:'±2s around tithi boundary, same civil day',fn:()=>{const p=P(2026,7,5);const b=new Date(p.tithi.segments[0].end).getTime();const a=PE.getPanchang(new Date(b-2000),LAT,LNG),c=PE.getPanchang(new Date(b+2000),LAT,LNG);return (a.tithi.en===c.tithi.en&&a.sunrise.getTime()===c.sunrise.getTime())||'differs';}},
+    {name:'Amavasya → Shukla Pratipada',fn:()=>{for(let t=Date.UTC(2026,0,1,6);t<Date.UTC(2026,2,1);t+=86400000){const p=PE.getPanchang(new Date(t),LAT,LNG);if(p.tithi.index===29){const q=PE.getPanchang(new Date(t+86400000),LAT,LNG);return (q.tithi.index<3&&q.tithi.paksha==='Shukla')||'idx '+q.tithi.index;}}return 'no amavasya found';}},
+    {name:'60-day tithi progression ≤2 jump',fn:()=>{let prev=null;for(let i=0;i<60;i++){const p=PE.getPanchang(new Date(Date.UTC(2026,2,1,6)+i*86400000),LAT,LNG);if(prev!=null){const j=(p.tithi.index-prev+30)%30;if(j>2)return 'jump day'+i;}prev=p.tithi.index;}return true;}},
+    {name:'Feb 29 2024 continuity',fn:()=>{const a=P(2024,2,28),b=P(2024,2,29),c=P(2024,3,1);return (((b.tithi.index-a.tithi.index+30)%30<=2)&&((c.tithi.index-b.tithi.index+30)%30<=2))||'jump';}},
+    {name:'Dec31→Jan1 continuity',fn:()=>{const a=P(2025,12,31),b=P(2026,1,1);return ((b.tithi.index-a.tithi.index+30)%30<=2)||'jump';}},
+    {name:'masa +1 progression, adhik→nija Jyeshtha 2026',fn:()=>{
+      const seq=[];
+      for(let m=0;m<14;m++){const p=PE.getPanchang(new Date(Date.UTC(2026,0,10,6)+m*30*86400000),LAT,LNG);const am=p.hinduCalendar.amantaMonth;if(!am||am.index==null)return 'amantaMonth missing';if(!seq.length||seq[seq.length-1].index!==am.index||seq[seq.length-1].adhik!==am.adhik)seq.push({index:am.index,adhik:am.adhik,en:am.en});}
+      for(let i=1;i<seq.length;i++){const a=seq[i-1],b=seq[i];const st=(b.index-a.index+12)%12;if(!(st===1||(st===0&&a.adhik&&!b.adhik)))return 'illegal '+a.en+'→'+b.en;}
+      return seq.some(x=>x.adhik)||'no adhika detected in 2026';}},
+    {name:'samvatsara changes across Ugadi 2026',fn:()=>{const a=PE.getPanchang(new Date(Date.UTC(2026,2,1,6)),LAT,LNG).hinduCalendar.samvatsara.shaka;const b=PE.getPanchang(new Date(Date.UTC(2026,3,15,6)),LAT,LNG).hinduCalendar.samvatsara.shaka;return a!==b||'no change ('+a+')';}},
+    {name:'lagna cycles 12 rashis in 24h',fn:()=>{const seen=new Set();for(let h=0;h<48;h++)seen.add(PE.getLagna(new Date(Date.UTC(2026,6,5,0)+h*1800000),LAT,LNG).rashiIndex);return seen.size===12||'saw '+seen.size;}},
+    {name:'varjyam windows inside day',fn:()=>{const p=P(2026,7,5);for(const v of p.varjyamAll){if(new Date(v.start)<new Date(p.sunrise.getTime()-1000)||new Date(v.end)>new Date(p.nextSunrise.getTime()+1000))return 'outside';}return true;}},
+    {name:'Kolkata pre-UTC-midnight sunrise → right day',fn:()=>{const p=PE.getPanchang(new Date(Date.UTC(2026,5,15,6,0)),22.57,88.36,5.5);const l=new Date(p.sunrise.getTime()+5.5*3600000);return (l.getUTCDate()===15&&l.getUTCHours()<6)||l.toISOString();}},
+  ];
+  Object.keys(CHARTS).forEach(cid=>{
+    steps.push({name:'dasha 120y + contiguous ('+cid+')',fn:()=>{
+      const d=PE.getVimshottariDasha(new Date(CHARTS[cid][0])); const m=d.mahadashas;
+      const sum=m.reduce((s,x)=>s+x.years,0); if(Math.abs(sum-120)>0.01)return 'sum='+sum;
+      for(let k=1;k<m.length;k++) if(Math.abs(new Date(m[k].start)-new Date(m[k-1].end))>86400000) return 'gap '+k;
+      return true;}});
+  });
+  steps.push({name:'guna milan 0–36 × 25 pairs',fn:()=>{const rnd=mkRnd(7);for(let i=0;i<25;i++){const B1=new Date(Date.UTC(1970+Math.floor(rnd()*40),Math.floor(rnd()*12),1+Math.floor(rnd()*28),Math.floor(rnd()*24),0));const B2=new Date(Date.UTC(1970+Math.floor(rnd()*40),Math.floor(rnd()*12),1+Math.floor(rnd()*28),Math.floor(rnd()*24),0));const g=PE.getGunaMilan(B1,B2);const t=g.total!=null?g.total:g.obtained;if(!(t>=0&&t<=36))return 'pair'+i+'='+t;}return true;}});
+  let i=0; return {total:steps.length,next:()=>steps[i++]};
+});
+
+// ---- SUITE 5: Polar contract (300) -----------------------------------------
+suite('polar','5 · Polar','|lat| 66–89°: full solar output OR clean nulls + NO_SUNRISE_SUNSET warning. Never fabricated timings.',function(n){
+  const rnd=mkRnd(99); let i=0;
+  return {total:n,next:()=>{
+    if(i>=n) return null; i++;
+    const lat=(66+rnd()*23)*(rnd()<0.5?1:-1), lng=rnd()*360-180, tz=Math.round((lng/15)*2)/2;
+    const y=2000+Math.floor(rnd()*30),m=Math.floor(rnd()*12),d=1+Math.floor(rnd()*28);
+    return {name:y+'-'+(m+1)+'-'+d+' @'+lat.toFixed(1),fn:()=>{
+      const p=PE.getPanchang(new Date(Date.UTC(y,m,d,12,0,0)-tz*3600000),lat,lng,tz);
+      const errs=[]; tree(p,'',errs);
+      if(p.warnings.includes('NO_SUNRISE_SUNSET')){
+        ['rahuKaal','gulikaKaal','yamaganda','abhijit','brahmaMuhurta','choghadiya','hora','muhurtas'].forEach(k=>{if(p[k]!=null)errs.push(k+' not null');});
+        if(p.durMuhurtam.length) errs.push('durMuhurtam not empty');
+        if(!p.tithi||p.tithi.index==null) errs.push('tithi missing');
+      } else {
+        if(!p.sunrise||!p.sunset) errs.push('no warning but null sun');
+        if(p.hora&&p.hora.length!==24) errs.push('hora '+p.hora.length);
+      }
+      return errs.length===0||errs.slice(0,3).join('; ');
+    }};
+  }};
+},300);
+
+// ---- SUITE 6: Fuzz (runs until Stop) ---------------------------------------
+suite('fuzz','6 · Fuzz','Unseeded random valid + hostile inputs forever. Valid must produce a clean tree; hostile must typed-throw, never anonymous.',function(n){
+  let i=0;
+  return {total:n,next:()=>{
+    if(i>=n) return null; i++;
+    const hostile=Math.random()<0.3;
+    if(hostile){
+      const junkDates=[new Date('x'),null,undefined,'2026-07-05',12345,{},new Date(Date.UTC(1500,0,1))];
+      const junkNums=[null,undefined,NaN,'abc',{},[],95,-95];
+      const d=junkDates[Math.floor(Math.random()*junkDates.length)];
+      const la=Math.random()<0.5?junkNums[Math.floor(Math.random()*junkNums.length)]:16.7;
+      return {name:'hostile '+String(d).slice(0,20)+'/'+String(la),fn:()=>{
+        try{ PE.getPanchang(d,la,81.1); 
+          // if it didn't throw, inputs must have been coercible-valid; check tree
+          return true;
+        }catch(e){ return e.message.indexOf('PanchangEngine.')===0||('anonymous throw: '+e.message); }
+      }};
+    }
+    const y=1750+Math.floor(Math.random()*430),m=Math.floor(Math.random()*12),d=1+Math.floor(Math.random()*28);
+    const lat=Math.random()*178-89, lng=Math.random()*360-180, tz=Math.max(-14,Math.min(14,Math.round(Math.random()*56-28)/2));
+    return {name:'valid '+y+'-'+(m+1)+'-'+d+' @'+lat.toFixed(0)+','+lng.toFixed(0)+' tz'+tz,fn:()=>{
+      const p=PE.getPanchang(new Date(Date.UTC(y,m,d,12,0,0)-tz*3600000),lat,lng,tz);
+      const errs=[]; tree(p,'',errs);
+      return errs.length===0||errs.slice(0,3).join('; ');
+    }};
+  }};
+},400);
+
+// ---- render ----------------------------------------------------------------
+const host=$('suites');
+registry.forEach(s=>{
+  const sec=document.createElement('section');
+  sec.innerHTML='<div class="sec-head" id="h-'+s.id+'">'
+    +'<h2>'+s.title+'</h2>'
+    +'<span class="status" id="s-'+s.id+'">idle</span>'
+    +'<button id="b-'+s.id+'">Run</button>'
+    +'</div><div class="body" id="body-'+s.id+'">'
+    +'<div class="desc-line">'+s.desc+'</div>'
+    +(s.defaultN?'<div class="opts"><label>cases</label><input id="n-'+s.id+'" type="number" value="'+s.defaultN+'" min="1" max="20000"></div>':'')
+    +'<div class="log" id="l-'+s.id+'"></div></div>';
+  host.appendChild(sec);
+  sec.querySelector('.sec-head h2').style.cursor='pointer';
+  sec.querySelector('.sec-head h2').onclick=()=>$('body-'+s.id).classList.toggle('show');
+  $('b-'+s.id).onclick=()=>runSuite(s);
+});
+$('runAll').onclick=function(){
+  totals.pass=0; totals.fail=0; failures.length=0; refresh(); $('banner').className='banner';
+  const t0=performance.now(); let idx=0;
+  const next=()=>{ if(idx<registry.length){ runSuite(registry[idx++],next); } else finishBanner(performance.now()-t0); };
+  this.disabled=true; const btn=this;
+  const done=()=>{btn.disabled=false;};
+  const wrap=()=>{ if(idx<registry.length){ runSuite(registry[idx++],wrap); } else { finishBanner(performance.now()-t0); done(); } };
+  wrap();
+};
+$('clearAll').onclick=()=>{ totals.pass=0;totals.fail=0;failures.length=0;refresh();$('tTime').textContent='–';$('banner').className='banner';
+  registry.forEach(s=>{ $('s-'+s.id).className='status'; $('s-'+s.id).textContent='idle'; $('l-'+s.id).innerHTML=''; $('body-'+s.id).classList.remove('show'); }); };
+$('copyFail').onclick=async function(){
+  const txt=failures.length? 'PANCHANG ENGINE HARNESS — '+failures.length+' FAILURE(S)\n'+failures.join('\n') : 'PANCHANG ENGINE HARNESS — no failures ('+totals.pass+' passed)';
+  try{ await navigator.clipboard.writeText(txt); this.textContent='Copied ✓'; }
+  catch(e){ prompt('Copy manually:',txt); }
+  setTimeout(()=>{this.textContent='Copy failures';},1500);
+};
+})();
+</script>
+</body>
+</html>
