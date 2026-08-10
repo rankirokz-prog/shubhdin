@@ -1,6 +1,7 @@
 # SHUBHDIN LANGUAGE BIBLE
 ### The localization constitution for all Shubh Din content
-**Version 8.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**Version 9.0 · Created on Fable 5 · Status: GOVERNING DOCUMENT — read before any localization work**
+**v9.0 changelog:** LIST A CLOSED. §9.3c added — the thin-corpus principle ("zero hits" means different things in different corpora), the project’s key methodological lesson. Bengali: খণ্ডন confirmed from four sources; মন density fixed 4.2→3.5. Assamese: পাদ, খণ্ডন, Varshaphal vocabulary kept on register-consistency; ধৈয়া corroborated via the ধ-family; Marriage title re-anchored to the attested গুণমিলন.
 **v8.0 changelog:** ASSAMESE RELEASE BLOCKERS CLEARED by research. সাতে সাতি (invented) → সাদে সতী; ঢৈয়া → ধৈয়া; twelve month names confirmed from four sources; tithi register confirmed SANSKRIT (opposite of Gujarati), validating all 16 entries. Choghadiya recorded as likely-not-native — keep but relabel. release-blockers: release 0, warning 2, style 1.
 **v7.3 changelog:** §9.7 G4 added — UNRESEARCHED items flagged honestly during translation rather than asserted as rulings. সাতে সাতি is a guess and is marked as such; Bihu month names need a panjika citation; দেওবাৰ is sourced.
 **v7.2 changelog:** §9.7 G0b — scanner metric relabelled DETECTABLE COVERAGE with the caveat inline, so it is not mistaken for a translation-quality score. Assamese terms batch 1 applied: দেওবাৰ for Sunday and the Bohag-calendar month names recorded as language-specific findings.
@@ -670,6 +671,20 @@ hasanta (্) plus reph and ya-phala forms that per-character Latin-first fallba
 destroys outright. Verify these clusters render before sign-off. `text-rendering:auto`,
 never `optimizeLegibility` (§10.2).
 
+### B9. Final closure rulings
+
+- **CLOSED — খণ্ডন confirmed for dosha cancellation.** ★ HIGH. Four independent
+  practitioner/press sources: a Kolkata astrologer's site ("সঠিক প্রতিকারে
+  মাঙ্গলিক দোষ সম্পূর্ণ রূপে খণ্ডন করা যায়"), hindudata.com, astroluck ×2. The
+  Bengali proverb runs through the same word: "কপালের লিখন না যায় খণ্ডন".
+  **বাতিল appears only on calculator-style sites with a translated register** —
+  recorded as the colloquial alternate, NOT a replacement. Zero file changes.
+- **APPLIED — মন density in Love reduced 4.2 → 3.5 per 100w.** The four
+  air/water element blocks stacked মন heavily (`loveStyle.air` was 13.0 per
+  100 words, 7 in 54). Eight edits varying with চিন্তা · ভাবনা · বুদ্ধি ·
+  অন্তর · তৃপ্তি. Same failure mode as the Gujarati મન and the আপনার law.
+  Worst block now 7.7, down from 13.0.
+
 ### B8. Research-based rulings — BENGALI CLOSED
 
 Sourced from published Bengali usage (bn.wikipedia, Drik Panchang Bengali
@@ -907,6 +922,30 @@ cross-language recall.** Three languages, one concept, three answers — and the
 Bengali answer is the one a pattern-matcher would have got wrong, because it
 keeps the word the other two rejected.
 
+## 9.3c METHOD NOTE — "zero hits" means different things in different corpora
+
+**This is the most important methodological lesson in the project and it applies
+to every future language.**
+
+In Gujarati and Marathi — rich online corpora — zero published hits for
+પૂનમાંત and मेलन was **evidence of coinage**. Both were words Claude had
+constructed, and both were changed on that evidence.
+
+Assamese jyotish content online is thin. Zero hits there is **absence of
+corpus, not absence of usage**, and does NOT by itself justify a change.
+
+**Where Assamese attestation runs out, fall back on the register-consistency
+principle** established with HIGH confidence by the AS-6 tithi finding:
+**Assamese jyotish imports the Sanskrit/Bengali register wholesale.** Every
+Assamese astrology page found uses Sanskrit-register vocabulary in Assamese
+orthography — জ্যোতিষ শাস্ত্ৰ, অধিপতি গ্ৰহ, নক্ষত্ৰ.
+
+Consequence: **Assamese carries more register-consistency rulings and fewer
+direct citations than any other language here.** Each is the best available
+answer and each is labelled honestly. One printed panjika or one native reader
+would convert most MEDIUMs to HIGH — or overturn them, which is equally
+valuable. Worth acquiring post-ship.
+
 ## 9.7 ASSAMESE CONSTITUTION (অসমীয়া)
 
 **Language 9. Shipped for representation of Northeast India, not commercial
@@ -1079,6 +1118,39 @@ panjika), outranks all of it.
   **Ruling: keep the section** — NRI Assamese users meet choghadiya in
   pan-Indian apps and may expect it — **but label it a pan-Indian muhurta tool,
   not native Assamese panjika content.** This is "rethink, not retranslate."
+
+### G4c. Final closure rulings — register-consistency where the corpus ran out
+
+Each of these was researched; each returned **zero Assamese hits**. Per §9.3c
+that is thin corpus, not disproof. All fall back on the register-consistency
+principle and are labelled honestly.
+
+- **KEEP পাদ** (nakshatra quarter). MEDIUM. No Assamese source for either পাদ or
+  চৰণ. পাদ is the Bengali/Sanskrit-register form; চৰণ is the *western-languages*
+  pattern (Marathi/Gujarati), and nothing suggests Assamese follows the western
+  pattern in anything else. **AS-3 downgraded warning → style.**
+- **KEEP খণ্ডন** (dosha cancellation). MEDIUM. No direct Assamese attestation.
+  Grounds: Bengali's term is now firmly খণ্ডন (§9.4 B9), Assamese tracks the
+  Bengali register, and খণ্ডন is ordinary Assamese vocabulary outside astrology.
+  Labelled "unattested-but-consistent."
+- **KEEP বৰ্ষফল কুণ্ডলী · বৰ্ষাধিপতি (বৰ্ষেশ) · মুন্থা.** MEDIUM. The clearest
+  thin-corpus case in the project — effectively zero Assamese Tajika content
+  exists online. These are pan-Indic Tajika technical terms with **no regional
+  variants in any of the nine languages researched**; they are transliterated
+  Sanskrit everywhere. "Register-consistent, unattested in thin corpus — not
+  disproven."
+- **ধৈয়া adoption stands.** MEDIUM. No second Assamese source, but useful
+  corroboration: ETV Bharat's Bengali coverage writes "এই সময়কাল ধাইয়া নামে
+  পরিচিত" — the ধ-initial family circulates in the region's astrology press,
+  and that same article also uses ঢৈয়া, showing even Bengali sources vary. The
+  Assamese attestation (Asom Live 24) sits inside that ধ-family.
+  **সাদে সতী and ধৈয়া stand or fall together on the same citation.**
+- **APPLIED — Marriage title anchored to the ATTESTED term.** বিবাহ মিলন was
+  found nowhere AND was a constructed extension by Claude's own admission —
+  closer to the પૂનમાંત shape than the others. গুণমিলন IS sourced (Daily Assam
+  menu). Retitled **বিবাহৰ গুণমিলন প্ৰতিবেদন**; `labels.dash`, `labels.guna`,
+  `k046` and `k047` aligned. Also corrected the spacing: the source writes
+  **গুণমিলন** with no space; Claude had written গুণ মিলন.
 
 ### G4b. Superseded — what was flagged during translation
 
