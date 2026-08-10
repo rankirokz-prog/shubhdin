@@ -101,13 +101,43 @@
   const RASHI_EN = ['Mesha','Vrishabha','Mithuna','Karka','Simha','Kanya','Tula','Vrishchika','Dhanu','Makara','Kumbha','Meena'];
   const RASHI_HI = ['\u092e\u0947\u0937','\u0935\u0943\u0937\u092d','\u092e\u093f\u0925\u0941\u0928','\u0915\u0930\u094d\u0915','\u0938\u093f\u0902\u0939','\u0915\u0928\u094d\u092f\u093e','\u0924\u0941\u0932\u093e','\u0935\u0943\u0936\u094d\u091a\u093f\u0915','\u0927\u0928\u0941','\u092e\u0915\u0930','\u0915\u0941\u0902\u092d','\u092e\u0940\u0928'];
 
+  // ---- Input validation (Hardening H1) -----------------------------------
+  // Coerces numeric strings (form fields / URL params hand us strings), throws
+  // typed readable errors instead of anonymous throws from deep inside the
+  // astronomy library, and normalizes longitude into [-180, 180).
+  function validateInputs(date, lat, lng, fnName) {
+    if (!(date instanceof Date) || isNaN(date.getTime())) {
+      throw new Error('PanchangEngine.' + fnName + ': invalid date (got ' + String(date) + ')');
+    }
+    const la = Number(lat), ln = Number(lng);
+    if (lat == null || ln == null || isNaN(la)) {
+      throw new Error('PanchangEngine.' + fnName + ': latitude is not a number (got ' + String(lat) + ')');
+    }
+    if (lng == null || isNaN(ln)) {
+      throw new Error('PanchangEngine.' + fnName + ': longitude is not a number (got ' + String(lng) + ')');
+    }
+    if (la < -90 || la > 90) {
+      throw new Error('PanchangEngine.' + fnName + ': latitude out of range [-90,90] (got ' + la + ')');
+    }
+    let lnorm = ln % 360; if (lnorm >= 180) lnorm -= 360; if (lnorm < -180) lnorm += 360;
+    const y = date.getUTCFullYear();
+    if (y < 1700 || y > 2200) {
+      throw new Error('PanchangEngine.' + fnName + ': year out of supported range 1700-2200 (got ' + y + ')');
+    }
+    return { date: date, lat: la, lng: lnorm };
+  }
+
   // ---- Core astronomy ----------------------------------------------------
   function sunLongitude(date) { return A.Ecliptic(A.GeoVector(A.Body.Sun, date, true)).elon; }
   function moonLongitude(date) { return A.EclipticGeoMoon(date).lon; }
 
   // Lahiri (Chitrapaksha) ayanamsa, anchored to verified 2026.0 value.
   // CALIBRATION_OFFSET tuned in Phase 3 to align nakshatra/yoga times with Drik.
-  const CALIBRATION_OFFSET = 0.10;
+  // Hardening H9 (accuracy validation, Aug 2026): refined 0.10 → 0.090 (final) against a
+  // 4-day / 2-city Prokerala (Lahiri) reference matrix. Diagnosis: tithi & karana
+  // (ayanamsa-free) were 0–1 min exact, nakshatra (ayanamsa ×1) ran +1.7 min late,
+  // yoga (ayanamsa ×2) ran late — then pinned precisely by a 9-graha 3-decimal ephemeris + 6 published ingress instants (Jan+Aug 2026): final value centers graha longitudes to ±0.15 arcmin and Makar Sankranti to ~1 min.
+  const CALIBRATION_OFFSET = 0.090;
   function ayanamsa(date) {
     const jd = (date.getTime() / 86400000) + 2440587.5;
     const yearFrac = 2000.0 + (jd - 2451545.0) / 365.25;
@@ -122,6 +152,30 @@
   }
 
   // ---- Sunrise / sunset --------------------------------------------------
+  // Hardening H7 — sunrise convention. Two modes:
+  //   'hindu' (DEFAULT): sun's disc CENTER crosses the geometric horizon, no
+  //     atmospheric refraction (SearchAltitude at 0°). This is the convention
+  //     used by Drik Panchang / Prokerala — the sources devotees compare
+  //     against. Validated to ±0–1 min vs Ujjain & Chennai references.
+  //   'astronomical': upper limb + refraction (SearchRiseSet). ~4 min earlier
+  //     rise / later set in the tropics. Kept for comparison/debug.
+  // All sunrise-derived windows (rahu kaal, choghadiya, hora, brahma muhurta,
+  // vara boundaries) follow the selected mode automatically.
+  let SUNRISE_MODE = 'hindu';
+  function setSunriseMode(mode) {
+    if (mode !== 'hindu' && mode !== 'astronomical') {
+      throw new Error("PanchangEngine.setSunriseMode: mode must be 'hindu' or 'astronomical' (got " + String(mode) + ")");
+    }
+    SUNRISE_MODE = mode;
+  }
+  function getSunriseMode() { return SUNRISE_MODE; }
+  // Unified sun-event search honoring the mode. direction: +1 rise, -1 set.
+  function searchSunEvent(obs, direction, startTime, limitDays) {
+    if (SUNRISE_MODE === 'hindu') {
+      return A.SearchAltitude(A.Body.Sun, obs, direction, startTime, limitDays, 0);
+    }
+    return A.SearchRiseSet(A.Body.Sun, obs, direction, startTime, limitDays);
+  }
   // Anchor the search at LOCAL (IST) midnight, not UTC midnight. Otherwise, for
   // eastern cities in summer (e.g. Kolkata sunrise 4:52 AM IST = 23:22 UTC prev day),
   // a UTC-midnight search skips the real sunrise and returns the next day's — shifting
@@ -130,15 +184,34 @@
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
     const obs = new A.Observer(lat, lng, 0);
     const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
-    const sr = A.SearchRiseSet(A.Body.Sun, obs, +1, localMidUTC, 1.5);
+    const sr = searchSunEvent(obs, +1, localMidUTC, 1.5);
     return sr ? sr.date : null;
   }
   function findSunset(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
     const obs = new A.Observer(lat, lng, 0);
     const localMidUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0) - tz * 3600000);
-    const ss = A.SearchRiseSet(A.Body.Sun, obs, -1, localMidUTC, 1.5);
+    const ss = searchSunEvent(obs, -1, localMidUTC, 1.5);
     return ss ? ss.date : null;
+  }
+
+  // Hardening H4: first sunset strictly AFTER a given instant. Used when the
+  // local-midnight-anchored sunset lands before sunrise (large lng/tz mismatch,
+  // e.g. lng -180 with tz -6): that sunset belongs to the previous solar day.
+  function findSunsetAfter(instant, lat, lng) {
+    const obs = new A.Observer(lat, lng, 0);
+    const ss = searchSunEvent(obs, -1, instant, 1.5);
+    return ss ? ss.date : null;
+  }
+  // Hardening H5: first sunrise strictly after a given instant (+1h guard so we
+  // never re-find the same event). Used when today's and tomorrow's local-
+  // midnight-anchored searches collapse onto the SAME sunrise (rise sits at the
+  // search-window edge under lng/tz mismatch), which made a zero-length day and
+  // crashed buildSegments consumers.
+  function findSunriseAfter(instant, lat, lng) {
+    const obs = new A.Observer(lat, lng, 0);
+    const sr = searchSunEvent(obs, +1, new Date(instant.getTime() + 3600000), 1.5);
+    return sr ? sr.date : null;
   }
 
   // ---- Moonrise / Moonset (Phase 4) -------------------------------------
@@ -190,9 +263,14 @@
   }
 
   // Brahma Muhurta — 2nd muhurta before sunrise, using night/15 division.
+  // Hardening H8 — Brahma Muhurta convention: Drik Panchang / Prokerala use
+  // FIXED 48-minute muhurtas (window = sunrise-96min → sunrise-48min), not
+  // night-length-proportional ones. Validated exact vs Ujjain Nov 8 2026
+  // reference (05:04–05:52 before 06:40 sunrise). prevSunsetMs kept in the
+  // signature for call-site compatibility; no longer used.
   function computeBrahmaMuhurta(sunriseMs, prevSunsetMs) {
-    const mNight = (sunriseMs - prevSunsetMs) / 15;
-    return { start: new Date(sunriseMs - 2 * mNight), end: new Date(sunriseMs - mNight) };
+    const M48 = 48 * 60000;
+    return { start: new Date(sunriseMs - 2 * M48), end: new Date(sunriseMs - M48) };
   }
 
   // ---- Choghadiya (Phase 6) ---------------------------------------------
@@ -1235,7 +1313,15 @@
   }
   function getSadeSati(moonRashiIndex, refDate) {
     var ref = refDate ? refDate.getTime() : Date.now();
-    var from = ref - 12 * 365.25 * 86400000, to = ref + 18 * 365.25 * 86400000;
+    // Hardening H6: snap the Saturn-ingress scan grid to absolute epoch-aligned
+    // steps. Previously the grid was anchored on Date.now(), so every call
+    // sampled Saturn at different instants and the refined period boundaries
+    // drifted run-to-run (ms to ~1.3s observed). With an absolute grid, each
+    // ingress is bracketed by the same two sample points on every call, making
+    // periods[] byte-deterministic. currentPhase/active still use real time.
+    var step0 = 10 * 86400000;
+    var from = Math.floor((ref - 12 * 365.25 * 86400000) / step0) * step0;
+    var to = Math.ceil((ref + 18 * 365.25 * 86400000) / step0) * step0;
     var zone = {};
     zone[(moonRashiIndex + 11) % 12] = 'Rising (12th)';
     zone[moonRashiIndex] = 'Peak (1st)';
@@ -2465,13 +2551,50 @@
   // ---- Public: full Phase-2 panchang ------------------------------------
   function getPanchang(date, lat, lng, tzOffsetHours) {
     const tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
+    if (tzOffsetHours != null && (isNaN(Number(tz)) || tz < -14 || tz > 14)) {
+      throw new Error('PanchangEngine.getPanchang: tzOffsetHours out of range [-14,14] (got ' + String(tzOffsetHours) + ')');
+    }
+    const v = validateInputs(date, lat, lng, 'getPanchang');
+    lat = v.lat; lng = v.lng;
+    // Hardening H2: normalize the input instant to the tz-LOCAL civil day.
+    // Previously findSunrise anchored on date.getUTCDate(), so an instant like
+    // 00:30 IST (still previous day in UTC) silently produced the PREVIOUS
+    // day's panchang. Now any instant within the local civil day yields that
+    // day's panchang (time-of-day invariance).
+    // The finders (findSunrise etc.) derive the civil day from the Date's UTC
+    // Y/M/D parts. So the canonical form is UTC-noon OF THE LOCAL CIVIL DAY's
+    // date parts — NOT local-noon-as-instant (that lands on the wrong UTC day
+    // whenever |tz| > 12, e.g. Auckland +13 shifted the whole panchang -1 day).
+    const shifted = new Date(date.getTime() + tz * 3600000);
+    date = new Date(Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate(), 12, 0, 0));
+    const warnings = [];
     const sunrise = findSunrise(date, lat, lng, tz);
-    const sunset = findSunset(date, lat, lng, tz);
+    let sunset = findSunset(date, lat, lng, tz);
+    if (sunrise && sunset && sunset.getTime() < sunrise.getTime()) {
+      // Local-midnight anchor grabbed the previous solar day's sunset.
+      sunset = findSunsetAfter(sunrise, lat, lng);
+    }
     const moonrise = findMoonrise(date, lat, lng, tz);
     const moonset = findMoonset(date, lat, lng, tz);
     const nextDate = new Date(date.getTime() + 24 * 3600 * 1000);
-    const nextSunrise = findSunrise(nextDate, lat, lng, tz) || new Date((sunrise || date).getTime() + 24 * 3600 * 1000);
+    let nextSunrise = findSunrise(nextDate, lat, lng, tz) || new Date((sunrise || date).getTime() + 24 * 3600 * 1000);
+    if (sunrise && nextSunrise.getTime() < sunrise.getTime() + 6 * 3600000) {
+      // Both searches resolved to the same rise event (H5) — sometimes with a
+      // few ms of numerical jitter between the two finds, so an equality check
+      // is not enough. Consecutive sunrises are never < ~20h apart; anything
+      // under 6h means the same event. Re-anchor strictly after sunrise.
+      nextSunrise = findSunriseAfter(sunrise, lat, lng) || new Date(sunrise.getTime() + 24 * 3600 * 1000);
+    }
 
+    if (!sunrise || !sunset) {
+      // Polar day / polar night: no real sunrise-sunset pair exists. Tithi /
+      // nakshatra / yoga / karana are still valid (local-midnight anchored via
+      // fallback), but every sun-division feature (rahu kaal, choghadiya, hora,
+      // abhijit, dur muhurtam, brahma muhurta) would be FABRICATED from the
+      // srMs+12h fallback. Those are nulled below and this warning is set.
+      warnings.push('NO_SUNRISE_SUNSET');
+    }
+    const solarOk = !!(sunrise && sunset);
     const refInstant = sunrise || date;
     const srMs = refInstant.getTime();
     const nextSrMs = nextSunrise.getTime();
@@ -2496,20 +2619,20 @@
 
     // Kaal periods & muhurtas (Phase 5)
     const ssMs = sunset ? sunset.getTime() : (srMs + 12 * 3600000);
-    const rahu = dayPart(srMs, ssMs, RAHU_PART[dow]);
-    const gulika = dayPart(srMs, ssMs, GULIKA_PART[dow]);
-    const yama = dayPart(srMs, ssMs, YAMA_PART[dow]);
-    const abhijit = computeAbhijit(srMs, ssMs, dow);
+    const rahu = solarOk ? dayPart(srMs, ssMs, RAHU_PART[dow]) : null;
+    const gulika = solarOk ? dayPart(srMs, ssMs, GULIKA_PART[dow]) : null;
+    const yama = solarOk ? dayPart(srMs, ssMs, YAMA_PART[dow]) : null;
+    const abhijit = solarOk ? computeAbhijit(srMs, ssMs, dow) : null;
     const prevSunset = findSunset(new Date(date.getTime() - 86400000), lat, lng, tz);
-    const brahma = prevSunset ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
+    const brahma = (solarOk && prevSunset) ? computeBrahmaMuhurta(srMs, prevSunset.getTime()) : null;
 
     // Panchaka + secondary muhurtas (Phase 8).
     let panchaka = null;
     try { panchaka = panchakaForDay(srMs, nextSrMs, tz); } catch (e) { panchaka = null; }
     let muhurtas = null;
     try {
-      muhurtas = secondaryMuhurtas(srMs, (sunset ? sunset.getTime() : srMs + 12 * 3600000),
-        nextSrMs, prevSunset ? prevSunset.getTime() : null);
+      muhurtas = solarOk ? secondaryMuhurtas(srMs, sunset.getTime(),
+        nextSrMs, prevSunset ? prevSunset.getTime() : null) : null;
     } catch (e) { muhurtas = null; }
 
     // Varjyam (Phase 5b) — validated against DinchaK to ~1 min.
@@ -2525,7 +2648,7 @@
 
     // Dur Muhurtam (Phase 8) — ALL 7 weekdays validated from Ram's DinchaK data.
     let durMuhurtam = [];
-    try { durMuhurtam = durMuhurtamsInDay(srMs, (sunset ? sunset.getTime() : srMs + 12 * 3600000), nextSrMs, dow); } catch (e) { durMuhurtam = []; }
+    try { durMuhurtam = solarOk ? durMuhurtamsInDay(srMs, sunset.getTime(), nextSrMs, dow) : []; } catch (e) { durMuhurtam = []; }
 
     // Hindu calendar layer (Phase 7) — months, samvats, ritu, ayana.
     let hinduCalendar = null;
@@ -2565,11 +2688,12 @@
     // Choghadiya & Hora (Phase 6) — pure day/night divisions, no ambiguity.
     const ssForDiv = sunset ? sunset.getTime() : (srMs + 12 * 3600000);
     let choghadiya = null, hora = null;
-    try { choghadiya = computeChoghadiya(srMs, ssForDiv, nextSrMs, dow); } catch (e) { choghadiya = null; }
-    try { hora = computeHora(srMs, ssForDiv, nextSrMs, dow); } catch (e) { hora = null; }
+    try { choghadiya = solarOk ? computeChoghadiya(srMs, ssForDiv, nextSrMs, dow) : null; } catch (e) { choghadiya = null; }
+    try { hora = solarOk ? computeHora(srMs, ssForDiv, nextSrMs, dow) : null; } catch (e) { hora = null; }
 
     return {
       date: date,
+      warnings: warnings,
       sunrise: sunrise,
       sunset: sunset,
       moonrise: moonrise,
@@ -2603,8 +2727,52 @@
     };
   }
 
+  // Hardening H3: wrap birth-chart entry points that take (date, lat, lng)
+  // so string coordinates and invalid dates fail loudly and readably.
+  function guarded(fn, name) {
+    return function (date, lat, lng) {
+      const v = validateInputs(date, lat, lng, name);
+      const rest = Array.prototype.slice.call(arguments, 3);
+      return fn.apply(null, [v.date, v.lat, v.lng].concat(rest));
+    };
+  }
+  getLagna = guarded(getLagna, 'getLagna');
+  getBirthChart = guarded(getBirthChart, 'getBirthChart');
+  getLagnaTable = guarded(getLagnaTable, 'getLagnaTable');
+  getDoshas = guarded(getDoshas, 'getDoshas');
+  getYogas = guarded(getYogas, 'getYogas');
+  getCareerWealth = guarded(getCareerWealth, 'getCareerWealth');
+  getYearForecast = guarded(getYearForecast, 'getYearForecast');
+  getChildFamily = guarded(getChildFamily, 'getChildFamily');
+  getVarshaphal = guarded(getVarshaphal, 'getVarshaphal');
+  getLoveProfile = guarded(getLoveProfile, 'getLoveProfile');
+  getAshtakavarga = guarded(getAshtakavarga, 'getAshtakavarga');
+  getVarga = guarded(getVarga, 'getVarga');
+  // Date-only entry points: validate the date, skip coords.
+  function guardedDate(fn, name) {
+    return function (date) {
+      if (!(date instanceof Date) || isNaN(date.getTime())) {
+        throw new Error('PanchangEngine.' + name + ': invalid date (got ' + String(date) + ')');
+      }
+      return fn.apply(null, arguments);
+    };
+  }
+  getGrahas = guardedDate(getGrahas, 'getGrahas');
+  getVimshottariDasha = guardedDate(getVimshottariDasha, 'getVimshottariDasha');
+  // (type/activity, date, lat, lng, ...) shape: validate args 1-3.
+  function guardedOffset1(fn, name) {
+    return function (first, date, lat, lng) {
+      const v = validateInputs(date, lat, lng, name);
+      const rest = Array.prototype.slice.call(arguments, 4);
+      return fn.apply(null, [first, v.date, v.lat, v.lng].concat(rest));
+    };
+  }
+  getEventWindows = guardedOffset1(getEventWindows, 'getEventWindows');
+  findMuhurta = guardedOffset1(findMuhurta, 'findMuhurta');
+
   global.PanchangEngine = {
     getPanchang,
+    setSunriseMode, getSunriseMode,
     getFestivals,
     getVrats,
     getLagna,
