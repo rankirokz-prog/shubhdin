@@ -8,7 +8,7 @@
 const fs = require('fs');
 
 const ALL = ['love', 'marriage', 'career', 'muhurta', 'forecast', 'child', 'annual', 'kundli'];
-const LANGS = ['en', 'hi', 'te', 'kn', 'ta', 'bn'];
+const LANGS = ['en', 'hi', 'te', 'kn', 'ta', 'bn', 'mr', 'gu', 'as'];
 
 const DEFAULTS = {
   pname: 'Test', bdate: '1996-12-06', btime: '15:47',
@@ -95,7 +95,7 @@ function runReport(name) {
       if (lang !== 'en' && rep) {
         const text = rep.replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ')
                         .replace(/&[a-z]+;/g, ' ');
-        const ALLOW = /^(DNA|PDF|D\d+|SAV|BAV|IST|AM|PM|Rs|OK|shubhdin(\.app)?|www|app|com|[A-Z]{1,3}\d*|v\d+|Q\d)$/;
+        const ALLOW = /^(DNA|PDF|D\d+|SAV|BAV|IST|AM|PM|Rs|OK|SHUBHDIN(\.APP)?|shubhdin(\.app)?|www|app|com|[A-Z]{1,3}\d*|v\d+|Q\d)$/;
         // user-typed values (names, places) render as typed — not leaks
         const USER = new Set(Object.values(DEFAULTS).flatMap(v => String(v).split(/[,\s]+/)));
         const leaks = new Set();
