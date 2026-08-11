@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="ShubhDin">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Telugu&family=Noto+Serif+Kannada&family=Noto+Serif+Tamil&family=Noto+Serif+Bengali&family=Noto+Serif+Gujarati&display=block" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   :root{--gold:#D4A843;--deep-gold:#B8860B;--saffron:#FF6B1A;--cream:#FFF8ED;--dark:#1A0A00;--sage:#4A7C59;color-scheme:dark only;}
@@ -52,27 +53,26 @@
   .lang-question{font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:6px;font-weight:400;}
   .lang-sub{font-size:12px;color:rgba(212,168,67,0.5);margin-bottom:32px;letter-spacing:0.5px;}
 
-  /* Big language buttons */
-  .lang-options{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:0;}
-  .lang-opt{
-    padding:24px 16px;border-radius:20px;
-    border:1.5px solid rgba(255,255,255,0.12);
-    background:rgba(255,255,255,0.07);
-    cursor:pointer;transition:all 0.2s;
-    backdrop-filter:blur(10px);
-    display:flex;flex-direction:column;align-items:center;gap:8px;
-  }
-  .lang-opt:hover{background:rgba(255,255,255,0.12);border-color:rgba(212,168,67,0.4);}
-  .lang-opt:active{transform:scale(0.96);}
-  .lang-opt.selecting{
-    background:rgba(212,168,67,0.15);
-    border-color:var(--gold);
-    animation:selectPulse 0.3s ease;
-  }
-  @keyframes selectPulse{0%{transform:scale(1);}50%{transform:scale(0.97);}100%{transform:scale(1);}}
-  .lo-flag{font-size:36px;line-height:1;}
-  .lo-name{font-size:18px;font-weight:600;color:#fff;}
-  .lo-sub{font-size:11px;color:rgba(255,255,255,0.45);}
+  /* Language seal grid — 9 languages, gold temple-seal medallions */
+  .lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;width:100%;max-width:380px;}
+  .lang-tile{position:relative;padding:14px 4px 11px;border-radius:16px;text-align:center;
+    border:1px solid rgba(212,168,67,0.16);cursor:pointer;user-select:none;
+    background:linear-gradient(165deg,rgba(255,255,255,0.04),rgba(255,255,255,0));
+    transition:border-color .18s,transform .12s,background .18s;}
+  .lang-tile:active{transform:scale(0.95);}
+  .lang-tile.selecting{border-color:var(--gold);
+    background:linear-gradient(165deg,rgba(212,168,67,0.14),rgba(212,168,67,0.03));
+    animation:selectPulse 0.3s ease;}
+  .lang-tile.selecting .lt-seal{border-color:var(--gold);box-shadow:0 0 16px rgba(212,168,67,0.45);}
+  @keyframes selectPulse{0%{transform:scale(1);}50%{transform:scale(0.96);}100%{transform:scale(1);}}
+  .lt-seal{width:46px;height:46px;margin:0 auto 8px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    border:1.5px solid rgba(212,168,67,0.55);font-size:21px;color:var(--gold);
+    background:radial-gradient(circle at 32% 28%,rgba(212,168,67,0.28),rgba(212,168,67,0.07) 62%,transparent);
+    font-family:'Tiro Devanagari Hindi','Noto Serif Telugu','Noto Serif Kannada','Noto Serif Tamil','Noto Serif Bengali','Noto Serif Gujarati',serif;}
+  .lt-name{display:block;font-size:13.5px;color:#fff;
+    font-family:'Tiro Devanagari Hindi','Noto Serif Telugu','Noto Serif Kannada','Noto Serif Tamil','Noto Serif Bengali','Noto Serif Gujarati','Poppins',serif;}
+  .lt-sub{display:block;font-size:9.5px;color:rgba(255,255,255,0.42);letter-spacing:.4px;margin-top:2px;}
 
   /* ── CARD — for all other steps ── */
   .card{
@@ -208,16 +208,33 @@
   <div class="lang-question">Choose your language</div>
   <div class="lang-sub">अपनी भाषा चुनें</div>
 
-  <div class="lang-options">
-    <div class="lang-opt" id="optHi" onclick="selectLanguage('hi')">
-      <span class="lo-flag">🇮🇳</span>
-      <span class="lo-name">हिंदी</span>
-      <span class="lo-sub">Hindi</span>
+  <div class="lang-grid">
+    <div class="lang-tile" data-l="en" onclick="selectLanguage('en',this)">
+      <span class="lt-seal">A</span><span class="lt-name">English</span><span class="lt-sub">अंग्रेज़ी</span>
     </div>
-    <div class="lang-opt" id="optEn" onclick="selectLanguage('en')">
-      <span class="lo-flag">🌐</span>
-      <span class="lo-name">English</span>
-      <span class="lo-sub">अंग्रेज़ी</span>
+    <div class="lang-tile" data-l="hi" onclick="selectLanguage('hi',this)">
+      <span class="lt-seal">अ</span><span class="lt-name">हिंदी</span><span class="lt-sub">Hindi</span>
+    </div>
+    <div class="lang-tile" data-l="te" onclick="selectLanguage('te',this)">
+      <span class="lt-seal">తె</span><span class="lt-name">తెలుగు</span><span class="lt-sub">Telugu</span>
+    </div>
+    <div class="lang-tile" data-l="ta" onclick="selectLanguage('ta',this)">
+      <span class="lt-seal">த</span><span class="lt-name">தமிழ்</span><span class="lt-sub">Tamil</span>
+    </div>
+    <div class="lang-tile" data-l="kn" onclick="selectLanguage('kn',this)">
+      <span class="lt-seal">ಕ</span><span class="lt-name">ಕನ್ನಡ</span><span class="lt-sub">Kannada</span>
+    </div>
+    <div class="lang-tile" data-l="bn" onclick="selectLanguage('bn',this)">
+      <span class="lt-seal">ব</span><span class="lt-name">বাংলা</span><span class="lt-sub">Bengali</span>
+    </div>
+    <div class="lang-tile" data-l="mr" onclick="selectLanguage('mr',this)">
+      <span class="lt-seal">म</span><span class="lt-name">मराठी</span><span class="lt-sub">Marathi</span>
+    </div>
+    <div class="lang-tile" data-l="gu" onclick="selectLanguage('gu',this)">
+      <span class="lt-seal">ગ</span><span class="lt-name">ગુજરાતી</span><span class="lt-sub">Gujarati</span>
+    </div>
+    <div class="lang-tile" data-l="as" onclick="selectLanguage('as',this)">
+      <span class="lt-seal">অ</span><span class="lt-name">অসমীয়া</span><span class="lt-sub">Assamese</span>
     </div>
   </div>
 </div>
@@ -476,14 +493,19 @@
   }
 
   // ── Language selection — auto-proceed after brief animation ──
-  function selectLanguage(l) {
-    lang = l; user.lang = l;
+  function selectLanguage(l, tile) {
+    // App runs in en + hi today. Hindi → Hindi; every other choice runs in
+    // English. The picked language is saved so each language can switch on
+    // automatically as its translation ships.
+    var eff = (l === 'hi') ? 'hi' : 'en';
+    lang = eff; user.lang = eff; user.pref_lang = l;
+    try { localStorage.setItem('shubhdin_pref_lang', l); } catch(e) {}
 
-    // Highlight selected
-    document.getElementById('optHi').classList.toggle('selecting', l==='hi');
-    document.getElementById('optEn').classList.toggle('selecting', l==='en');
+    // Highlight selected tile
+    document.querySelectorAll('.lang-tile').forEach(function(t){ t.classList.remove('selecting'); });
+    if (tile) tile.classList.add('selecting');
 
-    applyLang(l);
+    applyLang(eff);
 
     // Auto-proceed after 400ms — feels instant, not abrupt
     setTimeout(() => {
