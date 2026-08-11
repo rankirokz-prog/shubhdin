@@ -2229,9 +2229,11 @@
   // Finds the instant the Sun returns to its natal sidereal longitude in a given
   // year, casts a chart for that moment at the person's current city, and derives
   // the Muntha and year lord (Varshesh). Marked clearly as Tajika tradition.
-  function getVarshaphal(birthDate, natalLat, natalLng, forYear, curLat, curLng) {
+  // Extracted (U3 refactor): solar-return instant finder, shared by
+  // getVarshaphal, getMuddaDasha and getSahams. Behavior identical to the
+  // previous inline code (verified by goldens).
+  function findVarshaPravesh(birthDate, forYear) {
     var natalSun = sunSidereal(birthDate);
-    // birthday in forYear as search seed (+/- 3 days window)
     var bi = new Date(birthDate.getTime() + 5.5*3600000);
     var seed = Date.UTC(forYear, bi.getUTCMonth(), bi.getUTCDate(), bi.getUTCHours(), bi.getUTCMinutes(), 0) - 5.5*3600000;
     function sunDiff(ms){
@@ -2239,10 +2241,8 @@
       while (d > 180) d -= 360; while (d < -180) d += 360;
       return d;
     }
-    // bisection around seed
     var lo = seed - 3*86400000, hi = seed + 3*86400000;
     var flo = sunDiff(lo), fhi = sunDiff(hi);
-    // ensure sign change; widen if needed
     var guard=0;
     while (flo*fhi > 0 && guard<6){ lo -= 2*86400000; hi += 2*86400000; flo=sunDiff(lo); fhi=sunDiff(hi); guard++; }
     var mid=seed;
@@ -2251,12 +2251,15 @@
       if (Math.abs(fm) < 1e-6) break;
       if (flo*fm < 0){ hi=mid; fhi=fm; } else { lo=mid; flo=fm; }
     }
-    var returnInstant = new Date(mid);
+    return new Date(mid);
+  }
+  function getVarshaphal(birthDate, natalLat, natalLng, forYear, curLat, curLng) {
+    var returnInstant = findVarshaPravesh(birthDate, forYear);
     var cLat = (curLat!==undefined&&curLat!==null)?curLat:natalLat;
     var cLng = (curLng!==undefined&&curLng!==null)?curLng:natalLng;
     var vchart = getBirthChart(returnInstant, cLat, cLng);
     // completed years since birth
-    var ageYears = forYear - bi.getUTCFullYear();
+    var ageYears = forYear - new Date(birthDate.getTime() + 5.5*3600000).getUTCFullYear();
     // Muntha: natal lagna sign advanced one rashi per completed year
     var natalChart = getBirthChart(birthDate, natalLat, natalLng);
     var munthaIdx = (natalChart.lagna.rashiIndex + ageYears) % 12;
@@ -2770,9 +2773,384 @@
   getEventWindows = guardedOffset1(getEventWindows, 'getEventWindows');
   findMuhurta = guardedOffset1(findMuhurta, 'findMuhurta');
 
+  // ==== Upgrade U1 (Aug 2026): Personal muhurta strength + namakshara =======
+  // Sources (recorded per project discipline):
+  // - Tarabala: count janma nakshatra -> day nakshatra inclusive, mod 9.
+  //   1 Janma (NEUTRAL - "birth star activated"; avoid for major launches,
+  //   fine for self-care; malefic only in 1st paryaya per tradition),
+  //   2 Sampat, 3 Vipat (malefic), 4 Kshema, 5 Pratyari (malefic),
+  //   6 Sadhaka, 7 Naidhana/Vadha (malefic in ALL paryayas), 8 Mitra,
+  //   9/0 Parama Mitra. Malefic-by-definition set {3,5,7} per Varahamihira
+  //   ("Janma Vipat cha Naidhana Pratyari cha - ete chatvarah pap-tara
+  //   vyavahareshu varjayet" - Janma included for undertakings, hence NEUTRAL
+  //   here with paryaya escalation, matching panchangbodh/vijayalur readings).
+  //   Paryaya severity: Janma bad in 1st cycle, Vipat in 2nd, Pratyari in 3rd,
+  //   Naidhana in every cycle.
+  // - Chandrabala: count janma rashi -> transit Moon rashi inclusive;
+  //   favorable {1,3,6,7,10,11}; 8th = Chandrashtama (worst).
+  const TARA_HI = [null,
+    { en: 'Janma', hi: 'जन्म' }, { en: 'Sampat', hi: 'सम्पत्' },
+    { en: 'Vipat', hi: 'विपत्' }, { en: 'Kshema', hi: 'क्षेम' },
+    { en: 'Pratyari', hi: 'प्रत्यरि' }, { en: 'Sadhaka', hi: 'साधक' },
+    { en: 'Naidhana', hi: 'नैधन' }, { en: 'Mitra', hi: 'मित्र' },
+    { en: 'Parama Mitra', hi: 'परम मित्र' }];
+  // Wraps the existing taraOf(dayNak, janmaNak) numeric helper (declared in the
+  // koota section) with count/paryaya/quality per the sourced rules above.
+  function tarabalaOf(janmaNakIndex, dayNakIndex) {
+    const count = ((dayNakIndex - janmaNakIndex + 27) % 27) + 1; // 1..27 inclusive
+    const t = taraOf(dayNakIndex, janmaNakIndex);                // 1..9 (existing helper)
+    const paryaya = Math.ceil(count / 9); // 1..3
+    const malefic = (t === 3 || t === 5 || t === 7);
+    const severe = (t === 7) || (t === 1 && paryaya === 1) ||
+                   (t === 3 && paryaya === 2) || (t === 5 && paryaya === 3);
+    const quality = malefic ? 'unfavorable' : (t === 1 ? 'neutral' : 'favorable');
+    return { count, tara: t, name: TARA_HI[t], paryaya, quality, severe };
+  }
+  function chandrabalaOf(janmaRashiIndex, moonRashiIndex) {
+    const count = ((moonRashiIndex - janmaRashiIndex + 12) % 12) + 1; // 1..12
+    const favorable = (count === 1 || count === 3 || count === 6 ||
+                       count === 7 || count === 10 || count === 11);
+    return { count, favorable, chandrashtama: count === 8 };
+  }
+  // Personal day strength: tarabala per nakshatra segment of the civil day +
+  // chandrabala per Moon-rashi span. birth: {janmaNakIndex, janmaRashiIndex}
+  // OR {date[, lat, lng]} (lat/lng unused for moon-only derivation but
+  // accepted for symmetry).
+  function getPersonalDayStrength(date, lat, lng, tzOffsetHours, birth) {
+    if (birth == null || typeof birth !== 'object') {
+      throw new Error('PanchangEngine.getPersonalDayStrength: birth must be {janmaNakIndex, janmaRashiIndex} or {date}');
+    }
+    let jNak = birth.janmaNakIndex, jRashi = birth.janmaRashiIndex;
+    if (jNak == null || jRashi == null) {
+      if (!(birth.date instanceof Date) || isNaN(birth.date.getTime())) {
+        throw new Error('PanchangEngine.getPersonalDayStrength: birth.date invalid and indices not provided');
+      }
+      const moonLon = moonSidereal(birth.date);
+      jNak = Math.floor(moonLon / (360 / 27)) % 27;
+      jRashi = Math.floor(moonLon / 30) % 12;
+    }
+    if (!(jNak >= 0 && jNak < 27)) throw new Error('PanchangEngine.getPersonalDayStrength: janmaNakIndex out of range (got ' + jNak + ')');
+    if (!(jRashi >= 0 && jRashi < 12)) throw new Error('PanchangEngine.getPersonalDayStrength: janmaRashiIndex out of range (got ' + jRashi + ')');
+    const p = getPanchang(date, lat, lng, tzOffsetHours);
+    const segments = p.nakshatra.segments.map(function (s) {
+      const tb = tarabalaOf(jNak, s.index);
+      return { nakshatra: { index: s.index, en: s.en, hi: s.hi }, start: s.start, end: s.end, tarabala: tb };
+    });
+    // Moon rashi over the day: use rashi at sunrise (or refInstant) and detect
+    // a change within the window via segment boundaries of nakshatra pada is
+    // not enough; compute directly at window edges + any nakshatra boundary.
+    const refStart = p.sunrise || p.date;
+    const refEnd = p.nextSunrise || new Date(p.date.getTime() + 86400000);
+    const probes = [refStart].concat(p.nakshatra.segments.map(function (s) { return s.end; })).concat([refEnd])
+      .filter(function (d) { return d && new Date(d) >= new Date(refStart) && new Date(d) <= new Date(refEnd); });
+    const rashiSpans = [];
+    let curRashi = null, spanStart = refStart;
+    for (let i = 0; i < probes.length; i++) {
+      const t = new Date(probes[i]);
+      const r = Math.floor(moonSidereal(t) / 30) % 12;
+      if (curRashi === null) { curRashi = r; }
+      else if (r !== curRashi) {
+        // bisect boundary between previous probe and this one to ~1min
+        let lo = new Date(probes[i - 1]).getTime(), hi = t.getTime();
+        while (hi - lo > 60000) {
+          const mid = (lo + hi) / 2;
+          const rm = Math.floor(moonSidereal(new Date(mid)) / 30) % 12;
+          if (rm === curRashi) lo = mid; else hi = mid;
+        }
+        rashiSpans.push({ rashiIndex: curRashi, en: RASHI_EN[curRashi], hi: RASHI_HI[curRashi], start: spanStart, end: new Date(hi), chandrabala: chandrabalaOf(jRashi, curRashi) });
+        spanStart = new Date(hi); curRashi = r;
+      }
+    }
+    rashiSpans.push({ rashiIndex: curRashi, en: RASHI_EN[curRashi], hi: RASHI_HI[curRashi], start: spanStart, end: refEnd, chandrabala: chandrabalaOf(jRashi, curRashi) });
+    // Day verdict: best when both present for most of the day
+    const goodTara = segments.some(function (s) { return s.tarabala.quality === 'favorable'; });
+    const goodChandra = rashiSpans.some(function (r) { return r.chandrabala.favorable; });
+    return {
+      date: p.date, janma: { nakshatraIndex: jNak, nakshatra: { en: NAKSHATRA_NAMES[jNak], hi: NAKSHATRA_HI[jNak] }, rashiIndex: jRashi, rashi: { en: RASHI_EN[jRashi], hi: RASHI_HI[jRashi] } },
+      tarabalaSegments: segments,
+      chandrabalaSpans: rashiSpans,
+      bothPresent: goodTara && goodChandra,
+      warnings: p.warnings
+    };
+  }
+  // Namakshara (avakahada chakra): naming syllables per nakshatra pada.
+  // Standard published table, 27 x 4 = 108 syllables.
+  const NAMAKSHARA = [
+    [['Chu','चु'],['Che','चे'],['Cho','चो'],['La','ला']],      // Ashwini
+    [['Li','ली'],['Lu','लू'],['Le','ले'],['Lo','लो']],          // Bharani
+    [['A','अ'],['I','इ'],['U','उ'],['E','ए']],                  // Krittika
+    [['O','ओ'],['Va','वा'],['Vi','वी'],['Vu','वु']],            // Rohini
+    [['Ve','वे'],['Vo','वो'],['Ka','का'],['Ki','की']],          // Mrigashira
+    [['Ku','कु'],['Gha','घ'],['Nga','ङ'],['Chha','छ']],         // Ardra
+    [['Ke','के'],['Ko','को'],['Ha','हा'],['Hi','ही']],          // Punarvasu
+    [['Hu','हु'],['He','हे'],['Ho','हो'],['Da','ड']],           // Pushya
+    [['Di','डी'],['Du','डू'],['De','डे'],['Do','डो']],          // Ashlesha
+    [['Ma','मा'],['Mi','मी'],['Mu','मू'],['Me','मे']],          // Magha
+    [['Mo','मो'],['Ta','टा'],['Ti','टी'],['Tu','टू']],          // Purva Phalguni
+    [['Te','टे'],['To','टो'],['Pa','पा'],['Pi','पी']],          // Uttara Phalguni
+    [['Pu','पू'],['Sha','ष'],['Na','ण'],['Tha','ठ']],           // Hasta
+    [['Pe','पे'],['Po','पो'],['Ra','रा'],['Ri','री']],          // Chitra
+    [['Ru','रू'],['Re','रे'],['Ro','रो'],['Ta','ता']],          // Swati
+    [['Ti','ती'],['Tu','तू'],['Te','ते'],['To','तो']],          // Vishakha
+    [['Na','ना'],['Ni','नी'],['Nu','नू'],['Ne','ने']],          // Anuradha
+    [['No','नो'],['Ya','या'],['Yi','यी'],['Yu','यू']],          // Jyeshtha
+    [['Ye','ये'],['Yo','यो'],['Bha','भा'],['Bhi','भी']],        // Mula
+    [['Bhu','भू'],['Dha','धा'],['Pha','फा'],['Dhha','ढा']],     // Purva Ashadha
+    [['Bhe','भे'],['Bho','भो'],['Ja','जा'],['Ji','जी']],        // Uttara Ashadha
+    [['Khi','खी'],['Khu','खू'],['Khe','खे'],['Kho','खो']],      // Shravana
+    [['Ga','गा'],['Gi','गी'],['Gu','गू'],['Ge','गे']],          // Dhanishta
+    [['Go','गो'],['Sa','सा'],['Si','सी'],['Su','सू']],          // Shatabhisha
+    [['Se','से'],['So','सो'],['Da','दा'],['Di','दी']],          // Purva Bhadrapada
+    [['Du','दू'],['Tha','थ'],['Jha','झ'],['Nya','ञ']],          // Uttara Bhadrapada
+    [['De','दे'],['Do','दो'],['Cha','चा'],['Chi','ची']]         // Revati
+  ];
+  function getNamakshara(nakshatraIndex, pada) {
+    if (!(nakshatraIndex >= 0 && nakshatraIndex < 27)) throw new Error('PanchangEngine.getNamakshara: nakshatraIndex out of range [0,26] (got ' + String(nakshatraIndex) + ')');
+    if (pada != null && !(pada >= 1 && pada <= 4)) throw new Error('PanchangEngine.getNamakshara: pada out of range [1,4] (got ' + String(pada) + ')');
+    const row = NAMAKSHARA[nakshatraIndex];
+    const all = row.map(function (s, i) { return { pada: i + 1, latin: s[0], devanagari: s[1] }; });
+    return {
+      nakshatra: { index: nakshatraIndex, en: NAKSHATRA_NAMES[nakshatraIndex], hi: NAKSHATRA_HI[nakshatraIndex] },
+      syllables: pada != null ? [all[pada - 1]] : all
+    };
+  }
+  // ==== end Upgrade U1 =======================================================
+
+  // ==== Upgrade U2 (Aug 2026): Monthly gochar forecast builder ==============
+  // Classical transit-from-Moon favorable houses, sourced (BPHS via astronidan;
+  // Phaladeepika 26.7 verbatim for Jupiter; B.V. Raman ch.34 patterns;
+  // kundlidikhao full table): Sun {3,6,10,11} - Mars {3,6,11} -
+  // Mercury {2,4,6,8,10,11} - Jupiter {2,5,7,9,11} -
+  // Venus {1,2,3,4,5,8,9,11,12} - Saturn {3,6,11} -
+  // Rahu/Ketu {3,6,11} (common convention, traditions vary - flagged).
+  // Moon is EXCLUDED from monthly gochar (changes rashi ~every 2.25 days;
+  // the daily lens is getPersonalDayStrength/chandrabala).
+  // VEDHA deliberately NOT implemented: full per-planet vedha pair tables were
+  // not fully recoverable from sources this session; per project rule, no
+  // recall-based rules. Follow-up U2b requires a sourced vedha table.
+  const GOCHAR_FAV = {
+    sun: [3, 6, 10, 11], mars: [3, 6, 11], mercury: [2, 4, 6, 8, 10, 11],
+    jupiter: [2, 5, 7, 9, 11], venus: [1, 2, 3, 4, 5, 8, 9, 11, 12],
+    saturn: [3, 6, 11], rahu: [3, 6, 11], ketu: [3, 6, 11]
+  };
+  const GOCHAR_BODIES = ['sun', 'mars', 'mercury', 'jupiter', 'venus', 'saturn', 'rahu', 'ketu'];
+  function gocharHouse(janmaRashiIndex, transitRashiIndex) {
+    return ((transitRashiIndex - janmaRashiIndex + 12) % 12) + 1;
+  }
+  function getMonthlyGochar(startDate, months, tzOffsetHours, birth) {
+    if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
+      throw new Error('PanchangEngine.getMonthlyGochar: invalid startDate (got ' + String(startDate) + ')');
+    }
+    const tz = (tzOffsetHours == null) ? 5.5 : Number(tzOffsetHours);
+    if (!(tz >= -14 && tz <= 14)) throw new Error('PanchangEngine.getMonthlyGochar: tzOffsetHours out of range [-14,14] (got ' + String(tzOffsetHours) + ')');
+    months = (months == null) ? 12 : Number(months);
+    if (!(months >= 1 && months <= 24)) throw new Error('PanchangEngine.getMonthlyGochar: months out of range [1,24] (got ' + String(months) + ')');
+    if (birth == null || typeof birth !== 'object') throw new Error('PanchangEngine.getMonthlyGochar: birth must be {janmaRashiIndex} or {date}');
+    let jRashi = birth.janmaRashiIndex;
+    if (jRashi == null) {
+      if (!(birth.date instanceof Date) || isNaN(birth.date.getTime())) throw new Error('PanchangEngine.getMonthlyGochar: birth.date invalid and janmaRashiIndex not provided');
+      jRashi = Math.floor(moonSidereal(birth.date) / 30) % 12;
+    }
+    if (!(jRashi >= 0 && jRashi < 12)) throw new Error('PanchangEngine.getMonthlyGochar: janmaRashiIndex out of range (got ' + jRashi + ')');
+    const shifted = new Date(startDate.getTime() + tz * 3600000);
+    const y = shifted.getUTCFullYear(), m0 = shifted.getUTCMonth();
+    const localMonthStart = (yy, mm) => new Date(Date.UTC(yy, mm, 1, 0, 0, 0) - tz * 3600000);
+    const lonCache = new Map();
+    function grahaLons(t) {
+      const k = t.getTime();
+      if (lonCache.has(k)) return lonCache.get(k);
+      const g = getGrahas(t); const out = {};
+      for (const x of g) if (GOCHAR_FAV[x.key]) out[x.key] = { lon: x.longitude, retro: !!x.retrograde };
+      lonCache.set(k, out);
+      return out;
+    }
+    const result = { janmaRashiIndex: jRashi, janmaRashi: { en: RASHI_EN[jRashi], hi: RASHI_HI[jRashi] }, note: 'Moon excluded from monthly gochar; see getPersonalDayStrength. Vedha not applied (U2b pending).', months: [] };
+    for (let mi = 0; mi < months; mi++) {
+      const mm = (m0 + mi) % 12, yy = y + Math.floor((m0 + mi) / 12);
+      const wStart = localMonthStart(yy, mm), wEnd = localMonthStart(mm === 11 ? yy + 1 : yy, (mm + 1) % 12);
+      const month = { year: yy, month: mm + 1, start: wStart, end: wEnd, grahas: {}, ingresses: [] };
+      const startLons = grahaLons(wStart);
+      for (const key of GOCHAR_BODIES) {
+        const spans = [];
+        let curRashi = Math.floor(startLons[key].lon / 30) % 12;
+        let spanStart = wStart;
+        let prevT = wStart.getTime();
+        const stepMs = 86400000;
+        for (let t = wStart.getTime() + stepMs; ; t += stepMs) {
+          const tt = Math.min(t, wEnd.getTime());
+          const r = Math.floor(grahaLons(new Date(tt))[key].lon / 30) % 12;
+          if (r !== curRashi) {
+            let lo = prevT, hi = tt;
+            while (hi - lo > 60000) {
+              const mid = (lo + hi) / 2;
+              const rm = Math.floor(grahaLons(new Date(mid))[key].lon / 30) % 12;
+              if (rm === curRashi) lo = mid; else hi = mid;
+            }
+            const cross = new Date(hi);
+            const h = gocharHouse(jRashi, curRashi);
+            spans.push({ rashiIndex: curRashi, en: RASHI_EN[curRashi], hi: RASHI_HI[curRashi], start: spanStart, end: cross, houseFromMoon: h, favorable: GOCHAR_FAV[key].indexOf(h) !== -1 });
+            const newRashi = Math.floor(grahaLons(cross)[key].lon / 30) % 12;
+            month.ingresses.push({ graha: key, date: cross, from: { index: curRashi, en: RASHI_EN[curRashi] }, to: { index: newRashi, en: RASHI_EN[newRashi] }, retrograde: grahaLons(cross)[key].retro });
+            curRashi = newRashi; spanStart = cross;
+          }
+          prevT = tt;
+          if (tt >= wEnd.getTime()) break;
+        }
+        const hEnd = gocharHouse(jRashi, curRashi);
+        spans.push({ rashiIndex: curRashi, en: RASHI_EN[curRashi], hi: RASHI_HI[curRashi], start: spanStart, end: wEnd, houseFromMoon: hEnd, favorable: GOCHAR_FAV[key].indexOf(hEnd) !== -1 });
+        let dom = spans[0];
+        for (const s of spans) if ((new Date(s.end) - new Date(s.start)) > (new Date(dom.end) - new Date(dom.start))) dom = s;
+        month.grahas[key] = { spans: spans, dominant: { rashiIndex: dom.rashiIndex, en: dom.en, hi: dom.hi, houseFromMoon: dom.houseFromMoon, favorable: dom.favorable }, retrograde: startLons[key].retro };
+      }
+      month.ingresses.sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+      const doms = GOCHAR_BODIES.map(function (k) { return month.grahas[k].dominant; });
+      month.summary = {
+        favorableCount: doms.filter(function (d) { return d.favorable; }).length,
+        unfavorableCount: doms.filter(function (d) { return !d.favorable; }).length,
+        heavyweights: { jupiter: month.grahas.jupiter.dominant.favorable, saturn: month.grahas.saturn.dominant.favorable }
+      };
+      result.months.push(month);
+    }
+    return result;
+  }
+  // ==== end Upgrade U2 =======================================================
+
+  // ==== Upgrade U3 (Aug 2026): Mudda dasha + Sahams for Varshaphal ==========
+  // MUDDA DASHA (sourced): vimshottari lords, durations = natal years x 3
+  // "units" (Sun 18, Moon 30, Mars 21, Rahu 54, Jupiter 48, Saturn 57,
+  // Mercury 51, Ketu 21, Venus 60; total 360), spread over the ACTUAL solar
+  // year (verified against astrologyapi worked example: Sun span 18d6h18m =
+  // 18 x yearLen/360). Starting lord = vimshottari lord of nakshatra
+  // (janma nakshatra + completed years) [desiutils + Charak formula].
+  // TWO documented conventions, both implemented:
+  //   'nine-full' (DEFAULT, AstroSage/calculator parity): 9 full periods,
+  //     no natal-balance split.
+  //   'charak' (K.S. Charak textbook): starting lord split by the natal
+  //     Moon's elapsed fraction; remainder repeats at year end (10 rows).
+  const MUDDA_UNITS = { ketu:21, venus:60, sun:18, moon:30, mars:21, rahu:54, jupiter:48, saturn:57, mercury:51 };
+  const VIM_SEQ = ['ketu','venus','sun','moon','mars','rahu','jupiter','saturn','mercury'];
+  const GRAHA_LABEL = { ketu:{en:'Ketu',hi:'\u0915\u0947\u0924\u0941'}, venus:{en:'Shukra',hi:'\u0936\u0941\u0915\u094d\u0930'}, sun:{en:'Surya',hi:'\u0938\u0942\u0930\u094d\u092f'}, moon:{en:'Chandra',hi:'\u091a\u0902\u0926\u094d\u0930'}, mars:{en:'Mangal',hi:'\u092e\u0902\u0917\u0932'}, rahu:{en:'Rahu',hi:'\u0930\u093e\u0939\u0941'}, jupiter:{en:'Guru',hi:'\u0917\u0941\u0930\u0941'}, saturn:{en:'Shani',hi:'\u0936\u0928\u093f'}, mercury:{en:'Budha',hi:'\u092c\u0941\u0927'} };
+  function getMuddaDasha(birthDate, forYear, opts) {
+    if (!(birthDate instanceof Date) || isNaN(birthDate.getTime())) throw new Error('PanchangEngine.getMuddaDasha: invalid birthDate (got ' + String(birthDate) + ')');
+    forYear = Number(forYear);
+    if (!(forYear >= 1800 && forYear <= 2200)) throw new Error('PanchangEngine.getMuddaDasha: forYear out of range [1800,2200] (got ' + String(forYear) + ')');
+    const variant = (opts && opts.variant) || 'nine-full';
+    if (variant !== 'nine-full' && variant !== 'charak') throw new Error("PanchangEngine.getMuddaDasha: variant must be 'nine-full' or 'charak' (got " + String(variant) + ')');
+    const pravesh = findVarshaPravesh(birthDate, forYear);
+    const praveshNext = findVarshaPravesh(birthDate, forYear + 1);
+    const yearMs = praveshNext.getTime() - pravesh.getTime();
+    const natalMoon = moonSidereal(birthDate);
+    const nakSpan = 360 / 27;
+    const janmaNak = Math.floor(natalMoon / nakSpan) % 27;
+    const elapsedFrac = (natalMoon % nakSpan) / nakSpan; // fraction of janma nakshatra traversed at birth
+    const completedYears = Math.round((pravesh.getTime() - birthDate.getTime()) / (365.2425 * 86400000));
+    const startNak = (janmaNak + completedYears) % 27;
+    const startLordIdx = startNak % 9; // VIM_SEQ aligned to Ashwini=Ketu
+    const unitMs = yearMs / 360;
+    const periods = [];
+    let cursor = pravesh.getTime();
+    if (variant === 'nine-full') {
+      for (let i = 0; i < 9; i++) {
+        const lord = VIM_SEQ[(startLordIdx + i) % 9];
+        const len = MUDDA_UNITS[lord] * unitMs;
+        periods.push({ lord: lord, label: GRAHA_LABEL[lord], start: new Date(cursor), end: new Date(cursor + len), days: MUDDA_UNITS[lord] });
+        cursor += len;
+      }
+    } else {
+      const startLord = VIM_SEQ[startLordIdx];
+      const firstLen = (1 - elapsedFrac) * MUDDA_UNITS[startLord] * unitMs;
+      periods.push({ lord: startLord, label: GRAHA_LABEL[startLord], start: new Date(cursor), end: new Date(cursor + firstLen), days: MUDDA_UNITS[startLord] * (1 - elapsedFrac), balanceOpening: true });
+      cursor += firstLen;
+      for (let i = 1; i < 9; i++) {
+        const lord = VIM_SEQ[(startLordIdx + i) % 9];
+        const len = MUDDA_UNITS[lord] * unitMs;
+        periods.push({ lord: lord, label: GRAHA_LABEL[lord], start: new Date(cursor), end: new Date(cursor + len), days: MUDDA_UNITS[lord] });
+        cursor += len;
+      }
+      periods.push({ lord: startLord, label: GRAHA_LABEL[startLord], start: new Date(cursor), end: new Date(praveshNext.getTime()), days: MUDDA_UNITS[startLord] * elapsedFrac, balanceClosing: true });
+    }
+    // antardashas within each period: vimshottari proportions starting from the period lord
+    for (const p of periods) {
+      const span = new Date(p.end).getTime() - new Date(p.start).getTime();
+      const lidx = VIM_SEQ.indexOf(p.lord);
+      const subs = []; let c2 = new Date(p.start).getTime();
+      for (let j = 0; j < 9; j++) {
+        const sl = VIM_SEQ[(lidx + j) % 9];
+        const sw = span * MUDDA_UNITS[sl] / 360;
+        subs.push({ lord: sl, label: GRAHA_LABEL[sl], start: new Date(c2), end: new Date(c2 + sw) });
+        c2 += sw;
+      }
+      subs[subs.length - 1].end = new Date(p.end);
+      p.antardashas = subs;
+    }
+    return { variant: variant, varshaPravesh: pravesh, yearEnd: praveshNext, yearDays: yearMs / 86400000, janmaNakshatraIndex: janmaNak, completedYears: completedYears, startNakshatraIndex: startNak, startLord: VIM_SEQ[startLordIdx], periods: periods };
+  }
+  // SAHAMS (sourced: astroveda-wikidot full table; Saptarishis; PanchangBodh;
+  // classical +30 rule via indiadivine). Formula shape A - B + C (day).
+  // Night reverses A and B unless sameDayNight. Correction: if C does not lie
+  // in the zodiacal arc from B to A, add 30 degrees.
+  const SAHAM_DEFS = [
+    { key:'punya',    en:'Punya',    A:'moon',    B:'sun',     C:'lagna' },
+    { key:'vidya',    en:'Vidya',    A:'sun',     B:'moon',    C:'lagna' },
+    { key:'yasas',    en:'Yasas',    A:'jupiter', B:'@punya',  C:'lagna' },
+    { key:'mitra',    en:'Mitra',    A:'jupiter', B:'@punya',  C:'venus' },
+    { key:'mahatmya', en:'Mahatmya', A:'@punya',  B:'mars',    C:'lagna' },
+    { key:'asha',     en:'Asha',     A:'saturn',  B:'mars',    C:'lagna' },
+    { key:'bhratri',  en:'Bhratri',  A:'jupiter', B:'saturn',  C:'lagna', sameDayNight:true },
+    { key:'gaurava',  en:'Gaurava',  A:'jupiter', B:'moon',    C:'sun' },
+    { key:'pitri',    en:'Pitri',    A:'saturn',  B:'sun',     C:'lagna' },
+    { key:'matri',    en:'Matri',    A:'moon',    B:'venus',   C:'lagna' },
+    { key:'putra',    en:'Putra',    A:'jupiter', B:'moon',    C:'lagna' },
+    { key:'jeeva',    en:'Jeeva',    A:'saturn',  B:'jupiter', C:'lagna' },
+    { key:'karma',    en:'Karma',    A:'mars',    B:'mercury', C:'lagna' },
+    { key:'roga',     en:'Roga',     A:'lagna',   B:'moon',    C:'lagna', sameDayNight:true },
+    { key:'kali',     en:'Kali',     A:'jupiter', B:'mars',    C:'lagna' },
+    { key:'vivaha',   en:'Vivaha',   A:'venus',   B:'saturn',  C:'lagna', sameDayNight:true }
+  ];
+  function getSahams(birthDate, natalLat, natalLng, forYear, curLat, curLng) {
+    const v = validateInputs(birthDate, natalLat, natalLng, 'getSahams');
+    birthDate = v.date; natalLat = v.lat; natalLng = v.lng;
+    forYear = Number(forYear);
+    if (!(forYear >= 1800 && forYear <= 2200)) throw new Error('PanchangEngine.getSahams: forYear out of range [1800,2200] (got ' + String(forYear) + ')');
+    const lat = (curLat != null) ? Number(curLat) : natalLat;
+    const lng = (curLng != null) ? Number(curLng) : natalLng;
+    const pravesh = findVarshaPravesh(birthDate, forYear);
+    // day/night at pravesh: geometric sun altitude at the location (tz-free)
+    const obs = new A.Observer(lat, lng, 0);
+    const eq = A.Equator(A.Body.Sun, pravesh, obs, true, true);
+    const hor = A.Horizon(pravesh, obs, eq.ra, eq.dec, 'normal');
+    const isDay = hor.altitude > 0;
+    const lag = getLagna(pravesh, lat, lng);
+    const g = getGrahas(pravesh); const lon = { lagna: lag.longitude };
+    for (const x of g) lon[x.key] = x.longitude;
+    const norm = d => { d = d % 360; return d < 0 ? d + 360 : d; };
+    const inArc = (from, to, x) => { // is x in zodiacal arc from -> to
+      const span = norm(to - from); const off = norm(x - from);
+      return off <= span;
+    };
+    const values = {};
+    const out = [];
+    for (const def of SAHAM_DEFS) {
+      const resolve = k => (k === '@punya') ? values.punya : lon[k];
+      let Ap = resolve(def.A), Bp = resolve(def.B), Cp = resolve(def.C);
+      if (!isDay && !def.sameDayNight) { const t = Ap; Ap = Bp; Bp = t; }
+      let val = norm(Ap - Bp + Cp);
+      const corrected = !inArc(Bp, Ap, Cp);
+      if (corrected) val = norm(val + 30);
+      values[def.key] = val;
+      const r = Math.floor(val / 30) % 12;
+      out.push({ key: def.key, en: def.en, longitude: val, rashiIndex: r, rashi: { en: RASHI_EN[r], hi: RASHI_HI[r] }, degreesInRashi: val % 30, correctionApplied: corrected, sameDayNight: !!def.sameDayNight });
+    }
+    return { varshaPravesh: pravesh, isDayBirth: isDay, lagna: { longitude: lag.longitude, rashiIndex: lag.rashiIndex }, sahams: out };
+  }
+  // ==== end Upgrade U3 =======================================================
+
   global.PanchangEngine = {
     getPanchang,
     setSunriseMode, getSunriseMode,
+    tarabalaOf, chandrabalaOf, getPersonalDayStrength, getNamakshara,
+    getMonthlyGochar, gocharHouse,
+    getMuddaDasha, getSahams, findVarshaPravesh,
     getFestivals,
     getVrats,
     getLagna,
