@@ -24,7 +24,8 @@
     min-height:100vh;
     background:linear-gradient(155deg,#0D0500 0%,#2C1208 35%,#3D1A05 55%,#2C1208 80%,#0D0500 100%);
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    font-family:'Poppins',sans-serif;padding:20px;position:relative;overflow:hidden;
+    font-family:'Poppins',sans-serif;padding:20px;position:relative;
+    overflow-x:hidden;overflow-y:auto; /* never clip tall content; Continue stays reachable */
   }
   body::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:360px;height:260px;border-radius:50%;background:radial-gradient(ellipse,rgba(212,168,67,0.18) 0%,transparent 70%);pointer-events:none;}
 
@@ -36,7 +37,8 @@
     width:100%;max-width:400px;
     text-align:center;
     position:relative;z-index:10;
-    margin-top:3vh;margin-bottom:auto; /* top-anchored: kills the big gap above ॐ */
+    margin:8px auto auto;           /* top-anchored; safe when content is tall */
+    padding-bottom:34px;            /* breathing space under the Continue button */
     animation:fadeIn 0.6s ease forwards;
   }
   @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
@@ -45,19 +47,19 @@
   @keyframes fadeOut{from{opacity:1;transform:scale(1);}to{opacity:0;transform:scale(0.95);}}
 
   .lang-om{
-    font-family:'Tiro Devanagari Hindi',serif;font-size:84px;color:#E8BE5A;
-    display:block;line-height:1.1;margin-bottom:14px;
+    font-family:'Tiro Devanagari Hindi',serif;font-size:66px;color:#E8BE5A;
+    display:block;line-height:1.05;margin-bottom:10px;
     animation:omGlow 3s ease-in-out infinite;
   }
   @keyframes omGlow{0%,100%{text-shadow:0 0 28px rgba(212,168,67,0.55),0 0 60px rgba(212,168,67,0.25);}50%{text-shadow:0 0 46px rgba(232,190,90,0.95),0 0 90px rgba(212,168,67,0.45);}}
 
   .lang-question{font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:6px;font-weight:400;}
-  .lang-sub{font-size:12px;color:rgba(212,168,67,0.5);margin-bottom:32px;letter-spacing:0.5px;min-height:1.4em;transition:opacity .18s ease;}
-  .lang-brand{font-size:30px;color:var(--gold);margin-bottom:14px;line-height:1.25;min-height:1.3em;
+  .lang-sub{font-size:12px;color:rgba(212,168,67,0.5);margin-bottom:20px;letter-spacing:0.5px;min-height:1.4em;transition:opacity .18s ease;}
+  .lang-brand{font-size:27px;color:var(--gold);margin-bottom:10px;line-height:1.25;min-height:1.3em;
     font-family:'Tiro Devanagari Hindi','Noto Serif Telugu','Noto Serif Kannada','Noto Serif Tamil','Noto Serif Bengali','Noto Serif Gujarati',serif;
     transition:opacity .18s ease;}
   .lang-brand.flip,.lang-sub.flip{opacity:0;}
-  .lang-go{width:100%;max-width:380px;margin:22px auto 0;display:block;padding:14px;border:none;border-radius:14px;
+  .lang-go{width:100%;max-width:380px;margin:18px auto 0;display:block;padding:14px;border:none;border-radius:14px;
     font-size:16px;font-weight:600;color:#1A0D00;cursor:pointer;
     font-family:'Tiro Devanagari Hindi','Noto Serif Telugu','Noto Serif Kannada','Noto Serif Tamil','Noto Serif Bengali','Noto Serif Gujarati','Poppins',serif;
     background:linear-gradient(120deg,var(--gold),#B8892F);
@@ -66,8 +68,8 @@
   .lang-go:active{transform:scale(0.97);}
 
   /* Language seal grid — 9 languages, gold temple-seal medallions */
-  .lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;width:100%;max-width:380px;}
-  .lang-tile{position:relative;padding:14px 4px 11px;border-radius:16px;text-align:center;
+  .lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:380px;}
+  .lang-tile{position:relative;padding:11px 4px 9px;border-radius:16px;text-align:center;
     border:1px solid rgba(212,168,67,0.16);cursor:pointer;user-select:none;
     background:linear-gradient(165deg,rgba(255,255,255,0.04),rgba(255,255,255,0));
     transition:border-color .18s,transform .12s,background .18s;}
@@ -77,7 +79,7 @@
     animation:selectPulse 0.3s ease;}
   .lang-tile.selecting .lt-seal{border-color:var(--gold);box-shadow:0 0 16px rgba(212,168,67,0.45);}
   @keyframes selectPulse{0%{transform:scale(1);}50%{transform:scale(0.96);}100%{transform:scale(1);}}
-  .lt-seal{width:46px;height:46px;margin:0 auto 8px;border-radius:50%;
+  .lt-seal{width:42px;height:42px;margin:0 auto 7px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     border:1.5px solid rgba(212,168,67,0.55);font-size:21px;color:var(--gold);
     background:radial-gradient(circle at 32% 28%,rgba(212,168,67,0.28),rgba(212,168,67,0.07) 62%,transparent);
