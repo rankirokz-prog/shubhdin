@@ -52,7 +52,18 @@
   @keyframes omGlow{0%,100%{text-shadow:0 0 28px rgba(212,168,67,0.55),0 0 60px rgba(212,168,67,0.25);}50%{text-shadow:0 0 46px rgba(232,190,90,0.95),0 0 90px rgba(212,168,67,0.45);}}
 
   .lang-question{font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:6px;font-weight:400;}
-  .lang-sub{font-size:12px;color:rgba(212,168,67,0.5);margin-bottom:32px;letter-spacing:0.5px;}
+  .lang-sub{font-size:12px;color:rgba(212,168,67,0.5);margin-bottom:32px;letter-spacing:0.5px;min-height:1.4em;transition:opacity .18s ease;}
+  .lang-brand{font-size:30px;color:var(--gold);margin-bottom:14px;line-height:1.25;min-height:1.3em;
+    font-family:'Tiro Devanagari Hindi','Noto Serif Telugu','Noto Serif Kannada','Noto Serif Tamil','Noto Serif Bengali','Noto Serif Gujarati',serif;
+    transition:opacity .18s ease;}
+  .lang-brand.flip,.lang-sub.flip{opacity:0;}
+  .lang-go{width:100%;max-width:380px;margin:22px auto 0;display:block;padding:14px;border:none;border-radius:14px;
+    font-size:16px;font-weight:600;color:#1A0D00;cursor:pointer;
+    font-family:'Tiro Devanagari Hindi','Noto Serif Telugu','Noto Serif Kannada','Noto Serif Tamil','Noto Serif Bengali','Noto Serif Gujarati','Poppins',serif;
+    background:linear-gradient(120deg,var(--gold),#B8892F);
+    opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s,transform .25s;}
+  .lang-go.on{opacity:1;transform:none;pointer-events:auto;}
+  .lang-go:active{transform:scale(0.97);}
 
   /* Language seal grid — 9 languages, gold temple-seal medallions */
   .lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;width:100%;max-width:380px;}
@@ -206,8 +217,9 @@
 ══════════════════════════════ -->
 <div class="lang-screen" id="langScreen">
   <span class="lang-om">ॐ</span>
+  <div class="lang-brand" id="langBrand">शुभ दिन</div>
   <div class="lang-question">Choose your language</div>
-  <div class="lang-sub">अपनी भाषा चुनें</div>
+  <div class="lang-sub" id="langSub">अपनी भाषा चुनें</div>
 
   <div class="lang-grid">
     <div class="lang-tile" data-l="en" onclick="selectLanguage('en',this)">
@@ -238,6 +250,8 @@
       <span class="lt-seal">অ</span><span class="lt-name">অসমীয়া</span><span class="lt-sub">Assamese</span>
     </div>
   </div>
+
+  <button class="lang-go" id="langGo" onclick="proceedFromLang()">आगे बढ़ें →</button>
 </div>
 
 <!-- ══════════════════════════════
@@ -494,6 +508,19 @@
   }
 
   // ── Language selection — auto-proceed after brief animation ──
+  // Brand name + screen words per language (brand values = U.brand.name)
+  var LANGMETA = {
+    en:{brand:'Shubh Din', ask:'Choose your language',            go:'Continue →'},
+    hi:{brand:'शुभ दिन',  ask:'अपनी भाषा चुनें',                 go:'आगे बढ़ें →'},
+    te:{brand:'శుభ్ దిన్', ask:'మీ భాషను ఎంచుకోండి',              go:'కొనసాగించండి →'},
+    ta:{brand:'சுப் தின்', ask:'உங்கள் மொழியைத் தேர்வு செய்யவும்', go:'தொடரவும் →'},
+    kn:{brand:'ಶುಭ್ ದಿನ್', ask:'ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆರಿಸಿ',           go:'ಮುಂದುವರಿಸಿ →'},
+    bn:{brand:'শুভ দিন',  ask:'আপনার ভাষা বেছে নিন',              go:'এগিয়ে যান →'},
+    mr:{brand:'शुभ दिन',  ask:'तुमची भाषा निवडा',                go:'पुढे जा →'},
+    gu:{brand:'શુભ દિન',  ask:'તમારી ભાષા પસંદ કરો',              go:'આગળ વધો →'},
+    as:{brand:'শুভ দিন',  ask:'আপোনাৰ ভাষা বাছনি কৰক',            go:'আগবাঢ়ক →'}
+  };
+
   function selectLanguage(l, tile) {
     // App runs in en + hi today. Hindi → Hindi; every other choice runs in
     // English. The picked language is saved so each language can switch on
@@ -508,13 +535,24 @@
 
     applyLang(eff);
 
-    // Auto-proceed after 400ms — feels instant, not abrupt
-    setTimeout(() => {
-      document.getElementById('langScreen').style.display = 'none';
-      const card = document.getElementById('mainCard');
-      card.classList.add('show');
-      showStep(1);
-    }, 400);
+    // Signature moment: the app greets you in your own script
+    var M = LANGMETA[l] || LANGMETA.en;
+    var b = document.getElementById('langBrand'), s = document.getElementById('langSub');
+    b.classList.add('flip'); s.classList.add('flip');
+    setTimeout(function(){
+      b.textContent = M.brand; s.textContent = M.ask;
+      b.classList.remove('flip'); s.classList.remove('flip');
+    }, 180);
+    var g = document.getElementById('langGo');
+    g.textContent = M.go;
+    g.classList.add('on');
+  }
+
+  function proceedFromLang() {
+    document.getElementById('langScreen').style.display = 'none';
+    const card = document.getElementById('mainCard');
+    card.classList.add('show');
+    showStep(1);
   }
 
   // ── Step navigation ──
