@@ -5,31 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
 <title>Premium Reports — शुभ दिन</title>
-<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-:root{--gold:#D4A843;--saffron:#FF6B1A;}
+:root{--gold:#D4A843;--saffron:#FF6B1A;--ink:#0D0500;}
 body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#0D0500 100%);
-  font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.9);padding:0 16px 40px;}
-.hdr{display:flex;align-items:center;gap:12px;padding:18px 0 6px;}
+  font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.9);padding:0 14px 44px;}
+.hdr{display:flex;align-items:center;gap:12px;padding:18px 2px 6px;}
 .back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;
   color:rgba(212,168,67,0.85);font-size:18px;cursor:pointer;flex-shrink:0;}
 .htitle{font-family:'Tiro Devanagari Hindi',serif;font-size:19px;color:var(--gold);font-weight:600;}
 .htitle small{display:block;font-family:'Poppins',sans-serif;font-size:9.5px;color:rgba(255,244,222,0.45);letter-spacing:2px;font-weight:400;}
 .crown{margin-left:auto;font-size:22px;}
-.lead{font-size:12px;color:rgba(255,244,222,0.55);line-height:1.6;margin:10px 2px 18px;}
-.rep{display:flex;align-items:center;gap:13px;border:1px solid rgba(212,168,67,0.20);border-radius:16px;
-  padding:14px;margin-bottom:11px;cursor:pointer;text-decoration:none;color:inherit;
+.lead{font-size:11.5px;color:rgba(255,244,222,0.55);line-height:1.6;margin:8px 4px 16px;}
+
+/* ── HERO: most popular ── */
+.hero{position:relative;border-radius:20px;padding:18px 16px 16px;margin-bottom:18px;cursor:pointer;overflow:hidden;
+  background:linear-gradient(150deg,rgba(212,168,67,0.17),rgba(255,107,26,0.07) 55%,rgba(212,168,67,0.03));
+  border:1.5px solid rgba(212,168,67,0.55);display:block;text-decoration:none;color:inherit;}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--saffron),var(--gold),transparent);}
+.hero:active{transform:scale(0.985);}
+.ribbon{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(120deg,#B23A1A,#FF6B1A);
+  color:#FFF3E8;font-size:9.5px;font-weight:700;letter-spacing:1.2px;padding:4px 11px;border-radius:20px;margin-bottom:11px;}
+.h-row{display:flex;align-items:flex-start;gap:13px;}
+.h-ico{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:27px;
+  background:radial-gradient(circle at 32% 28%,rgba(212,168,67,0.3),rgba(212,168,67,0.07));
+  border:1px solid rgba(212,168,67,0.45);flex-shrink:0;}
+.h-title{font-family:'Tiro Devanagari Hindi',serif;font-size:19px;color:#FFF4DE;font-weight:600;line-height:1.3;}
+.h-en{font-size:11px;color:rgba(255,244,222,0.6);margin-top:1px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 13px;}
+.chip{font-size:9.8px;color:rgba(255,236,200,0.85);background:rgba(212,168,67,0.12);
+  border:1px solid rgba(212,168,67,0.25);padding:4px 9px;border-radius:20px;}
+.buy{display:flex;align-items:center;gap:10px;}
+.was{font-size:14px;color:rgba(255,244,222,0.42);text-decoration:line-through;
+  text-decoration-color:rgba(255,107,26,0.85);text-decoration-thickness:2px;}
+.now{font-size:22px;font-weight:700;color:#7DE29A;}
+.off{font-size:9.5px;font-weight:700;letter-spacing:0.6px;color:#FFD9A0;background:rgba(255,107,26,0.18);
+  border:1px solid rgba(255,107,26,0.45);padding:3px 8px;border-radius:8px;}
+.cta{margin-left:auto;background:linear-gradient(120deg,var(--gold),#B8892F);color:#1A0D00;
+  font-size:12.5px;font-weight:600;padding:10px 15px;border-radius:12px;white-space:nowrap;}
+.vline{font-size:9.5px;color:rgba(255,244,222,0.4);margin-top:10px;letter-spacing:0.4px;}
+
+/* ── report cards ── */
+.rep{position:relative;display:block;border:1px solid rgba(212,168,67,0.20);border-radius:18px;
+  padding:14px;margin-bottom:12px;cursor:pointer;text-decoration:none;color:inherit;
   background:linear-gradient(150deg,rgba(255,255,255,0.035),rgba(255,255,255,0));transition:transform .12s;}
 .rep:active{transform:scale(0.985);}
+.r-top{display:flex;align-items:flex-start;gap:12px;}
 .r-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
   font-size:22px;background:radial-gradient(circle at 32% 28%,rgba(212,168,67,0.25),rgba(212,168,67,0.06));
   border:1px solid rgba(212,168,67,0.35);flex-shrink:0;}
-.r-body{flex:1;min-width:0;}
-.r-title{font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:#FFF4DE;font-weight:600;}
-.r-sub{font-size:10.5px;color:rgba(255,244,222,0.5);margin-top:2px;line-height:1.45;}
-.r-go{color:rgba(212,168,67,0.6);font-size:17px;}
-.note{text-align:center;font-size:10px;color:rgba(255,244,222,0.3);margin-top:22px;line-height:1.7;}
+.r-title{font-family:'Tiro Devanagari Hindi',serif;font-size:15.5px;color:#FFF4DE;font-weight:600;}
+.r-en{font-size:10px;color:rgba(255,244,222,0.55);margin-top:1px;}
+.r-chips{display:flex;flex-wrap:wrap;gap:5px;margin:9px 0 11px;}
+.r-chips .chip{font-size:9px;padding:3px 8px;}
+.r-buy{display:flex;align-items:center;gap:9px;}
+.r-buy .now{font-size:18px;}
+.r-buy .cta{padding:8px 13px;font-size:11.5px;}
+.note{text-align:center;font-size:10px;color:rgba(255,244,222,0.3);margin-top:24px;line-height:1.7;}
 </style>
 </head>
 <body>
@@ -38,16 +72,75 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
   <div class="htitle">प्रीमियम रिपोर्ट्स<small>PREMIUM REPORTS</small></div>
   <div class="crown">👑</div>
 </div>
-<div class="lead">Deeper, fully personalized reports — computed from your own birth chart by the Shubh Din engine.</div>
+<div class="lead">Deep, fully personalized reports — computed from your own birth chart by the Shubh Din engine. Instant PDF, yours to keep.</div>
 
-<a class="rep" href="marriage-report.html"><div class="r-ico">💍</div><div class="r-body"><div class="r-title">विवाह मिलान</div><div class="r-sub">Marriage Matching — guna milan, manglik, shubh dates</div></div><div class="r-go">›</div></a>
-<a class="rep" href="love-report.html"><div class="r-ico">❤️</div><div class="r-body"><div class="r-title">प्रेम रिपोर्ट</div><div class="r-sub">Love & Relationship — compatibility and timing</div></div><div class="r-go">›</div></a>
-<a class="rep" href="career-report.html"><div class="r-ico">💼</div><div class="r-body"><div class="r-title">करियर रिपोर्ट</div><div class="r-sub">Career & Wealth — strengths, right fields, good periods</div></div><div class="r-go">›</div></a>
-<a class="rep" href="child-report.html"><div class="r-ico">👶</div><div class="r-body"><div class="r-title">संतान रिपोर्ट</div><div class="r-sub">Child & Family — santaan yog, timing, naming letters</div></div><div class="r-go">›</div></a>
-<a class="rep" href="muhurta-report.html"><div class="r-ico">🕉️</div><div class="r-body"><div class="r-title">मुहूर्त रिपोर्ट</div><div class="r-sub">Personal Muhurta — your shubh dates for big events</div></div><div class="r-go">›</div></a>
-<a class="rep" href="annual-report.html"><div class="r-ico">🗓️</div><div class="r-body"><div class="r-title">वार्षिक फल</div><div class="r-sub">Annual Varshaphal — your coming year, month by month</div></div><div class="r-go">›</div></a>
-<a class="rep" href="forecast-report.html"><div class="r-ico">🔮</div><div class="r-body"><div class="r-title">10 वर्ष का रोडमैप</div><div class="r-sub">10-Year Forecast — dasha & transit roadmap</div></div><div class="r-go">›</div></a>
+<div id="pageRoot"></div>
 
-<div class="note">© शुभ दिन · This page will get its full design in the redesign phase</div>
+<div class="note">© शुभ दिन · Prices are introductory offers · Full page design continues in redesign phase</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// PRICING CONFIG — edit only this block to retune before launch
+// ─────────────────────────────────────────────────────────────
+var PRICES = {
+  marriage:{was:799,now:399},
+  love:    {was:499,now:199},
+  career:  {was:499,now:199},
+  child:   {was:499,now:199},
+  muhurta: {was:499,now:199},
+  annual:  {was:499,now:199},
+  forecast:{was:599,now:299}
+};
+var REPORTS = [
+ {k:'marriage',hero:true,href:'marriage-report.html',ico:'💍',
+  hi:'विवाह मिलान',en:'Marriage Compatibility Report',
+  chips:['Guna Milan','Manglik Dosha','Marriage timing','Spouse nature','Shubh dates']},
+ {k:'love',href:'love-report.html',ico:'❤️',
+  hi:'प्रेम रिपोर्ट',en:'Love & Relationship',
+  chips:['Love life','Partner nature','Compatibility','Relationship timing']},
+ {k:'career',href:'career-report.html',ico:'💼',
+  hi:'करियर रिपोर्ट',en:'Career & Wealth',
+  chips:['Career strengths','Right fields','Job vs business','Growth periods']},
+ {k:'child',href:'child-report.html',ico:'👶',
+  hi:'संतान रिपोर्ट',en:'Child & Family',
+  chips:['Santaan Yog','Right timing','Family prospects','Naming letters']},
+ {k:'muhurta',href:'muhurta-report.html',ico:'🕉️',
+  hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',
+  chips:['Marriage','Griha Pravesh','Business start','Vehicle','Your shubh dates']},
+ {k:'annual',href:'annual-report.html',ico:'🗓️',
+  hi:'वार्षिक फल',en:'Annual Varshaphal',
+  chips:['Year ahead','Month-by-month','Major periods','Remedies']},
+ {k:'forecast',href:'forecast-report.html',ico:'🔮',
+  hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',
+  chips:['Dasha periods','Transits','Turning points','10-year timeline']}
+];
+
+function pct(p){return Math.round((1-p.now/p.was)*100)+'% OFF';}
+var root=document.getElementById('pageRoot'), h='';
+REPORTS.forEach(function(r){
+  var p=PRICES[r.k];
+  var chips=r.chips.map(function(c){return '<span class="chip">'+c+'</span>';}).join('');
+  if(r.hero){
+    h+='<a class="hero" href="'+r.href+'">'
+      +'<div class="ribbon">🔥 MOST POPULAR</div>'
+      +'<div class="h-row"><div class="h-ico">'+r.ico+'</div><div>'
+      +'<div class="h-title">'+r.hi+'</div><div class="h-en">'+r.en+'</div></div></div>'
+      +'<div class="chips">'+chips+'</div>'
+      +'<div class="buy"><span class="was">₹'+p.was+'</span><span class="now">₹'+p.now+'</span>'
+      +'<span class="off">'+pct(p)+'</span><span class="cta">Get My Report →</span></div>'
+      +'<div class="vline">📄 Instant PDF · Personalized from your kundli · Hindi & English</div>'
+      +'</a>';
+  } else {
+    h+='<a class="rep" href="'+r.href+'">'
+      +'<div class="r-top"><div class="r-ico">'+r.ico+'</div><div>'
+      +'<div class="r-title">'+r.hi+'</div><div class="r-en">'+r.en+'</div></div></div>'
+      +'<div class="r-chips">'+chips+'</div>'
+      +'<div class="r-buy"><span class="was">₹'+p.was+'</span><span class="now">₹'+p.now+'</span>'
+      +'<span class="off">'+pct(p)+'</span><span class="cta">View →</span></div>'
+      +'</a>';
+  }
+});
+root.innerHTML=h;
+</script>
 </body>
 </html>
