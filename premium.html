@@ -34,7 +34,9 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
   border:1px solid rgba(212,168,67,0.45);flex-shrink:0;}
 .h-title{font-family:'Tiro Devanagari Hindi',serif;font-size:19px;color:#FFF4DE;font-weight:600;line-height:1.3;}
 .h-en{font-size:11px;color:rgba(255,244,222,0.6);margin-top:1px;}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 13px;}
+.hook{font-size:11.5px;color:rgba(255,244,222,0.72);line-height:1.55;margin:11px 2px 0;}
+.r-hook{font-size:10.8px;margin-top:9px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 13px;}
 .chip{font-size:9.8px;color:rgba(255,236,200,0.85);background:rgba(212,168,67,0.12);
   border:1px solid rgba(212,168,67,0.25);padding:4px 9px;border-radius:20px;}
 .buy{display:flex;align-items:center;gap:10px;}
@@ -72,7 +74,7 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
   <div class="htitle">प्रीमियम रिपोर्ट्स<small>PREMIUM REPORTS</small></div>
   <div class="crown">👑</div>
 </div>
-<div class="lead">Deep, fully personalized reports — computed from your own birth chart by the Shubh Din engine. Instant PDF, yours to keep.</div>
+<div class="lead">Deeper, personalized astrology insights — every report prepared from your own Kundli.</div>
 
 <div id="pageRoot"></div>
 
@@ -94,24 +96,31 @@ var PRICES = {
 var REPORTS = [
  {k:'marriage',hero:true,href:'marriage-report.html',ico:'💍',
   hi:'विवाह मिलान',en:'Marriage Compatibility Report',
+  hook:'Will your charts align? What your two kundlis say about compatibility, doshas and the right time to marry.',
   chips:['Guna Milan','Manglik Dosha','Marriage timing','Spouse nature','Shubh dates']},
  {k:'love',href:'love-report.html',ico:'❤️',
   hi:'प्रेम रिपोर्ट',en:'Love & Relationship',
+  hook:'Your relationship patterns, partner nature and the periods that matter most in love.',
   chips:['Love life','Partner nature','Compatibility','Relationship timing']},
  {k:'career',href:'career-report.html',ico:'💼',
   hi:'करियर रिपोर्ट',en:'Career & Wealth',
+  hook:'Which path actually suits you — and when do the growth periods arrive?',
   chips:['Career strengths','Right fields','Job vs business','Growth periods']},
  {k:'child',href:'child-report.html',ico:'👶',
   hi:'संतान रिपोर्ट',en:'Child & Family',
+  hook:'Santaan yog in your chart, favourable timing and auspicious naming letters.',
   chips:['Santaan Yog','Right timing','Family prospects','Naming letters']},
  {k:'muhurta',href:'muhurta-report.html',ico:'🕉️',
   hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',
+  hook:'Shubh dates computed for your chart — marriage, griha pravesh, new business and more.',
   chips:['Marriage','Griha Pravesh','Business start','Vehicle','Your shubh dates']},
  {k:'annual',href:'annual-report.html',ico:'🗓️',
   hi:'वार्षिक फल',en:'Annual Varshaphal',
+  hook:'Your coming year, month by month — the strong periods, the careful ones, and remedies.',
   chips:['Year ahead','Month-by-month','Major periods','Remedies']},
  {k:'forecast',href:'forecast-report.html',ico:'🔮',
   hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',
+  hook:'A decade mapped from your dasha and transits — the turning points worth planning around.',
   chips:['Dasha periods','Transits','Turning points','10-year timeline']}
 ];
 
@@ -125,15 +134,17 @@ REPORTS.forEach(function(r){
       +'<div class="ribbon">🔥 MOST POPULAR</div>'
       +'<div class="h-row"><div class="h-ico">'+r.ico+'</div><div>'
       +'<div class="h-title">'+r.hi+'</div><div class="h-en">'+r.en+'</div></div></div>'
+      +'<div class="hook">'+r.hook+'</div>'
       +'<div class="chips">'+chips+'</div>'
       +'<div class="buy"><span class="was">₹'+p.was+'</span><span class="now">₹'+p.now+'</span>'
       +'<span class="off">'+pct(p)+'</span><span class="cta">Get My Report →</span></div>'
-      +'<div class="vline">📄 Instant PDF · Personalized from your kundli · Hindi & English</div>'
+      +'<div class="vline">✨ Personalized analysis from your own birth chart</div>'
       +'</a>';
   } else {
     h+='<a class="rep" href="'+r.href+'">'
       +'<div class="r-top"><div class="r-ico">'+r.ico+'</div><div>'
       +'<div class="r-title">'+r.hi+'</div><div class="r-en">'+r.en+'</div></div></div>'
+      +'<div class="hook r-hook">'+r.hook+'</div>'
       +'<div class="r-chips">'+chips+'</div>'
       +'<div class="r-buy"><span class="was">₹'+p.was+'</span><span class="now">₹'+p.now+'</span>'
       +'<span class="off">'+pct(p)+'</span><span class="cta">View →</span></div>'
