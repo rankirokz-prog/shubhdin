@@ -895,13 +895,19 @@ function generate(){ try {
         + '</table>'
         + '<div class="yog '+cls+'" style="margin-top:8px;">'+U('edu.'+band)+'</div>';
     }
+    // SPLIT INTO TWO PAGES. Carrying the transit note onto this page made it
+    // taller, and the LAST element then became the orphan — first the karaka
+    // note, then the 5th-house conclusion. Shuffling the tail just renames the
+    // victim. Two balanced pages remove the overflow instead of relocating it:
+    // one house per page, each with its own heading, table and conclusion, and
+    // neither anywhere near a full sheet.
     pg(sdCarry()
       + '<h2 class="sec">'+U('edu.title')+'</h2>'
       + '<div class="prose">'+U('edu.intro')+'</div>'
-      + panel(4, U('edu.fourthLbl'))
-      + panel(5, U('edu.fifthLbl')));
-    // same reasoning as the transit note above
-    SD_CARRY = U('edu.karakaNote');
+      + panel(4, U('edu.fourthLbl')));
+    pg('<h2 class="sec">'+U('edu.title')+'</h2>'
+      + panel(5, U('edu.fifthLbl'))
+      + '<div style="font-size:11.5px;color:#8B5A2B;margin-top:14px;">'+U('edu.karakaNote')+'</div>');
   })();
 
   
