@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v28';
+const CACHE_NAME = 'shubhdin-v29';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
