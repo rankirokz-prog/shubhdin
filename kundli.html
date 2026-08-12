@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark only">
+<title>मेरी कुंडली — शुभ दिन</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--gold:#D4A843;--bgold:#E8BE5A;--saffron:#FF6B1A;--cream:#FFF4DE;}
+body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.9);
+ background:linear-gradient(165deg,#0D0500 0%,#241005 45%,#0D0500 100%);
+ padding:0 18px calc(30px + env(safe-area-inset-bottom));overflow-x:hidden;}
+.dev{font-family:'Tiro Devanagari Hindi',serif;}
+.hdr{display:flex;align-items:center;gap:11px;padding:16px 0 4px;}
+.back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;color:rgba(212,168,67,0.85);font-size:18px;cursor:pointer;}
+.h-t{font-size:17px;color:var(--gold);font-weight:600;}
+.wrap{max-width:400px;margin:0 auto;}
+.stage{display:none;animation:fade .4s ease;}
+.stage.on{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.lead{font-size:12px;color:rgba(255,244,222,0.6);line-height:1.7;margin:8px 2px 18px;}
+label{display:block;font-size:11px;color:rgba(212,168,67,0.85);margin:13px 2px 5px;letter-spacing:0.4px;}
+input,select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(212,168,67,0.3);
+ background:rgba(255,255,255,0.05);color:var(--cream);font-size:14px;font-family:'Poppins',sans-serif;color-scheme:dark;}
+input:focus,select:focus{outline:none;border-color:var(--gold);}
+.btn{width:100%;margin-top:22px;padding:15px;border:none;border-radius:14px;font-size:15.5px;font-weight:600;cursor:pointer;
+ background:linear-gradient(120deg,var(--gold),#B8892F);color:#1A0D00;font-family:'Poppins',sans-serif;}
+.btn:active{transform:scale(0.98);}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:11px;background:#fff;color:#1F1F1F;}
+.gbtn img{width:20px;height:20px;}
+.err{font-size:11px;color:#F2A08F;margin-top:10px;display:none;text-align:center;}
+/* preparing */
+.prep{text-align:center;padding:9vh 0 0;}
+.om{font-size:64px;color:var(--bgold);text-shadow:0 0 34px rgba(232,190,90,0.6);animation:omg 2.6s ease-in-out infinite;}
+@keyframes omg{0%,100%{text-shadow:0 0 20px rgba(232,190,90,0.4);}50%{text-shadow:0 0 46px rgba(232,190,90,0.95);}}
+.p-t{font-size:19px;color:var(--cream);font-weight:600;margin-top:22px;}
+.p-step{font-size:12.5px;color:rgba(255,244,222,0.65);margin-top:12px;min-height:1.6em;transition:opacity .3s;}
+.p-step.sw{opacity:0;}
+.bar{height:5px;border-radius:4px;background:rgba(255,255,255,0.08);margin:26px 10px 8px;overflow:hidden;}
+.bar i{display:block;height:100%;width:0%;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--saffron));transition:width .8s ease;}
+.p-pct{font-size:10px;color:rgba(212,168,67,0.7);}
+.p-note{font-size:10px;color:rgba(255,244,222,0.35);margin-top:34px;line-height:1.7;}
+/* ready */
+.ready{text-align:center;padding:7vh 0 0;}
+.r-em{font-size:56px;}
+.r-t{font-size:21px;color:var(--cream);font-weight:600;margin-top:14px;line-height:1.4;}
+.r-s{font-size:12px;color:rgba(255,244,222,0.6);margin-top:8px;line-height:1.7;}
+.r-mail{font-size:10.5px;color:rgba(212,168,67,0.75);margin-top:6px;}
+.tease{margin-top:26px;border:1px dashed rgba(212,168,67,0.3);border-radius:14px;padding:12px;font-size:11px;color:rgba(255,244,222,0.6);cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="hdr"><button class="back" onclick="location.href='dashboard.html'">←</button>
+<div class="h-t dev" id="hTitle">निःशुल्क कुंडली</div></div>
+<div class="wrap">
+
+<!-- 1 · DETAILS -->
+<div class="stage" id="stDetails">
+  <div class="lead" id="ldDetails">अपना जन्म विवरण भरें — आपकी 260 पन्नों की विस्तृत कुंडली इन्हीं से बनेगी।</div>
+  <label id="lbName">पूरा नाम</label><input id="fName" type="text" autocomplete="name">
+  <label id="lbGender">लिंग</label>
+  <select id="fGender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>
+  <label id="lbDob">जन्म तिथि</label><input id="fDob" type="date">
+  <label id="lbTime">जन्म समय</label><input id="fTime" type="time">
+  <label id="lbPlace">जन्म स्थान</label><input id="fPlace" type="text" placeholder="e.g. Eluru, Andhra Pradesh">
+  <button class="btn" id="btDetails" onclick="submitDetails()">कुंडली बनाएँ →</button>
+  <div class="err" id="errDetails">कृपया सभी विवरण भरें</div>
+</div>
+
+<!-- 2 · GOOGLE GATE -->
+<div class="stage" id="stAuth">
+  <div class="prep" style="padding-top:6vh;">
+    <div style="font-size:44px;">🔒</div>
+    <div class="p-t dev" id="auT">अपनी कुंडली सुरक्षित करें</div>
+    <div class="lead" style="margin-top:12px;" id="auL">Google से साइन इन करें — आपकी कुंडली आपके खाते से जुड़ जाएगी और आप इसे कभी भी, किसी भी फ़ोन पर खोल सकेंगे।</div>
+  </div>
+  <button class="btn gbtn" onclick="googleSignIn()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+    <span id="auB">Google से जारी रखें</span></button>
+  <div class="err" id="errAuth"></div>
+</div>
+
+<!-- 3 · PREPARING -->
+<div class="stage" id="stPrep">
+  <div class="prep">
+    <div class="om dev">ॐ</div>
+    <div class="p-t dev" id="ppT">आपकी कुंडली बन रही है…</div>
+    <div class="p-step dev" id="ppStep"></div>
+    <div class="bar"><i id="ppBar"></i></div>
+    <div class="p-pct" id="ppPct">0%</div>
+    <div class="p-note" id="ppNote">कृपया इस स्क्रीन पर रहें — बस कुछ ही क्षण</div>
+  </div>
+</div>
+
+<!-- 4 · READY -->
+<div class="stage" id="stReady">
+  <div class="ready">
+    <div class="r-em">📜</div>
+    <div class="r-t dev" id="rdT">🎉 आपकी 260 पन्नों की कुंडली तैयार है!</div>
+    <div class="r-s" id="rdS">राशि • नक्षत्र • लग्न • दशा • भविष्यफल — सब कुछ, आपके जन्म विवरण से।</div>
+    <div class="r-mail" id="rdMail"></div>
+    <button class="btn" onclick="viewKundli()" id="rdBtn">मेरी कुंडली देखें →</button>
+    <div class="tease" onclick="location.href='premium.html'" id="rdTease">💍 विवाह, करियर और भविष्य की गहरी जानकारी चाहिए? प्रीमियम रिपोर्ट्स देखें →</div>
+  </div>
+</div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+'use strict';
+var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNTEyNTYsImV4cCI6MjA1ODcyNzI1Nn0.Y3QOuJMqYNKRSBRHNVuJW6TKKhUCfVKwniKuWFKFpCU';
+var sb=window.supabase.createClient(SB_URL,SB_ANON);
+
+var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+var H=(U.lang||'hi')==='hi';
+function $(id){return document.getElementById(id);}
+function show(id){document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');}
+
+/* i18n */
+if(!H){
+  $('hTitle').textContent='Free Kundli';
+  $('ldDetails').textContent='Fill your birth details — your 260-page detailed Kundli is built from these.';
+  $('lbName').textContent='Full name';$('lbGender').textContent='Gender';$('lbDob').textContent='Date of birth';
+  $('lbTime').textContent='Time of birth';$('lbPlace').textContent='Place of birth';
+  $('btDetails').textContent='Create my Kundli →';$('errDetails').textContent='Please fill all details';
+  $('auT').textContent='Protect your Kundli';
+  $('auL').textContent='Sign in with Google — your Kundli will be linked to your account, so you can open it anytime, on any phone.';
+  $('auB').textContent='Continue with Google';
+  $('ppT').textContent='Preparing your Kundli…';
+  $('ppNote').textContent='Please stay on this screen — just a few moments';
+  $('rdT').textContent='🎉 Your 260-page Kundli is ready!';
+  $('rdS').textContent='Rashi • Nakshatra • Lagna • Dasha • Predictions — all from your birth details.';
+  $('rdBtn').textContent='View my Kundli →';
+  $('rdTease').textContent='💍 Want deeper insight on marriage, career and the years ahead? See Premium Reports →';
+}
+
+/* prefill from app profile */
+(function(){
+  if(U.name)$('fName').value=U.name;
+  if(U.gender)$('fGender').value=U.gender;
+  if(U.dob)$('fDob').value=U.dob;
+  if(U.birth_time||U.time)$('fTime').value=U.birth_time||U.time;
+  if(U.birth_place)$('fPlace').value=U.birth_place;
+})();
+
+/* ── 1 · details ── */
+function submitDetails(){
+  var d={name:$('fName').value.trim(),gender:$('fGender').value,dob:$('fDob').value,
+         time:$('fTime').value,place:$('fPlace').value.trim()};
+  if(!d.name||!d.dob||!d.time||!d.place){$('errDetails').style.display='block';return;}
+  localStorage.setItem('shubhdin_kundli_details',JSON.stringify(d));
+  checkAuthThen();
+}
+
+/* ── 2 · google gate (Supabase OAuth) ── */
+function checkAuthThen(){
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session)startPrep(r.data.session.user);
+    else show('stAuth');
+  });
+}
+function googleSignIn(){
+  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})
+   .then(function(r){if(r.error){$('errAuth').textContent=r.error.message;$('errAuth').style.display='block';}});
+}
+
+/* ── 3 · preparing (30s labor-staged) ── */
+var STEPS_HI=['ग्रहों की स्थिति की गणना हो रही है…','लग्न और भाव बन रहे हैं…','16 वर्ग कुंडलियाँ तैयार हो रही हैं…',
+ 'दशा-अंतर्दशा की गणना…','योग और दोष की जाँच…','आपके 260 पन्ने लिखे जा रहे हैं…'];
+var STEPS_EN=['Calculating planetary positions…','Building lagna and houses…','Preparing 16 varga charts…',
+ 'Computing dasha periods…','Checking yogas and doshas…','Writing your 260 pages…'];
+function startPrep(user){
+  show('stPrep');
+  var email=user&&(user.email||(user.user_metadata&&user.user_metadata.email))||'';
+  if(email){try{var u2=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');u2.email=email;
+    localStorage.setItem('shubhdin_user',JSON.stringify(u2));}catch(e){}}
+  var T=30000, steps=H?STEPS_HI:STEPS_EN, t0=Date.now();
+  var iv=setInterval(function(){
+    var f=Math.min(1,(Date.now()-t0)/T);
+    $('ppBar').style.width=(f*100).toFixed(0)+'%';
+    $('ppPct').textContent=(f*100).toFixed(0)+'%';
+    var si=Math.min(steps.length-1,Math.floor(f*steps.length));
+    if($('ppStep').textContent!==steps[si]){
+      $('ppStep').classList.add('sw');
+      setTimeout(function(){$('ppStep').textContent=steps[si];$('ppStep').classList.remove('sw');},250);
+    }
+    if(f>=1){clearInterval(iv);finishPrep(email);}
+  },400);
+}
+function finishPrep(email){
+  localStorage.setItem('shubhdin_kundli_ready','1');
+  if(email)$('rdMail').textContent=(H?'खाता: ':'Account: ')+email;
+  show('stReady');
+}
+
+/* ── 4 · view ── */
+function viewKundli(){location.href='kundli-report.html';}
+
+/* ── boot: resume correctly ── */
+(function(){
+  var ready=localStorage.getItem('shubhdin_kundli_ready')==='1';
+  var det=localStorage.getItem('shubhdin_kundli_details');
+  if(ready){ sb.auth.getSession().then(function(r){
+      var u=r.data&&r.data.session&&r.data.session.user;
+      if(u&&u.email)$('rdMail').textContent=(H?'खाता: ':'Account: ')+u.email;});
+    show('stReady'); return; }
+  if(det){ /* returned from Google redirect mid-flow */
+    sb.auth.getSession().then(function(r){
+      if(r.data&&r.data.session)startPrep(r.data.session.user);
+      else show('stDetails');
+    }); return; }
+  show('stDetails');
+})();
+</script>
+</body>
+</html>
