@@ -5796,6 +5796,9 @@ function mlList(gi){
      +'<div class="tt"><div class="t1">'+(H?m.t1:m.t1en)+'</div>'
      +'<div class="t2">'+m.words.join(' ').slice(0,44)+'…</div></div><div class="go">▶</div></div>';
   });
+  r+='<div class="ml-row" style="opacity:0.55;cursor:default;border-style:dashed;" onclick="event.stopPropagation()">'
+   +'<div class="ic">✨</div><div class="tt"><div class="t1">'+(H?'और मंत्र जल्द आ रहे हैं':'More mantras coming soon')+'</div>'
+   +'<div class="t2">'+(H?'चालीसा • स्तोत्र • गायत्री':'Chalisa • Stotra • Gayatri')+'</div></div></div>';
   mlBody().innerHTML=mlHead(H?x.god_hi:x.god_en,H?'मंत्र चुनें':'Choose a mantra','mlGrid()')+r;
 }
 function mlPlayer(gi,mi){
@@ -5810,6 +5813,7 @@ function mlPlayer(gi,mi){
    +'<div class="mlp-words">'+w+'</div></div>'
    +'<button class="mlp-btn" id="mlpBtn" onclick="mlToggle('+gi+','+mi+')">▶ '+(H?'शुरू करें':'Start')+'</button>'
    +'</div>';
+  mlToggle(gi,mi); // auto-start — the tap that opened the mantra is the play gesture
 }
 function mlSetWord(i,on){const e=document.getElementById('mlw'+i);if(e)e.classList.toggle('on',!!on);}
 function mlResetWords(n){for(let i=0;i<n;i++)mlSetWord(i,false);}
