@@ -52,7 +52,10 @@ tr:nth-child(even) td{background:#FDF8EC;}
     a near-blank page. page-break-inside:avoid on that line alone does nothing:
     it stops the LINE splitting, not the line moving. .keepwith wraps a table
     together WITH its note so the pair travels as one unbreakable unit. */
- .keepwith{page-break-inside:avoid;break-inside:avoid;}.page:last-child{page-break-after:auto;}}
+ .keepwith{page-break-inside:avoid;break-inside:avoid;}
+ /* A heading must never be the last element on a printed page. */
+ h2.sec{page-break-after:avoid;break-after:avoid;}
+ table{page-break-inside:avoid;break-inside:avoid;}.page:last-child{page-break-after:auto;}}
 @page{size:A4;margin:10mm;}
 
 /* devanagari-print-safety: letter-spacing splits matras/conjuncts (दि ल). Never apply to Indic text. */
@@ -816,10 +819,16 @@ function generate(){ try {
         +   (ev.fav === true ? ' \u2713' : '') + '</td></tr>';
     }).join('');
 
+    // The 'Sign Changes Ahead' subheading MUST sit inside the keepwith group.
+    // Left outside it, the group (table + note, ~600px) jumped to the next sheet
+    // whenever it did not fit the remaining space, stranding the subheading alone
+    // under the intro and leaving ~70% of the page blank — the reviewer's exact
+    // report. Heading and table now travel together, so the break falls before
+    // the heading and reads as an intentional section start.
     pg('<h2 class="sec">' + U('trn.title') + '</h2>'
       + '<div class="prose">' + U('trn.intro') + '</div>'
-      + '<h2 class="sec" style="font-size:15px;margin-top:12px;">' + U('trn.timeline') + '</h2>'
       + '<div class="keepwith">'
+      +   '<h2 class="sec" style="font-size:15px;margin-top:12px;">' + U('trn.timeline') + '</h2>'
       +   '<table><tr><th>' + U('kundli.labels.from') + '</th><th>' + U('gocharLbl.graha') + '</th>'
       +   '<th>' + U('marriage.koota') + '</th><th>' + U('gocharLbl.fromMoon') + '</th></tr>'
       +   rows + '</table>'
