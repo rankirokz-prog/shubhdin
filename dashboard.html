@@ -1516,7 +1516,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
       <div class="hbody">
 
         <!-- 1 · FREE KUNDLI — hero -->
-        <div class="khero" onclick="window.location.href='kundli-report.html'">
+        <div class="khero" onclick="window.location.href='kundli.html'">
           <div class="kh-badge" id="khBadge">FREE</div>
           <div class="kh-tag" id="khTag">✨ आपकी निःशुल्क कुंडली रिपोर्ट</div>
           <div class="kh-title" id="khTitle">संपूर्ण विस्तृत कुंडली PDF</div>
@@ -2285,6 +2285,14 @@ function personalise(){
   _t('khSub',H?'राशि • नक्षत्र • लग्न • दशा • भविष्यफल और बहुत कुछ':'Rashi • Nakshatra • Lagna • Dasha • Predictions & more');
   _t('khFree',H?'मुफ़्त':'FREE');
   _t('khBtn',H?'मेरी मुफ़्त कुंडली पाएं →':'Download My Free Kundli →');
+  if(localStorage.getItem('shubhdin_kundli_ready')==='1'){
+    _t('khBadge',H?'तैयार':'READY');
+    _t('khTag',H?'📜 आपकी कुंडली':'📜 YOUR KUNDLI');
+    _t('khTitle',H?'मेरी कुंडली':'My Kundli');
+    _t('khSub',H?'260 पन्नों की विस्तृत कुंडली — कभी भी देखें या डाउनलोड करें':'Your 260-page detailed Kundli — view or download anytime');
+    const kf=document.getElementById('khFree'); if(kf&&kf.parentElement)kf.parentElement.style.display='none';
+    _t('khBtn',H?'देखें / डाउनलोड करें →':'View / Download →');
+  }
   _t('pmTitle',H?'प्रीमियम रिपोर्ट्स':'Premium Reports');
   _t('pmSub',H?'जीवन के हर पहलू की गहरी जानकारी':'Deeper personalized astrology insights');
   _t('agTitle',H?'आज का ज्योतिष':'Astrology Today');
