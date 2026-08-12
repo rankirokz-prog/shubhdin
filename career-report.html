@@ -332,6 +332,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 
 
 
+
 <script src="report-content.js"></script>
 <script src="career-content.js"></script>
 <script>
@@ -430,6 +431,27 @@ function generate(){ try {
   // (10y -> 2036-08-11, 12y -> 2038-08-12, true end 2039-01-31). Reviewer
   // caught it across pages 10, 15 and 25. Single constant = single answer.
   var SD_WINDOW_TO = new Date(Date.now() + 15*365.25*86400000);
+  // getEventWindows CLAMPS BOTH ends of every window to the requested range: a
+  // period already running reports today as its start, and one running past the
+  // horizon reports the horizon as its end. The dasha tables show TRUE bounds,
+  // so the same period printed different dates in different blocks. The reviewer
+  // caught the end side (Saturn-Saturn); a full sweep of every repeated dasha
+  // pair then found the start side too (Jupiter-Mercury: true start 27 Sept 2024
+  // vs today). sdTruePeriod() reads the real bounds from the dasha payload so
+  // every block prints one answer, falling back to the window's own dates if the
+  // period cannot be matched.
+  var SD_DASHA_CACHE = null;
+  function sdTruePeriod(maha, antar, w){
+    try{
+      if(!SD_DASHA_CACHE) SD_DASHA_CACHE = PE.getVimshottariDasha(b);
+      var md = (SD_DASHA_CACHE.mahadashas||[]).filter(function(m){ return m.lord===maha; })[0];
+      if(md){
+        var ad = (md.antardashas||[]).filter(function(a){ return a.lord===antar; })[0];
+        if(ad) return { start: new Date(ad.start), end: new Date(ad.end) };
+      }
+    }catch(e){}
+    return { start: new Date(w.start), end: new Date(w.end) };
+  }
   var cw=PE.getCareerWealth(b,lat,lng);
   var F=PE.CAREER_FIELDS;
   var topPlanet=cw.fieldKeys.length?cw.fieldKeys[0].split('|')[0]:cw.tenthLord;
@@ -615,13 +637,12 @@ function generate(){ try {
   var wtier=cw.wealthScore>=74?'high':cw.wealthScore>=58?'moderate':'building';
   function starRow(label,n){var f='<span style="color:#E8730C;">'+'\u2605'.repeat(n)+'</span><span style="color:#D4A843;">'+'\u2606'.repeat(5-n)+'</span>';
     return '<div style="display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #E4D3AE;"><span>'+label+'</span><span style="font-size:17px;letter-spacing:2px;">'+f+'</span></div>';}
-  var to=new Date(Date.now()+12*365.25*86400000);
   var win=PE.getEventWindows('career',b,lat,lng,new Date(),SD_WINDOW_TO);
   var winH=win.windows.slice(0,4).map(function(x){
     var act=W.action[x.antar]||W.action[x.maha];
     var doList=act?(act['do'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]||act.doEn||[]):[];
     var avList=act?(act['avoid'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]||act.avoidEn||[]):[];
-    return '<div class="yog ok"><b>'+gname2(x.maha)+' – '+gname2(x.antar)+'</b> · '+fD(x.start)+' → '+fD(x.end)
+    var _tpA=sdTruePeriod(x.maha,x.antar,x); return '<div class="yog ok"><b>'+gname2(x.maha)+' – '+gname2(x.antar)+'</b> · '+fD(_tpA.start)+' → '+fD(_tpA.end)
       +(doList.length?'<br><span style="color:#2B7A4B;">'+T(W.moreLabels.doLabel)+':</span> '+doList.map(function(d){return '\u2705 '+d;}).join(' &nbsp; '):'')
       +(avList.length?'<br><span style="color:#B8434A;">'+T(W.moreLabels.avoidLabel)+':</span> '+avList.map(function(d){return '\u274C '+d;}).join(' &nbsp; '):'')
       +'</div>';}).join('');
@@ -905,7 +926,7 @@ function generate(){ try {
       var why = (w.reasons||[]).map(function(r){ return locReason(r); }).filter(Boolean).join('; ');
       var cls = w.score >= 5 ? 'ok' : (w.score >= 3 ? '' : 'care');
       return '<div class="yog '+cls+'"><b>'+gname2(w.maha)+' \u2013 '+gname2(w.antar)+'</b> \u00b7 '
-        + fD(w.start)+' \u2192 '+fD(w.end)
+        + fD(sdTruePeriod(w.maha,w.antar,w).start)+' \u2192 '+fD(sdTruePeriod(w.maha,w.antar,w).end)
         + '<br><span style="font-size:12px;color:#8B5A2B;">'+U('winLbl.whyFavourable')+': '+why+'</span></div>';
     }).join('');
     pg('<h2 class="sec">'+U('cSec.windowsTitle')+'</h2>'
