@@ -1437,6 +1437,40 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .pm-sub,.ag-sub{font-size:10px;color:rgba(255,244,222,0.55);letter-spacing:0.4px;margin-top:2px;}
 .pm-go,.ag-go{color:rgba(212,168,67,0.62);font-size:18px;flex-shrink:0;}
 .pm-go{color:rgba(217,196,255,0.6);}
+
+/* ── MANTRA LIBRARY ── */
+#scr-mantras{padding:16px 14px calc(70px + env(safe-area-inset-bottom));overflow-y:auto;}
+.ml-h{display:flex;align-items:center;gap:11px;margin-bottom:13px;}
+.ml-t{font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:var(--gold);font-weight:600;}
+.ml-s{font-size:9.5px;color:rgba(255,244,222,0.45);margin-top:1px;}
+.ml-back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;color:rgba(212,168,67,0.85);font-size:18px;cursor:pointer;flex-shrink:0;}
+.ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ml-god{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(212,168,67,0.28);cursor:pointer;aspect-ratio:4/4.6;transition:transform .12s;}
+.ml-god:active{transform:scale(0.96);}
+.ml-god img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.ml-god .sh{position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(6,2,0,0.92));}
+.ml-god .nm{position:absolute;left:0;right:0;bottom:9px;text-align:center;}
+.ml-god .nm .d{font-family:'Tiro Devanagari Hindi',serif;font-size:15.5px;color:#FFF4DE;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,0.8);}
+.ml-god .nm .c{font-size:9px;color:rgba(212,168,67,0.9);margin-top:1px;}
+.ml-row{display:flex;align-items:center;gap:12px;border:1px solid rgba(212,168,67,0.2);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;background:linear-gradient(150deg,rgba(255,255,255,0.035),transparent);transition:transform .12s;}
+.ml-row:active{transform:scale(0.985);}
+.ml-row .ic{font-size:20px;}
+.ml-row .tt{flex:1;min-width:0;}
+.ml-row .t1{font-family:'Tiro Devanagari Hindi',serif;font-size:14.5px;color:var(--cream,#FFF4DE);font-weight:600;}
+.ml-row .t2{font-size:10px;color:rgba(255,244,222,0.5);margin-top:2px;}
+.ml-row .go{color:rgba(212,168,67,0.55);font-size:16px;}
+/* player */
+.mlp{position:relative;min-height:70vh;border-radius:20px;overflow:hidden;border:1px solid rgba(212,168,67,0.3);display:flex;flex-direction:column;}
+.mlp-bg{position:absolute;inset:0;background-size:cover;background-position:center top;filter:brightness(0.34) saturate(1.05);transition:filter 1s;}
+.mlp.playing .mlp-bg{filter:brightness(0.42) saturate(1.2);}
+.mlp-in{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 18px;text-align:center;}
+.mlp-god{font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:var(--gold);letter-spacing:0.5px;}
+.mlp-mt{font-size:10px;color:rgba(255,244,222,0.55);margin-top:3px;letter-spacing:1px;}
+.mlp-words{margin:34px 0;line-height:2.15;}
+.mlw{display:inline-block;margin:0 7px;font-family:'Tiro Devanagari Hindi',serif;font-size:27px;color:rgba(255,244,222,0.34);transition:color .25s,text-shadow .25s,transform .25s;}
+.mlw.on{color:#FFE9B8;text-shadow:0 0 22px rgba(232,190,90,0.85);transform:scale(1.12);}
+.mlp-btn{position:relative;z-index:2;margin:0 auto 26px;background:linear-gradient(120deg,var(--saffron),#E8890F);border:none;border-radius:30px;color:#fff;font-size:15.5px;font-weight:600;font-family:'Poppins',sans-serif;padding:14px 38px;cursor:pointer;box-shadow:0 6px 22px rgba(255,107,26,0.35);}
+.mlp-btn.stop{background:rgba(255,255,255,0.12);box-shadow:none;border:1px solid rgba(212,168,67,0.4);}
 </style>
 </head>
 <body>
@@ -2017,12 +2051,16 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   </div><!-- sw -->
 
   <!-- Tab bar -->
+  <!-- ── MANTRAS ── -->
+  <div class="scr" id="scr-mantras"><div id="mlBody"></div></div>
+
   <div class="tabbar">
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
     <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🙏</span><span class="tab-label" id="tl2" style="font-size:7.5px;">मार्गदर्शन</span></div>
     <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">🌅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
     <div class="tab" id="tab-sadhana" onclick="go('sadhana')"><span class="tab-icon">📿</span><span class="tab-label" style="font-size:7.5px;" id="tl-sadhana">साधना</span>
     </div>
+    <div class="tab" id="tab-mantras" onclick="go('mantras')"><span class="tab-icon">🕉️</span><span class="tab-label" id="tl-mantras" style="font-size:7.5px;">मंत्र</span></div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जाप</span></div>
   </div>
 </div><!-- app -->
@@ -2397,6 +2435,7 @@ function personalise(){
   document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
 
   document.getElementById('tl4').textContent=H?'जाप':'Jap';
+  const tlm=document.getElementById('tl-mantras'); if(tlm) tlm.textContent=H?'मंत्र':'Mantras';
   const ps4=document.getElementById('ps4'); if(ps4) ps4.textContent=H?'🕐 चौघड़िया':'🕐 Choghadiya';
   const ps5=document.getElementById('ps5'); if(ps5) ps5.textContent=H?'🙏 इस सप्ताह के व्रत':'🙏 Fasts This Week';
   const ps6=document.getElementById('ps6'); if(ps6) ps6.textContent=H?'💍 शुभ मुहूर्त':'💍 Auspicious Muhurta';
@@ -3172,6 +3211,8 @@ function go(tab){
   if(tab==='jap'||tab==='panchang') mpStop(); // stop panchang when going to jap
   if(tab!=='listen')pauseAudio();
   if(tab!=='sadhana-jap'&&window._sadChantAudio){window._sadChantAudio.pause();window._sadChantAudio=null;}
+  if(tab!=='mantras'&&window.mlStop)window.mlStop(true);
+  if(tab==='mantras')mlGrid();
   if(tab==='sadhana')renderSadhana();
 }
 
@@ -5714,5 +5755,102 @@ if('serviceWorker' in navigator){
 
 </div>
 
+
+<script>
+// ── MANTRA LIBRARY (start/stop listening, no counting) ──
+// Built on existing assets: D (deity imgs/names), CHANT_MAP (audio keys),
+// MANTRA_WORDS + MANTRA_TIMESTAMPS (word sync). Add new mantras by pushing
+// into a deity's list: {t1,t1en,words,ts,audio}.
+const ML_TITLES={0:['सूर्य मंत्र','Surya Mantra'],1:['महामृत्युंजय मंत्र','Maha Mrityunjaya Mantra'],
+ 2:['हनुमान मंत्र','Hanuman Mantra'],3:['गणेश मंत्र','Ganesh Mantra'],4:['राम नाम','Ram Naam'],
+ 5:['लक्ष्मी मंत्र','Lakshmi Mantra'],6:['शनि गायत्री','Shani Gayatri']};
+const ML_LIB=[0,1,2,3,4,5,6].map(function(d){return {
+  god_hi:D[d].d_hi, god_en:D[d].d_en, img:D[d].img, ico:D[d].ico,
+  mantras:[{t1:ML_TITLES[d][0],t1en:ML_TITLES[d][1],
+    words:MANTRA_WORDS[d]||D[d].chant.split(' '),
+    ts:MANTRA_TIMESTAMPS[d]||null, audio:CHANT_MAP[d]}]};});
+
+let mlAudio=null, mlPlaying=false, mlLastIdx=0, mlView='grid';
+const mlBody=()=>document.getElementById('mlBody');
+
+function mlHead(t,sub,onBack){
+  return '<div class="ml-h">'+(onBack?'<button class="ml-back" onclick="'+onBack+'">←</button>':'')
+   +'<div><div class="ml-t">'+t+'</div><div class="ml-s">'+sub+'</div></div></div>';
+}
+function mlGrid(){
+  window.mlStop&&mlStop(true); mlView='grid';
+  let g='';
+  ML_LIB.forEach(function(x,i){
+    g+='<div class="ml-god" onclick="mlList('+i+')"><img src="'+x.img+'" alt="" loading="lazy">'
+     +'<div class="sh"></div><div class="nm"><div class="d">'+(H?x.god_hi:x.god_en)+'</div>'
+     +'<div class="c">'+x.mantras.length+' '+(H?'मंत्र':(x.mantras.length>1?'mantras':'mantra'))+'</div></div></div>';
+  });
+  mlBody().innerHTML=mlHead(H?'मंत्र':'Mantras',H?'देवता चुनें — मंत्र सुनें':'Choose a deity — listen to mantras','')
+   +'<div class="ml-grid">'+g+'</div>';
+}
+function mlList(gi){
+  window.mlStop&&mlStop(true); mlView='list';
+  const x=ML_LIB[gi]; let r='';
+  x.mantras.forEach(function(m,mi){
+    r+='<div class="ml-row" onclick="mlPlayer('+gi+','+mi+')"><div class="ic">'+x.ico+'</div>'
+     +'<div class="tt"><div class="t1">'+(H?m.t1:m.t1en)+'</div>'
+     +'<div class="t2">'+m.words.join(' ').slice(0,44)+'…</div></div><div class="go">▶</div></div>';
+  });
+  mlBody().innerHTML=mlHead(H?x.god_hi:x.god_en,H?'मंत्र चुनें':'Choose a mantra','mlGrid()')+r;
+}
+function mlPlayer(gi,mi){
+  window.mlStop&&mlStop(true); mlView='player';
+  const x=ML_LIB[gi], m=x.mantras[mi];
+  let w='';
+  m.words.forEach(function(word,i){w+='<span class="mlw" id="mlw'+i+'">'+word+'</span>';});
+  mlBody().innerHTML=mlHead(H?m.t1:m.t1en,H?x.god_hi:x.god_en,'mlList('+gi+')')
+   +'<div class="mlp" id="mlpBox"><div class="mlp-bg" style="background-image:url(\''+x.img+'\')"></div>'
+   +'<div class="mlp-in"><div class="mlp-god">'+(H?x.god_hi:x.god_en)+'</div>'
+   +'<div class="mlp-mt">'+(H?'सुनें और साथ बोलें':'LISTEN & CHANT ALONG')+'</div>'
+   +'<div class="mlp-words">'+w+'</div></div>'
+   +'<button class="mlp-btn" id="mlpBtn" onclick="mlToggle('+gi+','+mi+')">▶ '+(H?'शुरू करें':'Start')+'</button>'
+   +'</div>';
+}
+function mlSetWord(i,on){const e=document.getElementById('mlw'+i);if(e)e.classList.toggle('on',!!on);}
+function mlResetWords(n){for(let i=0;i<n;i++)mlSetWord(i,false);}
+function mlToggle(gi,mi){
+  if(mlPlaying)return mlStop(false);
+  const m=ML_LIB[gi].mantras[mi];
+  // pause any jap chant so the two never overlap
+  try{if(typeof jChantAudio!=='undefined'&&jChantAudio)jChantAudio.pause();}catch(e){}
+  try{if(window._sadChantAudio)window._sadChantAudio.pause();}catch(e){}
+  mlAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+m.audio+'.mp3');
+  mlAudio.loop=true; mlLastIdx=0;
+  const total=m.words.length, ts=m.ts;
+  mlAudio.ontimeupdate=function(){
+    if(!mlPlaying||!mlAudio)return;
+    const dur=mlAudio.duration; if(!dur||isNaN(dur))return;
+    const ct=mlAudio.currentTime; let idx=0;
+    if(ts&&ts.length===total){const adj=ct+SYNC_OFFSET;
+      for(let i=0;i<ts.length;i++){if(adj>=ts[i])idx=i;else break;}}
+    else idx=Math.min(Math.floor((ct/dur)*total),total-1);
+    if(idx===mlLastIdx)return;
+    if(idx<mlLastIdx)mlResetWords(total); else mlSetWord(mlLastIdx,false);
+    mlSetWord(idx,true); mlLastIdx=idx;
+  };
+  mlAudio.onplay=function(){mlSetWord(0,true);};
+  mlAudio.play().catch(function(){});
+  mlPlaying=true;
+  const b=document.getElementById('mlpBtn'),box=document.getElementById('mlpBox');
+  if(b){b.textContent=(H?'⏸ रोकें':'⏸ Stop');b.classList.add('stop');}
+  if(box)box.classList.add('playing');
+}
+function mlStop(silent){
+  if(mlAudio){try{mlAudio.pause();mlAudio.src='';}catch(e){} mlAudio=null;}
+  mlPlaying=false;
+  if(!silent&&mlView==='player'){
+    const b=document.getElementById('mlpBtn'),box=document.getElementById('mlpBox');
+    if(b){b.textContent='▶ '+(H?'शुरू करें':'Start');b.classList.remove('stop');}
+    if(box)box.classList.remove('playing');
+    document.querySelectorAll('.mlw.on').forEach(function(e){e.classList.remove('on');});
+  }
+}
+window.mlStop=mlStop;
+</script>
 </body>
 </html
