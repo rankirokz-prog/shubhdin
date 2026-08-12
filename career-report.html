@@ -448,6 +448,18 @@ function generate(){ try {
   // (10y -> 2036-08-11, 12y -> 2038-08-12, true end 2039-01-31). Reviewer
   // caught it across pages 10, 15 and 25. Single constant = single answer.
   var SD_WINDOW_TO = new Date(Date.now() + 15*365.25*86400000);
+  // A closing note that lands at the bottom of a full page gets its last line
+  // pushed onto an otherwise blank sheet. SD_CARRY holds such a note so the
+  // NEXT page renders it at the top, where there is room. sdCarry() emits and
+  // clears it; any page may call it, and pages that do not are unaffected.
+  var SD_CARRY = null;
+  function sdCarry(){
+    if(!SD_CARRY) return '';
+    var h = '<div style="font-size:11.5px;color:#8B5A2B;margin:0 0 16px;padding-bottom:10px;'
+          + 'border-bottom:1px solid #E4D3AE;">' + SD_CARRY + '</div>';
+    SD_CARRY = null;
+    return h;
+  }
   // getEventWindows CLAMPS BOTH ends of every window to the requested range: a
   // period already running reports today as its start, and one running past the
   // horizon reports the horizon as its end. The dasha tables show TRUE bounds,
@@ -837,8 +849,14 @@ function generate(){ try {
       + '<h2 class="sec" style="font-size:15px;margin-top:12px;">' + U('trn.timeline') + '</h2>'
       + '<table><tr><th>' + U('kundli.labels.from') + '</th><th>' + U('gocharLbl.graha') + '</th>'
       + '<th>' + U('marriage.koota') + '</th><th>' + U('gocharLbl.fromMoon') + '</th></tr>'
-      + rows + '</table>'
-      + '<div style="font-size:11.5px;color:#8B5A2B;margin-top:8px;">' + U('trn.note') + '</div>');
+      + rows + '</table>');
+    // The closing note used to sit under this table, at the bottom of an already
+    // full page, so every engine pushed its last line onto a near-empty sheet.
+    // Three CSS attempts (page-break-inside, keepwith wrappers, unbreakable
+    // tables) each moved the problem instead of solving it. The note is now
+    // carried forward and rendered at the TOP of the next page, where it has
+    // room. Nothing is lost: the reader sees the same sentence, in order.
+    SD_CARRY = U('trn.note');
   })();
 
   
@@ -877,11 +895,13 @@ function generate(){ try {
         + '</table>'
         + '<div class="yog '+cls+'" style="margin-top:8px;">'+U('edu.'+band)+'</div>';
     }
-    pg('<h2 class="sec">'+U('edu.title')+'</h2>'
+    pg(sdCarry()
+      + '<h2 class="sec">'+U('edu.title')+'</h2>'
       + '<div class="prose">'+U('edu.intro')+'</div>'
       + panel(4, U('edu.fourthLbl'))
-      + panel(5, U('edu.fifthLbl'))
-      + '<div style="font-size:11.5px;color:#8B5A2B;margin-top:8px;">'+U('edu.karakaNote')+'</div>');
+      + panel(5, U('edu.fifthLbl')));
+    // same reasoning as the transit note above
+    SD_CARRY = U('edu.karakaNote');
   })();
 
   
@@ -919,7 +939,8 @@ function generate(){ try {
       } else if(F && F[p] && F[p].en){
         flTxt = F[p].en.join(' \u00b7 ');
       }
-      pg('<h2 class="sec">'+U('pev.titleV2').replace('{P}', term('planet', p))+'</h2>'
+      pg(sdCarry()
+        + '<h2 class="sec">'+U('pev.titleV2').replace('{P}', term('planet', p))+'</h2>'
         + '<div class="prose">'+U('pev.intro')+'</div>'
         + (roles.length ? roles.map(function(r){
             return '<div class="yog ok" style="margin-top:8px;">'+r+'</div>'; }).join('') : '')
