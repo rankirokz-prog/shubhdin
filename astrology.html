@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark only">
+<title>Astrology Today — शुभ दिन</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────────
+   ASTROLOGY TODAY · Phase 1 (hub · rashifal · panchang · times)
+   Consumes PanchangEngine READ-ONLY. IST display. hi/en.
+   Palette: ink #0A0300 · ember #2C1208 · gold #D4A843 ·
+   brightGold #E8BE5A · saffron #FF6B1A · shubh #4A7C59 ·
+   ashubh #C8452E · cream #FFF4DE
+────────────────────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--ink:#0A0300;--gold:#D4A843;--bgold:#E8BE5A;--saffron:#FF6B1A;
+  --shubh:#4A7C59;--shubhT:#8FD4A5;--ashubh:#C8452E;--ashubhT:#F2A08F;--cream:#FFF4DE;}
+html,body{background:var(--ink);}
+body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.9);
+  background:linear-gradient(165deg,#0D0500 0%,#241005 40%,#0D0500 100%);
+  padding:0 14px calc(28px + env(safe-area-inset-bottom));overflow-x:hidden;}
+.dev{font-family:'Tiro Devanagari Hindi',serif;}
+
+/* header */
+.hdr{display:flex;align-items:center;gap:11px;padding:16px 0 4px;}
+.back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;
+  color:rgba(212,168,67,0.85);font-size:18px;cursor:pointer;flex-shrink:0;}
+.h-t{font-size:17.5px;color:var(--gold);font-weight:600;}
+.h-s{font-size:9.5px;color:rgba(255,244,222,0.45);letter-spacing:0.4px;margin-top:1px;}
+.h-city{margin-left:auto;font-size:10px;color:rgba(212,168,67,0.7);text-align:right;line-height:1.5;}
+
+/* ── SIGNATURE · the living day-ribbon ── */
+.dial{border:1px solid rgba(212,168,67,0.3);border-radius:18px;padding:15px 14px 13px;margin-top:12px;
+  background:linear-gradient(160deg,rgba(212,168,67,0.10),rgba(255,107,26,0.04) 60%,transparent);
+  position:relative;overflow:hidden;}
+.dial::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),var(--saffron),var(--gold),transparent);}
+.d-now-lbl{font-size:9.5px;letter-spacing:1.6px;color:rgba(212,168,67,0.85);}
+.d-state{display:flex;align-items:baseline;gap:9px;margin-top:5px;flex-wrap:wrap;}
+.d-seg{font-size:23px;font-weight:600;color:var(--cream);}
+.d-seg.g{color:var(--shubhT);} .d-seg.b{color:var(--ashubhT);}
+.d-until{font-size:11px;color:rgba(255,244,222,0.55);}
+.d-count{font-size:11px;color:var(--bgold);font-weight:600;}
+.ribbon{position:relative;height:26px;border-radius:8px;overflow:hidden;margin:12px 0 5px;
+  background:rgba(255,255,255,0.05);}
+.rb-seg{position:absolute;top:0;bottom:0;}
+.rb-seg.g{background:rgba(74,124,89,0.55);} .rb-seg.b{background:rgba(90,38,28,0.55);}
+.rb-seg.night{opacity:0.45;}
+.rb-now{position:absolute;top:-3px;bottom:-3px;width:2.5px;background:var(--bgold);border-radius:2px;
+  box-shadow:0 0 10px rgba(232,190,90,0.9);animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 6px rgba(232,190,90,0.7);}50%{box-shadow:0 0 16px rgba(232,190,90,1);}}
+.rb-x{display:flex;justify-content:space-between;font-size:8.5px;color:rgba(255,244,222,0.4);}
+.d-next{margin-top:9px;font-size:10.5px;color:rgba(255,244,222,0.6);}
+.d-next b{color:var(--shubhT);font-weight:600;}
+.d-tara{margin-top:8px;font-size:10.5px;padding-top:8px;border-top:1px dashed rgba(212,168,67,0.2);}
+.d-tara.ok{color:var(--shubhT);} .d-tara.no{color:var(--ashubhT);}
+
+/* section cards */
+.grid{display:flex;flex-direction:column;gap:11px;margin-top:14px;}
+.sec{display:flex;align-items:center;gap:13px;border:1px solid rgba(212,168,67,0.2);border-radius:16px;
+  padding:14px 15px;cursor:pointer;background:linear-gradient(150deg,rgba(255,255,255,0.035),transparent);
+  transition:transform .12s;}
+.sec:active{transform:scale(0.985);}
+.s-ico{font-size:25px;flex-shrink:0;width:34px;text-align:center;}
+.s-b{flex:1;min-width:0;}
+.s-t{font-size:15px;font-weight:600;color:var(--gold);}
+.s-live{font-size:10.5px;color:rgba(255,244,222,0.6);margin-top:2px;line-height:1.5;}
+.s-live b{color:rgba(255,244,222,0.85);font-weight:500;}
+.s-go{color:rgba(212,168,67,0.55);font-size:17px;}
+
+/* mini limbs strip */
+.limbs{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:13px;}
+.limb{border:1px solid rgba(212,168,67,0.16);border-radius:12px;padding:9px 3px;text-align:center;
+  background:rgba(255,255,255,0.025);}
+.l-k{font-size:8px;letter-spacing:0.8px;color:rgba(212,168,67,0.7);}
+.l-v{font-size:10.5px;color:var(--cream);margin-top:3px;line-height:1.3;}
+
+/* ad slot placeholder */
+.ad{margin-top:13px;border:1px dashed rgba(255,244,222,0.14);border-radius:14px;height:84px;
+  display:flex;align-items:center;justify-content:center;font-size:9.5px;letter-spacing:2px;
+  color:rgba(255,244,222,0.22);}
+
+/* generic page bits */
+.pg-h{display:flex;align-items:center;gap:11px;padding:16px 0 10px;}
+.pg-t{font-size:17px;color:var(--gold);font-weight:600;}
+.pg-s{font-size:9.5px;color:rgba(255,244,222,0.45);margin-top:1px;}
+.card{border:1px solid rgba(212,168,67,0.2);border-radius:16px;padding:14px 15px;margin-bottom:11px;
+  background:linear-gradient(150deg,rgba(255,255,255,0.035),transparent);}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;
+  border-bottom:1px dashed rgba(212,168,67,0.13);}
+.row:last-child{border-bottom:none;}
+.r-k{font-size:12px;color:rgba(255,244,222,0.65);}
+.r-v{font-size:12.5px;color:var(--cream);text-align:right;}
+.r-v small{display:block;font-size:9.5px;color:rgba(255,244,222,0.45);}
+.good{color:var(--shubhT);} .bad{color:var(--ashubhT);}
+.tag{display:inline-block;font-size:9px;padding:2.5px 8px;border-radius:12px;margin-left:6px;vertical-align:1px;}
+.tag.g{background:rgba(74,124,89,0.25);color:var(--shubhT);}
+.tag.b{background:rgba(200,69,46,0.2);color:var(--ashubhT);}
+.tag.now{background:rgba(232,190,90,0.2);color:var(--bgold);animation:pulse 2s infinite;}
+.note{font-size:9.5px;color:rgba(255,244,222,0.35);text-align:center;margin:16px 0 4px;line-height:1.7;}
+
+/* rashi grid */
+.rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.rt{border:1px solid rgba(212,168,67,0.18);border-radius:14px;padding:13px 4px 11px;text-align:center;
+  cursor:pointer;background:rgba(255,255,255,0.025);transition:transform .12s;position:relative;}
+.rt:active{transform:scale(0.95);}
+.rt.mine{border-color:var(--gold);background:linear-gradient(160deg,rgba(212,168,67,0.13),transparent);}
+.rt .em{font-size:21px;}
+.rt .nm{font-size:12.5px;color:var(--cream);margin-top:4px;}
+.rt .dot{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;}
+.rt .dot.g{background:var(--shubhT);} .rt .dot.b{background:var(--ashubhT);}
+.rt .you{position:absolute;top:5px;left:7px;font-size:7.5px;color:var(--bgold);letter-spacing:0.6px;}
+
+/* rashi detail */
+.verdict{text-align:center;padding:18px 12px 14px;}
+.v-em{font-size:36px;}
+.v-name{font-size:21px;color:var(--cream);font-weight:600;margin-top:6px;}
+.v-stars{font-size:16px;letter-spacing:3px;margin-top:6px;color:var(--bgold);}
+.v-line{font-size:12px;margin-top:8px;line-height:1.6;}
+.factor{display:flex;gap:11px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed rgba(212,168,67,0.13);}
+.factor:last-child{border-bottom:none;}
+.f-i{font-size:17px;width:24px;text-align:center;flex-shrink:0;}
+.f-t{font-size:11.5px;line-height:1.6;color:rgba(255,244,222,0.75);}
+.f-t b{color:var(--cream);font-weight:600;}
+.brandline{font-size:9px;letter-spacing:1px;color:rgba(212,168,67,0.55);text-align:center;margin-top:12px;}
+
+/* limb segments */
+.seg{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(212,168,67,0.13);font-size:12px;}
+.seg:last-child{border-bottom:none;}
+.seg .sv{color:var(--cream);} .seg .st{color:rgba(255,244,222,0.5);font-size:11px;}
+.hide{display:none;}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script>
+'use strict';
+/* ── user context ─────────────────────────────────────────── */
+var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+var H=(U.lang||'hi')==='hi';
+var LAT=parseFloat(U.city_lat)||23.1793, LNG=parseFloat(U.city_lon)||75.7849; // fallback: Ujjain
+var CITY=U.city||(H?'उज्जैन':'Ujjain');
+var PE=window.PanchangEngine;
+
+/* ── i18n micro-dict ─────────────────────────────────────── */
+function t(hi,en){return H?hi:en;}
+
+/* ── time helpers (IST display always) ───────────────────── */
+function fT(d){if(!d)return '—';return new Date(d).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false,hour:'2-digit',minute:'2-digit'});}
+function fR(a,b){return fT(a)+'–'+fT(b);}
+function mins(ms){var m=Math.max(0,Math.round(ms/60000));var h=Math.floor(m/60);m%=60;return h?(h+t(' घं ',' h ')+m+t(' मि',' m')):(m+t(' मिनट',' min'));}
+
+/* ── today's panchang (one engine call, cached) ──────────── */
+var P=null;
+function panchang(){if(!P)P=PE.getPanchang(new Date(),LAT,LNG);return P;}
+
+/* ── rashi table (display labels) ────────────────────────── */
+var RASHI=[
+ ['मेष','Mesha','Aries','♈'],['वृषभ','Vrishabha','Taurus','♉'],['मिथुन','Mithuna','Gemini','♊'],
+ ['कर्क','Karka','Cancer','♋'],['सिंह','Simha','Leo','♌'],['कन्या','Kanya','Virgo','♍'],
+ ['तुला','Tula','Libra','♎'],['वृश्चिक','Vrishchika','Scorpio','♏'],['धनु','Dhanu','Sagittarius','♐'],
+ ['मकर','Makara','Capricorn','♑'],['कुंभ','Kumbha','Aquarius','♒'],['मीन','Meena','Pisces','♓']];
+function myRashiIdx(){var r=(U.rashi||'').toLowerCase();if(!r)return -1;
+  for(var i=0;i<12;i++){if(RASHI[i][1].toLowerCase()===r||RASHI[i][2].toLowerCase()===r)return i;}return -1;}
+
+/* moon-transit house themes (neutral, display copy) */
+var HOUSE=[
+ ['मन ऊर्जावान — नई शुरुआत का दिन','an energetic mind — a day for beginnings'],
+ ['धन-वाणी पर ध्यान — सोच-समझकर बोलें','focus on money and speech — choose words with care'],
+ ['साहस और पहल का साथ — काम बनते हैं','courage and initiative are with you — things get done'],
+ ['घर-परिवार मन में — भावुक क्षण संभव','home and family on the mind — an emotional day is possible'],
+ ['रचनात्मक दिन — बच्चों/विद्या से जुड़े काम शुभ','a creative day — matters of children and learning are favoured'],
+ ['काम का बोझ — सेहत का ध्यान रखें','a workload day — mind your health'],
+ ['रिश्तों और साझेदारी का दिन','a day of relationships and partnerships'],
+ ['धीमा दिन — जोखिम टालें','a slow day — avoid risks'],
+ ['भाग्य साथ देता है — धर्म-यात्रा शुभ','fortune supports you — dharma and travel are favoured'],
+ ['कार्यक्षेत्र में पहचान संभव','recognition possible at work'],
+ ['लाभ का दिन — मित्रों का साथ','a day of gains — friends stand by you'],
+ ['खर्च और थकान — विश्राम भी ज़रूरी','expenses and fatigue — rest matters too']];
+
+/* ── router ──────────────────────────────────────────────── */
+var app=document.getElementById('app');
+window.addEventListener('hashchange',route);
+var tick=null;
+function route(){
+  if(tick){clearInterval(tick);tick=null;}
+  var h=(location.hash||'#hub').slice(1).split('/');
+  if(h[0]==='rashifal'&&h[1]!==undefined)return vRashi(parseInt(h[1],10));
+  if(h[0]==='rashifal')return vRashiGrid();
+  if(h[0]==='panchang'&&h[1])return vLimb(h[1]);
+  if(h[0]==='panchang')return vPanchang();
+  if(h[0]==='times')return vTimes();
+  return vHub();
+}
+function back(to){location.hash=to;}
+function pgHead(title,sub,to){
+  return '<div class="pg-h"><button class="back" onclick="back(\''+to+'\')">←</button>'
+   +'<div><div class="pg-t dev">'+title+'</div><div class="pg-s">'+sub+'</div></div></div>';
+}
+
+/* ── ribbon builder (signature) ──────────────────────────── */
+function ribbonHTML(){
+  var p=panchang();
+  var t0=new Date(p.sunrise).getTime(), t1=new Date(p.nextSunrise).getTime(), span=t1-t0;
+  var segs=p.choghadiya.day.concat(p.choghadiya.night);
+  var htm='';
+  segs.forEach(function(s,i){
+    var a=new Date(s.start).getTime(), b=new Date(s.end).getTime();
+    htm+='<div class="rb-seg '+(s.good?'g':'b')+(i>=8?' night':'')+'" style="left:'
+      +((a-t0)/span*100).toFixed(2)+'%;width:'+((b-a)/span*100).toFixed(2)+'%"></div>';
+  });
+  var nowF=Math.min(99.6,Math.max(0,(Date.now()-t0)/span*100));
+  htm+='<div class="rb-now" id="rbNow" style="left:'+nowF.toFixed(2)+'%"></div>';
+  return '<div class="ribbon">'+htm+'</div>'
+    +'<div class="rb-x"><span>🌅 '+fT(p.sunrise)+'</span><span>🌇 '+fT(p.sunset)+'</span><span>🌅 '+fT(p.nextSunrise)+'</span></div>';
+}
+function currentSeg(){
+  var p=panchang(),now=Date.now();
+  var segs=p.choghadiya.day.concat(p.choghadiya.night);
+  for(var i=0;i<segs.length;i++){var s=segs[i];
+    if(now>=new Date(s.start).getTime()&&now<new Date(s.end).getTime())return {s:s,next:segs[i+1]||null};}
+  return {s:null,next:segs[0]};
+}
+function nextGood(){
+  var p=panchang(),now=Date.now();
+  var segs=p.choghadiya.day.concat(p.choghadiya.night);
+  for(var i=0;i<segs.length;i++){var s=segs[i];
+    if(s.good&&new Date(s.end).getTime()>now)return s;}
+  return null;
+}
+
+/* ═════════ HUB ═════════ */
+function vHub(){
+  var p=panchang();
+  var hc=p.hinduCalendar, cur=currentSeg(), ng=nextGood();
+  var d=new Date();
+  var greg=d.toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'});
+  var hindu=(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+' • '+t(p.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',p.tithi.paksha)+' '+(H?p.tithi.hi:p.tithi.en);
+
+  /* personal tara chip (moat teaser) */
+  var tara='';
+  if(U.nakshatra&&p.tarabalam&&p.tarabalam[0]){
+    var mine=(U.nakshatra||'').toLowerCase();
+    var ok=p.tarabalam[0].good.some(function(n){return n.en.toLowerCase()===mine;});
+    tara='<div class="d-tara '+(ok?'ok':'no')+'">'+(ok
+      ? t('✓ आज का नक्षत्र आपके लिए अनुकूल है','✓ Today\'s nakshatra is favourable for you')
+      : t('△ आज का नक्षत्र आपके लिए सामान्य है — बड़े काम शुभ समय में करें','△ Today\'s nakshatra is neutral for you — keep big steps to good windows'))+'</div>';
+  }
+
+  var segName=cur.s?(H?cur.s.hi:cur.s.en):'—';
+  var segCls=cur.s?(cur.s.good?'g':'b'):'';
+  var until=cur.s?t('… '+fT(cur.s.end)+' तक','until '+fT(cur.s.end)):'';
+  var cd=cur.s?mins(new Date(cur.s.end).getTime()-Date.now()):'';
+
+  app.innerHTML=
+   '<div class="hdr"><button class="back" onclick="location.href=\'dashboard.html\'">←</button>'
+   +'<div><div class="h-t dev">'+t('आज का ज्योतिष','Astrology Today')+'</div>'
+   +'<div class="h-s">'+greg+' · <span class="dev">'+hindu+'</span></div></div>'
+   +'<div class="h-city">📍 '+CITY+'</div></div>'
+
+   +'<div class="dial">'
+   +'<div class="d-now-lbl">'+t('अभी चल रहा है','RIGHT NOW')+'</div>'
+   +'<div class="d-state"><span class="d-seg dev '+segCls+'">'+segName+'</span>'
+   +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
+   +ribbonHTML()
+   +(ng&&(!cur.s||!cur.s.good)?'<div class="d-next">'+t('अगला शुभ समय: ','Next good window: ')+'<b class="dev">'+(H?ng.hi:ng.en)+'</b> '+fR(ng.start,ng.end)+'</div>':'')
+   +tara
+   +'</div>'
+
+   +'<div class="grid">'
+   +sec('🐏',t('राशिफल','Rashifal'),t('चंद्रमा आज ','Moon today in ')+'<b class="dev">'+(H?p.moonSign.hi:p.moonSign.en)+'</b>'+t(' राशि में — अपनी राशि देखें',' — check your rashi'),'#rashifal')
+   +sec('📿',t('पंचांग','Panchang'),'<b class="dev">'+(H?p.tithi.hi:p.tithi.en)+'</b> • <span class="dev">'+(H?p.nakshatra.hi:p.nakshatra.en)+'</span> • <span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>','#panchang')
+   +sec('⏰',t('शुभ-अशुभ समय','Shubh & Ashubh Times'),timesTeaser(p),'#times')
+   +'</div>'
+
+   +'<div class="limbs">'+miniLimb(t('तिथि','TITHI'),H?p.tithi.hi:p.tithi.en)
+   +miniLimb(t('नक्षत्र','NAKSHATRA'),H?p.nakshatra.hi:p.nakshatra.en)
+   +miniLimb(t('योग','YOGA'),H?p.yoga.hi:p.yoga.en)
+   +miniLimb(t('करण','KARANA'),H?p.karana.hi:p.karana.en)
+   +miniLimb(t('वार','VARA'),H?p.vara.hi:p.vara.en)+'</div>'
+
+   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
+   +'<div class="note">'+t('सभी समय आपके शहर के लिए गणना से — शुभ दिन इंजन','All timings computed for your city — Shubh Din engine')+'</div>';
+
+  tick=setInterval(function(){
+    var c=currentSeg();
+    var el=document.getElementById('dCount');
+    if(el&&c.s)el.textContent='⏳ '+mins(new Date(c.s.end).getTime()-Date.now());
+    var rb=document.getElementById('rbNow');
+    if(rb){var t0=new Date(panchang().sunrise).getTime(),t1=new Date(panchang().nextSunrise).getTime();
+      rb.style.left=Math.min(99.6,Math.max(0,(Date.now()-t0)/(t1-t0)*100)).toFixed(2)+'%';}
+  },30000);
+}
+function sec(ico,title,live,href){
+  return '<div class="sec" onclick="location.hash=\''+href+'\'"><div class="s-ico">'+ico+'</div>'
+   +'<div class="s-b"><div class="s-t dev">'+title+'</div><div class="s-live">'+live+'</div></div>'
+   +'<div class="s-go">›</div></div>';
+}
+function miniLimb(k,v){return '<div class="limb"><div class="l-k">'+k+'</div><div class="l-v dev">'+v+'</div></div>';}
+function timesTeaser(p){
+  var now=Date.now(),rk=p.rahuKaal;
+  if(rk&&now<new Date(rk.start).getTime())
+    return t('राहु काल ','Rahu Kaal ')+'<b>'+fR(rk.start,rk.end)+'</b> — '+mins(new Date(rk.start).getTime()-now)+t(' में',' from now');
+  if(rk&&now>=new Date(rk.start).getTime()&&now<new Date(rk.end).getTime())
+    return '<span class="bad">'+t('अभी राहु काल — ','Rahu Kaal now — ')+fT(rk.end)+t(' तक',' until')+'</span>';
+  return t('राहु काल समाप्त — पूरा दिन देखें','Rahu Kaal over — see the full day');
+}
+
+/* ═════════ RASHIFAL ═════════ */
+function vRashiGrid(){
+  var p=panchang(),mine=myRashiIdx();
+  var goodSet={}; if(p.chandrabalam&&p.chandrabalam[0])p.chandrabalam[0].good.forEach(function(r){goodSet[r.index]=1;});
+  var g='';
+  for(var i=0;i<12;i++){
+    g+='<div class="rt'+(i===mine?' mine':'')+'" onclick="location.hash=\'#rashifal/'+i+'\'">'
+     +(i===mine?'<span class="you">'+t('आपकी','YOU')+'</span>':'')
+     +'<div class="dot '+(goodSet[i]?'g':'b')+'"></div>'
+     +'<div class="em">'+RASHI[i][3]+'</div><div class="nm dev">'+(H?RASHI[i][0]:RASHI[i][1])+'</div></div>';
+  }
+  app.innerHTML=pgHead(t('राशिफल','Rashifal'),t('चंद्रमा आज ','Moon today in ')+(H?p.moonSign.hi:p.moonSign.en),'hub')
+   +'<div class="rgrid">'+g+'</div>'
+   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
+   +'<div class="brandline">'+t('गणना से, अनुमान से नहीं','COMPUTED, NOT GUESSED')+'</div>';
+}
+
+function vRashi(i){
+  if(!(i>=0&&i<12))return vRashiGrid();
+  var p=panchang(),mine=myRashiIdx();
+  var moon=p.moonSign.index;
+  var house=((moon-i+12)%12); /* 0-based: 0 = moon in own rashi (1st house) */
+  var cb=p.chandrabalam&&p.chandrabalam[0]?p.chandrabalam[0].good.some(function(r){return r.index===i;}):false;
+  var stars=cb?'★★★★☆':'★★☆☆☆';
+  var verdict=cb?t('आज चंद्रबल आपके साथ है','Chandrabala is with you today')
+               :t('आज सामान्य दिन — बड़े निर्णय शुभ समय में लें','A neutral day — keep big decisions to good windows');
+  var ds=p.dishaShool;
+  app.innerHTML=pgHead(t('राशिफल','Rashifal'),t('आज • ','Today • ')+new Date().toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short'}),'rashifal')
+   +'<div class="card"><div class="verdict">'
+   +'<div class="v-em">'+RASHI[i][3]+'</div>'
+   +'<div class="v-name dev">'+(H?RASHI[i][0]:RASHI[i][1])+(i===mine?' <span class="tag g">'+t('आपकी राशि','your rashi')+'</span>':'')+'</div>'
+   +'<div class="v-stars">'+stars+'</div>'
+   +'<div class="v-line '+(cb?'good':'')+' dev">'+verdict+'</div>'
+   +'</div></div>'
+   +'<div class="card">'
+   +factor('🌙',t('<b>चंद्रमा</b> आज आपसे ','<b>Moon</b> today is in your ')+'<b>'+(house+1)+t('वें भाव','')+(H?'':ordinal(house+1)+' house')+'</b>'+t(' में — ',' — ')+'<span class="dev">'+HOUSE[house][H?0:1]+'</span>')
+   +factor(cb?'✅':'⚠️',t('<b>चंद्रबल:</b> ','<b>Chandrabala:</b> ')+(cb?t('अनुकूल — शुभ कार्यों के लिए अच्छा दिन','favourable — a good day for auspicious work'):t('प्रतिकूल — नई शुरुआत शुभ मुहूर्त में ही करें','unfavourable — start new things only in a good muhurta')))
+   +factor('🧭',t('<b>दिशाशूल:</b> आज ','<b>Disha Shool:</b> avoid starting travel toward the ')+'<b class="dev">'+(H?ds.hi:ds.en)+'</b>'+t(' दिशा की यात्रा टालें',' today'))
+   +'</div>'
+   +'<div class="sec" onclick="location.hash=\'#times\'"><div class="s-ico">⏰</div><div class="s-b">'
+   +'<div class="s-t dev">'+t('आज के शुभ समय देखें','See today\'s good windows')+'</div>'
+   +'<div class="s-live">'+t('चौघड़िया • अभिजीत • राहु काल','Choghadiya • Abhijit • Rahu Kaal')+'</div></div><div class="s-go">›</div></div>'
+   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
+   +'<div class="brandline">'+t('गणना से, अनुमान से नहीं','COMPUTED, NOT GUESSED')+'</div>';
+}
+function factor(i,txt){return '<div class="factor"><div class="f-i">'+i+'</div><div class="f-t">'+txt+'</div></div>';}
+function ordinal(n){return n===1?'st':n===2?'nd':n===3?'rd':'th';}
+
+/* ═════════ PANCHANG ═════════ */
+function vPanchang(){
+  var p=panchang(),hc=p.hinduCalendar;
+  app.innerHTML=pgHead(t('पंचांग','Panchang'),CITY+' • '+fT(new Date()),'hub')
+   +'<div class="card">'
+   +prow('🌅 '+t('सूर्योदय / सूर्यास्त','Sunrise / Sunset'),fT(p.sunrise)+' / '+fT(p.sunset))
+   +prow('🌙 '+t('चंद्रोदय / चंद्रास्त','Moonrise / Moonset'),fT(p.moonrise)+' / '+fT(p.moonset))
+   +'</div>'
+   +'<div class="card">'
+   +limbRow('tithi',t('तिथि','Tithi'),p.tithi)
+   +limbRow('nakshatra',t('नक्षत्र','Nakshatra'),p.nakshatra)
+   +limbRow('yoga',t('योग','Yoga'),p.yoga)
+   +limbRow('karana',t('करण','Karana'),p.karana)
+   +prow(t('वार','Vara'),'<span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>')
+   +'</div>'
+   +'<div class="card">'
+   +prow(t('विक्रम संवत','Vikram Samvat'),hc.vikramSamvat||'—')
+   +prow(t('शक संवत','Shaka Samvat'),hc.shakaSamvat||'—')
+   +prow(t('माह (पूर्णिमांत)','Month (Purnimanta)'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
+   +prow(t('माह (अमांत)','Month (Amanta)'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+(hc.amantaMonth.adhik?' <span class="tag b">'+t('अधिक','Adhik')+'</span>':'')+'</span>')
+   +prow(t('पक्ष','Paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha)+'</span>')
+   +(hc.ritu?prow(t('ऋतु','Ritu'),'<span class="dev">'+(H?hc.ritu.hi:hc.ritu.en)+'</span>'):'')
+   +(hc.ayana?prow(t('अयन','Ayana'),'<span class="dev">'+(H?hc.ayana.hi:hc.ayana.en)+'</span>'):'')
+   +'</div>'
+   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
+   +'<div class="note">'+t('किसी भी लिंब पर टैप करें — आज के सभी बदलाव समय के साथ','Tap any limb for today\'s full timeline')+'</div>';
+}
+function prow(k,v){return '<div class="row"><span class="r-k">'+k+'</span><span class="r-v">'+v+'</span></div>';}
+function limbRow(key,label,limb){
+  var segs=limb.segments||[];
+  var next=segs.length>1?('<small>'+t('फिर ','then ')+'<span class="dev">'+(H?segs[1].hi:segs[1].en)+'</span></small>'):'';
+  return '<div class="row" style="cursor:pointer" onclick="location.hash=\'#panchang/'+key+'\'">'
+   +'<span class="r-k">'+label+' ›</span>'
+   +'<span class="r-v"><span class="dev">'+(H?limb.hi:limb.en)+'</span> <small>'+t('… ','until ')+fT(segs[0]&&segs[0].end)+(H?' तक':'')+'</small>'+next+'</span></div>';
+}
+
+function vLimb(key){
+  var p=panchang();
+  var map={tithi:[p.tithi,t('तिथि','Tithi')],nakshatra:[p.nakshatra,t('नक्षत्र','Nakshatra')],
+           yoga:[p.yoga,t('योग','Yoga')],karana:[p.karana,t('करण','Karana')]};
+  if(!map[key])return vPanchang();
+  var limb=map[key][0],label=map[key][1];
+  var extra='';
+  if(key==='nakshatra')extra='<div class="card">'+prow(t('स्वामी ग्रह','Lord'),limb.lord||'—')+prow(t('पाद','Pada'),limb.pada||'—')+'</div>';
+  var segs=(limb.segments||[]).map(function(s){
+    return '<div class="seg"><span class="sv dev">'+(H?s.hi:s.en)+'</span><span class="st">'+t('समाप्ति ','ends ')+fT(s.end)+'</span></div>';}).join('');
+  app.innerHTML=pgHead(label,t('आज का पूरा क्रम','Today\'s full sequence'),'panchang')
+   +'<div class="card"><div style="text-align:center;padding:8px 0 12px;">'
+   +'<div class="v-name dev">'+(H?limb.hi:limb.en)+'</div>'
+   +'<div class="pg-s" style="margin-top:4px;">'+t('अभी चल रहा है','running now')+'</div></div>'
+   +segs+'</div>'+extra
+   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>';
+}
+
+/* ═════════ TIMES ═════════ */
+function vTimes(){
+  var p=panchang(),now=Date.now();
+  function stat(w){if(!w)return '';var a=new Date(w.start).getTime(),b=new Date(w.end).getTime();
+    return now>=a&&now<b?' <span class="tag now">'+t('अभी','NOW')+'</span>':'';}
+  function tr(name,w,good){
+    if(!w)return '<div class="row"><span class="r-k dev">'+name+'</span><span class="r-v"><small>'+t('आज नहीं','not today')+'</small></span></div>';
+    return '<div class="row"><span class="r-k dev">'+name+stat(w)+'</span>'
+     +'<span class="r-v '+(good?'good':'bad')+'">'+fR(w.start,w.end)+'</span></div>';
+  }
+  var chog=p.choghadiya.day.concat(p.choghadiya.night).map(function(s,i){
+    var live=(now>=new Date(s.start).getTime()&&now<new Date(s.end).getTime());
+    return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+(H?s.hi:s.en)
+     +(live?' <span class="tag now">'+t('अभी','NOW')+'</span>':'')+'</span>'
+     +'<span class="r-v '+(s.good?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
+  app.innerHTML=pgHead(t('शुभ-अशुभ समय','Shubh & Ashubh Times'),CITY,'hub')
+   +'<div class="dial">'
+   +'<div class="d-now-lbl">'+t('आज का पूरा दिन','THE WHOLE DAY')+'</div>'
+   +ribbonHTML()+'</div>'
+   +'<div class="card">'
+   +tr(t('ब्रह्म मुहूर्त','Brahma Muhurta'),p.brahmaMuhurta,true)
+   +tr(t('अभिजीत मुहूर्त','Abhijit Muhurta'),p.abhijit,true)
+   +tr(t('अमृत काल','Amrit Kaal'),p.amritKaal,true)
+   +(p.muhurtas&&p.muhurtas.vijaya?tr(t('विजय मुहूर्त','Vijaya Muhurta'),p.muhurtas.vijaya,true):'')
+   +(p.muhurtas&&p.muhurtas.godhuli?tr(t('गोधूलि मुहूर्त','Godhuli Muhurta'),p.muhurtas.godhuli,true):'')
+   +'</div>'
+   +'<div class="card">'
+   +tr(t('राहु काल','Rahu Kaal'),p.rahuKaal,false)
+   +tr(t('यमगण्ड','Yamaganda'),p.yamaganda,false)
+   +tr(t('गुलिक काल','Gulika Kaal'),p.gulikaKaal,false)
+   +tr(t('वर्ज्यम्','Varjyam'),p.varjyam,false)
+   +(p.durMuhurtam||[]).map(function(w,i){return tr(t('दुर्मुहूर्त','Dur Muhurtam')+(i?' '+(i+1):''),w,false);}).join('')
+   +'</div>'
+   +'<div class="card"><div class="pg-s" style="margin-bottom:6px;letter-spacing:1px;">'+t('चौघड़िया','CHOGHADIYA')+'</div>'+chog+'</div>'
+   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
+   +'<div class="note">'+t('सभी समय आपके शहर के लिए गणना से','All timings computed for your city')+'</div>';
+}
+
+/* boot */
+route();
+</script>
+</body>
+</html>
