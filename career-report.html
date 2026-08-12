@@ -47,15 +47,22 @@ tr:nth-child(even) td{background:#FDF8EC;}
 .printbar button{width:auto;padding:10px 26px;}
 @media print{body{background:#fff;}.screen,.printbar{display:none !important;}#report{display:block !important;}
 .page{box-shadow:none;margin:0;page-break-after:always;min-height:auto;padding:34px 40px;}
- /* A .page whose content exceeds one printed sheet spills its TAIL onto the
-    next sheet, and the tail is usually the closing explanatory line — leaving
-    a near-blank page. page-break-inside:avoid on that line alone does nothing:
-    it stops the LINE splitting, not the line moving. .keepwith wraps a table
-    together WITH its note so the pair travels as one unbreakable unit. */
- .keepwith{page-break-inside:avoid;break-inside:avoid;}
- /* A heading must never be the last element on a printed page. */
+ /* LAYOUT RULES — arrived at after three failed attempts, recorded so they
+    are not re-broken:
+    1. Do NOT mark tables unbreakable. A 21-row table with
+       page-break-inside:avoid cannot be split, so the engine relocates the
+       WHOLE construct to the next sheet and strands whatever preceded it.
+       That rule (added in an earlier round) is what emptied page 18.
+    2. Do NOT wrap a table together with its heading and note in an outer
+       avoid-break box either — same relocation, same result.
+    3. What actually works: let tables FLOW and split across sheets, keep a
+       heading attached to what follows it, and never orphan a single line.
+       These are the standard typographic controls and they compose. */
  h2.sec{page-break-after:avoid;break-after:avoid;}
- table{page-break-inside:avoid;break-inside:avoid;}.page:last-child{page-break-after:auto;}}
+ table{page-break-inside:auto;}
+ tr{page-break-inside:avoid;break-inside:avoid;}
+ thead{display:table-header-group;}
+ p,div.prose{orphans:3;widows:3;}.page:last-child{page-break-after:auto;}}
 @page{size:A4;margin:10mm;}
 
 /* devanagari-print-safety: letter-spacing splits matras/conjuncts (दि ल). Never apply to Indic text. */
@@ -827,13 +834,11 @@ function generate(){ try {
     // the heading and reads as an intentional section start.
     pg('<h2 class="sec">' + U('trn.title') + '</h2>'
       + '<div class="prose">' + U('trn.intro') + '</div>'
-      + '<div class="keepwith">'
-      +   '<h2 class="sec" style="font-size:15px;margin-top:12px;">' + U('trn.timeline') + '</h2>'
-      +   '<table><tr><th>' + U('kundli.labels.from') + '</th><th>' + U('gocharLbl.graha') + '</th>'
-      +   '<th>' + U('marriage.koota') + '</th><th>' + U('gocharLbl.fromMoon') + '</th></tr>'
-      +   rows + '</table>'
-      +   '<div style="font-size:11.5px;color:#8B5A2B;margin-top:8px;">' + U('trn.note') + '</div>'
-      + '</div>');
+      + '<h2 class="sec" style="font-size:15px;margin-top:12px;">' + U('trn.timeline') + '</h2>'
+      + '<table><tr><th>' + U('kundli.labels.from') + '</th><th>' + U('gocharLbl.graha') + '</th>'
+      + '<th>' + U('marriage.koota') + '</th><th>' + U('gocharLbl.fromMoon') + '</th></tr>'
+      + rows + '</table>'
+      + '<div style="font-size:11.5px;color:#8B5A2B;margin-top:8px;">' + U('trn.note') + '</div>');
   })();
 
   
@@ -875,10 +880,8 @@ function generate(){ try {
     pg('<h2 class="sec">'+U('edu.title')+'</h2>'
       + '<div class="prose">'+U('edu.intro')+'</div>'
       + panel(4, U('edu.fourthLbl'))
-      + '<div class="keepwith">'
-      +   panel(5, U('edu.fifthLbl'))
-      +   '<div style="font-size:11.5px;color:#8B5A2B;margin-top:8px;">'+U('edu.karakaNote')+'</div>'
-      + '</div>');
+      + panel(5, U('edu.fifthLbl'))
+      + '<div style="font-size:11.5px;color:#8B5A2B;margin-top:8px;">'+U('edu.karakaNote')+'</div>');
   })();
 
   
