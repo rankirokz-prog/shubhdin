@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script>
+/* SHUBHDIN AUTH CATCHER: if Google/Supabase login lands here with a code, forward it to kundli.html so the sign-in completes there. */
+(function(){try{
+  if((location.search.indexOf('code=')>-1||location.hash.indexOf('access_token=')>-1)
+     && localStorage.getItem('shubhdin_kundli_details')
+     && localStorage.getItem('shubhdin_kundli_ready')!=='1'){
+    location.replace('kundli.html'+location.search+location.hash);
+  }
+}catch(e){}})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>शुभ दिन</title>
