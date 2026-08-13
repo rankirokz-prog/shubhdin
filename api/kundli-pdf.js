@@ -11,11 +11,17 @@
 // Measured on this report: ~20s total, 3.8MB, 263 pages, well under limits
 // when vercel.json grants this function 3009MB / 300s.
 
-let chromium = require('@sparticuz/chromium');
-if (chromium.default) chromium = chromium.default;
-const puppeteer = require('puppeteer-core');
+// @sparticuz/chromium is ESM-only; Vercel's runtime forbids require(esm).
+// Load both via dynamic import() — legal in CJS — cached across invocations.
+let _stack = null;
+function loadStack() {
+  if (!_stack) _stack = Promise.all([import('@sparticuz/chromium'), import('puppeteer-core')])
+    .then(([c, p]) => ({ chromium: c.default || c, puppeteer: p.default || p }));
+  return _stack;
+}
 
 module.exports = async function handler(req, res) {
+  const { chromium, puppeteer } = await loadStack();
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
