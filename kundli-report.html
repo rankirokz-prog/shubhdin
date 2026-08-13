@@ -902,15 +902,33 @@ function generate(){
 }
 </script>
 
-<!-- ══ SHUBHDIN KUNDLI-FLOW PREFILL (append-only; re-apply if this file is regenerated) ══ -->
+<!-- ══ SHUBHDIN KUNDLI-FLOW PREFILL v2 (append-only; re-apply if this file is regenerated) ══ -->
 <script>
 (function(){
   try{
     var d=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');
-    if(!d)return;
-    function set(id,v){var e=document.getElementById(id);if(e&&!e.value&&v)e.value=v;}
-    set('pname',d.name); set('pgender',d.gender);
-    set('bdate',d.dob); set('btime',d.time); set('bplace',d.place);
+    if(d){
+      function set(id,v){var e=document.getElementById(id);if(e&&v!==undefined&&v!==null&&v!==''){if(!e.value||id==='blat'||id==='blng')e.value=v;}}
+      set('pname',d.name); set('pgender',d.gender);
+      set('bdate',d.dob); set('btime',d.time); set('bplace',d.place);
+      if(d.lat)set('blat',d.lat); if(d.lng)set('blng',d.lng);
+    }
+    if(location.search.indexOf('autopdf=1')>-1&&d){
+      /* one-tap PDF: confirm → generate → wait for render → print (Save as PDF) */
+      setTimeout(function(){
+        try{confirmStep();}catch(e){return;}
+        setTimeout(function(){
+          try{generate();}catch(e){return;}
+          var tries=0, pv=setInterval(function(){
+            tries++;
+            var rep=document.getElementById('report');
+            var ready=rep&&rep.innerHTML&&rep.innerHTML.length>10000;
+            if(ready){clearInterval(pv);setTimeout(function(){try{sdPrint();}catch(e){window.print();}},700);}
+            else if(tries>40){clearInterval(pv);}
+          },400);
+        },350);
+      },450);
+    }
   }catch(e){}
 })();
 </script>
