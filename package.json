@@ -1,0 +1,8 @@
+{
+  "name": "shubhdin",
+  "private": true,
+  "dependencies": {
+    "puppeteer-core": "^23.0.0",
+    "@sparticuz/chromium": "^131.0.0"
+  }
+}
