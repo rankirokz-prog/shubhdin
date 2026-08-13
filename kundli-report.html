@@ -902,7 +902,7 @@ function generate(){
 }
 </script>
 
-<!-- ══ SHUBHDIN KUNDLI-FLOW PREFILL v2 (append-only; re-apply if this file is regenerated) ══ -->
+<!-- ══ SHUBHDIN KUNDLI-FLOW PREFILL v3 (append-only; re-apply if this file is regenerated) ══ -->
 <script>
 (function(){
   try{
@@ -913,12 +913,15 @@ function generate(){
       set('bdate',d.dob); set('btime',d.time); set('bplace',d.place);
       if(d.lat)set('blat',d.lat); if(d.lng)set('blng',d.lng);
     }
-    if(location.search.indexOf('autopdf=1')>-1&&d){
-      /* one-tap PDF: confirm → generate → wait for render → print (Save as PDF) */
+    var wantPdf =location.search.indexOf('autopdf=1')>-1;
+    var wantView=location.search.indexOf('autoview=1')>-1;
+    if((wantPdf||wantView)&&d){
+      /* auto: confirm → generate → (print only in pdf mode) */
       setTimeout(function(){
         try{confirmStep();}catch(e){return;}
         setTimeout(function(){
           try{generate();}catch(e){return;}
+          if(!wantPdf)return; /* view mode: stop here — report is on screen */
           var tries=0, pv=setInterval(function(){
             tries++;
             var rep=document.getElementById('report');
