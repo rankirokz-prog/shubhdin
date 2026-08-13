@@ -113,6 +113,14 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNTEyNTYsImV4cCI6MjA1ODcyNzI1Nn0.Y3QOuJMqYNKRSBRHNVuJW6TKKhUCfVKwniKuWFKFpCU';
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
+function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]');
+  a.push(new Date().toISOString().slice(11,19)+' '+m);if(a.length>40)a=a.slice(-40);
+  localStorage.setItem('shubhdin_auth_debug',JSON.stringify(a));}catch(e){}
+  var pnl=document.getElementById('dbgPanel');if(pnl)renderDbg();}
+function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
+  try{pnl.textContent=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]').join('\n');}catch(e){}}
+dlog('KUNDLI boot K3 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
+sb.auth.onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
 
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
 var H=(U.lang||'hi')==='hi';
@@ -163,8 +171,12 @@ function checkAuthThen(){
   });
 }
 function googleSignIn(){
-  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}})
-   .then(function(r){if(r.error){$('errAuth').textContent=r.error.message;$('errAuth').style.display='block';}});
+  var rto=location.origin+location.pathname;
+  dlog('signIn click, redirectTo='+rto);
+  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:rto}})
+   .then(function(r){if(r.error){dlog('signIn ERROR: '+r.error.message);
+     $('errAuth').textContent=r.error.message;$('errAuth').style.display='block';}
+     else dlog('signIn: redirecting to Google…');});
 }
 
 /* ── 3 · preparing (30s labor-staged) ── */
@@ -209,12 +221,12 @@ function viewKundli(){location.href='kundli-report.html';}
     try{history.replaceState(null,'',location.pathname);}catch(e){}
     startPrep(user); }
 
-  if(ready){ sb.auth.getSession().then(function(r){
+  if(ready){ dlog('boot: ready state'); sb.auth.getSession().then(function(r){
       var u=r.data&&r.data.session&&r.data.session.user;
       if(u&&u.email)$('rdMail').textContent=(H?'खाता: ':'Account: ')+u.email;});
     show('stReady'); return; }
 
-  if(det&&hasAuthParams){
+  if(det&&hasAuthParams){ dlog('boot: det+authParams → waiting for exchange');
     /* just back from Google: the token exchange is ASYNC — wait for it */
     $('ppT').textContent=H?'साइन इन हो रहा है…':'Signing you in…';
     $('ppStep').textContent=''; show('stPrep');
@@ -228,7 +240,7 @@ function viewKundli(){location.href='kundli-report.html';}
         if(r.data&&r.data.session){clearInterval(pv);
           $('ppT').textContent=H?'आपकी कुंडली बन रही है…':'Preparing your Kundli…';
           proceed(r.data.session.user);}
-        else if(tries>16){clearInterval(pv); show('stAuth');
+        else if(tries>16){clearInterval(pv); dlog('exchange TIMEOUT after 8s'); show('stAuth'); renderDbgAuto();
           $('errAuth').textContent=H?'साइन इन पूरा नहीं हुआ — कृपया फिर से कोशिश करें':'Sign-in didn\'t complete — please try again';
           $('errAuth').style.display='block';}
       });
@@ -236,12 +248,21 @@ function viewKundli(){location.href='kundli-report.html';}
     return;
   }
 
-  if(det){ sb.auth.getSession().then(function(r){
+  if(det){ dlog('boot: det only'); sb.auth.getSession().then(function(r){
+      dlog('getSession: '+(r.data&&r.data.session?'session ok':'none')+(r.error?' err='+r.error.message:''));
       if(r.data&&r.data.session)startPrep(r.data.session.user);
       else show('stAuth');
     }); return; }
-  show('stDetails');
+  dlog('boot: fresh → details'); show('stDetails');
 })();
+</script>
+<div id="dbgWrap" style="display:none;position:fixed;left:8px;right:8px;bottom:8px;max-height:42vh;overflow:auto;background:rgba(0,0,0,0.88);border:1px solid rgba(212,168,67,0.5);border-radius:10px;padding:10px;z-index:99;">
+<div style="font-size:9px;color:#E8BE5A;letter-spacing:1px;margin-bottom:5px;">AUTH DEBUG — screenshot this</div>
+<pre id="dbgPanel" style="font-size:9.5px;line-height:1.6;color:#DFF5E4;white-space:pre-wrap;font-family:monospace;"></pre></div>
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K3 · tap for debug</div>
+<script>
+function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block';renderDbg();}
+if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
 </script>
 </body>
 </html>
