@@ -211,8 +211,25 @@ function finishPrep(email){
 /* ── 4 · view ── */
 function viewKundli(){location.href='kundli-report.html';}
 
+/* ── absorb implicit hash tokens (Supabase fallback delivers #access_token) ── */
+function absorbHashTokens(){
+  if(location.hash.indexOf('access_token=')>-1){
+    try{
+      var hp=new URLSearchParams(location.hash.slice(1));
+      var at=hp.get('access_token'), rt=hp.get('refresh_token');
+      dlog('hash tokens: at='+(at?'yes':'MISSING')+' rt='+(rt?'yes':'MISSING'));
+      if(at&&rt){
+        return sb.auth.setSession({access_token:at,refresh_token:rt}).then(function(r){
+          dlog('setSession: '+(r.error?('ERROR '+r.error.message):'ok — session established'));
+          return r; });
+      }
+    }catch(e){dlog('hash parse error: '+e.message);}
+  }
+  return Promise.resolve(null);
+}
+
 /* ── boot: resume correctly, waiting out the code→session exchange ── */
-(function(){
+absorbHashTokens().then(function(){
   var ready=localStorage.getItem('shubhdin_kundli_ready')==='1';
   var det=localStorage.getItem('shubhdin_kundli_details');
   var hasAuthParams=(location.search.indexOf('code=')>-1||location.hash.indexOf('access_token=')>-1);
@@ -254,12 +271,12 @@ function viewKundli(){location.href='kundli-report.html';}
       else show('stAuth');
     }); return; }
   dlog('boot: fresh → details'); show('stDetails');
-})();
+});
 </script>
 <div id="dbgWrap" style="display:none;position:fixed;left:8px;right:8px;bottom:8px;max-height:42vh;overflow:auto;background:rgba(0,0,0,0.88);border:1px solid rgba(212,168,67,0.5);border-radius:10px;padding:10px;z-index:99;">
 <div style="font-size:9px;color:#E8BE5A;letter-spacing:1px;margin-bottom:5px;">AUTH DEBUG — screenshot this</div>
 <pre id="dbgPanel" style="font-size:9.5px;line-height:1.6;color:#DFF5E4;white-space:pre-wrap;font-family:monospace;"></pre></div>
-<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K3 · tap for debug</div>
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K4 · tap for debug</div>
 <script>
 function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block';renderDbg();}
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
