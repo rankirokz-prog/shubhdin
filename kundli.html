@@ -199,18 +199,46 @@ function finishPrep(email){
 /* ── 4 · view ── */
 function viewKundli(){location.href='kundli-report.html';}
 
-/* ── boot: resume correctly ── */
+/* ── boot: resume correctly, waiting out the code→session exchange ── */
 (function(){
   var ready=localStorage.getItem('shubhdin_kundli_ready')==='1';
   var det=localStorage.getItem('shubhdin_kundli_details');
+  var hasAuthParams=(location.search.indexOf('code=')>-1||location.hash.indexOf('access_token=')>-1);
+  var handled=false;
+  function proceed(user){ if(handled)return; handled=true;
+    try{history.replaceState(null,'',location.pathname);}catch(e){}
+    startPrep(user); }
+
   if(ready){ sb.auth.getSession().then(function(r){
       var u=r.data&&r.data.session&&r.data.session.user;
       if(u&&u.email)$('rdMail').textContent=(H?'खाता: ':'Account: ')+u.email;});
     show('stReady'); return; }
-  if(det){ /* returned from Google redirect mid-flow */
-    sb.auth.getSession().then(function(r){
+
+  if(det&&hasAuthParams){
+    /* just back from Google: the token exchange is ASYNC — wait for it */
+    $('ppT').textContent=H?'साइन इन हो रहा है…':'Signing you in…';
+    $('ppStep').textContent=''; show('stPrep');
+    sb.auth.onAuthStateChange(function(ev,session){
+      if(session&&session.user){ $('ppT').textContent=H?'आपकी कुंडली बन रही है…':'Preparing your Kundli…'; proceed(session.user); }
+    });
+    /* belt & braces: poll too, and time out to the auth screen with a message */
+    var tries=0, pv=setInterval(function(){
+      tries++;
+      sb.auth.getSession().then(function(r){
+        if(r.data&&r.data.session){clearInterval(pv);
+          $('ppT').textContent=H?'आपकी कुंडली बन रही है…':'Preparing your Kundli…';
+          proceed(r.data.session.user);}
+        else if(tries>16){clearInterval(pv); show('stAuth');
+          $('errAuth').textContent=H?'साइन इन पूरा नहीं हुआ — कृपया फिर से कोशिश करें':'Sign-in didn\'t complete — please try again';
+          $('errAuth').style.display='block';}
+      });
+    },500);
+    return;
+  }
+
+  if(det){ sb.auth.getSession().then(function(r){
       if(r.data&&r.data.session)startPrep(r.data.session.user);
-      else show('stDetails');
+      else show('stAuth');
     }); return; }
   show('stDetails');
 })();
