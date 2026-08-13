@@ -120,7 +120,7 @@ function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug'
   var pnl=document.getElementById('dbgPanel');if(pnl)renderDbg();}
 function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
   try{pnl.textContent=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]').join('\n');}catch(e){}}
-dlog('KUNDLI boot K7 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
+dlog('KUNDLI boot K8 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
 sb.auth.onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
 
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
@@ -245,7 +245,7 @@ function requestServerPdf(){
   });
 }
 function updateDlBtn(){var b=$('rdBtn');if(b&&PDF_URL){b.textContent=H?'⬇️ PDF डाउनलोड करें (260 पन्ने)':'⬇️ Download PDF (260 pages)';}}
-function viewKundli(){location.href='kundli-report.html';}
+function viewKundli(){location.href='kundli-report.html?autoview=1';}
 function downloadKundli(){
   if(PDF_URL){dlog('pdf: downloading file');location.href=PDF_URL;return;}
   /* not ready yet: one quick retry, else fall back to on-device save */
@@ -324,7 +324,7 @@ absorbHashTokens().then(function(){
 <div id="dbgWrap" style="display:none;position:fixed;left:8px;right:8px;bottom:8px;max-height:42vh;overflow:auto;background:rgba(0,0,0,0.88);border:1px solid rgba(212,168,67,0.5);border-radius:10px;padding:10px;z-index:99;">
 <div style="font-size:9px;color:#E8BE5A;letter-spacing:1px;margin-bottom:5px;">AUTH DEBUG — screenshot this</div>
 <pre id="dbgPanel" style="font-size:9.5px;line-height:1.6;color:#DFF5E4;white-space:pre-wrap;font-family:monospace;"></pre></div>
-<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K7 · tap for debug</div>
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K8 · tap for debug</div>
 <script>
 function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block';renderDbg();}
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
