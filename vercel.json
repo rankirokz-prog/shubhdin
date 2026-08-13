@@ -11,8 +11,7 @@
   ],
   "functions": {
     "api/kundli-pdf.js": {
-      "memory": 3009,
-      "maxDuration": 300
+      "maxDuration": 60
     }
   }
 }
