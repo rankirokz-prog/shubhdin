@@ -101,7 +101,8 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
     <div class="r-t dev" id="rdT">🎉 आपकी 260 पन्नों की कुंडली तैयार है!</div>
     <div class="r-s" id="rdS">राशि • नक्षत्र • लग्न • दशा • भविष्यफल — सब कुछ, आपके जन्म विवरण से।</div>
     <div class="r-mail" id="rdMail"></div>
-    <button class="btn" onclick="viewKundli()" id="rdBtn">मेरी कुंडली देखें →</button>
+    <button class="btn" onclick="downloadKundli()" id="rdBtn">⬇️ PDF डाउनलोड करने के लिए यहाँ क्लिक करें</button>
+    <div style="margin-top:12px;font-size:11px;color:rgba(212,168,67,0.7);cursor:pointer;" onclick="viewKundli()" id="rdView">या स्क्रीन पर देखें →</div>
     <div class="tease" onclick="location.href='premium.html'" id="rdTease">💍 विवाह, करियर और भविष्य की गहरी जानकारी चाहिए? प्रीमियम रिपोर्ट्स देखें →</div>
   </div>
 </div>
@@ -119,7 +120,7 @@ function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug'
   var pnl=document.getElementById('dbgPanel');if(pnl)renderDbg();}
 function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
   try{pnl.textContent=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]').join('\n');}catch(e){}}
-dlog('KUNDLI boot K5 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
+dlog('KUNDLI boot K6 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
 sb.auth.onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
 
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
@@ -141,7 +142,8 @@ if(!H){
   $('ppNote').textContent='Please stay on this screen — just a few moments';
   $('rdT').textContent='🎉 Your 260-page Kundli is ready!';
   $('rdS').textContent='Rashi • Nakshatra • Lagna • Dasha • Predictions — all from your birth details.';
-  $('rdBtn').textContent='View my Kundli →';
+  $('rdBtn').textContent='⬇️ Click here to download PDF';
+  $('rdView').textContent='or view on screen →';
   $('rdTease').textContent='💍 Want deeper insight on marriage, career and the years ahead? See Premium Reports →';
 }
 
@@ -186,6 +188,19 @@ var STEPS_EN=['Calculating planetary positions…','Building lagna and houses…
  'Computing dasha periods…','Checking yogas and doshas…','Writing your 260 pages…'];
 function startPrep(user){
   show('stPrep');
+  /* geocode the birth place during the preparation window (Nominatim, free) */
+  try{
+    var det=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');
+    if(det&&det.place&&!det.lat){
+      fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(det.place)+'&format=json&limit=1')
+       .then(function(r){return r.json();}).then(function(a){
+         if(a&&a[0]){det.lat=parseFloat(a[0].lat);det.lng=parseFloat(a[0].lon);
+           localStorage.setItem('shubhdin_kundli_details',JSON.stringify(det));
+           dlog('geocode ok: '+det.lat.toFixed(3)+','+det.lng.toFixed(3));}
+         else dlog('geocode: no result — report defaults will be used');
+       }).catch(function(e){dlog('geocode failed: '+e.message);});
+    }
+  }catch(e){}
   var email=user&&(user.email||(user.user_metadata&&user.user_metadata.email))||'';
   if(email){try{var u2=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');u2.email=email;
     localStorage.setItem('shubhdin_user',JSON.stringify(u2));}catch(e){}}
@@ -210,6 +225,7 @@ function finishPrep(email){
 
 /* ── 4 · view ── */
 function viewKundli(){location.href='kundli-report.html';}
+function downloadKundli(){location.href='kundli-report.html?autopdf=1';}
 
 /* ── absorb implicit hash tokens (Supabase fallback delivers #access_token) ── */
 function absorbHashTokens(){
@@ -276,7 +292,7 @@ absorbHashTokens().then(function(){
 <div id="dbgWrap" style="display:none;position:fixed;left:8px;right:8px;bottom:8px;max-height:42vh;overflow:auto;background:rgba(0,0,0,0.88);border:1px solid rgba(212,168,67,0.5);border-radius:10px;padding:10px;z-index:99;">
 <div style="font-size:9px;color:#E8BE5A;letter-spacing:1px;margin-bottom:5px;">AUTH DEBUG — screenshot this</div>
 <pre id="dbgPanel" style="font-size:9.5px;line-height:1.6;color:#DFF5E4;white-space:pre-wrap;font-family:monospace;"></pre></div>
-<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K5 · tap for debug</div>
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K6 · tap for debug</div>
 <script>
 function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block';renderDbg();}
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
