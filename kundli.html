@@ -111,7 +111,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 <script>
 'use strict';
 var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
-var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNTEyNTYsImV4cCI6MjA1ODcyNzI1Nn0.Y3QOuJMqYNKRSBRHNVuJW6TKKhUCfVKwniKuWFKFpCU';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
 var sb=window.supabase.createClient(SB_URL,SB_ANON);
 function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]');
   a.push(new Date().toISOString().slice(11,19)+' '+m);if(a.length>40)a=a.slice(-40);
@@ -119,7 +119,7 @@ function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug'
   var pnl=document.getElementById('dbgPanel');if(pnl)renderDbg();}
 function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
   try{pnl.textContent=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]').join('\n');}catch(e){}}
-dlog('KUNDLI boot K3 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
+dlog('KUNDLI boot K5 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
 sb.auth.onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
 
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
@@ -276,7 +276,7 @@ absorbHashTokens().then(function(){
 <div id="dbgWrap" style="display:none;position:fixed;left:8px;right:8px;bottom:8px;max-height:42vh;overflow:auto;background:rgba(0,0,0,0.88);border:1px solid rgba(212,168,67,0.5);border-radius:10px;padding:10px;z-index:99;">
 <div style="font-size:9px;color:#E8BE5A;letter-spacing:1px;margin-bottom:5px;">AUTH DEBUG — screenshot this</div>
 <pre id="dbgPanel" style="font-size:9.5px;line-height:1.6;color:#DFF5E4;white-space:pre-wrap;font-family:monospace;"></pre></div>
-<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K4 · tap for debug</div>
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;" onclick="document.getElementById('dbgWrap').style.display='block';renderDbg();">build K5 · tap for debug</div>
 <script>
 function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block';renderDbg();}
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
