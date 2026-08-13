@@ -11,11 +11,11 @@
 // Measured on this report: ~20s total, 3.8MB, 263 pages, well under limits
 // when vercel.json grants this function 3009MB / 300s.
 
-import chromiumPkg from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
-const chromium = chromiumPkg && chromiumPkg.default ? chromiumPkg.default : chromiumPkg;
+let chromium = require('@sparticuz/chromium');
+if (chromium.default) chromium = chromium.default;
+const puppeteer = require('puppeteer-core');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
