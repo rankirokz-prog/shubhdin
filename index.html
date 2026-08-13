@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script>
+/* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
+(function(){try{
+  var hasCode=(location.search.indexOf('code=')>-1||location.hash.indexOf('access_token=')>-1||location.search.indexOf('error=')>-1);
+  function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]');
+    a.push(new Date().toISOString().slice(11,19)+' '+m);if(a.length>40)a=a.slice(-40);
+    localStorage.setItem('shubhdin_auth_debug',JSON.stringify(a));}catch(e){}}
+  if(hasCode){
+    dlog('CATCHER: auth params landed on '+location.pathname+' → forwarding to kundli.html');
+    location.replace('kundli.html'+location.search+location.hash);
+  }
+}catch(e){}})();
+</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>शुभ दिन — Shubh Din</title>
