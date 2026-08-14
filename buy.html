@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark only">
+<title>रिपोर्ट खरीदें — शुभ दिन</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--gold:#D4A843;--bgold:#E8BE5A;--saffron:#FF6B1A;--cream:#FFF4DE;}
+body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.9);
+ background:linear-gradient(165deg,#0D0500 0%,#241005 45%,#0D0500 100%);
+ padding:0 18px calc(30px + env(safe-area-inset-bottom));}
+.dev{font-family:'Tiro Devanagari Hindi',serif;}
+.hdr{display:flex;align-items:center;gap:11px;padding:16px 0 4px;}
+.back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;color:rgba(212,168,67,0.85);font-size:18px;cursor:pointer;}
+.h-t{font-size:17px;color:var(--gold);font-weight:600;}
+.wrap{max-width:420px;margin:0 auto;}
+.stage{display:none;animation:fade .4s ease;}
+.stage.on{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.sum{display:flex;gap:12px;align-items:center;border:1px solid rgba(212,168,67,0.3);border-radius:16px;padding:13px 14px;margin:10px 0 6px;
+ background:linear-gradient(150deg,rgba(212,168,67,0.1),transparent);}
+.sum .ic{font-size:26px;}
+.sum .t1{font-size:15px;font-weight:600;color:var(--cream);}
+.sum .t2{font-size:10.5px;color:rgba(255,244,222,0.55);margin-top:1px;}
+.price{margin-left:auto;text-align:right;}
+.was{font-size:11px;color:rgba(255,244,222,0.4);text-decoration:line-through;text-decoration-color:rgba(255,107,26,0.8);}
+.now{font-size:18px;font-weight:700;color:#7DE29A;}
+label{display:block;font-size:11px;color:rgba(212,168,67,0.85);margin:13px 2px 5px;letter-spacing:0.4px;}
+input,select{width:100%;padding:12px 13px;border-radius:12px;border:1px solid rgba(212,168,67,0.3);
+ background:rgba(255,255,255,0.05);color:var(--cream);font-size:14px;font-family:'Poppins',sans-serif;color-scheme:dark;}
+input:focus{outline:none;border-color:var(--gold);}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sect{font-size:12px;color:var(--bgold);margin:18px 2px 0;font-weight:600;letter-spacing:0.5px;}
+.btn{width:100%;margin-top:22px;padding:15px;border:none;border-radius:14px;font-size:15.5px;font-weight:600;cursor:pointer;
+ background:linear-gradient(120deg,var(--gold),#B8892F);color:#1A0D00;font-family:'Poppins',sans-serif;}
+.btn.sec{background:rgba(255,255,255,0.1);color:var(--cream);border:1px solid rgba(212,168,67,0.35);font-weight:500;}
+.btn:active{transform:scale(0.98);}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:11px;background:#fff;color:#1F1F1F;}
+.gbtn img{width:20px;height:20px;}
+.err{font-size:11px;color:#F2A08F;margin-top:10px;display:none;text-align:center;}
+.center{text-align:center;padding:6vh 0 0;}
+.big{font-size:44px;}
+.p-t{font-size:19px;color:var(--cream);font-weight:600;margin-top:16px;}
+.p-s{font-size:12px;color:rgba(255,244,222,0.6);margin-top:10px;line-height:1.7;}
+.note{font-size:10px;color:rgba(255,244,222,0.35);text-align:center;margin-top:18px;line-height:1.7;}
+.wa{background:linear-gradient(120deg,#1FA855,#128C46);color:#fff;}
+</style>
+</head>
+<body>
+<div class="hdr"><button class="back" onclick="location.href='premium.html'">←</button>
+<div class="h-t dev" id="hTitle">रिपोर्ट</div></div>
+<div class="wrap">
+<div class="sum"><div class="ic" id="sIco">💍</div>
+ <div><div class="t1 dev" id="sT1"></div><div class="t2" id="sT2"></div></div>
+ <div class="price"><div class="was" id="sWas"></div><div class="now" id="sNow"></div></div></div>
+
+<!-- 1 · DETAILS -->
+<div class="stage" id="stDetails"><div id="formRoot"></div>
+ <button class="btn" id="btNext" onclick="submitDetails()">आगे बढ़ें →</button>
+ <div class="err" id="errD">कृपया सभी विवरण भरें</div></div>
+
+<!-- 2 · AUTH -->
+<div class="stage" id="stAuth"><div class="center"><div class="big">🔒</div>
+ <div class="p-t dev">अपनी रिपोर्ट सुरक्षित करें</div>
+ <div class="p-s">Google से साइन इन करें — रिपोर्ट आपके खाते से जुड़ेगी, कभी भी दोबारा डाउनलोड कर सकेंगे।</div></div>
+ <button class="btn gbtn" onclick="googleSignIn()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt=""><span>Google से जारी रखें</span></button>
+ <div class="err" id="errA"></div></div>
+
+<!-- 3 · PAY -->
+<div class="stage" id="stPay"><div class="center"><div class="big">🪙</div>
+ <div class="p-t dev" id="payT">भुगतान करें</div>
+ <div class="p-s" id="payS"></div></div>
+ <button class="btn" id="btPay" onclick="doPay()">भुगतान करें →</button>
+ <div class="err" id="errP"></div>
+ <div class="note">🔒 सुरक्षित भुगतान · UPI / कार्ड</div></div>
+
+<!-- 4 · SUCCESS -->
+<div class="stage" id="stDone"><div class="center"><div class="big">🎉</div>
+ <div class="p-t dev" id="doneT">आपकी रिपोर्ट तैयार हो रही है!</div>
+ <div class="p-s" id="doneS">नीचे से अपनी रिपोर्ट प्राप्त करें — यह हमेशा आपके खाते में रहेगी।</div></div>
+ <button class="btn" id="btDl" onclick="doDownload()">⬇️ PDF डाउनलोड करें</button>
+ <button class="btn wa" id="btWa" onclick="doWhatsApp()" style="display:none;">💬 WhatsApp पर पाएँ</button>
+ <button class="btn sec" onclick="doView()">👁️ स्क्रीन पर देखें</button>
+ <div class="err" id="errX"></div></div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+'use strict';
+/* ══ CONFIG — fill as accounts arrive ══ */
+var WA_NUMBER = '';               // e.g. '9198XXXXXXXX' → WhatsApp button appears
+var PAYLINKS  = {};               // e.g. { marriage:'https://rzp.io/l/xxxx', ... } → real payment
+/* dev mode: while PAYLINKS empty + server SD_DEV_FREE=1, a ₹0 test-pay button works */
+
+var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
+var sb=window.supabase.createClient(SB_URL,SB_ANON);
+var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+var H=(U.lang||'hi')==='hi';
+function $(id){return document.getElementById(id);}
+function show(id){document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');}
+
+var CFG={
+ marriage:{ic:'💍',hi:'विवाह मिलान',en:'Marriage Compatibility',was:799,now:399,two:true},
+ love:    {ic:'❤️',hi:'प्रेम रिपोर्ट',en:'Love & Relationship',was:499,now:199,gender:true},
+ career:  {ic:'💼',hi:'करियर रिपोर्ट',en:'Career & Wealth',was:499,now:199,gender:true},
+ child:   {ic:'👶',hi:'संतान रिपोर्ट',en:'Child & Family',was:499,now:199,gender:true},
+ muhurta: {ic:'🕉️',hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',was:499,now:199},
+ annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199,noplace:true},
+ forecast:{ic:'🔮',hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',was:599,now:299}
+};
+var R=(new URLSearchParams(location.search).get('r')||'').toLowerCase();
+if(!CFG[R]){location.replace('premium.html');}
+var C=CFG[R]||{};
+$('hTitle').textContent=H?C.hi:C.en;
+$('sIco').textContent=C.ic; $('sT1').textContent=H?C.hi:C.en; $('sT2').textContent=H?C.en:C.hi;
+$('sWas').textContent='₹'+C.was; $('sNow').textContent='₹'+C.now;
+
+/* ── details form per report ── */
+function person(prefix,label){
+  var g=prefix==='p'; // primary naming: reports use pname or bname/gname
+  return '<div class="sect dev">'+label+'</div>'
+   +'<label>'+(H?'पूरा नाम':'Full name')+'</label><input id="f_'+prefix+'name" type="text">'
+   +(C.gender&&prefix==='p'?'<label>'+(H?'लिंग':'Gender')+'</label><select id="f_pgender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>':'')
+   +'<div class="two"><div><label>'+(H?'जन्म तिथि':'Birth date')+'</label><input id="f_'+prefix+'date" type="date"></div>'
+   +'<div><label>'+(H?'जन्म समय':'Birth time')+'</label><input id="f_'+prefix+'time" type="time"></div></div>'
+   +(C.noplace?'':'<label>'+(H?'जन्म स्थान':'Birth place')+'</label><input id="f_'+prefix+'place" type="text" placeholder="City, State">');
+}
+$('formRoot').innerHTML = C.two
+ ? person('b',H?'वर का विवरण':'Groom details')+person('g',H?'वधू का विवरण':'Bride details')
+ : person('p',H?'जन्म विवरण':'Birth details');
+/* prefill from profile */
+(function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
+
+function val(id){var e=$(id);return e?e.value.trim():'';}
+async function geo(place){
+  try{var a=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(place)+'&countrycodes=in&limit=1&format=json').then(r=>r.json());
+    if(a&&a[0])return{lat:parseFloat(a[0].lat),lng:parseFloat(a[0].lon)};}catch(e){}
+  return null;
+}
+async function submitDetails(){
+  var d={};
+  if(C.two){
+    d.bname=val('f_bname');d.bdate=val('f_bdate');d.btime=val('f_btime');d.bplace=val('f_bplace');
+    d.gname=val('f_gname');d.gdate=val('f_gdate');d.gtime=val('f_gtime');d.gplace=val('f_gplace');
+    if(!d.bname||!d.bdate||!d.btime||!d.gname||!d.gdate||!d.gtime){$('errD').style.display='block';return;}
+  }else{
+    d.pname=val('f_pname');d.bdate=val('f_pdate');d.btime=val('f_ptime');
+    if(C.gender)d.pgender=val('f_pgender');
+    if(!C.noplace)d.bplace=val('f_pplace');
+    if(!d.pname||!d.bdate||!d.btime){$('errD').style.display='block';return;}
+  }
+  $('btNext').textContent=H?'⏳ स्थान खोज रहे हैं…':'⏳ Locating…';
+  if(C.two){
+    var g1=d.bplace?await geo(d.bplace):null; if(g1){d.blat=g1.lat;d.blng=g1.lng;}
+    var g2=d.gplace?await geo(d.gplace):null; if(g2){d.glat=g2.lat;d.glng=g2.lng;}
+  }else if(d.bplace){
+    var g0=await geo(d.bplace); if(g0){d.blat=g0.lat;d.blng=g0.lng;}
+  }
+  localStorage.setItem('sd_buy_'+R,JSON.stringify(d));
+  checkAuthThen();
+}
+
+/* ── auth ── */
+function checkAuthThen(){
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session)afterAuth(r.data.session);
+    else show('stAuth');
+  });
+}
+function googleSignIn(){
+  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname+'?r='+R}})
+   .then(function(r){if(r.error){$('errA').textContent=r.error.message;$('errA').style.display='block';}});
+}
+function absorbHash(){
+  if(location.hash.indexOf('access_token=')>-1){
+    try{var hp=new URLSearchParams(location.hash.slice(1));
+      var at=hp.get('access_token'),rt=hp.get('refresh_token');
+      if(at&&rt)return sb.auth.setSession({access_token:at,refresh_token:rt});
+    }catch(e){}}
+  return Promise.resolve(null);
+}
+var SESSION=null;
+function afterAuth(sess){
+  SESSION=sess;
+  try{history.replaceState(null,'',location.pathname+'?r='+R);}catch(e){}
+  /* already paid? skip payment */
+  fetch('/api/order?check=1&uid='+sess.user.id+'&report='+R+'&access_token='+encodeURIComponent(sess.access_token))
+   .then(r=>r.json()).then(function(j){
+     if(j&&j.paid){ORDER_CODE=j.order_code;showDone();}
+     else showPay();
+   }).catch(function(){showPay();});
+}
+function showPay(){
+  $('payS').textContent=(H?'राशि: ':'Amount: ')+'₹'+C.now+' · '+(H?C.hi:C.en);
+  if(!PAYLINKS[R]){$('btPay').textContent=H?'₹0 टेस्ट भुगतान (डेव) →':'₹0 test payment (dev) →';}
+  show('stPay');
+}
+var ORDER_CODE=null;
+function doPay(){
+  if(PAYLINKS[R]){
+    /* real Razorpay payment link; reference notes carry uid+report via link config */
+    location.href=PAYLINKS[R];
+    return;
+  }
+  /* dev-free mode */
+  $('btPay').textContent='⏳';
+  fetch('/api/order?dev=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
+   .then(r=>r.json()).then(function(j){
+     if(j&&j.ok){ORDER_CODE=j.order_code;showDone();}
+     else{$('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';$('btPay').textContent='Retry →';}
+   }).catch(function(e){$('errP').textContent=e.message;$('errP').style.display='block';});
+}
+function showDone(){
+  if(WA_NUMBER)$('btWa').style.display='block';
+  show('stDone');
+}
+
+/* ── delivery ── */
+function details(){try{return JSON.parse(localStorage.getItem('sd_buy_'+R)||'null');}catch(e){return null;}}
+var PDF_URL=null;
+function doDownload(){
+  if(PDF_URL){location.href=PDF_URL;return;}
+  var d=details(); if(!d){show('stDetails');return;}
+  $('btDl').textContent=H?'⏳ रिपोर्ट बन रही है… (30-40 सेकंड)':'⏳ Preparing your report… (30-40s)';
+  fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:H?'hi':'en'})})
+  .then(r=>r.json()).then(function(j){
+    if(j&&j.ready&&j.url){PDF_URL=j.url;$('btDl').textContent=H?'⬇️ PDF डाउनलोड करें':'⬇️ Download PDF';location.href=j.url;}
+    else{$('errX').textContent=(j&&(j.detail||j.error))||'failed';$('errX').style.display='block';
+      $('btDl').textContent=H?'फिर कोशिश करें →':'Retry →';}
+  }).catch(function(e){$('errX').textContent=e.message;$('errX').style.display='block';});
+}
+function doWhatsApp(){
+  var msg=encodeURIComponent((ORDER_CODE||'SD-ORDER')+' '+(H?'मेरी '+C.hi+' भेजें':'send my '+C.en+' report'));
+  location.href='https://wa.me/'+WA_NUMBER+'?text='+msg;
+}
+function doView(){location.href=R+'-report.html';}
+
+/* ── boot ── */
+absorbHash().then(function(){
+  var det=details();
+  var hasTok=(location.hash.indexOf('access_token=')>-1);
+  if(det&&hasTok){sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session)afterAuth(r.data.session); else show('stAuth');});return;}
+  if(det){checkAuthThen();return;}
+  show('stDetails');
+});
+if(!H){
+  $('btNext').textContent='Continue →';$('errD').textContent='Please fill all details';
+  $('payT').textContent='Payment';$('btPay').textContent='Pay →';
+  $('doneT').textContent='Your report is being prepared!';
+  $('doneS').textContent='Get your report below — it stays in your account forever.';
+  $('btDl').textContent='⬇️ Download PDF';$('btWa').textContent='💬 Get on WhatsApp';
+  document.querySelectorAll('.btn.sec')[0].textContent='👁️ View on screen';
+}
+</script>
+</body>
+</html>
