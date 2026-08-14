@@ -130,7 +130,7 @@ REPORTS.forEach(function(r){
   var p=PRICES[r.k];
   var chips=r.chips.map(function(c){return '<span class="chip">'+c+'</span>';}).join('');
   if(r.hero){
-    h+='<a class="hero" href="'+r.href+'">'
+    h+='<a class="hero" href="buy.html?r='+r.k+'">'
       +'<div class="ribbon">🔥 MOST POPULAR</div>'
       +'<div class="h-row"><div class="h-ico">'+r.ico+'</div><div>'
       +'<div class="h-title">'+r.hi+'</div><div class="h-en">'+r.en+'</div></div></div>'
@@ -141,7 +141,7 @@ REPORTS.forEach(function(r){
       +'<div class="vline">✨ Personalized analysis from your own birth chart</div>'
       +'</a>';
   } else {
-    h+='<a class="rep" href="'+r.href+'">'
+    h+='<a class="rep" href="buy.html?r='+r.k+'">'
       +'<div class="r-top"><div class="r-ico">'+r.ico+'</div><div>'
       +'<div class="r-title">'+r.hi+'</div><div class="r-en">'+r.en+'</div></div></div>'
       +'<div class="hook r-hook">'+r.hook+'</div>'
