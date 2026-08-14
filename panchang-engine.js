@@ -1312,6 +1312,25 @@
     return s < 0 ? s + 360 : s;
   }
   function getSadeSati(moonRashiIndex, refDate) {
+    // Upgrade U1.1 (guard): this entry point silently accepted a Date as the
+    // first argument and returned a plausible EMPTY result
+    // ({moonRashi:{index:<Date>}, periods:[]}) — the silent-failure class H1
+    // exists to kill. Now: a Date derives the janma Moon rashi from the birth
+    // instant (the helpful reading of the mistake); an integer 0-11 works as
+    // before; anything else typed-throws.
+    if (moonRashiIndex instanceof Date) {
+      if (isNaN(moonRashiIndex.getTime())) {
+        throw new Error('PanchangEngine.getSadeSati: invalid Date (got Invalid Date)');
+      }
+      moonRashiIndex = Math.floor(moonSidereal(moonRashiIndex) / 30) % 12;
+    }
+    if (moonRashiIndex == null) {
+      throw new Error('PanchangEngine.getSadeSati: first argument must be a moon rashi index 0-11 or a birth Date (got ' + String(moonRashiIndex) + ')');
+    }
+    moonRashiIndex = Number(moonRashiIndex);
+    if (!(Number.isInteger(moonRashiIndex) && moonRashiIndex >= 0 && moonRashiIndex <= 11)) {
+      throw new Error('PanchangEngine.getSadeSati: first argument must be a moon rashi index 0-11 or a birth Date (got ' + String(moonRashiIndex) + ')');
+    }
     var ref = refDate ? refDate.getTime() : Date.now();
     // Hardening H6: snap the Saturn-ingress scan grid to absolute epoch-aligned
     // steps. Previously the grid was anchored on Date.now(), so every call
