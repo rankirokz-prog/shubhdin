@@ -109,7 +109,7 @@ var CFG={
  career:  {ic:'💼',hi:'करियर रिपोर्ट',en:'Career & Wealth',was:499,now:199,gender:true},
  child:   {ic:'👶',hi:'संतान रिपोर्ट',en:'Child & Family',was:499,now:199,gender:true},
  muhurta: {ic:'🕉️',hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',was:499,now:199},
- annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199,noplace:true},
+ annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199},
  forecast:{ic:'🔮',hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',was:599,now:299}
 };
 var R=(new URLSearchParams(location.search).get('r')||'').toLowerCase();
@@ -204,6 +204,12 @@ async function submitDetails(){
     if(CPICK.p){d.blat=CPICK.p.lat;d.blng=CPICK.p.lng;}
     else if(d.bplace){var g0=await geo(d.bplace); if(g0){d.blat=g0.lat;d.blng=g0.lng;}}
   }
+  /* Annual reads clat/clng (Tajika "current place") in addition to blat/blng.
+     Until the sourced birthplace-vs-residence ruling lands we mirror the birth
+     coords — a deliberate birthplace convention, not the Eluru markup default
+     (16.7/81.1) that applied when these keys were never sent at all.
+     To switch to residence later: collect a separate city and set clat/clng from it. */
+  if(R==='annual'&&d.blat!==undefined&&d.blng!==undefined){d.clat=d.blat;d.clng=d.blng;}
   localStorage.setItem('sd_buy_'+R,JSON.stringify(d));
   checkAuthThen();
 }
