@@ -107,20 +107,27 @@ function runChecks(html, lang, report) {
   const pairs = {};
   [...t.matchAll(/(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)\s*[–-]\s*(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu)[\s\S]{0,80}?(\d{1,2} \w{3,} \d{4})[\s\S]{0,30}?(\d{1,2} \w{3,} \d{4})/g)]
     .forEach(m => { const k = m[1] + '-' + m[2]; (pairs[k] = pairs[k] || new Set()).add(m[3] + '→' + m[4]); });
-  const inconsistent = report === 'kundli' ? [] : Object.entries(pairs).filter(([, v]) => v.size > 1);
+  // MARRIAGE EXEMPT too — verified on chart 7: the same dasha pair legitimately
+  // appears twice with different spans because it is a TWO-CHART report, once
+  // for the boy's chart and once for the girl's. The check assumes one chart.
+  const twoChart = report === 'kundli' || report === 'marriage';
+  const inconsistent = twoChart ? [] : Object.entries(pairs).filter(([, v]) => v.size > 1);
   if (inconsistent.length) fails.push(['cross-page', inconsistent.map(([k]) => k).join(', ')]);
 
   return fails;
 }
 
 // ---- generation
-function harnessFor(chart) {
+// RUNNER BUG, found by chart 9: harnessFor() read SD_LANGS from the RUNNER's
+// own env, which is never set — SD_LANGS is passed to the CHILD command line.
+// So --lang en still wrote a 9-language harness, generated all 9, and blew the
+// 600s budget on the slowest chart. The language list is now passed in.
+function harnessFor(chart, langList) {
   let src = fs.readFileSync(D + 'test-reports.js', 'utf8');
   src = src.replace(/16\.4343/g, String(chart.lat)).replace(/81\.6985/g, String(chart.lng));
   src = src.replace("if (!rep || rep.length < 200)",
     "if(process.env.SD_DUMP){require('fs').writeFileSync(process.env.SD_DUMP+'.'+lang+'.html',rep,'utf8');}\n      if (!rep || rep.length < 200)");
-  const langs = process.env.SD_LANGS ? process.env.SD_LANGS.split(',') : LANGS;
-  src = src.replace(/^const LANGS = .*/m, 'const LANGS = ' + JSON.stringify(langs) + ';');
+  src = src.replace(/^const LANGS = .*/m, 'const LANGS = ' + JSON.stringify(langList) + ';');
   fs.writeFileSync(D + 'tmatrix.js', src, 'utf8');
 }
 
@@ -136,7 +143,7 @@ let generated = 0, failedFiles = 0;
 const failLog = [];
 
 for (const chart of charts) {
-  harnessFor(chart);
+  harnessFor(chart, langs);
   for (const report of REPORTS) {
     if (report === 'kundli' && !KUNDLI_SAMPLE.includes(chart.id)) continue;
     const stem = '/tmp/mx-' + chart.id + '-' + report;
