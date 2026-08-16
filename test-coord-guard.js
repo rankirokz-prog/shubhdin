@@ -38,6 +38,7 @@ function run(scenario) {
     C: scenario.C, R: scenario.R, H: false,
     CPICK: scenario.CPICK || {},
     $: el,
+    bdlog: () => {},   // logging is a no-op under test
     val: (id) => (els[id] ? String(els[id].value).trim() : ''),
     geo: async () => scenario.geoWorks ? { lat: scenario.geo.lat, lng: scenario.geo.lng } : null,
     // no scenario in this file ticks "time unknown", so this must never be reached
@@ -113,14 +114,30 @@ const CASES = [
     geoWorks: false,
     expect: r => r.proceeded && r.stored.blat === 16.7107 && r.stored.glng === 73.8567 },
 
-  { n: 'annual: resolves → clat/clng mirror blat/blng (birthplace convention)',
-    R: 'annual', C: {}, fields: { ...BASE, pplace: 'Delhi' },
-    geoWorks: true, geo: { lat: 28.6139, lng: 77.209 },
-    expect: r => r.proceeded && r.stored.clat === r.stored.blat && r.stored.clng === r.stored.blng },
+  { n: 'annual: residence resolves independently of birth place',
+    R: 'annual', C: { residence: true },
+    fields: { ...BASE, pplace: 'Delhi', cplace: 'Bengaluru' },
+    CPICK: { p: { lat: 28.6139, lng: 77.209 }, c: { lat: 12.9716, lng: 77.5946 } },
+    expect: r => r.proceeded && r.stored.blat === 28.6139 && r.stored.clat === 12.9716 &&
+                 r.stored.clat !== r.stored.blat },
 
-  { n: 'annual: lookup fails → BLOCKED (would have shipped an Eluru Varshaphal)',
-    R: 'annual', C: {}, fields: { ...BASE, pplace: 'Delhi' }, geoWorks: false,
-    expect: r => !r.proceeded && r.stored === null },
+  { n: 'annual: residence prefilled from profile (CPICK.c, no typing) still resolves',
+    R: 'annual', C: { residence: true },
+    fields: { ...BASE, pplace: 'Delhi', cplace: 'Eluru' },
+    CPICK: { p: { lat: 28.6139, lng: 77.209 }, c: { lat: 16.7107, lng: 81.0952 } },
+    expect: r => r.proceeded && r.stored.clat === 16.7107 },
+
+  { n: 'annual: residence unresolvable \u2192 BLOCKED, its own manual box revealed',
+    R: 'annual', C: { residence: true },
+    fields: { ...BASE, pplace: 'Delhi', cplace: 'Nowhere' },
+    CPICK: { p: { lat: 28.6139, lng: 77.209 } }, geoWorks: false,
+    expect: r => !r.proceeded && r.stored === null && r.manualShown.includes('man_c') },
+
+  { n: 'annual: birth place fails \u2192 BLOCKED before residence is even asked',
+    R: 'annual', C: { residence: true },
+    fields: { ...BASE, pplace: 'Nowhere', cplace: 'Bengaluru' },
+    CPICK: { c: { lat: 12.9716, lng: 77.5946 } }, geoWorks: false,
+    expect: r => !r.proceeded && r.stored === null && r.manualShown.includes('man_p') },
 
   { n: 'missing required field → BLOCKED with the missing-field message, not the coord one',
     R: 'love', C: { gender: true }, fields: { pname: 'Ram', pplace: 'Vizag' },
