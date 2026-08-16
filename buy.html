@@ -134,8 +134,14 @@ function person(prefix,label){
      +'<input type="checkbox" id="f_'+prefix+'notime" onchange="noTime(\''+prefix+'\')" style="width:16px;height:16px;accent-color:#D4A843;">'
      +(H?'मुझे जन्म समय नहीं पता':"I don't know my birth time")+'</label>'
    +'<div id="ntNote_'+prefix+'" style="display:none;margin-top:8px;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.4);background:rgba(212,168,67,0.06);font-size:11.5px;color:rgba(255,244,222,0.78);line-height:1.6;">'
-     +(H?'आपकी कुंडली सूर्योदय (सूर्य लग्न) पर बनाई जाएगी — समय अज्ञात होने पर यही शास्त्रीय परंपरा है। चंद्रराशि और नक्षत्र पर आधारित बातें भरोसेमंद रहेंगी; लग्न, भाव और दशा की सटीक तिथियाँ अनुमानित रहेंगी। समय मिल जाए तो दोबारा बनवाइए।'
-        :'Your chart will be cast at sunrise (Surya lagna) — the classical convention when the time is unknown. Moon-sign and nakshatra material stays reliable; the ascendant, the houses and exact dasha dates become approximate. If you later find the time, generate it again.')+'</div>'
+     /* Marriage is decided on the Moon's nakshatra, which can change within a single
+        day. A sunrise chart still yields a confident-looking guna score, so this
+        report says plainly that only the real birth time gives an accurate match. */
+     +(C.two
+       ?(H?'<b style="color:#E8BE5A;">विवाह मिलान के लिए जन्म समय ज़रूरी है।</b> गुण मिलान चंद्रमा के नक्षत्र से निकलता है, और चंद्रमा एक ही दिन में नक्षत्र बदल सकता है — समय के बिना नक्षत्र दूसरा भी हो सकता है। समय न होने पर हम सूर्योदय की कुंडली बनाएँगे और गुण अंक फिर भी आएँगे, पर सही मिलान केवल सटीक जन्म समय से ही आता है। विवाह जैसा निर्णय लेने से पहले घर के बड़ों से या अस्पताल के रिकॉर्ड से समय पूछ लेना उचित है।'
+          :'<b style="color:#E8BE5A;">A birth time is needed for an accurate match.</b> Guna milan is computed from the Moon\'s nakshatra, and the Moon can change nakshatra within a single day — so without the time it may land on a different one. We will cast the chart at sunrise and the guna score will still appear, but only the exact birth time gives an accurate match. Before making a marriage decision on it, it is worth asking family or checking the hospital record.')
+       :(H?'आपकी कुंडली सूर्योदय (सूर्य लग्न) पर बनाई जाएगी — समय अज्ञात होने पर यही शास्त्रीय परंपरा है। चंद्रराशि और नक्षत्र पर आधारित बातें भरोसेमंद रहेंगी; लग्न, भाव और दशा की सटीक तिथियाँ अनुमानित रहेंगी। समय मिल जाए तो दोबारा बनवाइए।'
+          :'Your chart will be cast at sunrise (Surya lagna) — the classical convention when the time is unknown. Moon-sign and nakshatra material stays reliable; the ascendant, the houses and exact dasha dates become approximate. If you later find the time, generate it again.'))+'</div>'
    +(C.noplace?'':'<label>'+(H?'जन्म स्थान':'Birth place')+'</label>'
      +'<div style="position:relative;"><input id="f_'+prefix+'place" type="text" placeholder="'+(H?'शहर खोजें…':'Search city…')+'" autocomplete="off" oninput="cSearch(\''+prefix+'\',this.value)">'
      +'<div id="cdd_'+prefix+'" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:190px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div></div>'
