@@ -1019,5 +1019,52 @@ function generate(){ try {
   window.scrollTo(0,0);
 } catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
 </script>
+
+<!-- ══ SHUBHDIN BUY BRIDGE v1 (append-only; re-apply if this file is regenerated) ══ -->
+<script>
+(function(){
+  try{
+    var m=location.pathname.match(/([a-z]+)-report\.html/); if(!m)return;
+    var R=m[1]; if(R==='kundli')return; /* kundli has its own prefill block */
+    var d=null; try{d=JSON.parse(localStorage.getItem('sd_buy_'+R)||'null');}catch(e){}
+    if(d){
+      for(var k in d){var el=document.getElementById(k);
+        if(el&&d[k]!==undefined&&d[k]!==null&&d[k]!==''){el.value=d[k];}}
+    }
+    var wantView=location.search.indexOf('autoview=1')>-1;
+    var wantPdf =location.search.indexOf('autopdf=1')>-1;
+    if((wantView||wantPdf)&&d){
+      /* hide form instantly + om loader — no form flash, no report glance */
+      var isc=document.getElementById('inputScreen'); if(isc)isc.style.display='none';
+      var ov=document.createElement('div'); ov.id='sdAutoLoader';
+      ov.style.cssText='position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(165deg,#0D0500,#241005);color:#E8BE5A;';
+      ov.innerHTML='<div style="font-size:56px;font-family:serif;text-shadow:0 0 30px rgba(232,190,90,0.6);">ॐ</div>'
+        +'<div style="margin-top:14px;font-size:14px;color:rgba(255,244,222,0.8);font-family:sans-serif;">आपकी रिपोर्ट खुल रही है…</div>';
+      document.body.appendChild(ov);
+      var rm=function(){var e=document.getElementById('sdAutoLoader');if(e)e.remove();};
+      var lw=setInterval(function(){
+        var rep=document.getElementById('report');
+        if(rep&&rep.innerHTML&&rep.innerHTML.length>8000){clearInterval(lw);setTimeout(rm,250);}
+      },300);
+      setTimeout(function(){clearInterval(lw);rm();},25000);
+      setTimeout(function(){
+        try{confirmStep();}catch(e){return;}
+        setTimeout(function(){
+          try{generate();}catch(e){return;}
+          if(!wantPdf)return;
+          var tries=0,pv=setInterval(function(){
+            tries++;
+            var rep=document.getElementById('report');
+            if(rep&&rep.innerHTML&&rep.innerHTML.length>8000){clearInterval(pv);
+              setTimeout(function(){try{sdPrint();}catch(e){window.print();}},700);}
+            else if(tries>40)clearInterval(pv);
+          },400);
+        },350);
+      },450);
+    }
+  }catch(e){}
+})();
+</script>
+<!-- ══ END BUY BRIDGE ══ -->
 </body>
 </html>
