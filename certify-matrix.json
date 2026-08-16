@@ -1,0 +1,17 @@
+{
+  "_meta": "The 12 adversarial charts for the certification matrix. Each breaks a different assumption. Chart 2 is the Marriage partner for chart 1. Kundli is sampled at charts 1, 7 and 9 only — at 246 pages, running all 12 would generate ~2,200 extra pages for one report.",
+  "charts": [
+    { "id": 1,  "name": "baseline (Ram)",          "breaks": "known-good control",                 "lat": 16.4343,  "lng": 81.6985,  "tz": 5.5 },
+    { "id": 2,  "name": "marriage partner",        "breaks": "the two-chart path",                 "lat": 16.4343,  "lng": 81.6985,  "tz": 5.5 },
+    { "id": 3,  "name": "nakshatra boundary",      "breaks": "namakshara, tarabala, guna kootas",  "lat": 19.0760,  "lng": 72.8777,  "tz": 5.5 },
+    { "id": 4,  "name": "rashi boundary",          "breaks": "chandrabala, bhakoot, gochar houses","lat": 28.6139,  "lng": 77.2090,  "tz": 5.5 },
+    { "id": 5,  "name": "adhika masa",             "breaks": "Hindu calendar, masa naming",        "lat": 13.0827,  "lng": 80.2707,  "tz": 5.5 },
+    { "id": 6,  "name": "Feb 29",                  "breaks": "date arithmetic, varshaphal seed",   "lat": 22.5726,  "lng": 88.3639,  "tz": 5.5 },
+    { "id": 7,  "name": "POLAR Tromso 69.65N",     "breaks": "NO_SUNRISE_SUNSET nulls",            "lat": 69.6492,  "lng": 18.9553,  "tz": 1 },
+    { "id": 8,  "name": "New Jersey",              "breaks": "DST, western hemisphere",            "lat": 40.7357,  "lng": -74.1724, "tz": -5 },
+    { "id": 9,  "name": "Auckland +13",            "breaks": "the civil-day bug class",            "lat": -36.8485, "lng": 174.7633, "tz": 13 },
+    { "id": 10, "name": "no sade sati in window",  "breaks": "Forecast's 'none' clause",           "lat": 17.3850,  "lng": 78.4867,  "tz": 5.5 },
+    { "id": 11, "name": "cancelled manglik",       "breaks": "Marriage dosha logic",               "lat": 12.9716,  "lng": 77.5946,  "tz": 5.5 },
+    { "id": 12, "name": "range edge 1902",         "breaks": "engine range edges",                 "lat": 26.9124,  "lng": 75.7873,  "tz": 5.5 }
+  ]
+}
