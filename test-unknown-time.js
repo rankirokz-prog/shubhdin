@@ -69,6 +69,32 @@ function run(sc) {
   }));
 }
 
+// ── disclaimer rendering: person() must show the stronger marriage text ──
+// Lifted from buy.html and rendered directly, because the wording IS the
+// safeguard here — a generic note on a marriage report would understate it.
+function renderNote(C, H) {
+  const PERSON = cut('function person(');
+  const S = { C, H };
+  const fn = new Function('S', `with (S) { ${PERSON} return person('b','x'); }`);
+  const html = fn(S);
+  const i = html.indexOf('id="ntNote_b"');
+  return html.slice(i, html.indexOf('</div>', i));
+}
+
+const NOTE_CASES = [
+  { n: 'marriage (en) names guna milan and says only the birth time is accurate',
+    C: { two: true }, H: false,
+    expect: s => /guna milan/i.test(s) && /nakshatra/i.test(s) && /accurate match/i.test(s) },
+  { n: 'marriage (hi) carries the same warning in Hindi',
+    C: { two: true }, H: true,
+    expect: s => s.includes('गुण मिलान') && s.includes('नक्षत्र') && s.includes('जन्म समय') },
+  { n: 'marriage note still says the sale proceeds at sunrise (not a refusal)',
+    C: { two: true }, H: false,
+    expect: s => /sunrise/i.test(s) && /will still appear/i.test(s) },
+  { n: 'single-person reports keep the lighter Surya-lagna note',
+    C: { gender: true }, H: false,
+    expect: s => /Surya lagna/i.test(s) && !/guna milan/i.test(s) }
+];
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const BASE = { pname: 'Ram', pdate: '1990-04-12' };
 const MARR = { bname: 'A', bdate: '1990-04-12', gname: 'B', gdate: '1992-08-03', gtime: '11:10' };
@@ -155,7 +181,16 @@ const CASES = [
     console.log((ok ? '✓ ' : '✗ ') + c.n);
     if (!ok) console.log('    got: ' + JSON.stringify(r));
   }
+  for (const c of NOTE_CASES) {
+    let ok, s = '';
+    try { s = renderNote(c.C, c.H); ok = c.expect(s); }
+    catch (e) { ok = false; s = 'threw: ' + e.message; }
+    if (!ok) fail++;
+    console.log((ok ? '✓ ' : '✗ ') + c.n);
+    if (!ok) console.log('    got: ' + s.slice(0, 200));
+  }
   console.log(fail ? '\n✗ ' + fail + ' case(s) failed'
-                   : '\n✓ ' + CASES.length + '/' + CASES.length + ' — sunrise reaches btime; no blank time ever ships');
+                   : '\n✓ ' + (CASES.length + NOTE_CASES.length) + '/' + (CASES.length + NOTE_CASES.length) +
+                     ' — sunrise reaches btime; no blank time ever ships; marriage warns properly');
   process.exit(fail ? 1 : 0);
 })();
