@@ -22,8 +22,10 @@ const cut = (name) => {
   }
   throw new Error('unbalanced braces in ' + name);
 };
-const SUBMIT = cut('async function submitDetails()');
-const MISSD  = cut('function missD()');
+const SUBMIT   = cut('async function submitDetails()');
+const MISSD    = cut('function missD()');
+const SUNRISE  = cut('async function sunriseIST(');
+const NOTIMEON = cut('function noTimeOn(');
 
 const ELURU = { lat: 16.4343, lng: 81.6985 }; // the markup defaults we must never inherit
 
@@ -38,6 +40,8 @@ function run(scenario) {
     $: el,
     val: (id) => (els[id] ? String(els[id].value).trim() : ''),
     geo: async () => scenario.geoWorks ? { lat: scenario.geo.lat, lng: scenario.geo.lng } : null,
+    // no scenario in this file ticks "time unknown", so this must never be reached
+    loadEngine: async () => { throw new Error('loadEngine called unexpectedly'); },
     localStorage: { store: {}, setItem(k, v) { this.store[k] = v; } },
     checkAuthThen: () => { sandbox._authed = true; },
     _authed: false
@@ -45,7 +49,9 @@ function run(scenario) {
 
   const fn = new Function('S', `
     with (S) {
+      ${NOTIMEON}
       ${MISSD}
+      ${SUNRISE}
       ${SUBMIT}
       return submitDetails();
     }
