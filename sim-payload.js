@@ -3,13 +3,13 @@
 const fs=require('fs');
 const CFG={
  marriage:{two:true}, love:{gender:true}, career:{gender:true}, child:{gender:true},
- muhurta:{}, annual:{}, forecast:{}
+ muhurta:{}, annual:{residence:true}, forecast:{}
 };
 function emit(R){
   const C=CFG[R]; let k=[];
   if(C.two){ k=['bname','bdate','btime','bplace','gname','gdate','gtime','gplace','blat','blng','glat','glng']; }
   else{ k=['pname','bdate','btime']; if(C.gender)k.push('pgender'); if(!C.noplace)k.push('bplace','blat','blng'); }
-  if(R==='annual')k.push('clat','clng');           // patched mirror
+  if(C.residence)k.push('cplace','clat','clng');   // residence field
   return k;
 }
 // ids each report reads, minus UI-only nodes
