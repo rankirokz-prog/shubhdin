@@ -118,7 +118,7 @@ var CFG={
  career:  {ic:'💼',hi:'करियर रिपोर्ट',en:'Career & Wealth',was:499,now:199,gender:true},
  child:   {ic:'👶',hi:'संतान रिपोर्ट',en:'Child & Family',was:499,now:199,gender:true},
  muhurta: {ic:'🕉️',hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',was:499,now:199},
- annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199},
+ annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199,residence:true},
  forecast:{ic:'🔮',hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',was:599,now:299}
 };
 var R=(new URLSearchParams(location.search).get('r')||'').toLowerCase();
@@ -195,9 +195,29 @@ function person(prefix,label){
        +'<div class="two"><div><label>'+(H?'अक्षांश (Latitude)':'Latitude')+'</label><input id="f_'+prefix+'lat" type="number" step="0.0001" placeholder="16.4343"></div>'
        +'<div><label>'+(H?'देशांतर (Longitude)':'Longitude')+'</label><input id="f_'+prefix+'lng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>');
 }
-$('formRoot').innerHTML = C.two
+/* Varshaphal is cast for where the native is living when the year begins, so
+   Annual needs a residence city as well as a birth place. It is prefilled from
+   onboarding but shown and editable — the coordinate that shapes the whole
+   chart must never be one the buyer can't see or correct. */
+function residenceBlock(){
+  return '<div class="sect dev">'+(H?'वर्तमान निवास':'Where you live now')+'</div>'
+   +'<div style="font-size:11.5px;color:rgba(255,244,222,0.6);line-height:1.6;margin-bottom:8px;">'
+   +(H?'वर्षफल कुंडली उसी नगर के लिए बनती है जहाँ आप वर्ष आरंभ के समय रह रहे हैं।'
+      :'Your Varshaphal chart is cast for the city you are living in when the year begins.')+'</div>'
+   +'<label>'+(H?'वर्तमान शहर':'Current city')+'</label>'
+   +'<div style="position:relative;"><input id="f_cplace" type="text" placeholder="'+(H?'शहर खोजें…':'Search city…')+'" autocomplete="off" oninput="cSearch(\'c\',this.value)">'
+   +'<div id="cdd_c" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:190px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div></div>'
+   +'<div id="man_c" style="display:none;margin-top:10px;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.4);background:rgba(212,168,67,0.05);">'
+     +'<div style="font-size:11.5px;color:rgba(255,244,222,0.75);line-height:1.5;margin-bottom:8px;">'
+     +(H?'शहर खोज अभी उपलब्ध नहीं है। कृपया वर्तमान स्थान का अक्षांश/देशांतर डालें।'
+        :'City lookup is unavailable right now. Please enter the coordinates of where you live.')+'</div>'
+     +'<div class="two"><div><label>'+(H?'अक्षांश (Latitude)':'Latitude')+'</label><input id="f_clat" type="number" step="0.0001" placeholder="16.4343"></div>'
+     +'<div><label>'+(H?'देशांतर (Longitude)':'Longitude')+'</label><input id="f_clng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>';
+}
+$('formRoot').innerHTML = (C.two
  ? person('b',H?'वर का विवरण':'Groom details')+person('g',H?'वधू का विवरण':'Bride details')
- : person('p',H?'जन्म विवरण':'Birth details');
+ : person('p',H?'जन्म विवरण':'Birth details'))
+ + (C.residence?residenceBlock():'');
 /* prefill from profile */
 (function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
 
@@ -250,6 +270,19 @@ async function sunriseIST(dateStr,lat,lng){
 }
 /* ── city search + GPS (same Nominatim mechanism as onboarding/kundli) ── */
 var CPICK={}, _cT=null;
+/* Residence prefilled from onboarding, then shown so it can be corrected — the
+   signup city is not necessarily where the buyer lives at their solar return.
+   Must run after CPICK exists. */
+(function(){
+  if(!C.residence)return;
+  var la=parseFloat(U.city_lat), ln=parseFloat(U.city_lon);
+  var nm=U.city||U.city_name||U.place||'';
+  if(isFinite(la)&&isFinite(ln)){
+    CPICK.c={lat:la,lng:ln};
+    if($('f_cplace'))$('f_cplace').value=nm||(la.toFixed(4)+', '+ln.toFixed(4));
+    bdlog('residence prefilled from profile');
+  }else bdlog('no residence in profile — buyer picks it');
+})();
 function cSearch(prefix,q){
   var dd=$('cdd_'+prefix); delete CPICK[prefix];
   if(!q||q.length<2){dd.style.display='none';return;}
@@ -302,6 +335,7 @@ async function submitDetails(){
     if(!d.bname||!d.bdate||(!d.btime&&!noTimeOn('b'))||!d.gname||!d.gdate||(!d.gtime&&!noTimeOn('g'))){missD();return;}
   }else{
     d.pname=val('f_pname');d.bdate=val('f_pdate');d.btime=val('f_ptime');
+    if(C.residence)d.cplace=val('f_cplace');
     if(C.gender)d.pgender=val('f_pgender');
     if(!C.noplace)d.bplace=val('f_pplace');
     if(!d.pname||!d.bdate||(!d.btime&&!noTimeOn('p'))){missD();return;}
@@ -367,12 +401,16 @@ async function submitDetails(){
     $('btNext').textContent=H?'आगे बढ़ें →':'Continue →';
     return;
   }
-  /* Annual reads clat/clng (Tajika "current place") in addition to blat/blng.
-     Until the sourced birthplace-vs-residence ruling lands we mirror the birth
-     coords — a deliberate birthplace convention, not the Eluru markup default
-     (16.7/81.1) that applied when these keys were never sent at all.
-     To switch to residence later: collect a separate city and set clat/clng from it. */
-  if(R==='annual'&&d.blat!==undefined&&d.blng!==undefined){d.clat=d.blat;d.clng=d.blng;}
+  /* Annual is cast for where the buyer lives when the year begins, so clat/clng
+     come from the residence field — resolved through the same guard, never
+     defaulted. Previously these keys were unset and the report silently used
+     its Eluru markup defaults (16.7/81.1). */
+  if(C.residence){
+    var rc=await resolve('c',d.cplace);
+    if(!rc){blockOn(['c']);return;}
+    d.clat=rc.lat;d.clng=rc.lng;
+    bdlog('residence resolved '+rc.lat.toFixed(3)+','+rc.lng.toFixed(3));
+  }
   localStorage.setItem('sd_buy_'+R,JSON.stringify(d));
   checkAuthThen();
 }
