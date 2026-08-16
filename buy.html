@@ -87,6 +87,15 @@ input:focus{outline:none;border-color:var(--gold);}
  <div class="err" id="errX"></div></div>
 
 </div>
+<!-- build tag: the only reliable way to confirm which build a phone is running
+     once a service worker is caching pages. Tap it to read the boot log. -->
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;cursor:pointer;"
+     onclick="var w=document.getElementById('bdbgWrap');var l='';try{l=(JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]')).join('\n');}catch(e){}document.getElementById('bdbgTxt').textContent=l||'(empty)';w.style.display='block';">build C1 · tap for debug</div>
+<div id="bdbgWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);padding:16px;overflow:auto;"
+     onclick="this.style.display='none';">
+  <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">buy debug · tap anywhere to close</div>
+  <pre id="bdbgTxt" style="font-size:10px;color:#fff;font-family:monospace;white-space:pre-wrap;word-break:break-all;"></pre>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 'use strict';
@@ -113,7 +122,38 @@ var CFG={
  forecast:{ic:'🔮',hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',was:599,now:299}
 };
 var R=(new URLSearchParams(location.search).get('r')||'').toLowerCase();
-if(!CFG[R]){location.replace('premium.html');}
+/* OAuth can return us here without the ?r= query string, so remember which
+   report we were buying and recover it rather than bouncing to premium.html. */
+if(!R){try{R=(localStorage.getItem('sd_buy_last')||'').toLowerCase();}catch(e){}}
+if(CFG[R]){try{localStorage.setItem('sd_buy_last',R);}catch(e){}}
+/* Small rolling log — the only reliable way to tell which build a phone is
+   actually running once a service worker is in play. Tap the build tag. */
+var SD_BUILD='C1';
+function bdlog(m){
+  try{var a=JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]');
+    a.push(new Date().toISOString().slice(11,19)+' '+m);
+    localStorage.setItem('shubhdin_buy_debug',JSON.stringify(a.slice(-40)));}catch(e){}
+}
+/* The service worker answers /api/ requests with an EMPTY 503 body when the
+   network is down, so a bare r.json() throws "Unexpected end of JSON input"
+   and the buyer sees parser noise instead of a reason. Read the body first. */
+async function apiJson(r){
+  var t='';
+  try{t=await r.text();}catch(e){}
+  if(!t){
+    bdlog('api empty body, status '+r.status);
+    throw new Error(H?'सर्वर से संपर्क नहीं हो सका। इंटरनेट जाँचकर दोबारा कोशिश करें।'
+                     :'Could not reach the server. Check your connection and try again.');
+  }
+  try{return JSON.parse(t);}
+  catch(e){
+    bdlog('api non-JSON, status '+r.status+': '+t.slice(0,60));
+    throw new Error(H?'सर्वर से अप्रत्याशित उत्तर मिला। कृपया दोबारा कोशिश करें।'
+                     :'Unexpected response from the server. Please try again.');
+  }
+}
+bdlog('boot '+SD_BUILD+' r='+R+' path='+location.pathname+' q='+location.search.slice(0,20)+(location.hash.indexOf('access_token=')>-1?' hash=token':''));
+if(!CFG[R]){bdlog('no report id → premium.html');location.replace('premium.html');}
 var C=CFG[R]||{};
 $('hTitle').textContent=H?C.hi:C.en;
 $('sIco').textContent=C.ic; $('sT1').textContent=H?C.hi:C.en; $('sT2').textContent=H?C.en:C.hi;
@@ -345,8 +385,14 @@ function checkAuthThen(){
   });
 }
 function googleSignIn(){
-  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname+'?r='+R}})
-   .then(function(r){if(r.error){$('errA').textContent=r.error.message;$('errA').style.display='block';}});
+  /* Plain page URL, no ?r= — a query string can stop Supabase matching the
+     redirect against its allow-list, in which case it falls back to Site URL.
+     Which report we're buying travels in sd_buy_last instead. */
+  var rto=location.origin+location.pathname;
+  try{localStorage.setItem('sd_buy_last',R);}catch(e){}
+  bdlog('signIn redirectTo='+rto);
+  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:rto}})
+   .then(function(r){if(r.error){bdlog('signIn error: '+r.error.message);$('errA').textContent=r.error.message;$('errA').style.display='block';}});
 }
 function absorbHash(){
   if(location.hash.indexOf('access_token=')>-1){
@@ -362,7 +408,7 @@ function afterAuth(sess){
   try{history.replaceState(null,'',location.pathname+'?r='+R);}catch(e){}
   /* already paid? skip payment */
   fetch('/api/order?check=1&uid='+sess.user.id+'&report='+R+'&access_token='+encodeURIComponent(sess.access_token))
-   .then(r=>r.json()).then(function(j){
+   .then(apiJson).then(function(j){
      if(j&&j.paid){ORDER_CODE=j.order_code;showDone();}
      else showPay();
    }).catch(function(){showPay();});
@@ -382,7 +428,7 @@ function doPay(){
   /* dev-free mode */
   $('btPay').textContent='⏳';
   fetch('/api/order?dev=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
-   .then(r=>r.json()).then(function(j){
+   .then(apiJson).then(function(j){
      if(j&&j.ok){ORDER_CODE=j.order_code;showDone();}
      else{$('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';$('btPay').textContent='Retry →';}
    }).catch(function(e){$('errP').textContent=e.message;$('errP').style.display='block';});
@@ -401,7 +447,7 @@ function doDownload(){
   $('btDl').textContent=H?'⏳ रिपोर्ट बन रही है… (30-40 सेकंड)':'⏳ Preparing your report… (30-40s)';
   fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:H?'hi':'en'})})
-  .then(r=>r.json()).then(function(j){
+  .then(apiJson).then(function(j){
     if(j&&j.ready&&j.url){PDF_URL=j.url;$('btDl').textContent=H?'⬇️ PDF डाउनलोड करें':'⬇️ Download PDF';location.href=j.url;}
     else{$('errX').textContent=(j&&(j.detail||j.error))||'failed';$('errX').style.display='block';
       $('btDl').textContent=H?'फिर कोशिश करें →':'Retry →';}
@@ -417,6 +463,7 @@ function doView(){location.href=R+'-report.html?autoview=1';}
 absorbHash().then(function(){
   var det=details();
   var hasTok=(location.hash.indexOf('access_token=')>-1);
+  bdlog('branch: details='+(det?'yes':'no')+' token='+(hasTok?'yes':'no'));
   if(det&&hasTok){sb.auth.getSession().then(function(r){
     if(r.data&&r.data.session)afterAuth(r.data.session); else show('stAuth');});return;}
   if(det){checkAuthThen();return;}
