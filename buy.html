@@ -127,7 +127,10 @@ function person(prefix,label){
    +(C.gender&&prefix==='p'?'<label>'+(H?'लिंग':'Gender')+'</label><select id="f_pgender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>':'')
    +'<div class="two"><div><label>'+(H?'जन्म तिथि':'Birth date')+'</label><input id="f_'+prefix+'date" type="date"></div>'
    +'<div><label>'+(H?'जन्म समय':'Birth time')+'</label><input id="f_'+prefix+'time" type="time"></div></div>'
-   +(C.noplace?'':'<label>'+(H?'जन्म स्थान':'Birth place')+'</label><input id="f_'+prefix+'place" type="text" placeholder="City, State">');
+   +(C.noplace?'':'<label>'+(H?'जन्म स्थान':'Birth place')+'</label>'
+     +'<div style="position:relative;"><input id="f_'+prefix+'place" type="text" placeholder="'+(H?'शहर खोजें…':'Search city…')+'" autocomplete="off" oninput="cSearch(\''+prefix+'\',this.value)">'
+     +'<div id="cdd_'+prefix+'" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:190px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div></div>'
+     +(prefix==='p'?'<button type="button" onclick="cGps()" id="cGpsBtn" style="margin-top:8px;width:100%;padding:9px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:Poppins,sans-serif;cursor:pointer;">📍 <span id="cGpsTxt">'+(H?'मेरी वर्तमान लोकेशन इस्तेमाल करें':'Use my current location')+'</span></button>':''));
 }
 $('formRoot').innerHTML = C.two
  ? person('b',H?'वर का विवरण':'Groom details')+person('g',H?'वधू का विवरण':'Bride details')
@@ -136,6 +139,44 @@ $('formRoot').innerHTML = C.two
 (function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
 
 function val(id){var e=$(id);return e?e.value.trim():'';}
+/* ── city search + GPS (same Nominatim mechanism as onboarding/kundli) ── */
+var CPICK={}, _cT=null;
+function cSearch(prefix,q){
+  var dd=$('cdd_'+prefix); delete CPICK[prefix];
+  if(!q||q.length<2){dd.style.display='none';return;}
+  clearTimeout(_cT);
+  dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.4);font-size:13px;">'+(H?'खोज रहे हैं…':'Searching…')+'</div>';
+  dd.style.display='block';
+  _cT=setTimeout(function(){
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&countrycodes=in&limit=6&format=json',{headers:{'Accept-Language':'en'}})
+    .then(function(r){return r.json();}).then(function(rs){
+      if(!rs.length){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(H?'कोई परिणाम नहीं':'No results')+'</div>';return;}
+      dd.innerHTML=rs.map(function(r){
+        var name=r.display_name.split(',')[0].trim().replace(/'/g,'');
+        var sub=r.display_name.split(',').slice(1,3).join(',').trim();
+        return '<div onclick="cPick(\''+prefix+'\',\''+name+'\','+r.lat+','+r.lon+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">'
+         +'<div style="font-size:14px;color:#fff;font-weight:600;">'+name+'</div>'
+         +'<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">'+sub+'</div></div>';
+      }).join('');
+    }).catch(function(){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(H?'खोज विफल':'Search failed')+'</div>';});
+  },400);
+}
+function cPick(prefix,name,lat,lng){
+  $('f_'+prefix+'place').value=name; CPICK[prefix]={lat:lat,lng:lng};
+  $('cdd_'+prefix).style.display='none';
+}
+function cGps(){
+  var t=$('cGpsTxt'); t.textContent=H?'⏳ ढूंढ रहे हैं…':'⏳ Detecting…';
+  if(!navigator.geolocation){t.textContent=H?'❌ GPS उपलब्ध नहीं':'❌ GPS not available';return;}
+  navigator.geolocation.getCurrentPosition(function(pos){
+    fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json')
+    .then(function(r){return r.json();}).then(function(d){
+      var a=d.address||{}; var city=a.city||a.town||a.village||a.county||'';
+      if(city){$('f_pplace').value=city;CPICK['p']={lat:pos.coords.latitude,lng:pos.coords.longitude};t.textContent='✓ '+city;}
+      else t.textContent=H?'शहर नहीं मिला — खोजें':'City not found — search instead';
+    }).catch(function(){t.textContent=H?'विफल — खोजें':'Failed — search instead';});
+  },function(){t.textContent=H?'अनुमति नहीं मिली — खोजें':'Permission denied — search instead';});
+}
 async function geo(place){
   try{var a=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(place)+'&countrycodes=in&limit=1&format=json').then(r=>r.json());
     if(a&&a[0])return{lat:parseFloat(a[0].lat),lng:parseFloat(a[0].lon)};}catch(e){}
@@ -155,10 +196,13 @@ async function submitDetails(){
   }
   $('btNext').textContent=H?'⏳ स्थान खोज रहे हैं…':'⏳ Locating…';
   if(C.two){
-    var g1=d.bplace?await geo(d.bplace):null; if(g1){d.blat=g1.lat;d.blng=g1.lng;}
-    var g2=d.gplace?await geo(d.gplace):null; if(g2){d.glat=g2.lat;d.glng=g2.lng;}
-  }else if(d.bplace){
-    var g0=await geo(d.bplace); if(g0){d.blat=g0.lat;d.blng=g0.lng;}
+    if(CPICK.b){d.blat=CPICK.b.lat;d.blng=CPICK.b.lng;}
+    else if(d.bplace){var g1=await geo(d.bplace); if(g1){d.blat=g1.lat;d.blng=g1.lng;}}
+    if(CPICK.g){d.glat=CPICK.g.lat;d.glng=CPICK.g.lng;}
+    else if(d.gplace){var g2=await geo(d.gplace); if(g2){d.glat=g2.lat;d.glng=g2.lng;}}
+  }else{
+    if(CPICK.p){d.blat=CPICK.p.lat;d.blng=CPICK.p.lng;}
+    else if(d.bplace){var g0=await geo(d.bplace); if(g0){d.blat=g0.lat;d.blng=g0.lng;}}
   }
   localStorage.setItem('sd_buy_'+R,JSON.stringify(d));
   checkAuthThen();
@@ -238,7 +282,7 @@ function doWhatsApp(){
   var msg=encodeURIComponent((ORDER_CODE||'SD-ORDER')+' '+(H?'मेरी '+C.hi+' भेजें':'send my '+C.en+' report'));
   location.href='https://wa.me/'+WA_NUMBER+'?text='+msg;
 }
-function doView(){location.href=R+'-report.html';}
+function doView(){location.href=R+'-report.html?autoview=1';}
 
 /* ── boot ── */
 absorbHash().then(function(){
