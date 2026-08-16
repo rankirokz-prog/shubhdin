@@ -127,10 +127,27 @@ function person(prefix,label){
    +(C.gender&&prefix==='p'?'<label>'+(H?'लिंग':'Gender')+'</label><select id="f_pgender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>':'')
    +'<div class="two"><div><label>'+(H?'जन्म तिथि':'Birth date')+'</label><input id="f_'+prefix+'date" type="date"></div>'
    +'<div><label>'+(H?'जन्म समय':'Birth time')+'</label><input id="f_'+prefix+'time" type="time"></div></div>'
+   /* Birth time is genuinely unknown for many buyers. We never block the sale for it,
+      but we do not silently invent a clock time either: ticking this switches the
+      chart to the classical sunrise (Surya lagna) convention and says so plainly. */
+   +'<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;cursor:pointer;">'
+     +'<input type="checkbox" id="f_'+prefix+'notime" onchange="noTime(\''+prefix+'\')" style="width:16px;height:16px;accent-color:#D4A843;">'
+     +(H?'मुझे जन्म समय नहीं पता':"I don't know my birth time")+'</label>'
+   +'<div id="ntNote_'+prefix+'" style="display:none;margin-top:8px;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.4);background:rgba(212,168,67,0.06);font-size:11.5px;color:rgba(255,244,222,0.78);line-height:1.6;">'
+     +(H?'आपकी कुंडली सूर्योदय (सूर्य लग्न) पर बनाई जाएगी — समय अज्ञात होने पर यही शास्त्रीय परंपरा है। चंद्रराशि और नक्षत्र पर आधारित बातें भरोसेमंद रहेंगी; लग्न, भाव और दशा की सटीक तिथियाँ अनुमानित रहेंगी। समय मिल जाए तो दोबारा बनवाइए।'
+        :'Your chart will be cast at sunrise (Surya lagna) — the classical convention when the time is unknown. Moon-sign and nakshatra material stays reliable; the ascendant, the houses and exact dasha dates become approximate. If you later find the time, generate it again.')+'</div>'
    +(C.noplace?'':'<label>'+(H?'जन्म स्थान':'Birth place')+'</label>'
      +'<div style="position:relative;"><input id="f_'+prefix+'place" type="text" placeholder="'+(H?'शहर खोजें…':'Search city…')+'" autocomplete="off" oninput="cSearch(\''+prefix+'\',this.value)">'
      +'<div id="cdd_'+prefix+'" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:190px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div></div>'
-     +(prefix==='p'?'<button type="button" onclick="cGps()" id="cGpsBtn" style="margin-top:8px;width:100%;padding:9px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:Poppins,sans-serif;cursor:pointer;">📍 <span id="cGpsTxt">'+(H?'मेरी वर्तमान लोकेशन इस्तेमाल करें':'Use my current location')+'</span></button>':''));
+     +(prefix==='p'?'<button type="button" onclick="cGps()" id="cGpsBtn" style="margin-top:8px;width:100%;padding:9px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:Poppins,sans-serif;cursor:pointer;">📍 <span id="cGpsTxt">'+(H?'मेरी वर्तमान लोकेशन इस्तेमाल करें':'Use my current location')+'</span></button>':'')
+     /* manual coordinate fallback — hidden until a lookup actually fails.
+        We never guess coordinates; if Nominatim is down the buyer can type them. */
+     +'<div id="man_'+prefix+'" style="display:none;margin-top:10px;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.4);background:rgba(212,168,67,0.05);">'
+       +'<div style="font-size:11.5px;color:rgba(255,244,222,0.75);line-height:1.5;margin-bottom:8px;">'
+       +(H?'शहर खोज अभी उपलब्ध नहीं है। कृपया जन्म स्थान का अक्षांश/देशांतर डालें — गलत स्थान पर गणना करने से बेहतर है।'
+          :'City lookup is unavailable right now. Please enter the birth place coordinates — we will not compute your chart at a guessed location.')+'</div>'
+       +'<div class="two"><div><label>'+(H?'अक्षांश (Latitude)':'Latitude')+'</label><input id="f_'+prefix+'lat" type="number" step="0.0001" placeholder="16.4343"></div>'
+       +'<div><label>'+(H?'देशांतर (Longitude)':'Longitude')+'</label><input id="f_'+prefix+'lng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>');
 }
 $('formRoot').innerHTML = C.two
  ? person('b',H?'वर का विवरण':'Groom details')+person('g',H?'वधू का विवरण':'Bride details')
@@ -139,6 +156,52 @@ $('formRoot').innerHTML = C.two
 (function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
 
 function val(id){var e=$(id);return e?e.value.trim():'';}
+function noTimeOn(prefix){var c=$('f_'+prefix+'notime');return !!(c&&c.checked);}
+function noTime(prefix){
+  var on=noTimeOn(prefix), t=$('f_'+prefix+'time'), n=$('ntNote_'+prefix);
+  if(t){t.disabled=on; t.style.opacity=on?'0.4':''; if(on)t.value='';}
+  if(n)n.style.display=on?'block':'none';
+  if(on)loadEngine().catch(function(){}); /* warm it up; failure surfaces at submit */
+}
+/* ── engine, loaded only when a birth time is actually missing ──────────────
+   astronomy.min.js must load before panchang-engine.js — the engine reads
+   window.Astronomy at definition time and bails out if it isn't there. */
+var _engineP=null;
+function loadEngine(){
+  if(_engineP)return _engineP;
+  _engineP=new Promise(function(res,rej){
+    function add(src,next){
+      var s=document.createElement('script');
+      s.src=src; s.onload=next;
+      s.onerror=function(){rej(new Error('could not load '+src));};
+      document.head.appendChild(s);
+    }
+    add('astronomy.min.js',function(){
+      add('panchang-engine.js',function(){
+        if(window.PanchangEngine)res(window.PanchangEngine);
+        else rej(new Error('PanchangEngine not exposed'));
+      });
+    });
+  });
+  return _engineP;
+}
+/* Sunrise for a birth date at birth coordinates, as an IST HH:MM clock string —
+   IST because every report's birthUTC() parses the time field as IST.
+   Returns null rather than a guess if anything is off. */
+async function sunriseIST(dateStr,lat,lng){
+  if(!dateStr||!isFinite(lat)||!isFinite(lng))return null;
+  var PE=null;
+  try{PE=await loadEngine();}catch(e){return null;} /* offline/404 → blocked, not thrown */
+  if(!PE||typeof PE.getPanchang!=='function')return null;
+  var dv=dateStr.split('-').map(Number);
+  if(dv.length!==3||!dv.every(isFinite))return null;
+  var dayUTC=new Date(Date.UTC(dv[0],dv[1]-1,dv[2],6,0,0));
+  var p=PE.getPanchang(dayUTC,lat,lng);
+  var sr=p&&p.sunrise;
+  if(!(sr instanceof Date)||isNaN(sr.getTime()))return null;
+  var ist=new Date(sr.getTime()+5.5*3600000);
+  return ('0'+ist.getUTCHours()).slice(-2)+':'+('0'+ist.getUTCMinutes()).slice(-2);
+}
 /* ── city search + GPS (same Nominatim mechanism as onboarding/kundli) ── */
 var CPICK={}, _cT=null;
 function cSearch(prefix,q){
@@ -182,27 +245,81 @@ async function geo(place){
     if(a&&a[0])return{lat:parseFloat(a[0].lat),lng:parseFloat(a[0].lon)};}catch(e){}
   return null;
 }
+/* errD is shared by two failure modes; always set the text so a coordinate
+   message never lingers over a missing-field error, or vice versa. */
+function missD(){var e=$('errD');e.textContent=H?'कृपया सभी विवरण भरें':'Please fill all details';e.style.display='block';}
 async function submitDetails(){
   var d={};
   if(C.two){
     d.bname=val('f_bname');d.bdate=val('f_bdate');d.btime=val('f_btime');d.bplace=val('f_bplace');
     d.gname=val('f_gname');d.gdate=val('f_gdate');d.gtime=val('f_gtime');d.gplace=val('f_gplace');
-    if(!d.bname||!d.bdate||!d.btime||!d.gname||!d.gdate||!d.gtime){$('errD').style.display='block';return;}
+    if(!d.bname||!d.bdate||(!d.btime&&!noTimeOn('b'))||!d.gname||!d.gdate||(!d.gtime&&!noTimeOn('g'))){missD();return;}
   }else{
     d.pname=val('f_pname');d.bdate=val('f_pdate');d.btime=val('f_ptime');
     if(C.gender)d.pgender=val('f_pgender');
     if(!C.noplace)d.bplace=val('f_pplace');
-    if(!d.pname||!d.bdate||!d.btime){$('errD').style.display='block';return;}
+    if(!d.pname||!d.bdate||(!d.btime&&!noTimeOn('p'))){missD();return;}
   }
   $('btNext').textContent=H?'⏳ स्थान खोज रहे हैं…':'⏳ Locating…';
+  /* ── coordinate guard ──────────────────────────────────────────────────────
+     Every report's blat/blng inputs carry Eluru markup defaults (16.4343/81.6985).
+     If we ship a payload without coordinates the report computes a plausible but
+     WRONG chart at Ram's town and nobody sees an error. So: resolve properly, or
+     stop the sale. Precedence: city picked from dropdown → manual entry → geocode.
+     Returns {lat,lng} or null; null reveals the manual block and blocks submit. */
+  async function resolve(prefix,place){
+    if(CPICK[prefix])return{lat:+CPICK[prefix].lat,lng:+CPICK[prefix].lng};
+    var mlat=val('f_'+prefix+'lat'), mlng=val('f_'+prefix+'lng');
+    if(mlat!==''&&mlng!==''){
+      var la=parseFloat(mlat), ln=parseFloat(mlng);
+      if(isFinite(la)&&isFinite(ln)&&la>=-90&&la<=90&&ln>=-180&&ln<=180)return{lat:la,lng:ln};
+      return null; /* typed but out of range — treat as unresolved */
+    }
+    if(place){var g=await geo(place); if(g&&isFinite(g.lat)&&isFinite(g.lng))return{lat:g.lat,lng:g.lng};}
+    return null;
+  }
+  function blockOn(prefixes){
+    prefixes.forEach(function(p){var m=$('man_'+p); if(m)m.style.display='block';});
+    var e=$('errD');
+    e.textContent=H?'जन्म स्थान की स्थिति नहीं मिली। नीचे अक्षांश/देशांतर डालें या दोबारा प्रयास करें।'
+                   :'Could not resolve the birth place. Enter coordinates below, or try again.';
+    e.style.display='block';
+    $('btNext').textContent=H?'आगे बढ़ें →':'Continue →';
+  }
   if(C.two){
-    if(CPICK.b){d.blat=CPICK.b.lat;d.blng=CPICK.b.lng;}
-    else if(d.bplace){var g1=await geo(d.bplace); if(g1){d.blat=g1.lat;d.blng=g1.lng;}}
-    if(CPICK.g){d.glat=CPICK.g.lat;d.glng=CPICK.g.lng;}
-    else if(d.gplace){var g2=await geo(d.gplace); if(g2){d.glat=g2.lat;d.glng=g2.lng;}}
+    var rb=await resolve('b',d.bplace), rg=await resolve('g',d.gplace);
+    var badT=[]; if(!rb)badT.push('b'); if(!rg)badT.push('g');
+    if(badT.length){blockOn(badT);return;}
+    d.blat=rb.lat;d.blng=rb.lng;d.glat=rg.lat;d.glng=rg.lng;
+    if(!d.bplace)d.bplace=rb.lat.toFixed(4)+', '+rb.lng.toFixed(4);
+    if(!d.gplace)d.gplace=rg.lat.toFixed(4)+', '+rg.lng.toFixed(4);
   }else{
-    if(CPICK.p){d.blat=CPICK.p.lat;d.blng=CPICK.p.lng;}
-    else if(d.bplace){var g0=await geo(d.bplace); if(g0){d.blat=g0.lat;d.blng=g0.lng;}}
+    var rp=await resolve('p',d.bplace);
+    if(!rp){blockOn(['p']);return;}
+    d.blat=rp.lat;d.blng=rp.lng;
+    if(!d.bplace)d.bplace=rp.lat.toFixed(4)+', '+rp.lng.toFixed(4);
+  }
+  /* ── unknown birth time → sunrise (Surya lagna) ────────────────────────────
+     Runs after resolve() because sunrise depends on the birth coordinates.
+     If the engine can't be loaded or returns nothing usable we stop rather than
+     let a blank btime reach the report, where it would parse to NaN silently. */
+  var srFail=false;
+  if(C.two){
+    if(noTimeOn('b')){var sb1=await sunriseIST(d.bdate,d.blat,d.blng);
+      if(sb1){d.btime=sb1;d.timeUnknownB=true;}else srFail=true;}
+    if(noTimeOn('g')){var sg1=await sunriseIST(d.gdate,d.glat,d.glng);
+      if(sg1){d.gtime=sg1;d.timeUnknownG=true;}else srFail=true;}
+  }else if(noTimeOn('p')){
+    var sp1=await sunriseIST(d.bdate,d.blat,d.blng);
+    if(sp1){d.btime=sp1;d.timeUnknown=true;}else srFail=true;
+  }
+  if(srFail){
+    var e2=$('errD');
+    e2.textContent=H?'सूर्योदय की गणना अभी नहीं हो सकी। कृपया दोबारा प्रयास करें, या जन्म समय भर दें।'
+                    :'Could not compute sunrise just now. Please try again, or enter the birth time.';
+    e2.style.display='block';
+    $('btNext').textContent=H?'आगे बढ़ें →':'Continue →';
+    return;
   }
   /* Annual reads clat/clng (Tajika "current place") in addition to blat/blng.
      Until the sourced birthplace-vs-residence ruling lands we mirror the birth
