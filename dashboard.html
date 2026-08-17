@@ -1486,6 +1486,33 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 .mlp-btn{position:relative;z-index:2;margin:0 auto 26px;background:linear-gradient(120deg,var(--saffron),#E8890F);border:none;border-radius:30px;color:#fff;font-size:15.5px;font-weight:600;font-family:'Poppins',sans-serif;padding:14px 38px;cursor:pointer;box-shadow:0 6px 22px rgba(255,107,26,0.35);}
 .mlp-btn.stop{background:rgba(255,255,255,0.12);box-shadow:none;border:1px solid rgba(212,168,67,0.4);}
 </style>
+<style id="cal-events">
+.cev-wrap{padding:4px 8px 18px;}
+.cev-hd{display:flex;align-items:baseline;justify-content:space-between;margin:14px 4px 10px;}
+.cev-t{font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:var(--gold);font-weight:600;}
+.cev-n{font-size:10px;color:rgba(212,168,67,0.62);letter-spacing:0.4px;}
+.cev{display:flex;gap:11px;align-items:center;padding:9px 11px;margin-bottom:6px;border-radius:12px;
+ background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.055);cursor:pointer;transition:all .15s;}
+.cev:active{transform:scale(0.99);}
+.cev.sel{background:rgba(212,168,67,0.09);border-color:rgba(212,168,67,0.45);}
+.cev.today{border-color:rgba(212,168,67,0.55);box-shadow:0 0 10px rgba(212,168,67,0.10);}
+.cev-dt{flex-shrink:0;width:40px;text-align:center;}
+.cev-dd{font-size:17px;font-weight:700;color:rgba(255,240,220,0.92);line-height:1;}
+.cev-dw{font-size:7.5px;color:rgba(212,168,67,0.60);letter-spacing:0.8px;margin-top:3px;text-transform:uppercase;}
+.cev-bd{flex:1;min-width:0;}
+.cev-nm{font-size:13px;color:rgba(255,240,220,0.90);font-weight:500;line-height:1.35;}
+.cev-nm em{font-style:normal;margin-right:5px;}
+.cev-cg{display:inline-flex;align-items:center;gap:4px;margin-top:4px;padding:2px 7px;border-radius:20px;
+ font-size:8.5px;font-weight:600;letter-spacing:0.3px;}
+.cg-major{background:rgba(255,107,26,0.13);color:rgba(255,150,60,0.92);}
+.cg-festival{background:rgba(212,168,67,0.12);color:rgba(212,168,67,0.85);}
+.cg-national{background:rgba(100,180,255,0.12);color:rgba(130,195,255,0.90);}
+.cg-bank{background:rgba(140,160,190,0.13);color:rgba(175,195,220,0.90);}
+.cg-vrat{background:rgba(155,120,220,0.13);color:rgba(190,160,255,0.90);}
+.cg-moon{background:rgba(255,255,255,0.07);color:rgba(255,240,220,0.72);}
+.cev-empty{text-align:center;padding:16px 12px;color:rgba(212,168,67,0.45);font-size:12.5px;line-height:1.6;}
+.cev-more{font-size:9px;color:rgba(212,168,67,0.55);margin-top:3px;}
+</style>
 </head>
 <body>
 
@@ -5072,6 +5099,76 @@ const CAL_FESTIVALS = {
   '2027-01-14':{n:'Makar Sankranti',h:'मकर संक्रांति',i:'☀️',t:'major'},
 };
 
+// ── Entries shadowed by duplicate keys in CAL_FESTIVALS (object literal keeps
+// only the LAST value for a repeated key, so these were silently dropped —
+// Holi, Gandhi Jayanti, Makar Sankranti, Gudi Padwa and Ambedkar Jayanti were
+// all being hidden by a same-day entry declared later). Merged back via calFest().
+const CAL_FEST_EXTRA = {
+  '2025-10-02':[{n:'Gandhi Jayanti',h:'गांधी जयंती',i:'🕊️',t:'national'}],
+  '2026-01-14':[{n:'Makar Sankranti',h:'मकर संक्रांति',i:'☀️',t:'major'}],
+  '2026-03-03':[{n:'Holi',h:'होली',i:'🎨',t:'major'}],
+  '2026-03-19':[{n:'Gudi Padwa',h:'गुड़ी पड़वा',i:'🎋',t:'festival'}],
+  '2026-04-14':[{n:'Dr. Ambedkar Jayanti',h:'अम्बेडकर जयंती',i:'📚',t:'national'}],
+};
+// Every event on a date, main table first.
+function calFest(key){
+  const out=[];
+  if(CAL_FESTIVALS[key]) out.push(CAL_FESTIVALS[key]);
+  if(CAL_FEST_EXTRA[key]) CAL_FEST_EXTRA[key].forEach(function(f){out.push(f);});
+  // majors first so the grid icon and the list lead with the bigger day
+  return out.sort(function(a,b){
+    const r={major:0,national:1,festival:2};
+    return (r[a.t]===undefined?3:r[a.t])-(r[b.t]===undefined?3:r[b.t]);
+  });
+}
+// ── Indian bank holidays that are purely date-rule based: 2nd & 4th Saturday.
+// (Sundays are bank holidays too but listing 4–5 of them per month buries the
+// days that actually matter, so they are deliberately not listed.)
+function bankSaturday(date){
+  if(date.getDay()!==6) return null;
+  const nth=Math.floor((date.getDate()-1)/7)+1;
+  if(nth===2) return {h:'दूसरा शनिवार',e:'2nd Saturday'};
+  if(nth===4) return {h:'चौथा शनिवार',e:'4th Saturday'};
+  return null;
+}
+// ── Everything notable in one month, from the same engine the grid uses.
+// Pure function — no DOM — so it can be tested directly.
+function calMonthEvents(year, month){
+  const days=new Date(year,month+1,0).getDate(), out=[];
+  // The curated table and the phase approximation disagree by 1–4 days on
+  // Ekadashi. Showing both would list 3–4 Ekadashis in a month that has 2, and
+  // contradict itself. So the curated dates win for any month that has them,
+  // and the computed fallback only runs for months the table doesn't cover.
+  let curatedEk=false;
+  for(let d=1; d<=days; d++){
+    const k=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    if(calFest(k).some(function(f){return /Ekadashi/i.test(f.n||'');})) curatedEk=true;
+  }
+  for(let d=1; d<=days; d++){
+    const date=new Date(year,month,d);
+    const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const phase=calMoonPhase(date);
+    const fests=calFest(key);
+    let hasEk=false, hasMoon=false;
+    fests.forEach(function(f){
+      const nm=(f.n||'');
+      if(/Ekadashi/i.test(nm)) hasEk=true;
+      if(/Purnima|Amavasya/i.test(nm)) hasMoon=true;
+      out.push({d:d,date:date,hi:f.h,en:f.n,icon:f.i,cat:f.t==='national'?'national':(f.t==='major'?'major':'festival')});
+    });
+    // computed observances — only when the curated table doesn't already name them
+    if(!hasEk && !curatedEk && isEkadashi(phase))
+      out.push({d:d,date:date,hi:'एकादशी व्रत',en:'Ekadashi Vrat',icon:'🙏',cat:'vrat'});
+    if(!hasMoon && isPurnima(phase))
+      out.push({d:d,date:date,hi:'पूर्णिमा',en:'Purnima',icon:'🌕',cat:'purnima'});
+    if(!hasMoon && isAmavasya(phase))
+      out.push({d:d,date:date,hi:'अमावस्या',en:'Amavasya',icon:'🌑',cat:'amavasya'});
+    const bs=bankSaturday(date);
+    if(bs) out.push({d:d,date:date,hi:'बैंक अवकाश',en:'Bank Holiday',icon:'🏦',cat:'bank',sub_hi:bs.h,sub_en:bs.e});
+  }
+  const rank={major:0,national:1,festival:2,vrat:3,purnima:4,amavasya:4,bank:5};
+  return out.sort(function(a,b){ return a.d-b.d || rank[a.cat]-rank[b.cat]; });
+}
 // Ekadashis — every 15 days approx
 function isEkadashi(phase){
   return (phase >= 9.84 && phase < 10.83) || (phase >= 24.61 && phase < 25.60);
@@ -5092,9 +5189,10 @@ function openCalendar(){
   const ov = document.getElementById('calOverlay');
   ov.style.display='flex';
   renderCalendar();
-  // Show gentle prompt instead of auto-opening detail
+  // The month-events list now fills this space, so the detail panel stays
+  // closed until a date is actually tapped — no empty prompt block.
   const cd = document.getElementById('calDetail');
-  if(cd) cd.innerHTML = `<div style="text-align:center;padding:18px 12px;color:rgba(212,168,67,0.55);font-size:13px;">${H?'📅 किसी तारीख पर टैप करें':'📅 Tap any date to see details'}</div>`;
+  if(cd){ cd.innerHTML=''; cd.style.display='none'; }
   // Translate button
   const bt=document.getElementById('calBtnTitle');
   const bs=document.getElementById('calBtnSub');
@@ -5112,7 +5210,8 @@ function calNav(dir){
   if(_calMonth < 0){ _calMonth=11; _calYear--; }
   _calSelected = null;
   renderCalendar();
-  document.getElementById('calDetail').innerHTML = '';
+  const cd=document.getElementById('calDetail');
+  if(cd){ cd.innerHTML=''; cd.style.display='none'; }
 }
 
 function renderCalendar(){
@@ -5150,19 +5249,23 @@ function renderCalendar(){
     const phase = calMoonPhase(date);
     const moon = calMoonEmoji(phase);
     const tithi = calTithi(phase);
-    const festival = CAL_FESTIVALS[dateKey];
+    const fests = calFest(dateKey);
+    const festival = fests[0];
+    const bankSat = bankSaturday(date);
     const isToday = d===today.getDate() && _calMonth===today.getMonth() && _calYear===today.getFullYear();
     const isSelected = d===_calSelected;
     const isSun = date.getDay()===0;
     const isSat = date.getDay()===6;
     const isSpecial = isAmavasya(phase)||isPurnima(phase)||isEkadashi(phase);
-    const isMajor = festival && festival.t==='major';
+    const isMajor = fests.some(function(f){return f.t==='major';});
+    const isHoliday = bankSat || fests.some(function(f){return f.t==='national';});
 
     // Cell border/bg
     let cellStyle = `min-height:70px;border-radius:10px;padding:4px;cursor:pointer;position:relative;transition:all 0.15s;`;
     if(isToday) cellStyle += `background:rgba(212,168,67,0.12);border:1.5px solid rgba(212,168,67,0.70);box-shadow:0 0 10px rgba(212,168,67,0.25),inset 0 0 8px rgba(212,168,67,0.05);`;
     else if(isSelected) cellStyle += `background:rgba(212,168,67,0.08);border:1.5px solid rgba(212,168,67,0.35);`;
     else if(isMajor) cellStyle += `background:rgba(255,107,26,0.06);border:1px solid rgba(255,107,26,0.20);`;
+    else if(isHoliday) cellStyle += `background:rgba(100,180,255,0.05);border:1px solid rgba(100,180,255,0.16);`;
     else cellStyle += `background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);`;
 
     let dateColor = isToday ? 'var(--gold)' : isSun ? 'rgba(255,100,100,0.80)' : isSat ? 'rgba(212,168,67,0.60)' : 'rgba(255,255,255,0.75)';
@@ -5173,21 +5276,61 @@ function renderCalendar(){
         <span style="font-size:13px;line-height:1;">${moon.e}</span>
       </div>
       <div style="font-size:7.5px;color:rgba(212,168,67,0.85);margin-top:2px;line-height:1.3;overflow:hidden;">${H?tithi.hi:tithi.en}</div>
-      ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}</div>`:''}
+      ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}${fests.length>1?`<span style="font-size:8px;color:rgba(212,168,67,0.62);vertical-align:top;">+${fests.length-1}</span>`:''}</div>`:(bankSat?`<div style="font-size:12px;margin-top:3px;line-height:1;opacity:0.75;">🏦</div>`:'')}
       ${isSpecial&&!festival?`<div style="width:4px;height:4px;border-radius:50%;background:rgba(212,168,67,0.50);margin-top:4px;"></div>`:''}
     </div>`;
   }
 
   html += '</div>';
-  document.getElementById('calGrid').innerHTML = html;
+  document.getElementById('calGrid').innerHTML = html + renderMonthEvents();
 
   // Detail only shows when user taps a date (no auto-open)
 }
 
+const CEV_META={
+  major:   {hi:'प्रमुख त्योहार', en:'Major Festival', c:'cg-major'},
+  festival:{hi:'त्योहार',        en:'Festival',       c:'cg-festival'},
+  national:{hi:'राष्ट्रीय अवकाश', en:'Public Holiday', c:'cg-national'},
+  bank:    {hi:'बैंक अवकाश',      en:'Bank Holiday',   c:'cg-bank'},
+  vrat:    {hi:'व्रत',           en:'Vrat / Fast',    c:'cg-vrat'},
+  purnima: {hi:'पूर्णिमा',        en:'Full Moon',      c:'cg-moon'},
+  amavasya:{hi:'अमावस्या',        en:'New Moon',       c:'cg-moon'},
+};
+function renderMonthEvents(){
+  const evs=calMonthEvents(_calYear,_calMonth);
+  const MHI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
+  const MEN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DHI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
+  const DEN=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const title=(H?MHI[_calMonth]:MEN[_calMonth])+' '+_calYear;
+  const today=new Date();
+  const head='<div class="cev-hd"><div class="cev-t">'+(H?'इस माह':'This Month')+' · '+title+'</div>'
+    +'<div class="cev-n">'+(evs.length?(evs.length+' '+(H?'विशेष दिन':(evs.length===1?'important day':'important days'))):'')+'</div></div>';
+  if(!evs.length)
+    return '<div class="cev-wrap">'+head+'<div class="cev-empty">'
+      +(H?'इस माह कोई विशेष पर्व नहीं — रोज़ का पंचांग देखने के लिए किसी भी तारीख़ पर टैप करें'
+         :'No major observances this month — tap any date for its daily panchang')+'</div></div>';
+  let rows='';
+  evs.forEach(function(e){
+    const m=CEV_META[e.cat]||CEV_META.festival;
+    const isToday=e.d===today.getDate()&&_calMonth===today.getMonth()&&_calYear===today.getFullYear();
+    const sub=(e.cat==='bank')?(H?e.sub_hi:e.sub_en):'';
+    rows+='<div class="cev'+(e.d===_calSelected?' sel':'')+(isToday?' today':'')+'" onclick="selectCalDate('+e.d+')">'
+      +'<div class="cev-dt"><div class="cev-dd">'+e.d+'</div>'
+      +'<div class="cev-dw">'+(H?DHI[e.date.getDay()]:DEN[e.date.getDay()])+'</div></div>'
+      +'<div class="cev-bd"><div class="cev-nm"><em>'+e.icon+'</em>'+(H?e.hi:e.en)+'</div>'
+      +'<span class="cev-cg '+m.c+'">'+(H?m.hi:m.en)+'</span>'
+      +(sub?'<span class="cev-more"> · '+sub+'</span>':'')
+      +'</div></div>';
+  });
+  return '<div class="cev-wrap">'+head+rows+'</div>';
+}
 function selectCalDate(d){
   _calSelected = d;
   renderCalendar();
   showCalDetail(new Date(_calYear, _calMonth, d));
+  const dt=document.getElementById('calDetail');
+  if(dt) dt.style.display='block';
 }
 
 
@@ -5206,7 +5349,9 @@ function showCalDetail(date){
   const moon = calMoonEmoji(phase);
   const tithi = calTithi(phase);
   const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-  const festival = CAL_FESTIVALS[dateKey];
+  const fests = calFest(dateKey);
+  const festival = fests[0];
+  const bankSat = bankSaturday(date);
   const DAYS_HI=['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
   const DAYS_EN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const MONTHS_HI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
@@ -5217,16 +5362,23 @@ function showCalDetail(date){
   const dateStr = H?`${dayName}, ${date.getDate()} ${monthName} ${date.getFullYear()}`:`${dayName}, ${monthName} ${date.getDate()}, ${date.getFullYear()}`;
 
   let festHtml = '';
-  if(festival){
-    const fName = H ? festival.h : festival.n;
-    const fColor = festival.t==='major' ? 'rgba(255,140,30,0.85)' : festival.t==='national' ? 'rgba(100,180,255,0.85)' : 'rgba(212,168,67,0.75)';
-    festHtml = `<div style="margin-top:10px;display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(212,168,67,0.12);">
-      <span style="font-size:20px;">${festival.i}</span>
-      <div>
-        <div style="font-size:13px;font-weight:600;color:${fColor};">${fName}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.90);">${festival.t==='major'?'Major Festival':festival.t==='national'?'National Holiday':'Festival'}</div>
-      </div>
-    </div>`;
+  const drows = fests.map(function(f){
+    const meta = CEV_META[f.t==='national'?'national':(f.t==='major'?'major':'festival')];
+    const fColor = f.t==='major' ? 'rgba(255,140,30,0.85)' : f.t==='national' ? 'rgba(100,180,255,0.85)' : 'rgba(212,168,67,0.75)';
+    return {i:f.i, name:(H?f.h:f.n), label:(H?meta.hi:meta.en), color:fColor};
+  });
+  if(bankSat) drows.push({i:'🏦', name:(H?'बैंक अवकाश':'Bank Holiday'),
+    label:(H?bankSat.h:bankSat.e), color:'rgba(175,195,220,0.88)'});
+  if(drows.length){
+    festHtml = drows.map(function(r){
+      return `<div style="margin-top:8px;display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px;border:1px solid rgba(212,168,67,0.12);">
+        <span style="font-size:20px;">${r.i}</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:${r.color};">${r.name}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.62);">${r.label}</div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   const specialNote = isAmavasya(phase)?(H?'🌑 अमावस्या — पितृ तर्पण का दिन':'🌑 Amavasya — Day of ancestral worship'):
@@ -5422,7 +5574,7 @@ function getVratsThisWeek(){
     const dow = d.getDay();
     const phase = calMoonPhase(d); // reuse calendar engine
     const dateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    const festival = CAL_FESTIVALS[dateKey];
+    const fests = calFest(dateKey);
     const dayVrats = [];
 
     // Weekly vrats
@@ -5439,7 +5591,7 @@ function getVratsThisWeek(){
     if(t.en==='Chaturthi') dayVrats.push({h:'संकष्टी चतुर्थी',e:'Sankashti Chaturthi',i:'🐘'});
     if(Math.abs(phase-12.83)<0.85 || Math.abs(phase-27.63)<0.85) dayVrats.push({h:'प्रदोष व्रत',e:'Pradosh Vrat',i:'🕉️'});
 
-    if(festival) dayVrats.push({h:festival.h, e:festival.n, i:festival.i});
+    fests.forEach(function(f){ dayVrats.push({h:f.h, e:f.n, i:f.i}); });
 
     if(dayVrats.length > 0){
       const DAYS_HI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
