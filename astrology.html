@@ -132,6 +132,38 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 .seg .sv{color:var(--cream);} .seg .st{color:rgba(255,244,222,0.5);font-size:11px;}
 .hide{display:none;}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+
+/* ── EXPLORE GATEWAY ── */
+.xcard{display:flex;align-items:center;gap:13px;margin:14px 0 4px;padding:15px 16px;border-radius:16px;cursor:pointer;
+ background:linear-gradient(135deg,rgba(212,168,67,0.14),rgba(255,107,26,0.05));
+ border:1px solid rgba(212,168,67,0.38);transition:transform .12s;}
+.xcard:active{transform:scale(0.99);}
+.xc-ic{font-size:25px;flex-shrink:0;}
+.xc-t{font-size:15px;color:var(--gold,#D4A843);font-weight:600;}
+.xc-s{font-size:10.5px;color:rgba(255,244,222,0.60);margin-top:2px;line-height:1.45;}
+.xc-go{margin-left:auto;color:rgba(212,168,67,0.62);font-size:19px;}
+.xgrp{margin:18px 2px 9px;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;
+ color:rgba(212,168,67,0.72);font-weight:700;}
+.xgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
+.xt{background:#2E1B14;border:1px solid rgba(212,168,67,0.16);border-radius:14px;padding:12px 8px 10px;
+ text-align:center;cursor:pointer;min-width:0;transition:all .12s;}
+.xt:active{transform:scale(0.96);border-color:rgba(212,168,67,0.5);}
+.xt-i{font-size:22px;line-height:1;}
+.xt-n{font-size:11.5px;color:#F7EED8;font-weight:600;margin-top:6px;line-height:1.25;}
+.xt-s{font-size:8.5px;color:rgba(212,168,67,0.68);margin-top:3px;line-height:1.3;
+ overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.seglist{margin-top:4px;}
+.sgrow{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:11px;margin-bottom:6px;
+ background:#2A1912;border:1px solid rgba(212,168,67,0.12);}
+.sgrow.g{border-color:rgba(90,190,120,0.30);}
+.sgrow.b{border-color:rgba(230,110,90,0.28);}
+.sgrow.now{background:#4A3114;border-color:rgba(232,190,90,0.85);}
+.sg-n{font-size:13px;color:#F7EED8;font-weight:600;flex:1;min-width:0;}
+.sg-t{font-size:11.5px;color:rgba(255,244,222,0.72);white-space:nowrap;}
+.sg-d{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sg-now{font-size:8px;font-weight:700;color:#FFD98A;letter-spacing:0.5px;}
+.subh{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(212,168,67,0.65);
+ font-weight:700;margin:16px 2px 8px;}
 </style>
 </head>
 <body>
@@ -196,6 +228,17 @@ function route(){
   if(h[0]==='panchang'&&h[1])return vLimb(h[1]);
   if(h[0]==='panchang')return vPanchang();
   if(h[0]==='times')return vTimes();
+  if(h[0]==='explore')return vExplore();
+  if(h[0]==='chogh')return vChogh();
+  if(h[0]==='hora')return vHora();
+  if(h[0]==='sunmoon')return vSunMoon();
+  if(h[0]==='tara')return vTara();
+  if(h[0]==='chandra')return vChandra();
+  if(h[0]==='disha')return vDisha();
+  if(h[0]==='hcal')return vHcal();
+  if(h[0]==='lagna')return vLagna();
+  if(h[0]==='vrats')return vVrats();
+  if(h[0]==='fest')return vFest();
   return vHub();
 }
 function back(to){location.hash=to;}
@@ -285,6 +328,11 @@ function vHub(){
    +miniLimb(t('करण','KARANA'),H?p.karana.hi:p.karana.en)
    +miniLimb(t('वार','VARA'),H?p.vara.hi:p.vara.en)+'</div>'
 
+   +todayObservance()
+   +'<div class="xcard" onclick="location.hash=\'#explore\'">'
+   +'<div class="xc-ic">🧭</div><div><div class="xc-t dev">'+t('और जानें','Explore More')+'</div>'
+   +'<div class="xc-s">'+t('चौघड़िया • होरा • तारा-चंद्र बल • व्रत-पर्व • हिन्दू कैलेंडर','Choghadiya • Hora • Tara & Chandra bala • Vrats • Hindu calendar')+'</div></div>'
+   +'<div class="xc-go">›</div></div>'
    +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
    +'<div class="note">'+t('सभी समय आपके शहर के लिए गणना से — शुभ दिन इंजन','All timings computed for your city — Shubh Din engine')+'</div>';
 
@@ -453,6 +501,203 @@ function vTimes(){
 }
 
 /* boot */
+
+/* ═════════ EXPLORE GATEWAY + DETAIL VIEWS ═════════
+   Every tile below maps to something the engine actually returns from
+   getPanchang / getVrats / getFestivals / getLagnaTable. Nothing invented. */
+function xt(ico,name,sub,href){
+  return '<div class="xt" onclick="location.hash=\''+href+'\'"><div class="xt-i">'+ico+'</div>'
+   +'<div class="xt-n dev">'+name+'</div><div class="xt-s">'+sub+'</div></div>';
+}
+function todayObservance(){
+  var d=new Date(), key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var hits=[];
+  try{ PE.getVrats(d.getFullYear(),LAT,LNG,5.5).forEach(function(v){ if(v.date===key) hits.push({i:'🙏',n:H?v.hi:v.en}); }); }catch(e){}
+  try{ PE.getFestivals(d.getFullYear(),LAT,LNG,5.5).forEach(function(f){ if(f.date===key) hits.push({i:'🪔',n:H?f.hi:f.en}); }); }catch(e){}
+  if(!hits.length) return '';
+  return '<div class="grid">'+hits.map(function(x){
+    return '<div class="sec" onclick="location.hash=\'#vrats\'"><div class="s-ico">'+x.i+'</div>'
+      +'<div class="s-b"><div class="s-t dev">'+x.n+'</div>'
+      +'<div class="s-live">'+t('आज का व्रत / पर्व',"Today's observance")+'</div></div>'
+      +'<div class="s-go">›</div></div>';
+  }).join('')+'</div>';
+}
+function vExplore(){
+  var p=panchang(), hc=p.hinduCalendar;
+  app.innerHTML=pgHead(t('और जानें','Explore More'),t('आज की पूरी गणना — जो देखना हो वही खोलें',"Today's full calculations — open only what you need"),'#hub')
+
+   +'<div class="xgrp">'+t('पंचांग के पाँच अंग','The Five Limbs')+'</div><div class="xgrid">'
+   +xt('📿',t('तिथि','Tithi'),H?p.tithi.hi:p.tithi.en,'#panchang/tithi')
+   +xt('⭐',t('नक्षत्र','Nakshatra'),H?p.nakshatra.hi:p.nakshatra.en,'#panchang/nakshatra')
+   +xt('🧘',t('योग','Yoga'),H?p.yoga.hi:p.yoga.en,'#panchang/yoga')
+   +xt('🔗',t('करण','Karana'),H?p.karana.hi:p.karana.en,'#panchang/karana')
+   +xt('📋',t('पूरा पंचांग','Full Panchang'),t('सभी अंग एक साथ','All limbs together'),'#panchang')
+   +xt('🧭',t('दिशा शूल','Disha Shool'),H?p.dishaShool.hi:p.dishaShool.en,'#disha')
+   +'</div>'
+
+   +'<div class="xgrp">'+t('समय और मुहूर्त','Timings & Muhurta')+'</div><div class="xgrid">'
+   +xt('🕐',t('चौघड़िया','Choghadiya'),t('दिन-रात 16 खंड','16 day & night slots'),'#chogh')
+   +xt('⏳',t('होरा','Hora'),t('24 ग्रह होरा','24 planetary hours'),'#hora')
+   +xt('⏰',t('शुभ-अशुभ','Shubh & Ashubh'),t('अभिजित • राहु काल','Abhijit • Rahu Kaal'),'#times')
+   +'</div>'
+
+   +'<div class="xgrp">'+t('सूर्य और चंद्र','Sun & Moon')+'</div><div class="xgrid">'
+   +xt('🌅',t('सूर्य-चंद्र','Sun & Moon'),fT(p.sunrise)+' • '+fT(p.sunset),'#sunmoon')
+   +xt('🐏',t('राशिफल','Rashifal'),t('चंद्र ','Moon in ')+(H?p.moonSign.hi:p.moonSign.en),'#rashifal')
+   +'</div>'
+
+   +'<div class="xgrp">'+t('आपके लिए','For You')+'</div><div class="xgrid">'
+   +xt('✨',t('ताराबल','Tarabala'),t('27 नक्षत्र फल','All 27 nakshatras'),'#tara')
+   +xt('🌙',t('चंद्रबल','Chandrabala'),t('12 राशि फल','All 12 rashis'),'#chandra')
+   +'</div>'
+
+   +'<div class="xgrp">'+t('पर्व और व्रत','Festivals & Vrats')+'</div><div class="xgrid">'
+   +xt('🙏',t('व्रत','Vrats'),t('आने वाले व्रत','Upcoming fasts'),'#vrats')
+   +xt('🪔',t('त्योहार','Festivals'),t('इस वर्ष के पर्व','This year'),'#fest')
+   +'</div>'
+
+   +'<div class="xgrp">'+t('हिन्दू कैलेंडर','Hindu Calendar')+'</div><div class="xgrid">'
+   +xt('📅',t('संवत् • मास','Samvat & Masa'),(H?hc.amantaMonth.hi:hc.amantaMonth.en),'#hcal')
+   +xt('🔭',t('लग्न सारणी','Lagna Table'),t('दिन भर के लग्न','Lagnas through the day'),'#lagna')
+   +'</div>'
+
+   +'<div class="note">'+t('सभी गणनाएँ आपके शहर और आज की तारीख़ के लिए — शुभ दिन इंजन','All values computed for your city and today — Shubh Din engine')+'</div>';
+}
+/* ── shared segment-list renderer (choghadiya, hora) ── */
+function segList(arr,label){
+  var now=Date.now(),h='';
+  arr.forEach(function(sg){
+    var a=new Date(sg.start).getTime(), b=new Date(sg.end).getTime();
+    var live=now>=a&&now<b;
+    h+='<div class="sgrow '+(sg.good?'g':'b')+(live?' now':'')+'">'
+      +'<div class="sg-d" style="background:'+(sg.good?'#5ABE78':'#E66E5A')+'"></div>'
+      +'<div class="sg-n dev">'+(H?sg.hi:sg.en)+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')+'</div>'
+      +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
+  });
+  return '<div class="subh">'+label+'</div><div class="seglist">'+h+'</div>';
+}
+function vChogh(){
+  var p=panchang();
+  app.innerHTML=pgHead(t('चौघड़िया','Choghadiya'),t('सूर्योदय से सूर्योदय तक 16 खंड','16 slots, sunrise to sunrise'),'#explore')
+   +ribbonHTML()
+   +segList(p.choghadiya.day,t('दिन के चौघड़िया','Day Choghadiya'))
+   +segList(p.choghadiya.night,t('रात के चौघड़िया','Night Choghadiya'))
+   +'<div class="note">'+t('हरा = शुभ खंड, लाल = वर्ज्य। खंड सूर्योदय-सूर्यास्त से बनते हैं, घड़ी से नहीं।','Green = auspicious, red = avoid. Slots derive from actual sunrise/sunset, not clock hours.')+'</div>';
+}
+function vHora(){
+  var p=panchang();
+  var day=p.hora.filter(function(h2){return h2.dayTime;}), night=p.hora.filter(function(h2){return !h2.dayTime;});
+  app.innerHTML=pgHead(t('होरा','Hora'),t('24 ग्रह होरा — हर होरा का स्वामी','24 planetary hours and their lords'),'#explore')
+   +segList(day,t('दिन की होरा','Daytime Hora'))
+   +segList(night,t('रात की होरा','Night Hora'))
+   +'<div class="note">'+t('हर होरा का स्वामी ग्रह उस समय के कार्यों पर प्रभाव डालता है।','Each hora is ruled by a planet said to colour the work begun in it.')+'</div>';
+}
+function vSunMoon(){
+  var p=panchang();
+  app.innerHTML=pgHead(t('सूर्य और चंद्र','Sun & Moon'),t('आज के उदय-अस्त और राशि','Rise, set and signs today'),'#explore')
+   +'<div class="card">'
+   +prow('🌅 '+t('सूर्योदय','Sunrise'),fT(p.sunrise))
+   +prow('🌇 '+t('सूर्यास्त','Sunset'),fT(p.sunset))
+   +prow('🌙 '+t('चंद्रोदय','Moonrise'),fT(p.moonrise))
+   +prow('🌘 '+t('चंद्रास्त','Moonset'),fT(p.moonset))
+   +prow('☀️ '+t('सूर्य राशि','Sun Sign'),'<span class="dev">'+(H?p.sunSign.hi:p.sunSign.en)+'</span>')
+   +prow('🌛 '+t('चंद्र राशि','Moon Sign'),'<span class="dev">'+(H?p.moonSign.hi:p.moonSign.en)+'</span>')
+   +prow('🌄 '+t('ब्रह्म मुहूर्त','Brahma Muhurta'),p.brahmaMuhurta?fR(p.brahmaMuhurta.start,p.brahmaMuhurta.end):'—')
+   +'</div><div class="note">'+t('सूर्योदय-आधारित हिन्दू दिनमान का उपयोग — दिन सूर्योदय से बदलता है, मध्यरात्रि से नहीं।','Hindu sunrise-based day convention — the day turns at sunrise, not midnight.')+'</div>';
+}
+function vTara(){
+  var p=panchang(), tb=p.tarabalam&&p.tarabalam[0];
+  if(!tb){app.innerHTML=pgHead(t('ताराबल','Tarabala'),'','#explore')+'<div class="note">—</div>';return;}
+  var mine=(U.nakshatra||'').toLowerCase();
+  var rows=tb.all.map(function(n){
+    var me=n.en.toLowerCase()===mine;
+    return '<div class="sgrow '+(n.good?'g':'b')+(me?' now':'')+'">'
+      +'<div class="sg-d" style="background:'+(n.good?'#5ABE78':'#E66E5A')+'"></div>'
+      +'<div class="sg-n dev">'+(H?n.hi:n.en)+(me?' <span class="sg-now">'+t('आपका','YOURS')+'</span>':'')+'</div>'
+      +'<div class="sg-t">'+n.taraEn+' · '+n.verdict+'</div></div>';
+  }).join('');
+  app.innerHTML=pgHead(t('ताराबल','Tarabala'),t('आज का नक्षत्र ','Day nakshatra ')+'<span class="dev">'+(H?tb.dayNakshatra.hi:tb.dayNakshatra.en)+'</span>','#explore')
+   +'<div class="subh">'+t('सभी 27 नक्षत्रों के लिए फल','Verdict for all 27 nakshatras')+'</div>'
+   +'<div class="seglist">'+rows+'</div>'
+   +'<div class="note">'+t('अपने जन्म नक्षत्र से गिनकर — तीसरा, पाँचवाँ और सातवाँ तारा वर्ज्य माने जाते हैं।','Counted from your birth nakshatra — the 3rd, 5th and 7th taras are the ones classical texts avoid.')+'</div>';
+}
+function vChandra(){
+  var p=panchang(), cb=p.chandrabalam&&p.chandrabalam[0];
+  if(!cb){app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),'','#explore')+'<div class="note">—</div>';return;}
+  var goodSet={}; cb.good.forEach(function(r){goodSet[r.index]=1;});
+  var R=PE._data.RASHI_EN, mineIdx=myRashiIdx(), rows='';
+  for(var i=0;i<12;i++){
+    var g=!!goodSet[i], me=(i===mineIdx);
+    rows+='<div class="sgrow '+(g?'g':'b')+(me?' now':'')+'">'
+      +'<div class="sg-d" style="background:'+(g?'#5ABE78':'#E66E5A')+'"></div>'
+      +'<div class="sg-n dev">'+(R?R[i]:('#'+(i+1)))+(me?' <span class="sg-now">'+t('आपकी','YOURS')+'</span>':'')+'</div>'
+      +'<div class="sg-t">'+(g?t('अनुकूल','Favourable'):t('सामान्य','Neutral'))+'</div></div>';
+  }
+  app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),t('चंद्रमा आज ','Moon today in ')+'<span class="dev">'+(H?cb.dayRashi.hi:cb.dayRashi.en)+'</span>','#explore')
+   +'<div class="subh">'+t('सभी 12 राशियों के लिए','For all 12 rashis')+'</div>'
+   +'<div class="seglist">'+rows+'</div>'
+   +'<div class="note">'+t('चंद्रबल गोचर चंद्रमा की आपकी जन्मराशि से स्थिति पर निर्भर करता है।','Chandrabala depends on where the transiting Moon sits from your birth rashi.')+'</div>';
+}
+function vDisha(){
+  var p=panchang();
+  app.innerHTML=pgHead(t('दिशा शूल','Disha Shool'),t('आज किस दिशा में यात्रा टालें','Which direction to avoid travelling today'),'#explore')
+   +'<div class="card">'+prow(t('आज की वर्ज्य दिशा',"Today's avoided direction"),'<b class="dev">'+(H?p.dishaShool.hi:p.dishaShool.en)+'</b>')
+   +prow(t('वार','Weekday'),'<span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>')+'</div>'
+   +'<div class="note">'+t('दिशा शूल वार पर आधारित है। अनिवार्य यात्रा हो तो परंपरा में शकुन लेकर निकलने की सलाह है।','Disha Shool follows the weekday. Where travel is unavoidable, tradition prescribes a small ritual departure rather than cancelling.')+'</div>';
+}
+function vHcal(){
+  var p=panchang(), hc=p.hinduCalendar;
+  app.innerHTML=pgHead(t('हिन्दू कैलेंडर','Hindu Calendar'),t('संवत्, मास, ऋतु और अयन','Samvat, masa, ritu and ayana'),'#explore')
+   +'<div class="card">'
+   +prow(t('अमांत मास','Amanta Month'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span>')
+   +prow(t('पूर्णिमांत मास','Purnimanta Month'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
+   +prow(t('पक्ष','Paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha+' Paksha')+'</span>')
+   +prow(t('विक्रम संवत्','Vikram Samvat'),hc.vikramSamvat)
+   +prow(t('शक संवत्','Shaka Samvat'),hc.shakaSamvat)
+   +(hc.gujaratiSamvat?prow(t('गुजराती संवत्','Gujarati Samvat'),hc.gujaratiSamvat):'')
+   +(hc.samvatsara?prow(t('संवत्सर','Samvatsara'),'<span class="dev">'+(H?hc.samvatsara.hi:hc.samvatsara.en)+'</span>'):'')
+   +(hc.ritu?prow(t('ऋतु','Ritu'),'<span class="dev">'+(H?hc.ritu.hi:hc.ritu.en)+'</span>'):'')
+   +(hc.ayana?prow(t('अयन','Ayana'),'<span class="dev">'+(H?hc.ayana.hi:hc.ayana.en)+'</span>'):'')
+   +'</div>';
+}
+function vLagna(){
+  var tbl=[]; try{ tbl=PE.getLagnaTable(new Date(),LAT,LNG,5.5)||[]; }catch(e){}
+  var now=Date.now(),rows='';
+  tbl.forEach(function(l){
+    var a=new Date(l.start).getTime(), b=new Date(l.end).getTime(), live=now>=a&&now<b;
+    var nm=l.rashi?(H?l.rashi.hi:l.rashi.en):(H?l.hi:l.en);
+    rows+='<div class="sgrow'+(live?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
+      +'<div class="sg-n dev">'+(nm||'—')+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')+'</div>'
+      +'<div class="sg-t">'+fR(l.start,l.end)+'</div></div>';
+  });
+  app.innerHTML=pgHead(t('लग्न सारणी','Lagna Table'),t('आज दिन भर उदय होने वाले लग्न','Ascendants rising through today'),'#explore')
+   +'<div class="seglist">'+(rows||'<div class="note">—</div>')+'</div>'
+   +'<div class="note">'+t('मुहूर्त निकालते समय लग्न देखा जाता है — यही सारणी उसका आधार है।','Lagna is what a muhurta is finally judged on; this table is that basis.')+'</div>';
+}
+function obsList(list,icon,emptyMsg){
+  var today=new Date(); today.setHours(0,0,0,0);
+  var up=list.filter(function(x){return new Date(x.date+'T00:00:00')>=today;}).slice(0,24);
+  if(!up.length) return '<div class="note">'+emptyMsg+'</div>';
+  return '<div class="seglist">'+up.map(function(x){
+    var d=new Date(x.date+'T00:00:00');
+    var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short'});
+    var days=Math.round((d-today)/86400000);
+    var rel=days===0?t('आज','Today'):days===1?t('कल','Tomorrow'):(days+t(' दिन में',' days'));
+    return '<div class="sgrow'+(days===0?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
+      +'<div class="sg-n dev">'+icon+' '+(H?x.hi:x.en)+'</div>'
+      +'<div class="sg-t">'+when+' · '+rel+'</div></div>';
+  }).join('')+'</div>';
+}
+function vVrats(){
+  var l=[]; try{ l=PE.getVrats(new Date().getFullYear(),LAT,LNG,5.5)||[]; }catch(e){}
+  app.innerHTML=pgHead(t('व्रत','Vrats'),t('आने वाले व्रत — गणना से','Upcoming fasts, computed'),'#explore')
+   +obsList(l,'🙏',t('इस वर्ष आगे कोई व्रत नहीं','No further vrats this year'));
+}
+function vFest(){
+  var l=[]; try{ l=PE.getFestivals(new Date().getFullYear(),LAT,LNG,5.5)||[]; }catch(e){}
+  app.innerHTML=pgHead(t('त्योहार','Festivals'),t('इस वर्ष के आने वाले पर्व','Upcoming festivals this year'),'#explore')
+   +obsList(l,'🪔',t('इस वर्ष आगे कोई पर्व नहीं','No further festivals this year'));
+}
 route();
 </script>
 </body>
