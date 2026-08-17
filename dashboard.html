@@ -1491,10 +1491,10 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
    shell. Dark premium shell + high-contrast calendar component. */
 :root{
   --cal-bg:#21140F;      /* page behind the grid          */
-  --cal-cell:#352019;    /* every normal date cell        */
+  --cal-cell:#3A241C;    /* normal cell — nudged from #352019, page separation 1.17 → 1.24 */
   --cal-sel:#5A4215;     /* selected date                 */
   --cal-date:#F7EED8;    /* date number — warm cream      */
-  --cal-tithi:#CDBFA3;   /* tithi under the date          */
+  --cal-tithi:#DED2BA;   /* tithi — lifted from #CDBFA3 (8.44 → 10.23), stays under the date */
   --cal-sun:#E8776B;     /* Sunday — lifted from #D95C50, measured 4.08 (fails AA) */
   --cal-fest:#FF9A3C;    /* festival accent               */
   --cal-holi:#7FB3F5;    /* bank / public holiday accent  */
@@ -5239,7 +5239,7 @@ function renderCalendar(){
     const dh_en=['SUN','MON','TUE','WED','THU','FRI','SAT'];
     const labels = H ? dh_hi : dh_en;
     DAY_HDR.innerHTML = labels.map((d,i)=>
-      `<div style="text-align:center;font-size:9px;color:${i===0?'var(--cal-sun)':'rgba(212,168,67,0.72)'};font-weight:700;letter-spacing:0.6px;padding:5px 0;">${d}</div>`
+      `<div style="text-align:center;font-size:9px;color:${i===0?'var(--cal-sun)':'rgba(212,168,67,0.72)'};font-weight:700;letter-spacing:0.6px;padding:3px 0 4px;">${d}</div>`
     ).join('');
   }
 
@@ -5249,11 +5249,17 @@ function renderCalendar(){
   document.getElementById('calMonthTitle').textContent = (H?MONTHS_HI[_calMonth]:MONTHS_EN[_calMonth])+' '+_calYear;
   document.getElementById('calHinduMonth').textContent = calHinduMonth(_calMonth, _calYear);
 
-  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:2px 0 8px;">';
+  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 0 8px;">';
 
-  // Empty cells before first day
+  // Leading cells used to be blank 70px tiles — on a month starting late in the
+  // week (Aug 2026 starts Saturday) that left six empty tiles above the 1st.
+  // Filled with the previous month's trailing dates, heavily muted: the row
+  // reads as calendar rather than as a hole, and they are not tappable.
+  const prevDays = new Date(_calYear, _calMonth, 0).getDate();
   for(let i=0;i<firstDay;i++){
-    html += '<div style="min-height:70px;"></div>';
+    const pd = prevDays - firstDay + i + 1;
+    html += `<div style="min-height:66px;border-radius:10px;padding:5px 4px;background:rgba(255,255,255,0.012);border:1px solid rgba(212,168,67,0.045);">
+      <span style="font-size:14px;font-weight:500;color:rgba(212,168,67,0.20);line-height:1;">${pd}</span></div>`;
   }
 
   for(let d=1; d<=daysInMonth; d++){
@@ -5276,7 +5282,7 @@ function renderCalendar(){
     // Cell border/bg
     // Cells sit LIGHTER than the page so each date reads as its own tile.
     // Each state is a different surface, not another opacity of the same one.
-    let cellStyle = `min-height:70px;border-radius:10px;padding:5px 4px;cursor:pointer;position:relative;transition:all 0.15s;`;
+    let cellStyle = `min-height:66px;border-radius:10px;padding:5px 4px;cursor:pointer;position:relative;transition:all 0.15s;`;
     if(isSelected) cellStyle += `background:var(--cal-sel);border:1.5px solid rgba(232,190,90,0.95);box-shadow:0 0 14px rgba(212,168,67,0.30);`;
     else if(isToday) cellStyle += `background:#4A3114;border:1.5px solid rgba(212,168,67,0.75);box-shadow:0 0 12px rgba(212,168,67,0.22);`;
     else if(isMajor) cellStyle += `background:#4A2718;border:1px solid rgba(255,154,60,0.55);box-shadow:inset 0 2px 0 rgba(255,154,60,0.85);`;
@@ -5296,6 +5302,12 @@ function renderCalendar(){
     </div>`;
   }
 
+  // ...and the same for the tail, so the grid always ends on a full row.
+  const trail = (7 - ((firstDay + daysInMonth) % 7)) % 7;
+  for(let i=1;i<=trail;i++){
+    html += `<div style="min-height:66px;border-radius:10px;padding:5px 4px;background:rgba(255,255,255,0.012);border:1px solid rgba(212,168,67,0.045);">
+      <span style="font-size:14px;font-weight:500;color:rgba(212,168,67,0.20);line-height:1;">${i}</span></div>`;
+  }
   html += '</div>';
   document.getElementById('calGrid').innerHTML = html + renderMonthEvents();
 
@@ -5920,7 +5932,7 @@ if('serviceWorker' in navigator){
 <div id="calOverlay" style="display:none;position:fixed;inset:0;z-index:90;background:#21140F;flex-direction:column;overflow:hidden;">
 
   <!-- Header -->
-  <div style="flex-shrink:0;background:linear-gradient(155deg,#2A1912,#1C100B);border-bottom:1px solid rgba(212,168,67,0.22);padding:44px 18px 14px;">
+  <div style="flex-shrink:0;background:linear-gradient(155deg,#2A1912,#1C100B);border-bottom:1px solid rgba(212,168,67,0.22);padding:44px 18px 9px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
       <button onclick="closeCalendar()" style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.07);border:none;color:rgba(212,168,67,0.80);font-size:18px;cursor:pointer;">←</button>
       <div style="text-align:center;">
@@ -5933,11 +5945,11 @@ if('serviceWorker' in navigator){
       </div>
     </div>
     <!-- Day headers -->
-    <div id="calDayHdr" style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;"></div>
+    <div id="calDayHdr" style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:4px;"></div>
   </div>
 
   <!-- Calendar Grid -->
-  <div id="calGrid" style="flex:1;overflow-y:auto;padding:6px 8px 4px;-webkit-overflow-scrolling:touch;"></div>
+  <div id="calGrid" style="flex:1;overflow-y:auto;padding:2px 8px 4px;-webkit-overflow-scrolling:touch;"></div>
 
   <!-- Detail Panel -->
   <div id="calDetail" style="flex-shrink:0;background:linear-gradient(0deg,#1A0F0A,#241610);border-top:1px solid rgba(212,168,67,0.25);padding:14px 18px 30px;transition:all 0.3s ease;"></div>
