@@ -5249,7 +5249,7 @@ function renderCalendar(){
   document.getElementById('calMonthTitle').textContent = (H?MONTHS_HI[_calMonth]:MONTHS_EN[_calMonth])+' '+_calYear;
   document.getElementById('calHinduMonth').textContent = calHinduMonth(_calMonth, _calYear);
 
-  let html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 0 8px;">';
+  let html = '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;padding:0 0 8px;">';
 
   // Leading cells used to be blank 70px tiles — on a month starting late in the
   // week (Aug 2026 starts Saturday) that left six empty tiles above the 1st.
@@ -5282,7 +5282,7 @@ function renderCalendar(){
     // Cell border/bg
     // Cells sit LIGHTER than the page so each date reads as its own tile.
     // Each state is a different surface, not another opacity of the same one.
-    let cellStyle = `min-height:66px;border-radius:10px;padding:5px 4px;cursor:pointer;position:relative;transition:all 0.15s;`;
+    let cellStyle = `min-height:66px;border-radius:10px;padding:5px 4px;cursor:pointer;position:relative;transition:all 0.15s;min-width:0;overflow:hidden;`;
     if(isSelected) cellStyle += `background:var(--cal-sel);border:1.5px solid rgba(232,190,90,0.95);box-shadow:0 0 14px rgba(212,168,67,0.30);`;
     else if(isToday) cellStyle += `background:#4A3114;border:1.5px solid rgba(212,168,67,0.75);box-shadow:0 0 12px rgba(212,168,67,0.22);`;
     else if(isMajor) cellStyle += `background:#4A2718;border:1px solid rgba(255,154,60,0.55);box-shadow:inset 0 2px 0 rgba(255,154,60,0.85);`;
@@ -5296,7 +5296,7 @@ function renderCalendar(){
         <span style="font-size:15px;font-weight:${(isToday||isSelected)?'800':'600'};color:${dateColor};line-height:1;">${d}</span>
         <span style="font-size:11px;line-height:1;opacity:0.60;">${moon.e}</span>
       </div>
-      <div style="font-size:8.5px;color:var(--cal-tithi);margin-top:3px;line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${H?tithi.hi:tithi.en}</div>
+      <div style="font-size:8.5px;color:var(--cal-tithi);margin-top:3px;line-height:1.3;overflow:hidden;">${H?tithi.hi:tithi.en}</div>
       ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}${fests.length>1?`<span style="font-size:8px;color:rgba(212,168,67,0.62);vertical-align:top;">+${fests.length-1}</span>`:''}</div>`:(bankSat?`<div style="font-size:12px;margin-top:3px;line-height:1;opacity:0.75;">🏦</div>`:'')}
       ${isSpecial&&!festival?`<div style="width:5px;height:5px;border-radius:50%;background:${isEkadashi(phase)?'var(--cal-vrat)':'rgba(232,190,90,0.90)'};margin-top:4px;"></div>`:''}
     </div>`;
@@ -5945,7 +5945,7 @@ if('serviceWorker' in navigator){
       </div>
     </div>
     <!-- Day headers -->
-    <div id="calDayHdr" style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:4px;"></div>
+    <div id="calDayHdr" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:4px -10px 0;"></div>
   </div>
 
   <!-- Calendar Grid -->
