@@ -164,6 +164,54 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 .sg-now{font-size:8px;font-weight:700;color:#FFD98A;letter-spacing:0.5px;}
 .subh{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:rgba(212,168,67,0.65);
  font-weight:700;margin:16px 2px 8px;}
+
+/* ── SHARED BIRTH-PROFILE FORM ── */
+.bpf{background:#2A1912;border:1px solid rgba(212,168,67,0.18);border-radius:14px;padding:14px;margin-bottom:10px;}
+.bpl{display:block;font-size:10px;letter-spacing:0.8px;text-transform:uppercase;
+ color:rgba(212,168,67,0.80);margin:11px 2px 5px;font-weight:600;}
+.bpl:first-child{margin-top:0;}
+.bpi{width:100%;background:#3A241C;border:1px solid rgba(212,168,67,0.26);border-radius:10px;
+ padding:11px 12px;color:#F7EED8;font-size:14.5px;font-family:inherit;color-scheme:dark;outline:none;}
+.bpi:focus{border-color:rgba(232,190,90,0.8);}
+.bprow{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.bpdd{position:absolute;left:0;right:0;top:100%;background:#1F120D;border:1px solid rgba(212,168,67,0.3);
+ border-radius:10px;max-height:190px;overflow-y:auto;z-index:60;margin-top:4px;display:none;
+ box-shadow:0 8px 24px rgba(0,0,0,0.6);}
+.bpdd div{padding:10px 13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);}
+.bpdd .n1{font-size:13.5px;color:#F7EED8;font-weight:600;}
+.bpdd .n2{font-size:10px;color:rgba(212,168,67,0.6);margin-top:2px;}
+.bpbtn{width:100%;margin-top:14px;padding:14px;border:none;border-radius:13px;cursor:pointer;
+ background:linear-gradient(120deg,#D4A843,#B8892F);color:#1A0D00;font-size:15px;font-weight:600;font-family:inherit;}
+.bperr{font-size:11.5px;color:#F2A08F;margin-top:9px;text-align:center;display:none;}
+.bpwhy{font-size:11.5px;color:rgba(255,244,222,0.62);line-height:1.6;margin:0 2px 12px;}
+/* profile summary chips */
+.pcard{display:flex;align-items:center;gap:12px;background:#2E1B14;border:1px solid rgba(212,168,67,0.20);
+ border-radius:14px;padding:13px 14px;margin-bottom:9px;cursor:pointer;}
+.pcard.empty{border-style:dashed;border-color:rgba(212,168,67,0.32);}
+.pc-i{font-size:23px;flex-shrink:0;}
+.pc-n{font-size:14px;color:#F7EED8;font-weight:600;}
+.pc-s{font-size:10.5px;color:rgba(212,168,67,0.72);margin-top:2px;}
+.pc-go{margin-left:auto;color:rgba(212,168,67,0.6);font-size:18px;}
+/* score + koota table */
+.score{text-align:center;padding:18px 12px 14px;background:linear-gradient(150deg,rgba(212,168,67,0.16),rgba(255,107,26,0.05));
+ border:1px solid rgba(212,168,67,0.35);border-radius:16px;margin-bottom:12px;}
+.sc-n{font-size:40px;font-weight:700;color:#FFE9B8;line-height:1;}
+.sc-m{font-size:16px;color:rgba(255,244,222,0.5);}
+.sc-v{font-size:14px;color:var(--gold,#D4A843);margin-top:7px;font-weight:600;}
+.sc-e{font-size:10.5px;color:rgba(255,244,222,0.58);margin-top:5px;}
+.kt{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:10px;margin-bottom:5px;background:#2A1912;
+ border:1px solid rgba(212,168,67,0.10);}
+.kt-n{flex:1;min-width:0;font-size:12.5px;color:#F7EED8;}
+.kt-d{font-size:10px;color:rgba(212,168,67,0.62);margin-top:1px;}
+.kt-p{font-size:12.5px;font-weight:700;white-space:nowrap;}
+/* upsell */
+.cta{margin-top:14px;padding:16px;border-radius:16px;cursor:pointer;
+ background:linear-gradient(140deg,rgba(120,70,200,0.16),rgba(212,168,67,0.07));
+ border:1px solid rgba(178,140,255,0.35);}
+.cta-t{font-size:15px;color:#D9C4FF;font-weight:600;}
+.cta-s{font-size:11.5px;color:rgba(255,244,222,0.66);margin-top:6px;line-height:1.65;}
+.cta-b{display:inline-block;margin-top:11px;background:linear-gradient(120deg,#D4A843,#B8892F);
+ color:#1A0D00;font-size:13.5px;font-weight:600;padding:10px 18px;border-radius:11px;}
 </style>
 </head>
 <body>
@@ -236,6 +284,9 @@ function route(){
   if(h[0]==='pick')return vPick(h[1]);
   if(h[0]==='muhurta'&&h[1])return vMuhurtaRun(h[1]);
   if(h[0]==='muhurta')return vMuhurtaPick();
+  if(h[0]==='bp')return vBpForm(h[1]);
+  if(h[0]==='match'&&h[1]==='result')return vMatchResult();
+  if(h[0]==='match')return vMatch();
   if(h[0]==='hcal')return vHcal();
   if(h[0]==='lagna')return vLagna();
   if(h[0]==='vrats')return vVrats();
@@ -510,7 +561,9 @@ function vTimes(){
    Every tile below maps to something the engine actually returns from
    getPanchang / getVrats / getFestivals / getLagnaTable. Nothing invented. */
 function xt(ico,name,sub,href){
-  return '<div class="xt" onclick="location.hash=\''+href+'\'"><div class="xt-i">'+ico+'</div>'
+  // '@name' hops out of this single-page app to a real page (kundli, buy flow)
+  var act = href.charAt(0)==='@' ? 'location.href=\''+href.slice(1)+'.html\'' : 'location.hash=\''+href+'\'';
+  return '<div class="xt" onclick="'+act+'"><div class="xt-i">'+ico+'</div>'
    +'<div class="xt-n dev">'+name+'</div><div class="xt-s">'+sub+'</div></div>';
 }
 function todayObservance(){
@@ -540,6 +593,11 @@ function vExplore(){
    +xt('🚗',t('वाहन खरीद','Vehicle'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/vehicle')
    +'</div>'
 
+   +'<div class="xgrp">'+t('व्यक्तिगत ज्योतिष','Personal Astrology')+'</div><div class="xgrid">'
+   +xt('💑',t('कुंडली मिलान','Match Kundali'),t('दो कुंडली — गुण मिलान','Two charts, Guna Milan'),'#match')
+   +xt('📜',t('मेरी कुंडली','My Kundli'),t('260 पन्नों की मुफ़्त रिपोर्ट','Free 260-page report'),'@kundli')
+   +'</div>'
+
    +'<div class="xgrp">'+t('गहरी गणना','Deeper Calculations')+'</div><div class="xgrid">'
    +xt('🕐',t('चौघड़िया','Choghadiya'),t('पूरे 16 खंड','All 16 slots'),'#chogh')
    +xt('⏳',t('होरा','Hora'),t('24 ग्रह होरा','24 planetary hours'),'#hora')
@@ -555,6 +613,180 @@ function vExplore(){
    +'</div>'
 
    +'<div class="note">'+t('आज का पंचांग, राशिफल और शुभ-अशुभ समय "आज का ज्योतिष" पर हैं — यहाँ वही दोबारा नहीं दिखाया गया।','Today\'s panchang, rashifal and timings live on Astrology Today — they are deliberately not repeated here.')+'</div>';
+}
+
+/* ═════════ SHARED BIRTH-PROFILE SYSTEM ═════════
+   One store, used by every personal feature in the app. 'self' writes straight
+   into shubhdin_user so Settings, Kundli and the buy flow all see the same
+   details — a user enters their birth data once, anywhere, and never again. */
+function bpRead(slot){
+  if(slot==='self'){
+    var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+    if(!u.dob) return null;
+    return {name:u.name||'', dob:u.dob, tob:u.tob||'12:00',
+            place:u.birth_place||u.city||'',
+            lat:(u.birth_lat!=null?u.birth_lat:u.city_lat),
+            lng:(u.birth_lng!=null?u.birth_lng:u.city_lon)};
+  }
+  try{return JSON.parse(localStorage.getItem('sd_bp_'+slot)||'null');}catch(e){return null;}
+}
+function bpWrite(slot,pr){
+  if(slot==='self'){
+    var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+    if(pr.name) u.name=pr.name;
+    u.dob=pr.dob; u.tob=pr.tob; u.birth_place=pr.place; u.birth_lat=pr.lat; u.birth_lng=pr.lng;
+    if(u.city_lat==null){u.city_lat=pr.lat; u.city_lon=pr.lng; u.city=u.city||pr.place;}
+    localStorage.setItem('shubhdin_user',JSON.stringify(u)); U=u;
+    return;
+  }
+  localStorage.setItem('sd_bp_'+slot,JSON.stringify(pr));
+}
+function bpDate(pr){ return pr? new Date(pr.dob+'T'+(pr.tob||'12:00')+':00+05:30') : null; }
+function bpLine(pr){
+  if(!pr) return '';
+  var d=new Date(pr.dob+'T00:00:00');
+  return d.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short',year:'numeric'})
+   +' · '+(pr.tob||'')+(pr.place?' · '+pr.place:'');
+}
+var BP_RET='#explore', BP_PICK={}, BP_SLOT='self', _bpTimer=null;
+function goBp(slot,ret){ BP_RET=ret||'#explore'; location.hash='#bp/'+slot; }
+var BP_TITLES={
+  self:{hi:'आपका जन्म विवरण',en:'Your Birth Details'},
+  boy:{hi:'वर का जन्म विवरण',en:"Groom's Birth Details"},
+  girl:{hi:'वधू का जन्म विवरण',en:"Bride's Birth Details"}
+};
+function vBpForm(slot){
+  slot=slot||'self'; BP_SLOT=slot;
+  var pr=bpRead(slot)||{}, ti=BP_TITLES[slot]||BP_TITLES.self;
+  BP_PICK={lat:pr.lat,lng:pr.lng};
+  var why = slot==='self'
+    ? t('जन्म विवरण से गणना आपके अपने नक्षत्र और चंद्रराशि पर आधारित हो जाती है — तभी शुभ दिन आपके लिए निकलते हैं, सामान्य नहीं। यह एक बार भरना है, फिर पूरे ऐप में काम आएगा।',
+        'With your birth details every calculation is scored against your own nakshatra and Moon rashi — that is what makes a date auspicious for you rather than in general. Enter it once; the whole app will use it.')
+    : t('गुण मिलान चंद्र नक्षत्र से होता है, इसलिए दोनों का जन्म विवरण चाहिए। सही समय जितना सटीक, मिलान उतना भरोसेमंद।',
+        'Guna Milan is computed from the Moon nakshatra, so both charts are needed. The more exact the birth time, the more reliable the match.');
+  app.innerHTML=pgHead(H?ti.hi:ti.en,t('एक बार भरें — आगे अपने आप इस्तेमाल होगा','Enter once — reused automatically'),BP_RET)
+   +'<div class="bpwhy">'+why+'</div>'
+   +'<div class="bpf">'
+   +'<label class="bpl">'+t('नाम','Name')+'</label>'
+   +'<input class="bpi" id="bpName" type="text" value="'+(pr.name||'').replace(/"/g,'&quot;')+'">'
+   +'<div class="bprow"><div><label class="bpl">'+t('जन्म तिथि','Date of Birth')+'</label>'
+   +'<input class="bpi" id="bpDob" type="date" value="'+(pr.dob||'')+'"></div>'
+   +'<div><label class="bpl">'+t('जन्म समय','Time of Birth')+'</label>'
+   +'<input class="bpi" id="bpTob" type="time" value="'+(pr.tob||'')+'"></div></div>'
+   +'<label class="bpl">'+t('जन्म स्थान','Birth Place')+'</label>'
+   +'<div style="position:relative;">'
+   +'<input class="bpi" id="bpPlace" type="text" autocomplete="off" placeholder="'+t('शहर खोजें…','Search city…')+'" '
+   +'value="'+(pr.place||'').replace(/"/g,'&quot;')+'" oninput="bpCity(this.value)">'
+   +'<div class="bpdd" id="bpDD"></div></div>'
+   +'<button class="bpbtn" onclick="bpSave()">'+t('सहेजें और आगे बढ़ें →','Save & Continue →')+'</button>'
+   +'<div class="bperr" id="bpErr"></div>'
+   +'</div>'
+   +'<div class="note">'+t('विवरण आपके फ़ोन में सुरक्षित रहता है और पूरे ऐप में दोबारा नहीं पूछा जाएगा।',
+       'Saved on your phone and never asked for again anywhere in the app.')+'</div>';
+}
+function bpCity(q){
+  var dd=document.getElementById('bpDD'); if(!dd) return;
+  BP_PICK={};
+  if(!q||q.length<2){dd.style.display='none';return;}
+  clearTimeout(_bpTimer);
+  dd.innerHTML='<div><div class="n1">'+t('खोज रहे हैं…','Searching…')+'</div></div>'; dd.style.display='block';
+  _bpTimer=setTimeout(function(){
+    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&limit=6&format=json',{headers:{'Accept-Language':'en'}})
+    .then(function(r){return r.json();}).then(function(rs){
+      if(!rs.length){dd.innerHTML='<div><div class="n1">'+t('कोई परिणाम नहीं','No results')+'</div></div>';return;}
+      dd.innerHTML=rs.map(function(r){
+        var nm=r.display_name.split(',')[0].trim().replace(/'/g,'');
+        var sub=r.display_name.split(',').slice(1,3).join(',').trim();
+        return '<div onclick="bpPickCity(\''+nm+'\','+r.lat+','+r.lon+')">'
+          +'<div class="n1">'+nm+'</div><div class="n2">'+sub+'</div></div>';
+      }).join('');
+    }).catch(function(){dd.innerHTML='<div><div class="n1">'+t('खोज विफल','Search failed')+'</div></div>';});
+  },420);
+}
+function bpPickCity(nm,lat,lng){
+  document.getElementById('bpPlace').value=nm;
+  BP_PICK={lat:parseFloat(lat),lng:parseFloat(lng)};
+  document.getElementById('bpDD').style.display='none';
+}
+function bpSave(){
+  function v(id){var e=document.getElementById(id);return e?e.value.trim():'';}
+  var err=document.getElementById('bpErr');
+  var dob=v('bpDob'), tob=v('bpTob'), place=v('bpPlace');
+  function fail(m){err.textContent=m;err.style.display='block';}
+  if(!dob||!tob) return fail(t('जन्म तिथि और समय दोनों भरें','Please fill both date and time of birth'));
+  if(!place) return fail(t('जन्म स्थान भरें','Please enter the birth place'));
+  if(BP_PICK.lat==null){
+    var old=bpRead(BP_SLOT);
+    if(old&&old.place===place&&old.lat!=null) BP_PICK={lat:old.lat,lng:old.lng};
+    else return fail(t('सूची में से शहर चुनें — निर्देशांक चाहिए','Pick the city from the list — coordinates are needed'));
+  }
+  bpWrite(BP_SLOT,{name:v('bpName'),dob:dob,tob:tob,place:place,lat:BP_PICK.lat,lng:BP_PICK.lng});
+  location.hash=BP_RET;
+}
+/* ═════════ MATCH KUNDALI ═════════ */
+function pcard(slot,ico,label,ret){
+  var pr=bpRead(slot);
+  return '<div class="pcard'+(pr?'':' empty')+'" onclick="goBp(\''+slot+'\',\''+ret+'\')">'
+   +'<div class="pc-i">'+ico+'</div><div><div class="pc-n dev">'+(pr&&pr.name?pr.name:label)+'</div>'
+   +'<div class="pc-s">'+(pr?bpLine(pr):t('विवरण भरें','Tap to enter details'))+'</div></div>'
+   +'<div class="pc-go">'+(pr?'✎':'+')+'</div></div>';
+}
+function vMatch(){
+  var boy=bpRead('boy'), girl=bpRead('girl'), ready=boy&&girl;
+  app.innerHTML=pgHead(t('कुंडली मिलान','Match Kundali'),t('दोनों का जन्म विवरण — फिर गुण मिलान','Both birth charts, then Guna Milan'),'#explore')
+   +'<div class="bpwhy">'+t('गुण मिलान दोनों की चंद्र नक्षत्र स्थिति से निकलता है। नीचे दोनों विवरण भरें — गणना आपके फ़ोन पर ही होगी।',
+      'Guna Milan is computed from both Moon nakshatras. Fill both below — the calculation runs on your phone.')+'</div>'
+   +pcard('boy','🤵',t('वर','Groom'),'#match')
+   +pcard('girl','👰',t('वधू','Bride'),'#match')
+   +(ready
+     ? '<button class="bpbtn" onclick="location.hash=\'#match/result\'">'+t('मिलान देखें →','See the Match →')+'</button>'
+     : '<div class="note">'+t('दोनों विवरण भरने पर मिलान अपने आप उपलब्ध हो जाएगा।','The match unlocks once both sets of details are in.')+'</div>');
+}
+function vMatchResult(){
+  var boy=bpRead('boy'), girl=bpRead('girl');
+  if(!boy||!girl) return vMatch();
+  var g=null,mm=null;
+  try{ g=PE.getGunaMilanFull(bpDate(boy),bpDate(girl)); }catch(e){}
+  if(!g){app.innerHTML=pgHead(t('कुंडली मिलान','Match Kundali'),'','#match')+'<div class="note">—</div>';return;}
+  try{ mm=PE.getManglikMatch(bpDate(boy),boy.lat,boy.lng,bpDate(girl),girl.lat,girl.lng); }catch(e){}
+  var eff=(g.effectiveTotal!=null?g.effectiveTotal:g.total);
+  var pct=Math.round(eff/g.max*100);
+  var kt=(g.kootas||[]).map(function(k){
+    var ok=k.obtained>=k.max*0.5;
+    return '<div class="kt"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'
+      +(ok?'#5ABE78':'#E66E5A')+'"></div>'
+      +'<div class="kt-n"><div class="dev">'+(H?(k.hi||k.koota):k.koota)+'</div>'
+      +'<div class="kt-d">'+(k.boy||'')+' · '+(k.girl||'')+'</div></div>'
+      +'<div class="kt-p" style="color:'+(ok?'#8FE0A8':'#F0A08E')+'">'+k.obtained+'/'+k.max+'</div></div>';
+  }).join('');
+  var flags='';
+  if(mm&&mm.verdict) flags+='<div class="kt"><div class="kt-n"><div class="dev">'+t('मंगल दोष','Mangal Dosha')+'</div>'
+    +'<div class="kt-d">'+(H?mm.verdict.hi:mm.verdict.en)+'</div></div></div>';
+  ['nadi','bhakoot','gana'].forEach(function(k){
+    var d=g.parihara&&g.parihara[k]; if(!d||!d.dosha) return;
+    var st=d.cancelled?t('परिहार सहित — कट गया','cancelled by parihara'):(d.softened?t('कुछ हल्का','partly softened'):t('यथावत','stands'));
+    flags+='<div class="kt"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+(d.cancelled?'#5ABE78':'#E8A317')+'"></div>'
+      +'<div class="kt-n"><div class="dev">'+t(k==='nadi'?'नाड़ी दोष':k==='bhakoot'?'भकूट दोष':'गण दोष',
+        k==='nadi'?'Nadi Dosha':k==='bhakoot'?'Bhakoot Dosha':'Gana Dosha')+'</div>'
+      +'<div class="kt-d">'+st+'</div></div></div>';
+  });
+  if(!flags) flags='<div class="kt"><div class="kt-n">'+t('कोई बड़ा दोष नहीं ✓','No major dosha ✓')+'</div></div>';
+  app.innerHTML=pgHead(t('गुण मिलान','Guna Milan'),(boy.name||t('वर','Groom'))+' · '+(girl.name||t('वधू','Bride')),'#match')
+   +'<div class="score"><div><span class="sc-n">'+eff+'</span><span class="sc-m">/'+g.max+'</span></div>'
+   +'<div class="sc-v dev">'+(H?(g.effectiveVerdict||g.verdict):(g.effectiveVerdict||g.verdict))+' · '+pct+'%</div>'
+   +(g.effectiveTotal!=null&&g.effectiveTotal!==g.total
+      ? '<div class="sc-e">'+t('कच्चा योग '+g.total+'/'+g.max+' — परिहार लगाने के बाद '+eff,
+          'Raw score '+g.total+'/'+g.max+' — '+eff+' after parihara applied')+'</div>' : '')
+   +'</div>'
+   +'<div class="subh">'+t('अष्टकूट — आठों कूट','Ashtakoota — all eight')+'</div>'+kt
+   +'<div class="subh">'+t('दोष जाँच','Dosha Check')+'</div>'+flags
+   +'<div class="cta" onclick="location.href=\'buy.html?r=marriage\'">'
+   +'<div class="cta-t">'+t('पूरा विवाह विश्लेषण चाहिए?','Want the complete marriage analysis?')+'</div>'
+   +'<div class="cta-s">'+t('विस्तृत विवाह रिपोर्ट में यह सब जुड़ता है — दोष परिहार का शास्त्रीय विश्लेषण, दोनों की नवांश (D9) कुंडली, सप्तम भाव और अष्टकवर्ग बल, विवाह के शुभ काल, और उपाय।',
+      'The detailed Marriage Report adds what a score cannot show — classical dosha-cancellation analysis, both Navamsa (D9) charts, 7th-house and Ashtakavarga strength, marriage timing windows, and remedies.')+'</div>'
+   +'<div class="cta-b">'+t('विस्तृत विवाह रिपोर्ट देखें →','View Detailed Marriage Report →')+'</div></div>'
+   +'<div class="note">'+t('गुण अंक एक संकेत है, निर्णय नहीं — अंतिम राय अपने पुरोहित से लें।',
+      'The guna score is an indicator, not a verdict — take the final call with your purohit.')+'</div>';
 }
 /* ── Panchang for any date (Today can only ever show today) ── */
 function vPick(iso){
@@ -604,38 +836,65 @@ function birthDT(){
 }
 function vMuhurtaRun(key){
   var m=MUH_META[key]; if(!m) return vMuhurtaPick();
-  var head=pgHead((m.i+' ')+(H?m.hi:m.en),t('अगले 90 दिनों में शुभ तिथियाँ','Auspicious dates in the next 90 days'),'#explore');
-  var bd=birthDT();
-  if(!bd){
-    app.innerHTML=head+'<div class="note">'+t('इसके लिए आपकी जन्म तिथि चाहिए — सेटिंग्स में जोड़ें, फिर यह आपकी कुंडली से गणना करेगा।','This needs your date of birth — add it in Settings and this will compute from your own chart.')+'</div>';
+  var head=pgHead((m.i+' ')+(H?m.hi:m.en),t('आपकी कुंडली से शुभ तिथियाँ','Auspicious dates from your own chart'),'#explore');
+  var pr=bpRead('self');
+
+  /* No birth details? Ask for them HERE, with the reason — never a detour to Settings. */
+  if(!pr){
+    app.innerHTML=head
+     +'<div class="bpwhy">'+t('इस खोज में तिथि, नक्षत्र और वार तो सबके लिए एक जैसे हैं — पर ताराबल और चंद्रबल आपके अपने जन्म नक्षत्र से निकलते हैं। वही एक सामान्य सूची को <b>आपकी</b> सूची बनाते हैं।',
+        'Tithi, nakshatra and weekday are the same for everyone — but tarabala and chandrabala are computed from <b>your</b> birth nakshatra. That is what turns a generic list into your list.')+'</div>'
+     +'<div class="pcard empty" onclick="goBp(\'self\',\'#muhurta/'+key+'\')">'
+     +'<div class="pc-i">🎂</div><div><div class="pc-n dev">'+t('जन्म विवरण भरें','Enter Birth Details')+'</div>'
+     +'<div class="pc-s">'+t('एक बार — पूरे ऐप में काम आएगा','Once — used across the whole app')+'</div></div>'
+     +'<div class="pc-go">+</div></div>';
     return;
   }
+
+  var days=MUH_DAYS[key]||90;
   var res=null;
-  try{ res=PE.findMuhurta(key,bd,LAT,LNG,new Date(),new Date(Date.now()+90*86400000),8); }catch(e){}
+  try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),8); }catch(e){}
+
+  var rangeBar='<div class="subh">'+t('कितने दिनों में खोजें','Search window')+'</div><div class="xgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:4px;">'
+   +[30,90,180].map(function(d){
+      return '<div class="xt" style="padding:9px 6px;'+(d===days?'border-color:rgba(232,190,90,0.9);background:#4A3114;':'')+'" '
+       +'onclick="MUH_DAYS[\''+key+'\']='+d+';route();"><div class="xt-n">'+d+' '+t('दिन','days')+'</div></div>';
+    }).join('')+'</div>'
+   +'<div class="pcard" onclick="goBp(\'self\',\'#muhurta/'+key+'\')"><div class="pc-i">🎂</div>'
+   +'<div><div class="pc-n dev">'+(pr.name||t('आपका विवरण','Your details'))+'</div>'
+   +'<div class="pc-s">'+bpLine(pr)+'</div></div><div class="pc-go">✎</div></div>';
+
+  var body;
   if(!res||!res.results||!res.results.length){
-    app.innerHTML=head+'<div class="note">'+t('अगले 90 दिनों में इस कार्य के लिए कोई पूर्ण शुभ दिन नहीं मिला। यही ईमानदार उत्तर है — शर्तें ढीली नहीं की गईं।','No fully auspicious day for this in the next 90 days. That is the honest answer — the rules were not loosened to manufacture one.')+'</div>';
-    return;
+    body='<div class="note">'+t('इस अवधि में इस कार्य के लिए कोई पूर्ण शुभ दिन नहीं मिला। शर्तें ढीली करके दिन बनाना आसान था — नहीं किया। अवधि बढ़ाकर देखिए।',
+      'No fully auspicious day for this in the chosen window. Loosening the rules to manufacture one would have been easy — we did not. Try a longer window.')+'</div>';
+  } else {
+    body=res.results.map(function(r){
+      var d=new Date(r.date);
+      var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{weekday:'short',day:'numeric',month:'short'});
+      var plus=(r.plus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(150,220,170,0.88);line-height:1.6;">✓ '+(H?x.hi:x.en)+'</div>';}).join('');
+      var minus=(r.minus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(240,150,130,0.88);line-height:1.6;">△ '+(H?x.hi:x.en)+'</div>';}).join('');
+      return '<div class="card" style="margin-bottom:9px;">'
+        +'<div style="display:flex;align-items:baseline;gap:9px;margin-bottom:6px;">'
+        +'<b style="font-size:15px;color:#F7EED8;">'+when+'</b>'
+        +'<span class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);">'+(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</span></div>'
+        +plus+minus
+        +(r.abhijit?'<div style="font-size:10.5px;color:rgba(255,244,222,0.62);margin-top:5px;">⭐ '+t('अभिजित ','Abhijit ')+fR(r.abhijit.start,r.abhijit.end)+'</div>':'')
+        +(r.amritKaal?'<div style="font-size:10.5px;color:rgba(255,244,222,0.62);">🍯 '+t('अमृत काल ','Amrit Kaal ')+fR(r.amritKaal.start,r.amritKaal.end)+'</div>':'')
+        +'</div>';
+    }).join('');
   }
-  var rows=res.results.map(function(r){
-    var d=new Date(r.date);
-    var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{weekday:'short',day:'numeric',month:'short'});
-    var plus=(r.plus||[]).map(function(x){return '<div class="f-t" style="font-size:10.5px;color:rgba(150,220,170,0.85);">✓ '+(H?x.hi:x.en)+'</div>';}).join('');
-    var minus=(r.minus||[]).map(function(x){return '<div class="f-t" style="font-size:10.5px;color:rgba(240,150,130,0.85);">△ '+(H?x.hi:x.en)+'</div>';}).join('');
-    return '<div class="card" style="margin-bottom:9px;">'
-      +'<div style="display:flex;align-items:baseline;gap:9px;margin-bottom:6px;">'
-      +'<b style="font-size:15px;color:#F7EED8;">'+when+'</b>'
-      +'<span class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);">'+(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</span></div>'
-      +plus+minus
-      +(r.abhijit?'<div class="f-t" style="font-size:10.5px;color:rgba(255,244,222,0.6);margin-top:4px;">⭐ '+t('अभिजित ','Abhijit ')+fR(r.abhijit.start,r.abhijit.end)+'</div>':'')
-      +'</div>';
-  }).join('');
-  app.innerHTML=head
-   +'<div class="note" style="margin:0 0 10px;">'+t('आपके जन्म नक्षत्र ','Scored against your birth nakshatra ')
-     +'<b class="dev">'+(res.birthNakshatra&&(H?res.birthNakshatra.hi:res.birthNakshatra.en)||'')+'</b>'
-     +t(' और चंद्रराशि से आँका गया',' and Moon rashi')+'</div>'
-   +rows
-   +'<div class="note">'+t('तिथि, नक्षत्र, वार, ताराबल और चंद्रबल — पाँचों जाँचे गए। अंतिम निर्णय अपने पुरोहित से लें।','Tithi, nakshatra, weekday, tarabala and chandrabala all checked. Confirm the final choice with your purohit.')+'</div>';
+  app.innerHTML=head+rangeBar
+   +'<div class="subh">'+t('आपके लिए शुभ तिथियाँ','Auspicious dates for you')+'</div>'
+   +body
+   +'<div class="cta" onclick="location.href=\'buy.html?r=muhurta\'">'
+   +'<div class="cta-t">'+t('इससे आगे का मुहूर्त चाहिए?','Need the full muhurta workup?')+'</div>'
+   +'<div class="cta-s">'+t('विस्तृत मुहूर्त रिपोर्ट में हर तिथि का घंटा-दर-घंटा लग्न, चौघड़िया और होरा, वर्ज्य काल, और आपकी कुंडली के अनुसार क्रम में लगी सूची मिलती है।',
+      'The detailed Muhurta Report adds hour-by-hour lagna for each date, choghadiya and hora windows, periods to avoid, and the dates ranked against your own chart.')+'</div>'
+   +'<div class="cta-b">'+t('विस्तृत मुहूर्त रिपोर्ट देखें →','View Detailed Muhurta Report →')+'</div></div>'
+   +'<div class="note">'+t('तिथि, नक्षत्र, वार, ताराबल और चंद्रबल — पाँचों जाँचे गए।','Tithi, nakshatra, weekday, tarabala and chandrabala all checked.')+'</div>';
 }
+var MUH_DAYS={};
 /* ── shared segment-list renderer (choghadiya, hora) ── */
 function segList(arr,label){
   var now=Date.now(),h='';
@@ -652,18 +911,17 @@ function segList(arr,label){
 function vChogh(){
   var p=panchang();
   app.innerHTML=pgHead(t('चौघड़िया','Choghadiya'),t('सूर्योदय से सूर्योदय तक 16 खंड','16 slots, sunrise to sunrise'),'#explore')
-   +ribbonHTML()
    +segList(p.choghadiya.day,t('दिन के चौघड़िया','Day Choghadiya'))
    +segList(p.choghadiya.night,t('रात के चौघड़िया','Night Choghadiya'))
    +'<div class="note">'+t('हरा = शुभ खंड, लाल = वर्ज्य। खंड सूर्योदय-सूर्यास्त से बनते हैं, घड़ी से नहीं।','Green = auspicious, red = avoid. Slots derive from actual sunrise/sunset, not clock hours.')+'</div>';
 }
 function vHora(){
   var p=panchang();
-  var day=p.hora.filter(function(h2){return h2.dayTime;}), night=p.hora.filter(function(h2){return !h2.dayTime;});
+  var day=p.hora.filter(function(x){return x.dayTime;}), night=p.hora.filter(function(x){return !x.dayTime;});
   app.innerHTML=pgHead(t('होरा','Hora'),t('24 ग्रह होरा — हर होरा का स्वामी','24 planetary hours and their lords'),'#explore')
    +segList(day,t('दिन की होरा','Daytime Hora'))
    +segList(night,t('रात की होरा','Night Hora'))
-   +'<div class="note">'+t('हर होरा का स्वामी ग्रह उस समय के कार्यों पर प्रभाव डालता है।','Each hora is ruled by a planet said to colour the work begun in it.')+'</div>';
+   +'<div class="note">'+t('हर होरा का स्वामी ग्रह उस समय शुरू किए कार्यों पर प्रभाव डालता है।','Each hora is ruled by a planet said to colour the work begun in it.')+'</div>';
 }
 function vTara(){
   var p=panchang(), tb=p.tarabalam&&p.tarabalam[0];
@@ -685,12 +943,12 @@ function vChandra(){
   var p=panchang(), cb=p.chandrabalam&&p.chandrabalam[0];
   if(!cb){app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),'','#explore')+'<div class="note">—</div>';return;}
   var goodSet={}; cb.good.forEach(function(r){goodSet[r.index]=1;});
-  var R=PE._data.RASHI_EN, mineIdx=myRashiIdx(), rows='';
+  var mineIdx=myRashiIdx(), rows='';
   for(var i=0;i<12;i++){
     var g=!!goodSet[i], me=(i===mineIdx);
     rows+='<div class="sgrow '+(g?'g':'b')+(me?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(g?'#5ABE78':'#E66E5A')+'"></div>'
-      +'<div class="sg-n dev">'+(R?R[i]:('#'+(i+1)))+(me?' <span class="sg-now">'+t('आपकी','YOURS')+'</span>':'')+'</div>'
+      +'<div class="sg-n dev">'+(H?RASHI[i][0]:RASHI[i][1])+(me?' <span class="sg-now">'+t('आपकी','YOURS')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+(g?t('अनुकूल','Favourable'):t('सामान्य','Neutral'))+'</div></div>';
   }
   app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),t('चंद्रमा आज ','Moon today in ')+'<span class="dev">'+(H?cb.dayRashi.hi:cb.dayRashi.en)+'</span>','#explore')
@@ -751,6 +1009,7 @@ function vFest(){
   app.innerHTML=pgHead(t('त्योहार','Festivals'),t('इस वर्ष के आने वाले पर्व','Upcoming festivals this year'),'#explore')
    +obsList(l,'🪔',t('इस वर्ष आगे कोई पर्व नहीं','No further festivals this year'));
 }
+
 route();
 </script>
 </body>
