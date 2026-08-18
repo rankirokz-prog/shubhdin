@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v56';
+const CACHE_NAME = 'shubhdin-v57';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -7,6 +7,12 @@ const CORE_FILES = [
   '/dashboard.html',
   '/astrology.html',
   '/kundli.html',
+  // The astrology engine. astrology.html loads these directly and dashboard.html
+  // now lazy-loads them to compute the birth rashi on device. Without them in
+  // the cache the offline fallback would 404 and the rashi would go missing —
+  // which is the exact failure this local-first change was made to remove.
+  '/astronomy.min.js',
+  '/panchang-engine.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
