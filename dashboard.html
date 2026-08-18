@@ -2457,10 +2457,7 @@ function personalise(){
     ?(H?'108 नामों का जप सुनें':'🎧 Listen 108 Names')
     :(H?'28 बार जाप शुरू करें':'Start 28 times chanting');
   // Streak
-  const sk=getStreak();
-  document.getElementById('skNum').textContent=H?'आज का लक्ष्य:':'Today\'s goal:';
-  document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आपकी streak शुरू करें':'🔥 Start your streak');
-  document.getElementById('skSub').textContent=H?'आपकी साधना यात्रा':'Your sadhana journey';
+  renderStreakCard();
   document.getElementById('skIco').textContent='🔥';
   document.getElementById('skUnit').textContent=isShravan()?(H?'108 नाम':'108 names'):(H?'28 जाप':'28 chants');
   // Listen screen
@@ -2588,6 +2585,50 @@ function personalise(){
 }
 
 // ── Streak ──
+/* The card used to say the same two things forever. A streak has four real
+   states and the difference matters: a broken streak needs different words
+   from a streak that is merely waiting for today's jap. */
+function streakState(){
+  var d={}; try{d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');}catch(e){}
+  var n=d.count||0, last=d.date||d.lastDate||null;
+  if(!n||!last) return {state:'none',count:0};
+  var today=new Date().toDateString();
+  var yest=new Date(Date.now()-86400000).toDateString();
+  if(last===today) return {state:'done',count:n};
+  if(last===yest)  return {state:'pending',count:n};
+  return {state:'broken',count:n};   // missed a day — the count is history now
+}
+function renderStreakCard(){
+  var s=streakState();
+  var ico=document.getElementById('skIco'), ti=document.getElementById('skTitle'),
+      sub=document.getElementById('skSub'), num=document.getElementById('skNum'),
+      unit=document.getElementById('skUnit');
+  if(!ti) return;
+  var goal=isShravan()?(H?'108 नाम':'108 names'):(H?'28 जाप':'28 chants');
+  if(s.state==='none'){
+    if(ico)ico.textContent='✨';
+    ti.textContent=H?'आज से शुरू करें':'Start today';
+    sub.textContent=H?'एक दिन का जाप — यात्रा यहीं से':'One day of jap — the journey starts here';
+    if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
+  } else if(s.state==='done'){
+    if(ico)ico.textContent='🔥';
+    ti.textContent=(H?'🔥 '+s.count+' दिन लगातार':'🔥 '+s.count+' day streak');
+    sub.textContent=H?'आज पूरा हुआ ✅':'Today complete ✅';
+    if(num)num.textContent=H?'कल फिर मिलते हैं':'See you tomorrow';
+    goal='';
+  } else if(s.state==='pending'){
+    if(ico)ico.textContent='🔥';
+    ti.textContent=(H?'🔥 '+s.count+' दिन लगातार':'🔥 '+s.count+' day streak');
+    sub.textContent=H?'आज का जाप बाकी है — क्रम बनाए रखें':'Today is pending — keep it going';
+    if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
+  } else {
+    if(ico)ico.textContent='🪔';
+    ti.textContent=H?'फिर से शुरू करें':'Begin again';
+    sub.textContent=(H?'पिछला क्रम '+s.count+' दिन का था — आज से नया':'Your last streak reached '+s.count+' days — start a new one today');
+    if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
+  }
+  if(unit)unit.textContent=goal;
+}
 function getStreak(){try{return JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count||0;}catch(e){return 0;}}
 function updateStreak(){
   const today=new Date().toDateString();
@@ -3351,7 +3392,7 @@ function go(tab){
   if(tab==='mantras')mlGrid();
   if(tab==='sadhana')renderSadhana();
   if(tab==='listen')renderSadhanaCard();
-  if(tab==='home')renderWallpaperCard();
+  if(tab==='home'){renderWallpaperCard();renderStreakCard();}
 }
 
 // ── Audio player ──
