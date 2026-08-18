@@ -4962,7 +4962,59 @@ function saveSettings(){
 }
 
 
-// ── PROKERALA BIRTH CHART ──
+/* ══════════════════════════════════════════════════════════════════
+   BIRTH CHART — computed on this device, not guessed and not fetched.
+
+   The old path had two problems. It called /api/birth-chart, so with no
+   network the app fell back to getRashi(), which is a TROPICAL sun-sign
+   lookup off Gregorian date cutoffs — the opposite of the "गणना से,
+   अनुमान से नहीं" printed on these screens. And a user's rashi is the
+   most identity-level fact in the app, so silently wrong is the worst
+   possible failure.
+
+   The engine already computes all of it — rashi, nakshatra, pada, lagna —
+   in about half a millisecond. So local is now primary.
+
+   It is 278KB across two files, and this is the ad-revenue page, so it is
+   NEVER part of first paint: loaded on demand, once, only when there is a
+   birth date whose chart is not already cached.
+   ══════════════════════════════════════════════════════════════════ */
+var _engineP=null;
+function ensureEngine(){
+  if(window.PanchangEngine) return Promise.resolve(window.PanchangEngine);
+  if(_engineP) return _engineP;
+  _engineP=new Promise(function(resolve,reject){
+    function load(src){ return new Promise(function(ok,no){
+      var s=document.createElement('script'); s.src=src; s.async=true;
+      s.onload=ok; s.onerror=function(){no(new Error(src));};
+      document.head.appendChild(s);
+    });}
+    load('astronomy.min.js')
+      .then(function(){ return load('panchang-engine.js'); })
+      .then(function(){ window.PanchangEngine?resolve(window.PanchangEngine):reject(new Error('engine absent')); })
+      .catch(reject);
+  });
+  return _engineP;
+}
+/* Compute locally. Returns null if the engine could not be loaded, so the
+   caller can decide — it never invents a value. */
+function computeBirthLocal(u){
+  var PE=window.PanchangEngine; if(!PE||!u.dob) return null;
+  try{
+    var lat=(u.birth_lat!=null?u.birth_lat:u.city_lat), lng=(u.birth_lng!=null?u.birth_lng:u.city_lon);
+    if(lat==null||lng==null) return null;
+    var d=new Date(u.dob+'T'+(u.tob||'06:00')+':00+05:30');
+    var bc=PE.getBirthChart(d,lat,lng);
+    var moon=bc.grahas.filter(function(g){return g.key==='moon';})[0];
+    if(!moon) return null;
+    return {rashi:(H?moon.rashi.hi:moon.rashi.en),
+            nakshatra:(H?moon.nakshatra.hi:moon.nakshatra.en),
+            nakshatra_pada:moon.nakshatra.pada,
+            lagna:(H?bc.lagna.hi:bc.lagna.en),
+            source:'engine'};
+  }catch(e){ return null; }
+}
+// ── BIRTH CHART (local first, API only if the engine cannot load) ──
 async function fetchBirthChart(){
   const u = {};
   try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
@@ -4973,9 +5025,22 @@ async function fetchBirthChart(){
   const cacheKey = u.dob+'_'+u.tob+'_'+(u.city||'delhi');
   if(u.birth_cache_key === cacheKey && u.nakshatra) return;
 
+  // 1 · on-device first
   try{
-    const lat = u.city_lat || 28.6139;
-    const lon = u.city_lon || 77.2090;
+    await ensureEngine();
+    const local = computeBirthLocal(u);
+    if(local){
+      u.nakshatra=local.nakshatra; u.nakshatra_pada=local.nakshatra_pada;
+      u.rashi=local.rashi; u.lagna=local.lagna; u.birth_cache_key=cacheKey;
+      localStorage.setItem('shubhdin_user',JSON.stringify(u));
+      updateBirthChips(local);
+      return;
+    }
+  }catch(e){ /* engine unavailable — fall through to the network */ }
+  // 2 · network fallback, only if the engine could not answer
+  try{
+    const lat = u.birth_lat || u.city_lat || 28.6139;
+    const lon = u.birth_lng || u.city_lon || 77.2090;
     const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&lat=${lat}&lon=${lon}`);
     const data = await res.json();
     if(!data.success) return;
