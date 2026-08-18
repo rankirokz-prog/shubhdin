@@ -1661,7 +1661,14 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
         <!-- Calendar & Festivals Button -->
         <div onclick="openCalendar()" style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(255,140,30,0.05));border:1px solid rgba(212,168,67,0.20);border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
           <div style="display:flex;align-items:center;gap:12px;">
-            <div style="font-size:26px;line-height:1;">📅</div>
+            <div id="calIcon" style="width:30px;height:31px;border-radius:6px;overflow:hidden;
+                 border:1px solid rgba(212,168,67,0.45);background:#2A1912;flex-shrink:0;
+                 display:flex;flex-direction:column;line-height:1;">
+              <div id="calIconM" style="background:linear-gradient(120deg,#D4A843,#B8892F);color:#1A0D00;
+                   font-size:7px;font-weight:800;letter-spacing:0.4px;text-align:center;padding:2px 0 1.5px;"></div>
+              <div id="calIconD" style="flex:1;display:flex;align-items:center;justify-content:center;
+                   font-size:15px;font-weight:700;color:#F7EED8;"></div>
+            </div>
             <div>
               <div id="calBtnTitle" style="font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:var(--gold);font-weight:600;">पंचांग कैलेंडर</div>
               <div id="calBtnSub" style="font-size:10px;color:rgba(212,168,67,0.85);letter-spacing:0.5px;margin-top:2px;">त्योहार • चंद्र • पंचांग</div>
@@ -2581,6 +2588,8 @@ function personalise(){
   const ps4=document.getElementById('ps4'); if(ps4) ps4.textContent=H?'🕐 चौघड़िया':'🕐 Choghadiya';
   const ps5=document.getElementById('ps5'); if(ps5) ps5.textContent=H?'🙏 इस सप्ताह के व्रत':'🙏 Fasts This Week';
   const ps6=document.getElementById('ps6'); if(ps6) ps6.textContent=H?'💍 शुभ मुहूर्त':'💍 Auspicious Muhurta';
+  // the icon shows the real date, and re-renders if the app is left open past midnight
+  renderCalIcon();
   // Calendar button
   const _cbt=document.getElementById('calBtnTitle');
   if(_cbt) _cbt.textContent=H?'पंचांग कैलेंडर':'Panchang Calendar';
@@ -2606,6 +2615,18 @@ function streakState(){
   if(last===today) return {state:'done',count:n};
   if(last===yest)  return {state:'pending',count:n};
   return {state:'broken',count:n};   // missed a day — the count is history now
+}
+/* The icon is drawn once at load, so an app left open overnight would show
+   yesterday — and dawn is exactly when this audience opens it. Re-rendered
+   whenever Home is shown AND when the app is resumed from the background,
+   because a PWA woken from a locked phone never re-runs go('home'). */
+function renderCalIcon(){
+  var d=new Date();
+  var mh=['जन','फर','मार्च','अप्रै','मई','जून','जुल','अग','सित','अक्टू','नव','दिस'];
+  var me=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var m=document.getElementById('calIconM'), dd=document.getElementById('calIconD');
+  if(m) m.textContent=H?mh[d.getMonth()]:me[d.getMonth()];
+  if(dd) dd.textContent=d.getDate();
 }
 function renderStreakCard(){
   var s=streakState();
@@ -3410,7 +3431,7 @@ function go(tab){
     }).catch(function(){});
   }
   if(tab==='listen')renderSadhanaCard();
-  if(tab==='home'){renderWallpaperCard();renderStreakCard();}
+  if(tab==='home'){renderWallpaperCard();renderStreakCard();renderCalIcon();}
 }
 
 // ── Audio player ──
@@ -5013,6 +5034,19 @@ function wpFromSplash(e){
 // ── SETTINGS ──
 let _settLang = 'hi';
 
+// Resuming a backgrounded PWA is the real "opened at dawn" path.
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden) return;
+  renderCalIcon();
+  var today=new Date().toDateString();
+  if(window._sdDay && window._sdDay!==today){
+    _calMemo={};                 // calendar tithi memo is per-day
+    fetchPanchang();             // cache key has rolled — recompute for the new day
+    renderStreakCard();
+  }
+  window._sdDay=today;
+});
+window._sdDay=new Date().toDateString();
 function openSettings(){
   // Prefill current values
   const u = {};
