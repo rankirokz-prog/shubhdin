@@ -1697,7 +1697,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="lh-play">▶</div>
           </div>
           <div class="lh-preview">
-            <p id="preview"><span id="pvPre">"आज </span><em id="pvDeity">माँ लक्ष्मी</em><span id="pvMid"> का दिन है — शुभ समय </span><em id="pvTime">6:00–7:30</em><span id="pvEnd"> तक है..."</span></p>
+            <p id="preview"><span id="pvPre">"आज </span><em id="pvDeity">माँ लक्ष्मी</em><span id="pvMid"> का दिन है — शुभ समय </span><em id="pvTime">—</em><span id="pvEnd"> तक है..."</span></p>
           </div>
         </div>
         <!-- Good / Avoid -->
@@ -2430,16 +2430,22 @@ function personalise(){
     ? (H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English'))
     : (H?'जन्म विवरण जोड़ें':'Add your birth details');
   document.getElementById('pvDeity').textContent=H?T.d_hi:T.d_en;
-  document.getElementById('pvTime').textContent=T.good;
+  var _pv=document.getElementById('pvTime');
+  // never seeded from the weekday table — engine or nothing
+  if(_pv && !(window._panchangData && window._panchangData.abhijit_muhurta)) _pv.textContent='—';
   const pvPre=document.getElementById('pvPre');if(pvPre)pvPre.textContent=H?'"आज ':'"Today — ';
   const pvMid=document.getElementById('pvMid');if(pvMid)pvMid.textContent=H?' का दिन है — शुभ समय ':'. Favorable time: ';
   const pvEnd=document.getElementById('pvEnd');if(pvEnd)pvEnd.textContent=H?' तक है..."':' AM..."';
   // Times
   document.getElementById('goodLbl').textContent=H?'शुभ समय':'Good Time';
-  document.getElementById('goodTime').textContent=T.good;
+  // left blank on purpose — applyPanchang fills it from the engine.
+  // A weekday constant here would be a guess, and the audio reads this node.
+  if(!document.getElementById('goodTime').textContent.match(/\d/))
+    document.getElementById('goodTime').textContent='—';
   document.getElementById('goodSub').textContent=H?'महत्वपूर्ण कार्य करें':'Do important work';
   document.getElementById('avoidLbl').textContent=H?'राहु काल':'Rahu Kaal';
-  document.getElementById('avoidTime').textContent=T.avoid;
+  if(!document.getElementById('avoidTime').textContent.match(/\d/))
+    document.getElementById('avoidTime').textContent='—';
   document.getElementById('avoidSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new work';
   // Japa thumbnail
   document.getElementById('jtDeity').textContent=T.ico;
@@ -2530,7 +2536,8 @@ function personalise(){
   document.getElementById('nakVal2').textContent=H?R.nh:R.ne;
   document.getElementById('ps2').textContent=H?'⚠️ अशुभ समय':'⚠️ Inauspicious Times';
   document.getElementById('rahuLbl').textContent=H?'राहु काल':'Rahu Kaal';
-  document.getElementById('rahuTime').textContent=T.avoid;
+  if(!document.getElementById('rahuTime').textContent.match(/\d/))
+    document.getElementById('rahuTime').textContent='—';
   document.getElementById('rahuSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new tasks';
   document.getElementById('gulLbl').textContent=H?'गुलिक काल':'Gulika Kaal';
   document.getElementById('gulSub').textContent=H?'महत्वपूर्ण कार्य टालें':'Postpone important work';
@@ -3517,11 +3524,11 @@ function prewarmAudio(){
       BASE+'Time/time_careful_2.mp3',
     ];
     // Add today's time files
-    if(times.shubh){
+    if(times.shubh&&times.shubh.start){
       urls.push(...buildTimeSegments(times.shubh.start,true));
       urls.push(...buildTimeSegments(times.shubh.end,false));
     }
-    if(times.rahu){
+    if(times.rahu&&times.rahu.start){
       urls.push(...buildTimeSegments(times.rahu.start,true));
       urls.push(...buildTimeSegments(times.rahu.end,false));
     }
@@ -3615,7 +3622,10 @@ function parsePanchangTime(str){
 }
 
 function getPanchangTimes(){
-  const def={shubh:{start:'08:00',end:'09:30'},rahu:{start:'13:30',end:'15:00'}};
+  // No invented defaults. If the engine has not produced real windows, the
+  // caller gets null and the narration omits the timing sentence entirely
+  // rather than announcing a number nobody computed.
+  const def={shubh:null,rahu:null};
   // Read directly from DOM — always available after fetchPanchang
   const shubhEl=document.getElementById('goodTime');
   const rahuEl=document.getElementById('rahuTime');
@@ -3733,19 +3743,22 @@ async function playPanchang(){
     playlist.push(BASE+'day_context/'+rnd(dayType==='good'?['day_good_1','day_good_2','day_good_3','day_good_4']:['day_careful_1','day_careful_2','day_careful_3','day_careful_4'])+'.mp3');
   }
 
-  // 3. TIME BLOCK — Shubh samay
-  playlist.push(BASE+'Time/'+rnd(['time_intro_1','time_intro_2'])+'.mp3');
-  playlist.push(...buildTimeSegments(times.shubh.start,true));
-  playlist.push(BASE+'Time/se.mp3');
-  playlist.push(...buildTimeSegments(times.shubh.end,false));
-  playlist.push(BASE+'Time/tak_rahega.mp3');
-
-  // Rahu kaal
-  playlist.push(BASE+'Time/'+rnd(['time_careful_1','time_careful_2'])+'.mp3');
-  playlist.push(...buildTimeSegments(times.rahu.start,true));
-  playlist.push(BASE+'Time/se.mp3');
-  playlist.push(...buildTimeSegments(times.rahu.end,false));
-  playlist.push(BASE+'Time/tak_rahega.mp3');
+  // 3. TIME BLOCK — spoken only when the engine actually produced windows.
+  // Saying nothing is better than narrating a fabricated muhurta out loud.
+  if(times.shubh&&times.shubh.start){
+    playlist.push(BASE+'Time/'+rnd(['time_intro_1','time_intro_2'])+'.mp3');
+    playlist.push(...buildTimeSegments(times.shubh.start,true));
+    playlist.push(BASE+'Time/se.mp3');
+    playlist.push(...buildTimeSegments(times.shubh.end,false));
+    playlist.push(BASE+'Time/tak_rahega.mp3');
+  }
+  if(times.rahu&&times.rahu.start){
+    playlist.push(BASE+'Time/'+rnd(['time_careful_1','time_careful_2'])+'.mp3');
+    playlist.push(...buildTimeSegments(times.rahu.start,true));
+    playlist.push(BASE+'Time/se.mp3');
+    playlist.push(...buildTimeSegments(times.rahu.end,false));
+    playlist.push(BASE+'Time/tak_rahega.mp3');
+  }
 
   // 4. HUMAN TOUCH
   playlist.push(BASE+'human_touch/'+rnd(dayType==='good'?['good_1','good_2','good_3','good_4']:['careful_1','careful_2','careful_3','careful_4'])+'.mp3');
@@ -4625,9 +4638,22 @@ function showToast(){
    still renders instantly, and today's values are cached per day+city so a
    repeat visit paints from cache with no wait.
    ══════════════════════════════════════════════════════════════════ */
+/* Keyed on the CIVIL DATE plus city, not a TTL — so it cannot survive into the
+   next day: at local midnight the key itself changes and yesterday's entry is
+   never read again. Changing city changes the key too. Old keys are swept so
+   localStorage does not accumulate one row per day forever. */
 function pgCacheKey(){
   var d=new Date();
   return 'sd_pan_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'_'+((U.city||'x')+'').toLowerCase();
+}
+function pgSweepCache(){
+  try{
+    var keep=pgCacheKey();
+    for(var i=localStorage.length-1;i>=0;i--){
+      var k=localStorage.key(i);
+      if(k&&k.indexOf('sd_pan_')===0&&k!==keep) localStorage.removeItem(k);
+    }
+  }catch(e){}
 }
 function pgCoords(){
   return {lat:(U.city_lat!=null?U.city_lat:16.7107), lng:(U.city_lon!=null?U.city_lon:81.0952)};
@@ -4660,6 +4686,7 @@ async function fetchPanchang(){
   // needs nothing further — and this is the ad page, so 278KB of engine is
   // not worth fetching to recompute what we already have. The engine loads
   // lazily when a deeper page (Full Panchang, calendar) actually needs it.
+  pgSweepCache();
   try{ var c=JSON.parse(localStorage.getItem(pgCacheKey())||'null');
        if(c){ window._panchangData=c; applyPanchang(c); return; } }catch(e){}
   try{
@@ -4742,6 +4769,8 @@ function applyPanchang(p){
     }
     if(p.abhijit_muhurta){
       document.getElementById('goodTime').textContent=p.abhijit_muhurta;
+      var _pv2=document.getElementById('pvTime');
+      if(_pv2) _pv2.textContent=p.abhijit_muhurta;
       const abEl=document.getElementById('abTime');
       if(abEl) abEl.textContent=p.abhijit_muhurta;
       // Check overlap with Rahu Kaal — show warning, keep time visible
