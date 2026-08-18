@@ -1419,6 +1419,43 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 </style>
 
+<style id="wallpaper-day">
+.wpc{position:relative;border-radius:20px;overflow:hidden;border:1px solid rgba(212,168,67,0.26);
+ min-height:172px;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;transition:transform .12s;}
+.wpc:active{transform:scale(0.99);}
+.wpc-img{position:absolute;inset:0;background-size:cover;background-position:center 22%;}
+.wpc.locked .wpc-img{filter:blur(11px) brightness(0.55) saturate(1.1);transform:scale(1.12);}
+.wpc-sh{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,3,0,0.30) 0%,rgba(10,3,0,0.20) 42%,rgba(10,3,0,0.93) 100%);}
+.wpc-b{position:relative;z-index:2;padding:13px 15px;}
+.wpc-tag{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(212,168,67,0.88);font-weight:700;margin-bottom:4px;}
+.wpc-t{font-family:'Tiro Devanagari Hindi',serif;font-size:18px;color:#FFF4DE;line-height:1.25;}
+.wpc-s{font-size:10.5px;color:rgba(255,244,222,0.66);margin-top:2px;}
+.wpc-btn{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:11px;
+ background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border-radius:12px;padding:11px;
+ font-size:13.5px;font-weight:600;color:#fff;box-shadow:0 4px 14px rgba(255,107,26,0.30);}
+.wpc-btn.open{background:rgba(255,255,255,0.10);border:1px solid rgba(212,168,67,0.38);color:#FFE9B8;box-shadow:none;}
+.wpc-why{text-align:center;font-size:9.5px;color:rgba(255,244,222,0.52);margin-top:7px;letter-spacing:0.2px;}
+.wpc-lock{position:absolute;top:13px;right:13px;z-index:3;background:rgba(0,0,0,0.42);border:1px solid rgba(212,168,67,0.35);
+ border-radius:20px;padding:4px 10px;font-size:10px;color:rgba(212,168,67,0.92);font-weight:600;}
+.wpg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px;}
+.wpg-i{position:relative;aspect-ratio:3/4;border-radius:10px;overflow:hidden;border:1px solid rgba(212,168,67,0.16);
+ background-size:cover;background-position:center 20%;cursor:pointer;}
+.wpg-i.lk{filter:blur(4px) brightness(0.45);}
+.wpg-d{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:8px;padding:2px 0 3px;
+ background:rgba(10,3,0,0.72);color:rgba(255,244,222,0.80);}
+.wpg-h{font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:rgba(212,168,67,0.70);
+ font-weight:700;margin:16px 2px 2px;}
+/* rewarded-ad host — provider-neutral shell the stub and the real SDK both use */
+#wpAd{position:fixed;inset:0;z-index:300;background:#070200;display:none;flex-direction:column;
+ align-items:center;justify-content:center;gap:16px;padding:26px;}
+#wpAd.on{display:flex;}
+.wpad-l{position:absolute;top:20px;left:20px;font-size:9px;letter-spacing:1.6px;color:rgba(255,255,255,0.42);text-transform:uppercase;}
+.wpad-x{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.10);
+ border:none;color:rgba(255,255,255,0.75);font-size:17px;cursor:pointer;}
+.wpad-box{width:100%;max-width:300px;aspect-ratio:1/1;border-radius:16px;border:1px dashed rgba(255,255,255,0.22);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:rgba(255,255,255,0.45);}
+.wpad-c{font-size:13px;color:rgba(255,255,255,0.62);}
+</style>
 <style id="home-v2">
 /* ── HOME v2 cards ── */
 .khero{position:relative;border-radius:20px;padding:22px 18px 18px;cursor:pointer;overflow:hidden;
@@ -1542,6 +1579,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   <div id="wpInfo">
     <div id="wpDeity">श्री हनुमान</div>
     <div id="wpDay">मंगलवार • शक्ति और भक्ति</div>
+    <div id="wpHint" onclick="wpFromSplash(event)" style="margin-top:12px;font-size:11px;color:rgba(212,168,67,0.82);letter-spacing:0.3px;cursor:pointer;border:1px solid rgba(212,168,67,0.28);border-radius:20px;padding:6px 14px;display:inline-block;">आज का वॉलपेपर सेव करें →</div>
   </div>
   <div id="wpShare" onclick="shareWallpaper()">📤</div>
 </div>
@@ -1618,6 +1656,8 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
           </div>
         </div>
 
+        <!-- WALLPAPER OF THE DAY — the only place in the app that shows a rewarded ad -->
+        <div id="wpMount"></div>
         <!-- Calendar & Festivals Button -->
         <div onclick="openCalendar()" style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(255,140,30,0.05));border:1px solid rgba(212,168,67,0.20);border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
           <div style="display:flex;align-items:center;gap:12px;">
@@ -2139,6 +2179,14 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   </div>
 </div>
 
+<!-- Rewarded-ad host. Provider-neutral: the stub draws inside it, a real SDK
+     replaces showRewardedAd() and may not use it at all. -->
+<div id="wpAd">
+  <div class="wpad-l" id="wpAdLbl">विज्ञापन</div>
+  <button class="wpad-x" id="wpAdX" onclick="wpAdClose()">✕</button>
+  <div class="wpad-box"><div style="font-size:34px;">📺</div><div id="wpAdBoxTxt" style="font-size:11px;">विज्ञापन चल रहा है</div></div>
+  <div class="wpad-c" id="wpAdCount">5</div>
+</div>
 <!-- Welcome toast -->
 <div id="toast"><span class="t-wave">🙏</span><div class="t-text" id="toastTxt">नमस्कार <em id="toastName">Ravi Ji</em> — शुभ दिन!</div></div>
 
@@ -2297,6 +2345,8 @@ function setWallpaper(){
   // Deity image on wallpaper
   const wpImg=document.getElementById('wpImg');
   if(wpImg&&T.img) wpImg.style.backgroundImage="url('"+T.img+"')";
+  var wpH=document.getElementById('wpHint');
+  if(wpH) wpH.textContent=H?'आज का वॉलपेपर सेव करें →':"Save today's wallpaper →";
 }
 
 // ── Personalise ──
@@ -3277,6 +3327,7 @@ function go(tab){
   if(tab==='mantras')mlGrid();
   if(tab==='sadhana')renderSadhana();
   if(tab==='listen')renderSadhanaCard();
+  if(tab==='home')renderWallpaperCard();
 }
 
 // ── Audio player ──
@@ -4628,6 +4679,7 @@ if(_u.birth_cache_key && !_u.rashi){ _u.birth_cache_key=''; localStorage.setItem
 setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
 updateSadhanaTab();
 renderSadhanaCard();
+renderWallpaperCard();
 // deep link from Explore: dashboard.html?go=sadhana
 // Explore (astrology.html) hops back here with ?go=<screen>.
 // Guidance and Sadhana no longer have bottom-nav tabs, so this is their entry.
@@ -4647,6 +4699,150 @@ setTimeout(()=>{
   wp.style.opacity='0';wp.style.pointerEvents='none';wp.style.display='none';
   showToast();
 },3000);
+
+
+/* ══════════════════════════════════════════════════════════════════
+   WALLPAPER OF THE DAY
+   The ONLY rewarded-ad surface in the app. Deliberately not on the jap
+   completion screen: that is the devotional peak and monetising it would
+   cost more trust than it earns.
+
+   THE SEAM — to go live with a real ad network, replace exactly one
+   function, showRewardedAd(). Nothing else knows or cares who serves the
+   ad: not the UI, not the storage, not the unlock rule. It must resolve
+   true ONLY when the user genuinely earned the reward, and false on skip,
+   dismiss, no-fill or error — never throw.
+   ══════════════════════════════════════════════════════════════════ */
+var WP_AD_PROVIDER = 'stub';           // 'stub' → swap for 'adsense' | 'gpt' | …
+var WP_AD_SECONDS  = 5;                // stub only; a real ad decides its own length
+
+function showRewardedAd(){
+  if(WP_AD_PROVIDER==='stub') return wpStubAd();
+  /* ── real provider goes here, e.g.
+     return new Promise(function(res){
+       adBreak({type:'reward', name:'wallpaper',
+                beforeReward:function(show){show();},
+                adViewed:function(){res(true);}, adDismissed:function(){res(false);},
+                adBreakDone:function(p){ if(p.breakStatus!=='viewed') res(false); }});
+     });
+     Only this function changes. ── */
+  return Promise.resolve(false);
+}
+function wpStubAd(){
+  return new Promise(function(resolve){
+    var host=document.getElementById('wpAd'), cEl=document.getElementById('wpAdCount');
+    if(!host) return resolve(false);
+    document.getElementById('wpAdLbl').textContent=H?'विज्ञापन':'ADVERTISEMENT';
+    document.getElementById('wpAdBoxTxt').textContent=H?'विज्ञापन चल रहा है':'Ad playing';
+    var left=WP_AD_SECONDS, done=false;
+    host.classList.add('on');
+    function finish(ok){
+      if(done) return; done=true;
+      clearInterval(iv); host.classList.remove('on'); window._wpAdAbort=null;
+      resolve(ok);
+    }
+    window._wpAdAbort=function(){ finish(false); };   // ✕ = dismissed, no reward
+    cEl.textContent=left;
+    var iv=setInterval(function(){
+      left--; cEl.textContent=left>0?left:(H?'धन्यवाद 🙏':'Thank you 🙏');
+      if(left<=0){ setTimeout(function(){finish(true);},700); }
+    },1000);
+  });
+}
+function wpAdClose(){ if(window._wpAdAbort) window._wpAdAbort(); }
+
+/* ── data model: date-keyed, provider-agnostic ── */
+function wpKeyOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function wpState(){ try{return JSON.parse(localStorage.getItem('shubhdin_wallpapers')||'{}');}catch(e){return {};} }
+function wpSaveState(st){ try{localStorage.setItem('shubhdin_wallpapers',JSON.stringify(st));}catch(e){} }
+function wpIsUnlocked(k){ return !!wpState()[k]; }
+function wpMarkUnlocked(k){ var st=wpState(); st[k]={at:Date.now()}; wpSaveState(st); }
+/* One wallpaper per day, derived from the same weekday deity map the splash uses. */
+function wpOfDay(d){
+  var cfg=D[d.getDay()]||D[0];
+  return {key:wpKeyOf(d), img:cfg.img, bg:cfg.bg,
+          deity:H?cfg.d_hi:cfg.d_en, day:H?cfg.day_hi:cfg.day_en};
+}
+
+/* ── card ── */
+function renderWallpaperCard(){
+  var m=document.getElementById('wpMount'); if(!m) return;
+  var w=wpOfDay(new Date()), open=wpIsUnlocked(w.key);
+  m.innerHTML=
+   '<div class="wpc'+(open?'':' locked')+'" onclick="'+(open?'wpUse()':'wpUnlock()')+'">'
+   +'<div class="wpc-img" style="background-image:url(\''+w.img+'\')"></div><div class="wpc-sh"></div>'
+   +(open?'':'<div class="wpc-lock">🔒 '+(H?'बंद':'LOCKED')+'</div>')
+   +'<div class="wpc-b">'
+   +'<div class="wpc-tag">🖼️ '+(H?'आज का वॉलपेपर':'WALLPAPER OF THE DAY')+'</div>'
+   +'<div class="wpc-t dev">'+w.deity+'</div>'
+   +'<div class="wpc-s">'+w.day+'</div>'
+   +'<div class="wpc-btn'+(open?' open':'')+'">'
+     +(open?('⬇️ '+(H?'सेव करें / साझा करें':'Save or Share'))
+           :('▶ '+(H?'छोटा विज्ञापन देखकर अनलॉक करें':'Watch a short ad to unlock')))+'</div>'
+   +(open?'':'<div class="wpc-why">'+(H?'विज्ञापन से शुभ दिन मुफ़्त रहता है 🙏':'Ads keep Shubh Din free for everyone 🙏')+'</div>')
+   +'</div></div>'
+   + wpGalleryHTML();
+}
+function wpGalleryHTML(){
+  var days=[],d0=new Date();
+  for(var i=1;i<=8;i++){ var d=new Date(d0.getTime()-i*86400000); days.push(d); }
+  var any=days.some(function(d){return wpIsUnlocked(wpKeyOf(d));});
+  if(!any) return '';
+  var cells=days.slice(0,8).map(function(d){
+    var w=wpOfDay(d), ok=wpIsUnlocked(w.key);
+    return '<div class="wpg-i'+(ok?'':' lk')+'" style="background-image:url(\''+w.img+'\')" '
+      +(ok?'onclick="wpUse(\''+w.key+'\')"':'')+'>'
+      +'<div class="wpg-d">'+d.getDate()+'</div></div>';
+  }).join('');
+  return '<div class="wpg-h">'+(H?'पिछले वॉलपेपर':'Past Wallpapers')+'</div><div class="wpg">'+cells+'</div>';
+}
+
+/* ── unlock: UI never mentions a provider ── */
+function wpUnlock(){
+  var w=wpOfDay(new Date());
+  if(wpIsUnlocked(w.key)) return wpUse();
+  showRewardedAd().then(function(earned){
+    if(!earned){
+      showShareToast(H?'वॉलपेपर अनलॉक नहीं हुआ':'Wallpaper not unlocked');
+      return;
+    }
+    wpMarkUnlocked(w.key);
+    renderWallpaperCard();
+    showShareToast(H?'🖼️ वॉलपेपर अनलॉक हो गया':'🖼️ Wallpaper unlocked');
+  }).catch(function(){
+    showShareToast(H?'अभी विज्ञापन उपलब्ध नहीं':'No ad available right now');
+  });
+}
+/* ── save / share the unlocked image ── */
+function wpUse(key){
+  var d=new Date();
+  if(key){ var pr=key.split('-'); d=new Date(+pr[0],+pr[1]-1,+pr[2]); }
+  var w=wpOfDay(d);
+  if(!wpIsUnlocked(w.key)) return wpUnlock();
+  var cap=(H?'🙏 आज का वॉलपेपर — ':'🙏 Wallpaper of the day — ')+w.deity+'\nshubhdin.app';
+  fetch(w.img).then(function(r){return r.blob();}).then(function(b){
+    var file=new File([b],'shubhdin-'+w.key+'.jpg',{type:b.type||'image/jpeg'});
+    if(navigator.canShare&&navigator.canShare({files:[file]}))
+      return navigator.share({files:[file],text:cap});
+    var u=URL.createObjectURL(b), a=document.createElement('a');
+    a.href=u; a.download='shubhdin-'+w.key+'.jpg'; document.body.appendChild(a); a.click();
+    a.remove(); setTimeout(function(){URL.revokeObjectURL(u);},4000);
+    showShareToast(H?'✅ सेव हो गया':'✅ Saved');
+  }).catch(function(){
+    window.open(w.img,'_blank');   // last resort: long-press to save
+  });
+}
+/* splash → home card */
+function wpFromSplash(e){
+  if(e){e.stopPropagation();}
+  var wp=document.getElementById('wallpaper');
+  if(wp){wp.style.opacity='0';wp.style.pointerEvents='none';setTimeout(function(){wp.style.display='none';},300);}
+  go('home');
+  setTimeout(function(){
+    var m=document.getElementById('wpMount');
+    if(m&&m.scrollIntoView) m.scrollIntoView({behavior:'smooth',block:'center'});
+  },420);
+}
 
 // ── SETTINGS ──
 let _settLang = 'hi';
