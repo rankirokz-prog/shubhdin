@@ -245,7 +245,7 @@ function L(v,depth){
   if(v.hi)     return L(v.hi,depth+1);
   return '';
 }
-var SD_BUILD='astro A6';
+var SD_BUILD='astro A7';
 function t(hi,en){return H?hi:en;}
 
 /* ── time helpers (IST display always) ───────────────────── */
@@ -449,6 +449,14 @@ function vHub(){
 
    +'<div class="dial">'
    +'<div class="d-now-lbl">'+t('अभी चल रहा है','RIGHT NOW')+'</div>'
+   +'<div style="display:flex;align-items:center;gap:12px;margin:7px 0 2px;flex-wrap:wrap;">'
+   +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
+   +'<span style="width:14px;height:5px;border-radius:3px;background:#5ABE78;"></span>'+t('शुभ','Auspicious')+'</span>'
+   +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
+   +'<span style="width:14px;height:5px;border-radius:3px;background:#E66E5A;"></span>'+t('वर्ज्य','Avoid')+'</span>'
+   +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
+   +'<span style="width:2px;height:11px;background:#FFE9B8;"></span>'+t('अभी','Now')+'</span>'
+   +'<span style="font-size:9.5px;color:rgba(255,244,222,0.40);">'+t('सूर्योदय से सूर्योदय','sunrise to sunrise')+'</span></div>'
    +'<div class="d-state"><span class="d-seg dev '+segCls+'">'+segName+'</span>'
    +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
    +ribbonHTML()
@@ -520,6 +528,13 @@ function vRashiGrid(){
   }
   app.innerHTML=pgHead(t('राशिफल','Rashifal'),t('चंद्रमा आज ','Moon today in ')+(H?p.moonSign.hi:p.moonSign.en),'hub')
    +(mine>=0?tobUnknownNote():needBirth(t('तब आपकी राशि यहाँ अपने आप चुनी रहेगी','Then your own rashi will be marked here automatically')))
+   +'<div style="display:flex;align-items:center;gap:14px;padding:2px 4px 9px;flex-wrap:wrap;">'
+   +'<span style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:rgba(255,244,222,0.70);">'
+   +'<span style="width:8px;height:8px;border-radius:50%;background:#5ABE78;"></span>'
+   +t('चंद्रबल अनुकूल','Moon favours you today')+'</span>'
+   +'<span style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:rgba(255,244,222,0.70);">'
+   +'<span style="width:8px;height:8px;border-radius:50%;background:#E66E5A;"></span>'
+   +t('सामान्य','Ordinary')+'</span></div>'
    +'<div class="rgrid">'+g+'</div>'
    +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
    +'<div class="brandline">'+t('गणना से, अनुमान से नहीं','COMPUTED, NOT GUESSED')+'</div>';
