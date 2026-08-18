@@ -1693,6 +1693,8 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
       <div style="flex:1;padding:20px 14px 12px;overflow-y:auto;scrollbar-width:none;">
 
+        <!-- MY SADHANA — progress + entry only. Full experience stays on scr-sadhana. -->
+        <div id="sadCardWrap"></div>
         <!-- Power of Chant card -->
         <div class="poc-card" onclick="playPowerOfChant()">
           <div class="poc-glow"></div>
@@ -2112,8 +2114,6 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
     <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🙏</span><span class="tab-label" id="tl2" style="font-size:7.5px;">मार्गदर्शन</span></div>
     <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">🌅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
-    <div class="tab" id="tab-sadhana" onclick="go('sadhana')"><span class="tab-icon">📿</span><span class="tab-label" style="font-size:7.5px;" id="tl-sadhana">साधना</span>
-    </div>
     <div class="tab" id="tab-mantras" onclick="go('mantras')"><span class="tab-icon">🕉️</span><span class="tab-label" id="tl-mantras" style="font-size:7.5px;">मंत्र</span></div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जाप</span></div>
   </div>
@@ -3276,6 +3276,7 @@ function go(tab){
   if(tab!=='mantras'&&window.mlStop)window.mlStop(true);
   if(tab==='mantras')mlGrid();
   if(tab==='sadhana')renderSadhana();
+  if(tab==='listen')renderSadhanaCard();
 }
 
 // ── Audio player ──
@@ -3940,6 +3941,46 @@ function startSadhana(key){
   setTimeout(()=>{ go('sadhana'); renderSadhana(); }, 800);
 }
 
+// Reads the SAME getSadhana() state as the full screen — no second source of truth.
+function renderSadhanaCard(){
+  const w=document.getElementById('sadCardWrap');
+  if(!w) return;
+  const s=getSadhana();
+  if(!s){ w.innerHTML=''; return; }
+  const today=new Date().toISOString().slice(0,10);
+  const todayCount=(s.todayDate===today)?(s.todayCount||0):0;
+  const target=s.targetCount||28;
+  const dayNum=Math.min(s.daysDone.length+1,s.totalDays);
+  const pct=Math.round((s.daysDone.length/s.totalDays)*100);
+  const tPct=Math.min(100,Math.round((todayCount/target)*100));
+  const done=s.daysDone.includes(today);
+  w.innerHTML=
+   '<div style="background:linear-gradient(135deg,rgba(60,25,5,0.92),rgba(30,10,0,0.95));'
+   +'border:1.5px solid rgba(212,168,67,0.32);border-radius:18px;padding:14px 15px;margin-bottom:16px;'
+   +'cursor:pointer;position:relative;overflow:hidden;" onclick="openSadhana()">'
+   +'<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--saffron),var(--gold),transparent);"></div>'
+   +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">'
+   +'<div style="font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(212,168,67,0.78);font-weight:700;">'
+   +(H?'मेरी साधना':'MY SADHANA')+'</div>'
+   +(s.streak?'<div style="font-size:11.5px;color:rgba(255,150,0,0.90);font-weight:600;">🔥 '+s.streak+(H?' दिन':' day')+'</div>':'')
+   +'</div>'
+   +'<div style="font-family:\'Tiro Devanagari Hindi\',serif;font-size:16px;color:#FFE9B8;line-height:1.35;margin-bottom:3px;">🕉️ '+(s.mantra||s.title||'')+'</div>'
+   +'<div style="font-size:11px;color:rgba(255,255,255,0.72);margin-bottom:10px;">'+(s.title||'')+'</div>'
+   +'<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:5px;">'
+   +'<div style="font-size:13.5px;color:#fff;font-weight:600;">'+(H?'दिन ':'Day ')+dayNum+' / '+s.totalDays+'</div>'
+   +'<div style="margin-left:auto;font-size:11.5px;color:'+(done?'rgba(120,220,150,0.90)':'rgba(212,168,67,0.85)')+';">'
+   +(done?(H?'✨ आज पूर्ण':'✨ Done today'):todayCount+' / '+target+(H?' जप आज':' chants today'))+'</div></div>'
+   +'<div style="height:5px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;margin-bottom:4px;">'
+   +'<div style="height:100%;width:'+Math.max(3,pct)+'%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:99px;"></div></div>'
+   +'<div style="height:4px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;margin-bottom:11px;">'
+   +'<div style="height:100%;width:'+tPct+'%;background:linear-gradient(90deg,#4A7C59,#69b08a);border-radius:99px;"></div></div>'
+   +'<div style="text-align:center;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border-radius:11px;'
+   +'padding:10px;font-size:13.5px;font-weight:600;color:#fff;">'
+   +(done?(H?'🙏 और जप करें →':'🙏 Chant More →'):(H?'🙏 साधना जारी रखें →':'🙏 Continue Sadhana →'))+'</div>'
+   +'</div>';
+}
+// Single entry into the EXISTING full experience — used by the card and by Explore.
+function openSadhana(){ go('sadhana'); renderSadhana(); }
 function renderSadhana(){
   const s = getSadhana();
   if(!s){ document.getElementById('sadNone').style.display='flex'; document.getElementById('sadActive').style.display='none'; return; }
@@ -4432,7 +4473,7 @@ function exitSadhanaJap(){
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('scr-sadhana').classList.add('on');
-  document.getElementById('tab-sadhana').classList.add('on');
+  var _st=document.getElementById('tab-sadhana'); if(_st) _st.classList.add('on');
   renderSadhana();
 }
 
@@ -4565,7 +4606,10 @@ async function fetchPanchang(){
 const mpEl=document.getElementById('miniPlayer');
 mpEl.style.display='none';mpEl.classList.remove('open');
 // ── Sadhana tab visibility ──
+// Sadhana no longer has a permanent bottom-nav tab. This now keeps the
+// Guidance progress card in sync instead — same state, same call sites.
 function updateSadhanaTab(){
+  renderSadhanaCard();
   const s = getSadhana();
   const tab = document.getElementById('tab-sadhana');
   if(!tab) return;
@@ -4583,6 +4627,12 @@ const _u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
 if(_u.birth_cache_key && !_u.rashi){ _u.birth_cache_key=''; localStorage.setItem('shubhdin_user',JSON.stringify(_u)); }
 setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
 updateSadhanaTab();
+renderSadhanaCard();
+// deep link from Explore: dashboard.html?go=sadhana
+(function(){try{
+  var g=new URLSearchParams(location.search).get('go');
+  if(g==='sadhana'){ history.replaceState(null,'',location.pathname); setTimeout(openSadhana,120); }
+}catch(e){}})();
 loadBirthCache();
 getOrCreateUID(); // ensure UID exists
 setTimeout(saveToCloud, 3000); // save after page loads
