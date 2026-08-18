@@ -229,6 +229,22 @@ var CITY=U.city||(H?'उज्जैन':'Ujjain');
 var PE=window.PanchangEngine;
 
 /* ── i18n micro-dict ─────────────────────────────────────── */
+// Engine objects are not uniformly {hi,en}: dishaShool is {en,hi},
+// samvatsara is {en,shaka,vikram,gujarati}, and ritu/ayana are {vedic,drik}
+// where .drik is ITSELF {en,hi}. Assuming one shape printed "undefined" and
+// "[object Object]" at the user. Resolve by shape, and recurse.
+function L(v,depth){
+  depth=depth||0;
+  if(v===null||v===undefined) return '';
+  if(typeof v!=='object') return String(v);
+  if(depth>3) return '';
+  if(H&&v.hi) return L(v.hi,depth+1);
+  if(v.en)     return L(v.en,depth+1);
+  if(v.drik)   return L(v.drik,depth+1);     // ritu / ayana
+  if(v.vikram) return L(v.vikram,depth+1);   // samvatsara
+  if(v.hi)     return L(v.hi,depth+1);
+  return '';
+}
 function t(hi,en){return H?hi:en;}
 
 /* ── time helpers (IST display always) ───────────────────── */
@@ -413,10 +429,14 @@ function vHub(){
   }
 
   var nb=nowBad();   // is right now inside a forbidden period?
-  var segName=cur.s?(H?cur.s.hi:cur.s.en):'—';
-  var segCls=cur.s?(cur.s.good?'g':'b'):'';
-  var until=cur.s?t('… '+fT(cur.s.end)+' तक','until '+fT(cur.s.end)):'';
-  var cd=cur.s?mins(new Date(cur.s.end).getTime()-Date.now()):'';
+  // The headline reads the SAME rule as everything else. A choghadiya slot
+  // flagged good is not good if a forbidden period is running inside it —
+  // showing green "Shubh" above an amber "hold new work" contradicted itself.
+  var segName = nb ? L(nb) : (cur.s?(H?cur.s.hi:cur.s.en):'—');
+  var segCls = nb ? 'b' : (cur.s?(cur.s.good?'g':'b'):'');
+  var segEnd = nb ? new Date(nb.e) : (cur.s?new Date(cur.s.end):null);
+  var until  = segEnd?t('… '+fT(segEnd)+' तक','until '+fT(segEnd)):'';
+  var cd     = segEnd?mins(+segEnd-Date.now()):'';
 
   app.innerHTML=
    '<div class="hdr"><button class="back" onclick="location.href=\'dashboard.html\'">←</button>'
@@ -429,7 +449,7 @@ function vHub(){
    +'<div class="d-state"><span class="d-seg dev '+segCls+'">'+segName+'</span>'
    +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
    +ribbonHTML()
-   +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+t('अभी ','Right now: ')+'<b class="dev">'+(H?nb.hi:nb.en)+'</b> '+t('चल रहा है — नया काम टालें','is running — hold new work')+'</div>':'')
+   +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+t('नया काम टालें — यह वर्ज्य काल है','Hold new work — this is a forbidden period')+'</div>':'')
    +(ng?'<div class="d-next">'+t('अगला साफ़ शुभ समय: ','Next clean window: ')+'<b class="dev">'+(H?ng.hi:ng.en)+'</b> '+fR(ng.start,ng.end)
         +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+t('(छाँटा हुआ)','(trimmed)')+'</small>':'')+'</div>'
       :'<div class="d-next">'+t('आज आगे कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</div>')
@@ -459,7 +479,11 @@ function vHub(){
   tick=setInterval(function(){
     var c=currentSeg();
     var el=document.getElementById('dCount');
-    if(el&&c.s)el.textContent='⏳ '+mins(new Date(c.s.end).getTime()-Date.now());
+    // count down to the end of whatever the headline is showing — if a
+    // forbidden period is running, that is the thing the user is waiting out.
+    var _nb=nowBad();
+    var _end=_nb?new Date(_nb.e):(c.s?new Date(c.s.end):null);
+    if(el&&_end)el.textContent='⏳ '+mins(+_end-Date.now());
     var rb=document.getElementById('rbNow');
     if(rb){var t0=new Date(panchang().sunrise).getTime(),t1=new Date(panchang().nextSunrise).getTime();
       rb.style.left=Math.min(99.6,Math.max(0,(Date.now()-t0)/(t1-t0)*100)).toFixed(2)+'%';}
@@ -552,8 +576,8 @@ function vPanchang(){
    +prow(t('माह (पूर्णिमांत)','Month (Purnimanta)'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
    +prow(t('माह (अमांत)','Month (Amanta)'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+(hc.amantaMonth.adhik?' <span class="tag b">'+t('अधिक','Adhik')+'</span>':'')+'</span>')
    +prow(t('पक्ष','Paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha)+'</span>')
-   +(hc.ritu?prow(t('ऋतु','Ritu'),'<span class="dev">'+(H?hc.ritu.hi:hc.ritu.en)+'</span>'):'')
-   +(hc.ayana?prow(t('अयन','Ayana'),'<span class="dev">'+(H?hc.ayana.hi:hc.ayana.en)+'</span>'):'')
+   +orow(t('ऋतु','Ritu'),L(hc.ritu))
+   +orow(t('अयन','Ayana'),L(hc.ayana))
    +'</div>'
    +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
    +'<div class="note">'+t('किसी भी लिंब पर टैप करें — आज के सभी बदलाव समय के साथ','Tap any limb for today\'s full timeline')+'</div>';
@@ -1072,6 +1096,8 @@ function vChandra(){
    +'<div class="seglist">'+rows+'</div>'
    +'<div class="note">'+t('चंद्रबल गोचर चंद्रमा की आपकी जन्मराशि से स्थिति पर निर्भर करता है।','Chandrabala depends on where the transiting Moon sits from your birth rashi.')+'</div>';
 }
+// prow, but the row disappears rather than printing an empty or "undefined"
+function orow(k,v){ return v?prow(k,'<span class="dev">'+v+'</span>'):''; }
 function vHcal(){
   var p=panchang(), hc=p.hinduCalendar;
   app.innerHTML=pgHead(t('हिन्दू कैलेंडर','Hindu Calendar'),t('संवत्, मास, ऋतु और अयन','Samvat, masa, ritu and ayana'),'#explore')
@@ -1082,9 +1108,9 @@ function vHcal(){
    +prow(t('विक्रम संवत्','Vikram Samvat'),hc.vikramSamvat)
    +prow(t('शक संवत्','Shaka Samvat'),hc.shakaSamvat)
    +(hc.gujaratiSamvat?prow(t('गुजराती संवत्','Gujarati Samvat'),hc.gujaratiSamvat):'')
-   +(hc.samvatsara?prow(t('संवत्सर','Samvatsara'),'<span class="dev">'+(H?hc.samvatsara.hi:hc.samvatsara.en)+'</span>'):'')
-   +(hc.ritu?prow(t('ऋतु','Ritu'),'<span class="dev">'+(H?hc.ritu.hi:hc.ritu.en)+'</span>'):'')
-   +(hc.ayana?prow(t('अयन','Ayana'),'<span class="dev">'+(H?hc.ayana.hi:hc.ayana.en)+'</span>'):'')
+   +orow(t('संवत्सर','Samvatsara'),L(hc.samvatsara))
+   +orow(t('ऋतु','Ritu'),L(hc.ritu))
+   +orow(t('अयन','Ayana'),L(hc.ayana))
    +'</div>';
 }
 function vLagna(){
