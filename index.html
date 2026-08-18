@@ -349,6 +349,18 @@
       </div>
       <input type="hidden" id="userTOB" value=""/>
       <div class="field-hint" id="tobHint">💡 नक्षत्र पता करने के लिए</div>
+      <!-- Classical fallback: when the birth time is unknown, jyotish takes the
+           sunrise of the birth day and reads the Sun's sign as the lagna
+           (Surya lagna). The engine already supports it; this exposes it
+           instead of leaving the user stuck. -->
+      <label id="tobUnkWrap" style="display:flex;align-items:center;gap:9px;margin-top:11px;cursor:pointer;">
+        <input type="checkbox" id="tobUnknown" onchange="onTobUnknown()"
+               style="width:18px;height:18px;accent-color:#B8860B;flex-shrink:0;">
+        <span id="tobUnkLabel" style="font-size:13px;color:#5C2508;line-height:1.5;">मुझे जन्म समय नहीं पता</span>
+      </label>
+      <div id="tobUnkNote" style="display:none;font-size:11.5px;color:#7A4A18;line-height:1.6;margin-top:7px;padding:9px 11px;background:rgba(212,168,67,0.12);border-radius:10px;">
+        सूर्योदय के समय से गणना होगी — यही शास्त्रीय तरीका है जब समय न पता हो। राशि और नक्षत्र सही रहेंगे; लग्न और पद अनुमानित रहेंगे, और जहाँ ज़रूरी होगा वहाँ यह लिखा दिखेगा।
+      </div>
     </div>
 
     <button class="btn-cta" id="btn3" onclick="goStep(4)"><span id="cta3">आगे बढ़ें</span> →</button>
@@ -440,6 +452,8 @@
       s3title:'जन्म तिथि', s3desc:'सटीक राशि के लिए — चाहें तो छोड़ सकते हैं',
       dobLabel:'जन्म तिथि', dobOpt:'वैकल्पिक', dobHint:'💡 राशि की सटीक गणना के लिए',
       tobLabel:'जन्म समय', tobOpt:'वैकल्पिक', tobHint:'💡 नक्षत्र पता करने के लिए',
+      tobUnkLabel:'मुझे जन्म समय नहीं पता',
+      tobUnkNote:'सूर्योदय के समय से गणना होगी — यही शास्त्रीय तरीका है जब समय न पता हो। राशि और नक्षत्र सही रहेंगे; लग्न और पद अनुमानित रहेंगे, और जहाँ ज़रूरी होगा वहाँ यह लिखा दिखेगा।',
       cta3:'आगे बढ़ें', skip3:'छोड़ें → बाद में भरें',
       s4title:'आप कहाँ हैं?', s4desc:'राहुकाल आपके शहर के समय पर निर्भर करता है',
       gpsTxt:'मेरी लोकेशन अपने-आप पहचानें',
@@ -463,6 +477,8 @@
       s3title:'Date of Birth', s3desc:'For accurate Rashi — you can skip this for now',
       dobLabel:'Date of Birth', dobOpt:'Optional', dobHint:'💡 Needed for accurate Rashi',
       tobLabel:'Time of Birth', tobOpt:'Optional', tobHint:'💡 Helps find your Nakshatra',
+      tobUnkLabel:"I don't know my birth time",
+      tobUnkNote:'We will use sunrise on your birth day — the classical method when the time is unknown. Your rashi and nakshatra stay correct; lagna and pada become approximate, and the app will say so wherever that matters.',
       cta3:'Continue', skip3:'Skip → fill later',
       s4title:'Where are you based?', s4desc:'Rahu Kaal timing depends on your city',
       gpsTxt:'Detect my location automatically',
@@ -478,18 +494,18 @@
 
   // ── Rashi ──
   const rashis = [
-    {hi:'मेष',en:'Aries',icon:'♈',nh:'अश्विनी',ne:'Ashwini',lh:'मंगल',le:'Mars'},
-    {hi:'वृषभ',en:'Taurus',icon:'♉',nh:'कृत्तिका',ne:'Krittika',lh:'शुक्र',le:'Venus'},
-    {hi:'मिथुन',en:'Gemini',icon:'♊',nh:'मृगशिरा',ne:'Mrigashira',lh:'बुध',le:'Mercury'},
-    {hi:'कर्क',en:'Cancer',icon:'♋',nh:'पुनर्वसु',ne:'Punarvasu',lh:'चंद्र',le:'Moon'},
-    {hi:'सिंह',en:'Leo',icon:'♌',nh:'मघा',ne:'Magha',lh:'सूर्य',le:'Sun'},
-    {hi:'कन्या',en:'Virgo',icon:'♍',nh:'हस्त',ne:'Hasta',lh:'बुध',le:'Mercury'},
-    {hi:'तुला',en:'Libra',icon:'♎',nh:'चित्रा',ne:'Chitra',lh:'शुक्र',le:'Venus'},
-    {hi:'वृश्चिक',en:'Scorpio',icon:'♏',nh:'अनुराधा',ne:'Anuradha',lh:'मंगल',le:'Mars'},
-    {hi:'धनु',en:'Sagittarius',icon:'♐',nh:'मूल',ne:'Mula',lh:'गुरु',le:'Jupiter'},
-    {hi:'मकर',en:'Capricorn',icon:'♑',nh:'श्रवण',ne:'Shravana',lh:'शनि',le:'Saturn'},
-    {hi:'कुंभ',en:'Aquarius',icon:'♒',nh:'शतभिषा',ne:'Shatabhisha',lh:'शनि',le:'Saturn'},
-    {hi:'मीन',en:'Pisces',icon:'♓',nh:'रेवती',ne:'Revati',lh:'गुरु',le:'Jupiter'},
+    {hi:'मेष',en:'Mesha',w:'Aries',icon:'♈',nh:'अश्विनी',ne:'Ashwini',lh:'मंगल',le:'Mars'},
+    {hi:'वृषभ',en:'Vrishabha',w:'Taurus',icon:'♉',nh:'कृत्तिका',ne:'Krittika',lh:'शुक्र',le:'Venus'},
+    {hi:'मिथुन',en:'Mithuna',w:'Gemini',icon:'♊',nh:'मृगशिरा',ne:'Mrigashira',lh:'बुध',le:'Mercury'},
+    {hi:'कर्क',en:'Karka',w:'Cancer',icon:'♋',nh:'पुनर्वसु',ne:'Punarvasu',lh:'चंद्र',le:'Moon'},
+    {hi:'सिंह',en:'Simha',w:'Leo',icon:'♌',nh:'मघा',ne:'Magha',lh:'सूर्य',le:'Sun'},
+    {hi:'कन्या',en:'Kanya',w:'Virgo',icon:'♍',nh:'हस्त',ne:'Hasta',lh:'बुध',le:'Mercury'},
+    {hi:'तुला',en:'Tula',w:'Libra',icon:'♎',nh:'चित्रा',ne:'Chitra',lh:'शुक्र',le:'Venus'},
+    {hi:'वृश्चिक',en:'Vrishchika',w:'Scorpio',icon:'♏',nh:'अनुराधा',ne:'Anuradha',lh:'मंगल',le:'Mars'},
+    {hi:'धनु',en:'Dhanu',w:'Sagittarius',icon:'♐',nh:'मूल',ne:'Mula',lh:'गुरु',le:'Jupiter'},
+    {hi:'मकर',en:'Makara',w:'Capricorn',icon:'♑',nh:'श्रवण',ne:'Shravana',lh:'शनि',le:'Saturn'},
+    {hi:'कुंभ',en:'Kumbha',w:'Aquarius',icon:'♒',nh:'शतभिषा',ne:'Shatabhisha',lh:'शनि',le:'Saturn'},
+    {hi:'मीन',en:'Meena',w:'Pisces',icon:'♓',nh:'रेवती',ne:'Revati',lh:'गुरु',le:'Jupiter'},
   ];
 
   function getRashi(dob) {
@@ -514,6 +530,7 @@
     s('s3title',t.s3title); s('s3desc',t.s3desc);
     s('dobLabel',t.dobLabel); s('dobOpt',t.dobOpt); s('dobHint',t.dobHint);
     s('tobLabel',t.tobLabel); s('tobOpt',t.tobOpt); s('tobHint',t.tobHint);
+    s('tobUnkLabel',t.tobUnkLabel); s('tobUnkNote',t.tobUnkNote);
     s('cta3',t.cta3); s('skip3',t.skip3);
     s('s4title',t.s4title); s('s4desc',t.s4desc);
     s('gpsTxt',t.gpsTxt);
@@ -589,7 +606,12 @@
       user.name = _rawName;
     }
     user.dob   = document.getElementById('userDOB')?.value           || user.dob   || '';
-    user.tob   = document.getElementById('userTOB')?.value           || user.tob   || '';
+    var _unk = document.getElementById('tobUnknown');
+    user.tobUnknown = !!(_unk && _unk.checked);
+    // Sunrise stands in for the missing time. Stored as a real value so every
+    // downstream calculation keeps working, with the flag saying it is a stand-in.
+    user.tob   = user.tobUnknown ? '06:00'
+               : (document.getElementById('userTOB')?.value || user.tob || '');
     user.city  = document.getElementById('userCity')?.value?.trim()  || user.city  || '';
     user.state = document.getElementById('userState')?.value         || user.state || '';
 
@@ -748,7 +770,11 @@
     document.getElementById('wTitle').textContent=lang==='hi'?'स्वागत है, '+cN+' जी! 🙏':'Welcome, '+cN+'! 🙏';
     document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : 'From '+user.city+' — your journey begins today 🌼';
     document.getElementById('rIcon').textContent  = r.icon;
-    document.getElementById('rName').textContent  = lang==='hi' ? r.hi+' राशि' : r.en+' Rashi';
+    // Vedic name leads; the Western label follows in brackets purely so a user
+    // who only knows "Scorpio" recognises themselves. Never the other way round.
+    document.getElementById('rName').textContent  = lang==='hi'
+      ? r.hi+' राशि'
+      : r.en+' Rashi'+(r.w?' ('+r.w+')':'');
     document.getElementById('rSub').textContent   = lang==='hi' ? r.nh+' नक्षत्र • '+r.lh+' स्वामी' : r.ne+' Nakshatra • Lord: '+r.le;
 
     const days = new Date().getDay();
@@ -850,6 +876,16 @@ function validateStep4(){
 }
 
 
+function onTobUnknown(){
+  var on=document.getElementById('tobUnknown').checked;
+  document.getElementById('tobUnkNote').style.display=on?'block':'none';
+  ['userTOB_h','userTOB_m'].forEach(function(id){
+    var e=document.getElementById(id); if(!e)return;
+    e.disabled=on; e.style.opacity=on?'0.35':'1';
+    if(on) e.value='';
+  });
+  if(on) document.getElementById('userTOB').value='';
+}
 function updateTOB(){
   const h = document.getElementById('userTOB_h').value;
   const m = document.getElementById('userTOB_m').value;
