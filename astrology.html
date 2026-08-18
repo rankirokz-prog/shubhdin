@@ -245,7 +245,7 @@ function L(v,depth){
   if(v.hi)     return L(v.hi,depth+1);
   return '';
 }
-var SD_BUILD='astro A3';
+var SD_BUILD='astro A4';
 function t(hi,en){return H?hi:en;}
 
 /* ── time helpers (IST display always) ───────────────────── */
@@ -299,6 +299,7 @@ function route(){
   if(h[0]==='tara')return vTara();
   if(h[0]==='chandra')return vChandra();
   if(h[0]==='pick')return vPick(h[1]);
+  if(h[0]==='muhurta'&&h[1]==='marriage_muhurta'){ location.hash='#match'; return; }  // old bookmark
   if(h[0]==='muhurta'&&h[1])return vMuhurtaRun(h[1]);
   if(h[0]==='muhurta')return vMuhurtaPick();
   if(h[0]==='bp')return vBpForm(h[1]);
@@ -703,10 +704,11 @@ function vExplore(){
 
    +'<div class="xgrp">'+t('मुहूर्त खोजें','Find a Muhurta')+'</div><div class="xgrid">'
    +xt('🏠',t('गृह प्रवेश','Griha Pravesh'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/griha_pravesh')
-   +xt('💍',t('विवाह','Marriage'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/marriage_muhurta')
    +xt('💼',t('व्यापार आरंभ','New Business'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/business')
    +xt('🚗',t('वाहन खरीद','Vehicle'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/vehicle')
    +'</div>'
+   +'<div class="note" style="margin:6px 2px 0;cursor:pointer;" onclick="location.hash=\'#match\'">'
+   +t('विवाह की तिथि दोनों कुंडलियों से निकलती है → कुंडली मिलान','Marriage dates need both charts → Match Kundali')+' ›</div>'
 
    +'<div class="xgrp">'+t('व्यक्तिगत ज्योतिष','Personal Astrology')+'</div><div class="xgrid">'
    +xt('💑',t('कुंडली मिलान','Match Kundali'),t('दो कुंडली — गुण मिलान','Two charts, Guna Milan'),'#match')
@@ -937,9 +939,11 @@ function vPick(iso){
    +'<div class="note">'+t('गणना आपके शहर के निर्देशांक से — तारीख़ बदलिए, पूरा पंचांग बदल जाएगा।','Computed for your city\'s coordinates — change the date and the whole panchang recomputes.')+'</div>';
 }
 /* ── Muhurta finder: scores real dates against YOUR birth chart ── */
+// Marriage is deliberately NOT here. A marriage muhurta needs both charts —
+// the bride's and the groom's tarabala and chandrabala both have to clear.
+// Offering it from one person's chart would look identical and be wrong.
 var MUH_META={
   griha_pravesh:{i:'🏠',hi:'गृह प्रवेश',en:'Griha Pravesh'},
-  marriage_muhurta:{i:'💍',hi:'विवाह',en:'Marriage'},
   business:{i:'💼',hi:'व्यापार आरंभ',en:'New Business'},
   vehicle:{i:'🚗',hi:'वाहन खरीद',en:'Vehicle Purchase'}
 };
@@ -947,8 +951,11 @@ function vMuhurtaPick(){
   var g='';
   Object.keys(MUH_META).forEach(function(k){var m=MUH_META[k];
     g+=xt(m.i,H?m.hi:m.en,t('शुभ दिन खोजें','Find good dates'),'#muhurta/'+k);});
-  app.innerHTML=pgHead(t('मुहूर्त खोजें','Find a Muhurta'),t('आपकी जन्म कुंडली से अगले 90 दिन','Next 90 days, scored against your chart'),'#explore')
-   +'<div class="xgrid">'+g+'</div>';
+  app.innerHTML=pgHead(t('मुहूर्त खोजें','Find a Muhurta'),t('आपकी कुंडली से शुभ तिथियाँ','Dates scored against your chart'),'#explore')
+   +'<div class="xgrid">'+g+'</div>'
+   +'<div class="note" style="cursor:pointer;" onclick="location.hash=\'#match\'">'
+   +t('विवाह की तिथि यहाँ नहीं है — उसके लिए वर और वधू दोनों की कुंडली चाहिए, एक से नहीं निकलती। → कुंडली मिलान',
+      'Marriage is not here — a marriage date needs both the bride\'s and the groom\'s charts, not one. → Match Kundali')+' ›</div>';
 }
 function birthDT(){
   if(!U.dob) return null;
@@ -996,16 +1003,19 @@ function vMuhurtaRun(key){
      look like a sorting bug. Tiers are relative to the best score this search
      actually found — no invented ceiling — and the order is labelled. */
   var top=Math.max.apply(null,res.results.map(function(r){return r.score;}));
-  function tier(sc){
-    if(sc>=top)   return {n:3,hi:'सर्वोत्तम',en:'Best'};
-    if(sc>=top-2) return {n:2,hi:'उत्तम',   en:'Very good'};
-    return              {n:1,hi:'ठीक',      en:'Workable'};
+  // A date carrying a ⚠ is never "Best", however high it scores — 22 Oct
+  // scored top while flagged, and ★★★ beside a warning is exactly the kind of
+  // contradiction this app cannot afford. Any ⚠ caps at ★★☆.
+  function tier(sc,flawed){
+    if(sc>=top   && !flawed) return {n:3,hi:'सर्वोत्तम',en:'Best'};
+    if(sc>=top-2)            return {n:2,hi:'उत्तम',   en:'Very good'};
+    return                          {n:1,hi:'ठीक',      en:'Workable'};
   }
   var list=res.results.slice();
   if(sortBy==='date') list.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
 
   function card(r,rank){
-    var d=new Date(r.date), tr=tier(r.score);
+    var d=new Date(r.date), flawed=!!(r.minus||[]).length, tr=tier(r.score,flawed);
     var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{weekday:'short',day:'numeric',month:'short'});
     var stars='★'.repeat(tr.n)+'☆'.repeat(3-tr.n);
     var plus=(r.plus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(150,220,170,0.88);line-height:1.6;">✓ '+(H?x.hi:x.en)+'</div>';}).join('');
