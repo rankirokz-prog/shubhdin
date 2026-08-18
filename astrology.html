@@ -245,6 +245,7 @@ function L(v,depth){
   if(v.hi)     return L(v.hi,depth+1);
   return '';
 }
+var SD_BUILD='astro A3';
 function t(hi,en){return H?hi:en;}
 
 /* ── time helpers (IST display always) ───────────────────── */
@@ -439,7 +440,8 @@ function vHub(){
   var cd     = segEnd?mins(+segEnd-Date.now()):'';
 
   app.innerHTML=
-   '<div class="hdr"><button class="back" onclick="location.href=\'dashboard.html\'">←</button>'
+   '<div style="position:fixed;left:7px;bottom:3px;z-index:99;font-size:8.5px;font-family:monospace;color:rgba(255,255,255,0.22);">'+SD_BUILD+'</div>'
+   +'<div class="hdr"><button class="back" onclick="location.href=\'dashboard.html\'">←</button>'
    +'<div><div class="h-t dev">'+t('आज का ज्योतिष','Astrology Today')+'</div>'
    +'<div class="h-s">'+greg+' · <span class="dev">'+hindu+'</span></div></div>'
    +'<div class="h-city">📍 '+CITY+'</div></div>'
@@ -969,11 +971,12 @@ function vMuhurtaRun(key){
     return;
   }
 
-  var days=MUH_DAYS[key]||90;
+  var days=MUH_DAYS[key]||90, sortBy=MUH_SORT[key]||'score';
   var res=null;
-  try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),8); }catch(e){}
+  try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),12); }catch(e){}
 
-  var rangeBar='<div class="subh">'+t('कितने दिनों में खोजें','Search window')+'</div><div class="xgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:4px;">'
+  var controls='<div class="subh">'+t('कितने दिनों में खोजें','Search window')+'</div>'
+   +'<div class="xgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:9px;">'
    +[30,90,180].map(function(d){
       return '<div class="xt" style="padding:9px 6px;'+(d===days?'border-color:rgba(232,190,90,0.9);background:#4A3114;':'')+'" '
        +'onclick="MUH_DAYS[\''+key+'\']='+d+';route();"><div class="xt-n">'+d+' '+t('दिन','days')+'</div></div>';
@@ -982,42 +985,99 @@ function vMuhurtaRun(key){
    +'<div><div class="pc-n dev">'+(pr.name||t('आपका विवरण','Your details'))+'</div>'
    +'<div class="pc-s">'+bpLine(pr)+'</div></div><div class="pc-go">✎</div></div>';
 
-  var body;
   if(!res||!res.results||!res.results.length){
-    body='<div class="note">'+t('इस अवधि में इस कार्य के लिए कोई पूर्ण शुभ दिन नहीं मिला। शर्तें ढीली करके दिन बनाना आसान था — नहीं किया। अवधि बढ़ाकर देखिए।',
-      'No fully auspicious day for this in the chosen window. Loosening the rules to manufacture one would have been easy — we did not. Try a longer window.')+'</div>';
-  } else {
-    body=res.results.map(function(r){
-      var d=new Date(r.date);
-      var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{weekday:'short',day:'numeric',month:'short'});
-      var plus=(r.plus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(150,220,170,0.88);line-height:1.6;">✓ '+(H?x.hi:x.en)+'</div>';}).join('');
-      var minus=(r.minus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(240,150,130,0.88);line-height:1.6;">△ '+(H?x.hi:x.en)+'</div>';}).join('');
-      return '<div class="card" style="margin-bottom:9px;">'
-        +'<div style="display:flex;align-items:baseline;gap:9px;margin-bottom:6px;">'
-        +'<b style="font-size:15px;color:#F7EED8;">'+when+'</b>'
-        +'<span class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);">'+(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</span></div>'
-        +plus+minus
-        +window_(r,'abhijit','⭐',t('अभिजित ','Abhijit '))
-        +window_(r,'amritKaal','🍯',t('अमृत काल ','Amrit Kaal '))
-        +'</div>';
-    }).join('');
+    app.innerHTML=head+controls+'<div class="note">'+t('इस अवधि में इस कार्य के लिए कोई शुभ दिन नहीं मिला। शर्तें ढीली करके दिन बनाना आसान था — नहीं किया। अवधि बढ़ाकर देखिए।',
+      'No auspicious day for this in the chosen window. Loosening the rules to manufacture one would have been easy — we did not. Try a longer window.')+'</div>';
+    return;
   }
-  app.innerHTML=head+rangeBar
-   +'<div class="subh">'+t('आपके लिए शुभ तिथियाँ','Auspicious dates for you')+'</div>'
-   +body
-   +'<div class="cta" onclick="location.href=\'buy.html?r=muhurta\'">'
+
+  /* ── ranking, stated out loud ──
+     The engine returns score-ordered, so 11 Nov could sit above 13 Sept and
+     look like a sorting bug. Tiers are relative to the best score this search
+     actually found — no invented ceiling — and the order is labelled. */
+  var top=Math.max.apply(null,res.results.map(function(r){return r.score;}));
+  function tier(sc){
+    if(sc>=top)   return {n:3,hi:'सर्वोत्तम',en:'Best'};
+    if(sc>=top-2) return {n:2,hi:'उत्तम',   en:'Very good'};
+    return              {n:1,hi:'ठीक',      en:'Workable'};
+  }
+  var list=res.results.slice();
+  if(sortBy==='date') list.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+
+  function card(r,rank){
+    var d=new Date(r.date), tr=tier(r.score);
+    var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{weekday:'short',day:'numeric',month:'short'});
+    var stars='★'.repeat(tr.n)+'☆'.repeat(3-tr.n);
+    var plus=(r.plus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(150,220,170,0.88);line-height:1.6;">✓ '+(H?x.hi:x.en)+'</div>';}).join('');
+    var minus=(r.minus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(240,150,130,0.88);line-height:1.6;">⚠ '+(H?x.hi:x.en)+'</div>';}).join('');
+    return '<div class="card" style="margin-bottom:9px;'+(minus?'border-color:rgba(232,163,23,0.30);':'')+'">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+      +(rank?'<span style="font-size:10px;font-weight:700;color:rgba(212,168,67,0.75);min-width:18px;">#'+rank+'</span>':'')
+      +'<b style="font-size:15px;color:#F7EED8;">'+when+'</b>'
+      +'<span style="margin-left:auto;font-size:11px;color:'+(tr.n===3?'#8FE0A8':tr.n===2?'#E8BE5A':'rgba(255,244,222,0.55)')+';">'
+      +stars+' '+(H?tr.hi:tr.en)+'</span></div>'
+      +'<div class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);margin-bottom:5px;">'
+      +(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</div>'
+      +plus+minus
+      +window_(r,'abhijit','⭐',t('अभिजित ','Abhijit '))
+      +window_(r,'amritKaal','🍯',t('अमृत काल ','Amrit Kaal '))
+      +'</div>';
+  }
+
+  var body;
+  if(sortBy==='date'){
+    body=list.map(function(r){return card(r,0);}).join('');
+  } else {
+    var clean=list.filter(function(r){return !(r.minus||[]).length;});
+    var caveat=list.filter(function(r){return (r.minus||[]).length;});
+    body=(clean.length?'<div class="subh">'+t('✅ साफ़ तिथियाँ','✅ Clean dates')+'</div>'
+          +clean.map(function(r,i){return card(r,i+1);}).join(''):'')
+        +(caveat.length?'<div class="subh">'+t('⚠️ इनमें कुछ कमी है','⚠️ These carry a caveat')+'</div>'
+          +'<div class="note" style="margin:-2px 2px 8px;">'+t('ये भी शुभ हैं, पर हर एक में एक कमी है — नीचे लिखी है। कोई साफ़ तिथि न मिले तभी इन्हें चुनें।',
+             'Still auspicious, but each carries one flaw, named below. Choose these only if no clean date suits you.')+'</div>'
+          +caveat.map(function(r,i){return card(r,clean.length+i+1);}).join(''):'');
+  }
+
+  var sortBar='<div class="subh" style="display:flex;align-items:center;gap:8px;">'
+   +'<span>'+(sortBy==='score'?t('क्रम: सर्वोत्तम पहले','Order: best first'):t('क्रम: तारीख़ अनुसार','Order: by date'))+'</span>'
+   +'<span style="margin-left:auto;font-weight:600;color:rgba(232,190,90,0.9);cursor:pointer;text-transform:none;letter-spacing:0;font-size:11px;" '
+   +'onclick="MUH_SORT[\''+key+'\']=\''+(sortBy==='score'?'date':'score')+'\';route();">'
+   +(sortBy==='score'?t('तारीख़ अनुसार दिखाएँ ⇅','Sort by date ⇅'):t('सर्वोत्तम पहले दिखाएँ ⇅','Sort by best ⇅'))+'</span></div>';
+
+  app.innerHTML=head+controls
+   +'<div class="note" style="margin:2px 2px 4px;">'
+   +t(days+' दिनों में ','Across '+days+' days ')+'<b>'+(res.totalFound||list.length)+'</b>'
+   +t(' शुभ दिन मिले — सबसे अच्छे '+list.length+' नीचे',' auspicious days found — best '+list.length+' shown')+'</div>'
+   +sortBar+body
+   +'<div class="cta" onclick="muhurtaBuy(\''+key+'\')">'
    +'<div class="cta-t">'+t('इससे आगे का मुहूर्त चाहिए?','Need the full muhurta workup?')+'</div>'
-   +'<div class="cta-s">'+t('विस्तृत मुहूर्त रिपोर्ट में हर तिथि का घंटा-दर-घंटा लग्न, चौघड़िया और होरा, वर्ज्य काल, और आपकी कुंडली के अनुसार क्रम में लगी सूची मिलती है।',
-      'The detailed Muhurta Report adds hour-by-hour lagna for each date, choghadiya and hora windows, periods to avoid, and the dates ranked against your own chart.')+'</div>'
-   +'<div class="cta-b">'+t('विस्तृत मुहूर्त रिपोर्ट देखें →','View Detailed Muhurta Report →')+'</div></div>'
-   +'<div class="note">'+t('तिथि, नक्षत्र, वार, ताराबल और चंद्रबल — पाँचों जाँचे गए।','Tithi, nakshatra, weekday, tarabala and chandrabala all checked.')+'</div>';
+   +'<div class="cta-s">'+t('विस्तृत '+(H?m.hi:m.hi)+' मुहूर्त रिपोर्ट में हर तिथि का घंटा-दर-घंटा लग्न, चौघड़िया और होरा, वर्ज्य काल, और आपकी कुंडली के अनुसार क्रम में लगी सूची मिलती है।',
+      'The detailed '+m.en+' Muhurta Report adds hour-by-hour lagna for each date, choghadiya and hora windows, periods to avoid, and the dates ranked against your own chart.')+'</div>'
+   +'<div class="cta-b">'+t('विस्तृत '+m.hi+' रिपोर्ट देखें →','View Detailed '+m.en+' Report →')+'</div></div>'
+   +'<div class="note">'+t('तिथि, नक्षत्र, वार, ताराबल और चंद्रबल — पाँचों जाँचे गए। सुझाए गए समय में से राहु काल, यमगंड, गुलिक, वर्ज्यम् और दुर्मुहूर्त काटे जा चुके हैं।',
+      'Tithi, nakshatra, weekday, tarabala and chandrabala all checked. Rahu Kaal, Yamaganda, Gulika, Varjyam and Dur Muhurtam are already cut out of the suggested windows.')+'</div>';
 }
-var MUH_DAYS={};
+/* Carry the chosen activity into the buy flow instead of dropping the user on
+   a generic muhurta purchase. Sent both ways: a URL param the buy page can read
+   now, and a stored intent the report side can pick up later. */
+function muhurtaBuy(key){
+  try{ localStorage.setItem('sd_muhurta_activity',key); }catch(e){}
+  location.href='buy.html?r=muhurta&for='+encodeURIComponent(key);
+}
+
+var MUH_DAYS={}, MUH_SORT={};
 /* A suggested window inside a muhurta result goes through the same rule.
    That day's own forbidden periods are recomputed — a good window on the
    11th means nothing if the 11th's Rahu Kaal sits inside it. */
 function window_(r,key,ico,label){
-  var w=r[key]; if(!w) return '';
+  var w=r[key];
+  if(!w){
+    var wd=new Date(r.date).getDay();
+    var why = (key==='abhijit'&&wd===3)
+      ? t('— बुधवार को अभिजित नहीं लिया जाता','— Abhijit is not taken on a Wednesday')
+      : t('— उस दिन नहीं','— none that day');
+    return '<div style="font-size:10.5px;color:rgba(255,244,222,0.42);margin-top:3px;">'+ico+' '+label+why+'</div>';
+  }
   var day=new Date(r.date), pieces;
   try{
     var dp=PE.getPanchang(day,LAT,LNG,5.5);
