@@ -245,7 +245,7 @@ function L(v,depth){
   if(v.hi)     return L(v.hi,depth+1);
   return '';
 }
-var SD_BUILD='astro A4';
+var SD_BUILD='astro A5';
 function t(hi,en){return H?hi:en;}
 
 /* ── time helpers (IST display always) ───────────────────── */
@@ -854,15 +854,46 @@ function pcard(slot,ico,label,ret){
    +'<div class="pc-go">'+(pr?'✎':'+')+'</div></div>';
 }
 function vMatch(){
-  var boy=bpRead('boy'), girl=bpRead('girl'), ready=boy&&girl;
+  var boy=bpRead('boy'), girl=bpRead('girl'), ready=boy&&girl, me=bpRead('self');
+  /* Say what is free and what is paid BEFORE asking for two people's birth
+     details. Collecting the data first and revealing the paywall after would
+     be the standard trick and exactly the wrong one for this brand. */
+  var upfront='<div class="card" style="margin-bottom:12px;">'
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(150,220,170,0.9);text-transform:uppercase;margin-bottom:6px;">'
+   +t('यहाँ मुफ़्त में मिलेगा','Free here')+'</div>'
+   +'<div style="font-size:11.5px;color:rgba(255,244,222,0.80);line-height:1.75;">'
+   +t('36 में से गुण अंक • आठों कूट अलग-अलग • मंगल दोष का निर्णय • नाड़ी, भकूट और गण दोष — कटे या नहीं',
+      'Score out of 36 · all eight kootas individually · Mangal Dosha verdict · Nadi, Bhakoot and Gana dosha — cancelled or standing')+'</div>'
+   +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(217,196,255,0.9);text-transform:uppercase;margin:11px 0 6px;">'
+   +t('विस्तृत रिपोर्ट में','In the paid report')+'</div>'
+   +'<div style="font-size:11.5px;color:rgba(255,244,222,0.68);line-height:1.75;">'
+   +t('दोष परिहार का शास्त्रीय विश्लेषण • दोनों की नवांश (D9) कुंडली • सप्तम भाव और अष्टकवर्ग बल • विवाह के शुभ काल • उपाय',
+      'Classical dosha-cancellation analysis · both Navamsa (D9) charts · 7th-house and Ashtakavarga strength · marriage timing windows · remedies')+'</div>'
+   +'<div style="font-size:10.5px;color:rgba(255,244,222,0.45);margin-top:10px;">'
+   +t('विवरण आपके फ़ोन में रहता है। गणना भी यहीं होती है।','Details stay on your phone. The calculation runs here too.')+'</div></div>';
+
   app.innerHTML=pgHead(t('कुंडली मिलान','Match Kundali'),t('दोनों का जन्म विवरण — फिर गुण मिलान','Both birth charts, then Guna Milan'),'#explore')
-   +'<div class="bpwhy">'+t('गुण मिलान दोनों की चंद्र नक्षत्र स्थिति से निकलता है। नीचे दोनों विवरण भरें — गणना आपके फ़ोन पर ही होगी।',
-      'Guna Milan is computed from both Moon nakshatras. Fill both below — the calculation runs on your phone.')+'</div>'
+   +upfront
    +pcard('boy','🤵',t('वर','Groom'),'#match')
+   +(!boy&&me?useMine('boy'):'')
    +pcard('girl','👰',t('वधू','Bride'),'#match')
+   +(!girl&&me?useMine('girl'):'')
    +(ready
      ? '<button class="bpbtn" onclick="location.hash=\'#match/result\'">'+t('मिलान देखें →','See the Match →')+'</button>'
      : '<div class="note">'+t('दोनों विवरण भरने पर मिलान अपने आप उपलब्ध हो जाएगा।','The match unlocks once both sets of details are in.')+'</div>');
+}
+/* One tap to reuse the details already saved for this user. */
+function useMine(slot){
+  var me=bpRead('self');
+  return '<div style="margin:-4px 2px 11px;text-align:right;">'
+   +'<span onclick="copySelf(\''+slot+'\')" style="font-size:11.5px;color:rgba(232,190,90,0.92);cursor:pointer;">'
+   +t('↩ मेरा विवरण यहाँ भरें','↩ Use my details here')
+   +' <small style="color:rgba(255,244,222,0.45);">('+(me.name||bpLine(me).split(' · ')[0])+')</small></span></div>';
+}
+function copySelf(slot){
+  var me=bpRead('self'); if(!me) return;
+  bpWrite(slot,{name:me.name,dob:me.dob,tob:me.tob,place:me.place,lat:me.lat,lng:me.lng});
+  route();
 }
 function vMatchResult(){
   var boy=bpRead('boy'), girl=bpRead('girl');
@@ -1183,19 +1214,39 @@ function vHcal(){
    +orow(t('अयन','Ayana'),L(hc.ayana))
    +'</div>';
 }
+/* Every dot used to be the same gold, which told the reader nothing. The one
+   distinction that actually decides a muhurta is the sign's quality: chara
+   (movable) suits travel and vehicles, sthira (fixed) suits anything meant to
+   last — a house, a marriage — and dvisvabhava (dual) sits between. That is
+   what the dot now encodes. Derived from rashiIndex % 3, the classical order. */
+var LAGNA_QUALITY=[
+  {hi:'चर',   en:'Movable', c:'#7FB3F5', use_hi:'यात्रा, वाहन, नई शुरुआत', use_en:'travel, vehicles, new starts'},
+  {hi:'स्थिर', en:'Fixed',   c:'#5ABE78', use_hi:'गृह प्रवेश, विवाह, स्थायी काम', use_en:'griha pravesh, marriage, lasting work'},
+  {hi:'द्विस्वभाव', en:'Dual', c:'#E8BE5A', use_hi:'बातचीत, पढ़ाई, दोहरे काम', use_en:'talks, study, mixed work'}
+];
 function vLagna(){
   var tbl=[]; try{ tbl=PE.getLagnaTable(new Date(),LAT,LNG,5.5)||[]; }catch(e){}
   var now=Date.now(),rows='';
   tbl.forEach(function(l){
     var a=new Date(l.start).getTime(), b=new Date(l.end).getTime(), live=now>=a&&now<b;
     var nm=l.rashi?(H?l.rashi.hi:l.rashi.en):(H?l.hi:l.en);
-    rows+='<div class="sgrow'+(live?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
-      +'<div class="sg-n dev">'+(nm||'—')+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')+'</div>'
+    var q=LAGNA_QUALITY[(l.rashiIndex!=null?l.rashiIndex:0)%3];
+    rows+='<div class="sgrow'+(live?' now':'')+'"><div class="sg-d" style="background:'+q.c+'"></div>'
+      +'<div class="sg-n dev">'+(nm||'—')+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')
+      +'<div style="font-size:9.5px;color:'+q.c+';opacity:0.85;margin-top:2px;">'+(H?q.hi:q.en)+'</div></div>'
       +'<div class="sg-t">'+fR(l.start,l.end)+'</div></div>';
   });
+  var legend=LAGNA_QUALITY.map(function(q){
+    return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">'
+      +'<span style="width:8px;height:8px;border-radius:50%;background:'+q.c+';flex-shrink:0;"></span>'
+      +'<span style="font-size:10.5px;color:rgba(255,244,222,0.72);"><b style="color:'+q.c+';">'+(H?q.hi:q.en)+'</b> — '
+      +(H?q.use_hi:q.use_en)+'</span></div>';
+  }).join('');
   app.innerHTML=pgHead(t('लग्न सारणी','Lagna Table'),t('आज दिन भर उदय होने वाले लग्न','Ascendants rising through today'),'#explore')
+   +'<div class="subh">'+t('लग्न का स्वभाव','What the colours mean')+'</div>'
+   +'<div style="padding:2px 4px 10px;">'+legend+'</div>'
    +'<div class="seglist">'+(rows||'<div class="note">—</div>')+'</div>'
-   +'<div class="note">'+t('मुहूर्त निकालते समय लग्न देखा जाता है — यही सारणी उसका आधार है।','Lagna is what a muhurta is finally judged on; this table is that basis.')+'</div>';
+   +'<div class="note">'+t('मुहूर्त निकालते समय अंत में लग्न ही देखा जाता है — यही सारणी उसका आधार है।','Lagna is what a muhurta is finally judged on; this table is that basis.')+'</div>';
 }
 function obsList(list,icon,emptyMsg){
   var today=new Date(); today.setHours(0,0,0,0);
