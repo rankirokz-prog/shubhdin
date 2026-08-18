@@ -2018,7 +2018,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
             <div class="sad-day-row">
               <div class="sad-day-big" id="sadDayNum">Day 1</div>
               <div class="sad-day-of" id="sadDayOf">/ 21</div>
-              <div class="sad-streak">🔥 <span id="sadStreak">0</span><span id="sadStreakLbl"> दिन लगातार</span></div>
+              <div class="sad-streak">🔥 <span id="sadStreak">0</span><span id="sadStreakLbl"> दिन — साधना क्रम</span></div>
             </div>
             <div class="sad-bar-bg"><div class="sad-bar-fill" id="sadBarFill" style="width:5%;"></div></div>
             <div class="sad-bar-label" id="sadBarLabel">0% पूर्ण</div>
@@ -2451,9 +2451,11 @@ function personalise(){
   document.getElementById('jtDeity').textContent=T.ico;
   const dimg=document.getElementById('jtDeityImg');
   if(dimg){dimg.src=T.img||'';}
+  // "Sadhana" is the Explore feature with its own streak. This card is the
+  // daily deity jap that feeds the HOME streak — two different things.
   document.getElementById('jtTag').textContent=isShravan()
     ?(H?'🎧 श्रवण जप — लक्ष्मी अष्टोत्तर':'🎧 Shravana Jap — Lakshmi Ashtottara')
-    :(H?'🪔 आज की साधना':'🪔 Today\'s Sadhana');
+    :(H?'🪔 आज का जप':'🪔 Today\'s Jap');
   // jtBg: keep dark gradient only, no deity image (deity shown on right via jtDeityImg)
   document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
   document.getElementById('jtBenefit').textContent=isShravan()
@@ -3846,8 +3848,11 @@ const PROB_CONTENT = {
     understand_en: 'Delays in marriage can arise from emotional blocks, timing, or lack of harmony in relationships. This sacred Swayamvara Parvathi mantra is traditionally chanted to attract divine blessings for love, compatibility, and marriage harmony.',
     mantra: 'ॐ ह्रीं योगिनी योगिनी योगेश्वरी योग भयङ्करि सकल स्थावर जंगमस्य मुख हृदयं मम वशम् आकर्षय आकर्षय नमः',
     mantra_en: 'Om Hreem Yogini Yogini Yogeshwari Yoga Bhayankari Sakala Sthavara Jangamasya Mukha Hridayam Mama Vasham Akarsha Akarshaya Namaha',
-    steps: ['प्रतिदिन सुबह या शाम शांत मन से जप करें', '108 बार मंत्र जाप करें', 'स्वच्छ और शांत स्थान पर बैठकर जप करें', 'स्नान के बाद करना श्रेष्ठ माना जाता है'],
-    steps_en: ['Chant calmly every morning or evening', 'Chant 108 times daily', 'Sit in a peaceful place with focus and positivity', 'Best practiced after bath'],
+    // The counter on this screen is 27, so the instruction says 27. 27, 54 and
+    // 108 are all valid mala counts, but text and counter must not disagree —
+    // devotees count.
+    steps: ['प्रतिदिन सुबह या शाम शांत मन से जप करें', '27 बार मंत्र जाप करें (एक चौथाई माला)', 'स्वच्छ और शांत स्थान पर बैठकर जप करें', 'स्नान के बाद करना श्रेष्ठ माना जाता है'],
+    steps_en: ['Chant calmly every morning or evening', 'Chant 27 times daily (a quarter mala)', 'Sit in a peaceful place with focus and positivity', 'Best practiced after bath'],
     actions: ['देवी पार्वती को सफेद पुष्प अर्पित करें', 'शुक्रवार को घी का दीपक जलाएं', 'संभव हो तो शिव–पार्वती मंदिर जाएं', 'सकारात्मक सोच और धैर्य बनाए रखें'],
     actions_en: ['Offer white flowers to Goddess Parvati', 'Light a ghee lamp on Fridays', 'Visit Shiva–Parvati temple when possible', 'Maintain patience and positive thoughts'],
     count: 27, duration: '21 दिन', duration_en: '21 Days',
@@ -4017,7 +4022,8 @@ function personaliseMarg(){
   const _t2=document.getElementById('tl2');if(_t2)_t2.textContent=H?'मार्गदर्शन':'Guidance';
   const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=H?'साधना':'Sadhana';
   const stt=document.getElementById('sadTitle');if(stt)stt.innerHTML=H?'साधना<small>My Sadhana</small>':'My Sadhana';
-  const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=H?' दिन लगातार':' Day Streak';
+  // Named explicitly so nobody thinks the app lost their jap streak.
+  const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=H?' दिन — साधना क्रम':' day Sadhana streak';
   const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?'आज का लक्ष्य':"Today's Goal";
   const stu=document.getElementById('sadTodayUnit');if(stu)stu.textContent=H?'जप':'Chants';
   const sth=document.getElementById('sadJTapHint');if(sth)sth.textContent=H?'हर जाप के लिए टैप करें':'Tap for every jap';
@@ -4100,7 +4106,7 @@ function renderSadhanaCard(){
    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">'
    +'<div style="font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(212,168,67,0.78);font-weight:700;">'
    +(H?'मेरी साधना':'MY SADHANA')+'</div>'
-   +(s.streak?'<div style="font-size:11.5px;color:rgba(255,150,0,0.90);font-weight:600;">🔥 '+s.streak+(H?' दिन':' day')+'</div>':'')
+   +(s.streak?'<div style="font-size:11.5px;color:rgba(255,150,0,0.90);font-weight:600;">🔥 '+s.streak+(H?' दिन साधना':' day sadhana')+'</div>':'')
    +'</div>'
    +'<div style="font-family:\'Tiro Devanagari Hindi\',serif;font-size:16px;color:#FFE9B8;line-height:1.35;margin-bottom:3px;">🕉️ '+(s.mantra||s.title||'')+'</div>'
    +'<div style="font-size:11px;color:rgba(255,255,255,0.72);margin-bottom:10px;">'+(s.title||'')+'</div>'
