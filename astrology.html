@@ -245,7 +245,7 @@ function L(v,depth){
   if(v.hi)     return L(v.hi,depth+1);
   return '';
 }
-var SD_BUILD='astro A5';
+var SD_BUILD='astro A6';
 function t(hi,en){return H?hi:en;}
 
 /* ── time helpers (IST display always) ───────────────────── */
@@ -519,6 +519,7 @@ function vRashiGrid(){
      +'<div class="em">'+RASHI[i][3]+'</div><div class="nm dev">'+(H?RASHI[i][0]:RASHI[i][1])+'</div></div>';
   }
   app.innerHTML=pgHead(t('राशिफल','Rashifal'),t('चंद्रमा आज ','Moon today in ')+(H?p.moonSign.hi:p.moonSign.en),'hub')
+   +(mine>=0?tobUnknownNote():needBirth(t('तब आपकी राशि यहाँ अपने आप चुनी रहेगी','Then your own rashi will be marked here automatically')))
    +'<div class="rgrid">'+g+'</div>'
    +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
    +'<div class="brandline">'+t('गणना से, अनुमान से नहीं','COMPUTED, NOT GUESSED')+'</div>';
@@ -1176,6 +1177,7 @@ function vTara(){
       +'<div class="sg-t">'+n.taraEn+' · '+n.verdict+'</div></div>';
   }).join('');
   app.innerHTML=pgHead(t('ताराबल','Tarabala'),t('आज का नक्षत्र ','Day nakshatra ')+'<span class="dev">'+(H?tb.dayNakshatra.hi:tb.dayNakshatra.en)+'</span>','#explore')
+   +(mine?tobUnknownNote():needBirth(t('तब पता चलेगा कि इनमें से कौन सी पंक्ति आपकी है','Then we can show which of these rows is yours')))
    +'<div class="subh">'+t('सभी 27 नक्षत्रों के लिए फल','Verdict for all 27 nakshatras')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
    +'<div class="note">'+t('अपने जन्म नक्षत्र से गिनकर — तीसरा, पाँचवाँ और सातवाँ तारा वर्ज्य माने जाते हैं।','Counted from your birth nakshatra — the 3rd, 5th and 7th taras are the ones classical texts avoid.')+'</div>';
@@ -1193,6 +1195,7 @@ function vChandra(){
       +'<div class="sg-t">'+(g?t('अनुकूल','Favourable'):t('सामान्य','Neutral'))+'</div></div>';
   }
   app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),t('चंद्रमा आज ','Moon today in ')+'<span class="dev">'+(H?cb.dayRashi.hi:cb.dayRashi.en)+'</span>','#explore')
+   +(mineIdx>=0?tobUnknownNote():needBirth(t('तब पता चलेगा कि इनमें से कौन सी राशि आपकी है','Then we can show which of these rashis is yours')))
    +'<div class="subh">'+t('सभी 12 राशियों के लिए','For all 12 rashis')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
    +'<div class="note">'+t('चंद्रबल गोचर चंद्रमा की आपकी जन्मराशि से स्थिति पर निर्भर करता है।','Chandrabala depends on where the transiting Moon sits from your birth rashi.')+'</div>';
@@ -1224,6 +1227,23 @@ var LAGNA_QUALITY=[
   {hi:'स्थिर', en:'Fixed',   c:'#5ABE78', use_hi:'गृह प्रवेश, विवाह, स्थायी काम', use_en:'griha pravesh, marriage, lasting work'},
   {hi:'द्विस्वभाव', en:'Dual', c:'#E8BE5A', use_hi:'बातचीत, पढ़ाई, दोहरे काम', use_en:'talks, study, mixed work'}
 ];
+/* Personalised pages must say WHY they are impersonal. Without a birth
+   nakshatra, Tarabala is just a list of 27 rows and the user has no idea a
+   "yours" row was ever meant to be there. */
+function needBirth(what){
+  return '<div class="pcard empty" onclick="goBp(\'self\',\''+location.hash+'\')">'
+   +'<div class="pc-i">🎂</div><div><div class="pc-n dev">'+t('जन्म विवरण जोड़ें','Add your birth details')+'</div>'
+   +'<div class="pc-s">'+what+'</div></div><div class="pc-go">+</div></div>';
+}
+/* Moon can change nakshatra within a single day, so an assumed birth time can
+   land on the wrong one. Say so rather than presenting it as settled. */
+function tobUnknownNote(){
+  var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+  if(!u.tobUnknown) return '';
+  return '<div class="note" style="color:rgba(232,190,90,0.78);">'
+   +t('≈ आपका जन्म समय अज्ञात है, इसलिए सूर्योदय से गणना हुई है। चंद्रमा एक दिन में नक्षत्र बदल सकता है, इसलिए यह पंक्ति बदल भी सकती है।',
+      '≈ Your birth time is unknown, so sunrise was used. The Moon can change nakshatra within a day, so this row may shift.')+'</div>';
+}
 function vLagna(){
   var tbl=[]; try{ tbl=PE.getLagnaTable(new Date(),LAT,LNG,5.5)||[]; }catch(e){}
   var now=Date.now(),rows='';
@@ -1273,6 +1293,24 @@ function vFest(){
    +obsList(l,'🪔',t('इस वर्ष आगे कोई पर्व नहीं','No further festivals this year'));
 }
 
+/* The engine is already on this page, so a user who has given a birth date
+   should never see "add your birth details". Compute the moon rashi and
+   nakshatra once, cache into the shared profile, and every personalised page
+   downstream (Rashifal, Tarabala, Chandrabala) picks them up. */
+(function ensureProfile(){
+  try{
+    if(!U.dob || (U.rashi && U.nakshatra)) return;
+    var lat=(U.birth_lat!=null?U.birth_lat:U.city_lat), lng=(U.birth_lng!=null?U.birth_lng:U.city_lon);
+    if(lat==null||lng==null) return;
+    var d=new Date(U.dob+'T'+(U.tob||'06:00')+':00+05:30');
+    var bc=PE.getBirthChart(d,lat,lng);
+    var moon=bc.grahas.filter(function(g){return g.key==='moon';})[0];
+    if(!moon) return;
+    U.rashi=moon.rashi.en; U.nakshatra=moon.nakshatra.en;
+    U.nakshatra_pada=moon.nakshatra.pada; U.lagna=bc.lagna.en;
+    localStorage.setItem('shubhdin_user',JSON.stringify(U));
+  }catch(e){}
+})();
 route();
 </script>
 </body>
