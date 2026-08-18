@@ -3391,6 +3391,15 @@ function go(tab){
   if(tab!=='mantras'&&window.mlStop)window.mlStop(true);
   if(tab==='mantras')mlGrid();
   if(tab==='sadhana')renderSadhana();
+  // Full Panchang shows choghadiya and live windows — those need the engine.
+  if(tab==='panchang'&&!window.PanchangEngine){
+    ensureEngine().then(function(){
+      var p=enginePanchang();
+      if(p){ window._panchangData=p; applyPanchang(p);
+             if(p.sunrise&&p.sunset) renderChoghadiya(p.sunrise,p.sunset);
+             renderVrats(); }
+    }).catch(function(){});
+  }
   if(tab==='listen')renderSadhanaCard();
   if(tab==='home'){renderWallpaperCard();renderStreakCard();}
 }
@@ -4603,18 +4612,73 @@ function showToast(){
   t.classList.add('show');setTimeout(()=>t.classList.remove('show'),5500);
 }
 
-// ── Panchang API ──
+/* ══════════════════════════════════════════════════════════════════
+   PANCHANG — our own engine, not the old API.
+
+   This page fetched /api/panchang, and the calendar fell back to a mean-
+   lunation approximation (fixed 29.53-day cycle off new-moon anchors).
+   Measured against the engine across 20 sample days that approximation
+   disagreed on 17, usually by two tithis — enough to put Ekadashi on the
+   wrong day, and people fast on Ekadashi.
+
+   The engine is now the source. It loads AFTER first paint so this ad page
+   still renders instantly, and today's values are cached per day+city so a
+   repeat visit paints from cache with no wait.
+   ══════════════════════════════════════════════════════════════════ */
+function pgCacheKey(){
+  var d=new Date();
+  return 'sd_pan_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'_'+((U.city||'x')+'').toLowerCase();
+}
+function pgCoords(){
+  return {lat:(U.city_lat!=null?U.city_lat:16.7107), lng:(U.city_lon!=null?U.city_lon:81.0952)};
+}
+function pgFmt(x){ if(!x) return ''; var d=new Date(x);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function pgRange(w){ return w?(pgFmt(w.start)+'–'+pgFmt(w.end)):''; }
+/* Shape engine output into the flat form this page already renders, so every
+   existing DOM write below keeps working without change. */
+function enginePanchang(){
+  var PE=window.PanchangEngine; if(!PE) return null;
+  var c=pgCoords(), p=PE.getPanchang(new Date(),c.lat,c.lng,5.5);
+  return {
+    _p:p,
+    tithi:(H?p.tithi.hi:p.tithi.en),
+    tithi_paksha:(p.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
+    tithi_end:pgFmt(p.tithi.end),
+    nakshatra:(H?p.nakshatra.hi:p.nakshatra.en),
+    nakshatra_ruler:(p.nakshatra.lord?(H?p.nakshatra.lord.hi:p.nakshatra.lord.en):''),
+    nakshatra_end:pgFmt(p.nakshatra.end),
+    yoga:(H?p.yoga.hi:p.yoga.en), karana:(H?p.karana.hi:p.karana.en),
+    sunrise:pgFmt(p.sunrise), sunset:pgFmt(p.sunset),
+    moonrise:pgFmt(p.moonrise), moonset:pgFmt(p.moonset),
+    rahu_kaal:pgRange(p.rahuKaal), gulika:pgRange(p.gulikaKaal),
+    abhijit_muhurta:pgRange(p.abhijit), weekday:(H?p.vara.hi:p.vara.en)
+  };
+}
 async function fetchPanchang(){
+  // Today's values do not change during the day, so a cache hit means Home
+  // needs nothing further — and this is the ad page, so 278KB of engine is
+  // not worth fetching to recompute what we already have. The engine loads
+  // lazily when a deeper page (Full Panchang, calendar) actually needs it.
+  try{ var c=JSON.parse(localStorage.getItem(pgCacheKey())||'null');
+       if(c){ window._panchangData=c; applyPanchang(c); return; } }catch(e){}
   try{
-    const city=(U.city||'default').toLowerCase().replace(/\s+/g,'');
-    const tob=U.tob?'&tob='+encodeURIComponent(U.tob):'';
-    const apiUrl=(location.protocol==='https:'&&location.host)?('/api/panchang?city='+city+tob):('https://www.shubhdin.app/api/panchang?city='+city+tob);
-    const r=await fetch(apiUrl);
-    const ct=r.headers.get('content-type')||'';
-    if(!ct.includes('json')){console.log('Panchang: non-JSON response');return;}
-    const json=await r.json();
-    if(!json||!json.data){console.log('Panchang no data:', json);return;}const p=json.data;
-    window._panchangData=p;
+    await ensureEngine();
+    var p=enginePanchang();
+    if(p){
+      window._panchangData=p;
+      try{ var st=Object.assign({},p); delete st._p;
+           localStorage.setItem(pgCacheKey(),JSON.stringify(st)); }catch(e){}
+      applyPanchang(p);
+      return;
+    }
+  }catch(e){ console.log('Engine panchang unavailable:',e); }
+  applyPanchang(window._panchangData||null);
+}
+/* Every DOM write that used to live inside the API call, unchanged. */
+function applyPanchang(p){
+  if(!p) return;
+  try{
     setTimeout(prewarmAudio, 1000);
 
     // ── Tithi ──
@@ -4669,6 +4733,13 @@ async function fetchPanchang(){
       document.getElementById('rahuTime').textContent=p.rahu_kaal;
     }
     // ── Abhijit Muhurta (shubh time) ──
+    if(!p.abhijit_muhurta){
+      // Classical practice takes no Abhijit on a Wednesday, and the engine
+      // returns none. Say that rather than leaving a bare dash.
+      var _ab=document.getElementById('abTime'), _abs=document.getElementById('abSub');
+      if(_ab) _ab.textContent=H?'आज नहीं':'None today';
+      if(_abs) _abs.textContent=(new Date().getDay()===3)?(H?'बुधवार':'Wednesday'):'';
+    }
     if(p.abhijit_muhurta){
       document.getElementById('goodTime').textContent=p.abhijit_muhurta;
       const abEl=document.getElementById('abTime');
@@ -4709,14 +4780,9 @@ async function fetchPanchang(){
       const gulEl=document.getElementById('gulTime');
       if(gulEl) gulEl.textContent=p.gulika;
     }
-  }catch(e){
-    console.log('Panchang unavailable:', e);
-    // Show fallback values so nothing is blank
-    const now2=new Date();
-    document.getElementById('tv').textContent=H?'द्वितीया':'Dwitiya';
-    document.getElementById('goodTime').textContent='11:48–12:36';
-  }
+  }catch(e){ console.log('applyPanchang render:',e); }
 }
+
 
 // ── Init ──
 const mpEl=document.getElementById('miniPlayer');
@@ -5116,9 +5182,9 @@ function updateBirthChips(data){
     + ((data.nakshatra_pada && !tobIsUnknown()) ? ' (P'+data.nakshatra_pada+')' : '')
     + approxNote();
 
-  // Panchang page - update nakshatra ruler row if exists
-  const nakVal2 = document.getElementById('nakVal2');
-  if(nakVal2 && data.nakshatra) nakVal2.textContent = data.nakshatra;
+  // NOT nakVal2 — that is today's sky nakshatra on the Panchang page, while
+  // data.nakshatra is the user's birth nakshatra. Writing one into the other
+  // made the Full Panchang page show a birth value as today's transit.
 }
 
 // Load from cache if already fetched
@@ -5371,6 +5437,23 @@ const _NEW_MOONS = [
   '2027-01-07T08:24Z','2027-02-06T03:56Z','2027-03-07T21:29Z','2027-04-06T11:51Z'
 ].map(s=>new Date(s));
 
+/* Engine-backed, with a per-day memo because a month view asks for 42 days.
+   Returns null when the engine has not loaded yet; callers fall back to the
+   old approximation for that one paint and re-render once it arrives. */
+var _calMemo={};
+function calEngine(date){
+  var PE=window.PanchangEngine; if(!PE) return null;
+  var k=date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate();
+  if(_calMemo[k]!==undefined) return _calMemo[k];
+  try{
+    var c=pgCoords();
+    var d=new Date(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0);
+    var p=PE.getPanchang(d,c.lat,c.lng,5.5);
+    _calMemo[k]={tithiIdx:p.tithi.index, hi:p.tithi.hi, en:p.tithi.en,
+                 paksha:p.tithi.paksha, nak:p.nakshatra.en};
+  }catch(e){ _calMemo[k]=null; }
+  return _calMemo[k];
+}
 function calMoonPhase(date){
   // Find most recent new moon anchor before date
   let anchor = _NEW_MOONS[0];
@@ -5393,8 +5476,13 @@ function calMoonEmoji(phase){
   return {e:'🌑',n:'Amavasya',h:'अमावस्या'};
 }
 
-function calTithi(phase){
-  // Phase 0 = new moon moment = START of Shukla Pratipada
+function calTithi(phase,date){
+  // Engine first — the mean-lunation index below is only a pre-load stand-in.
+  var e = date ? calEngine(date) : null;
+  if(e){
+    const paksha = e.paksha==='Krishna' ? (H?'कृष्ण':'Krishna') : (H?'शुक्ल':'Shukla');
+    return {hi:e.hi, en:e.en, paksha:paksha, engine:true};
+  }
   const idx = Math.floor(phase / _SYNODIC * 30) % 30;
   const TITHI_HI=['प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','पूर्णिमा','प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','अमावस्या'];
   const TITHI_EN=['Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Purnima','Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Amavasya'];
@@ -5578,11 +5666,11 @@ function calMonthEvents(year, month){
       out.push({d:d,date:date,hi:f.h,en:f.n,icon:f.i,cat:f.t==='national'?'national':(f.t==='major'?'major':'festival')});
     });
     // computed observances — only when the curated table doesn't already name them
-    if(!hasEk && !curatedEk && isEkadashi(phase))
+    if(!hasEk && !curatedEk && isEkadashi(phase,date))
       out.push({d:d,date:date,hi:'एकादशी व्रत',en:'Ekadashi Vrat',icon:'🙏',cat:'vrat'});
-    if(!hasMoon && isPurnima(phase))
+    if(!hasMoon && isPurnima(phase,date))
       out.push({d:d,date:date,hi:'पूर्णिमा',en:'Purnima',icon:'🌕',cat:'purnima'});
-    if(!hasMoon && isAmavasya(phase))
+    if(!hasMoon && isAmavasya(phase,date))
       out.push({d:d,date:date,hi:'अमावस्या',en:'Amavasya',icon:'🌑',cat:'amavasya'});
     const bs=bankSaturday(date);
     if(bs) out.push({d:d,date:date,hi:'बैंक अवकाश',en:'Bank Holiday',icon:'🏦',cat:'bank',sub_hi:bs.h,sub_en:bs.e});
@@ -5591,11 +5679,24 @@ function calMonthEvents(year, month){
   return out.sort(function(a,b){ return a.d-b.d || rank[a.cat]-rank[b.cat]; });
 }
 // Ekadashis — every 15 days approx
-function isEkadashi(phase){
+/* Engine-first observance tests. The phase windows below were the source of
+   the Ekadashi-on-the-wrong-day error and now only apply before the engine
+   has loaded. */
+function isEkadashi(phase,date){
+  var e=date?calEngine(date):null;
+  if(e) return e.tithiIdx===10||e.tithiIdx===25;
   return (phase >= 9.84 && phase < 10.83) || (phase >= 24.61 && phase < 25.60);
 }
-function isAmavasya(phase){ return phase > 28.55; }
-function isPurnima(phase){ return phase >= 13.78 && phase < 14.77; }
+function isAmavasya(phase,date){
+  var e=date?calEngine(date):null;
+  if(e) return e.tithiIdx===29;
+  return phase > 28.55;
+}
+function isPurnima(phase,date){
+  var e=date?calEngine(date):null;
+  if(e) return e.tithiIdx===14;
+  return phase >= 13.78 && phase < 14.77;
+}
 
 // Calendar state
 let _calYear = new Date().getFullYear();
@@ -5610,6 +5711,8 @@ function openCalendar(){
   const ov = document.getElementById('calOverlay');
   ov.style.display='flex';
   renderCalendar();
+  // paint immediately from the stand-in, then repaint once the engine answers
+  ensureEngine().then(function(){ _calMemo={}; renderCalendar(); }).catch(function(){});
   // The month-events list now fills this space, so the detail panel stays
   // closed until a date is actually tapped — no empty prompt block.
   const cd = document.getElementById('calDetail');
@@ -5675,7 +5778,7 @@ function renderCalendar(){
     const dateKey = `${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const phase = calMoonPhase(date);
     const moon = calMoonEmoji(phase);
-    const tithi = calTithi(phase);
+    const tithi = calTithi(phase,date);
     const fests = calFest(dateKey);
     const festival = fests[0];
     const bankSat = bankSaturday(date);
@@ -5683,7 +5786,7 @@ function renderCalendar(){
     const isSelected = d===_calSelected;
     const isSun = date.getDay()===0;
     const isSat = date.getDay()===6;
-    const isSpecial = isAmavasya(phase)||isPurnima(phase)||isEkadashi(phase);
+    const isSpecial = isAmavasya(phase,date)||isPurnima(phase,date)||isEkadashi(phase,date);
     const isMajor = fests.some(function(f){return f.t==='major';});
     const isHoliday = bankSat || fests.some(function(f){return f.t==='national';});
 
@@ -5706,7 +5809,7 @@ function renderCalendar(){
       </div>
       <div style="font-size:8.5px;color:var(--cal-tithi);margin-top:3px;line-height:1.3;overflow:hidden;">${H?tithi.hi:tithi.en}</div>
       ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}${fests.length>1?`<span style="font-size:8px;color:rgba(212,168,67,0.62);vertical-align:top;">+${fests.length-1}</span>`:''}</div>`:(bankSat?`<div style="font-size:12px;margin-top:3px;line-height:1;opacity:0.75;">🏦</div>`:'')}
-      ${isSpecial&&!festival?`<div style="width:5px;height:5px;border-radius:50%;background:${isEkadashi(phase)?'var(--cal-vrat)':'rgba(232,190,90,0.90)'};margin-top:4px;"></div>`:''}
+      ${isSpecial&&!festival?`<div style="width:5px;height:5px;border-radius:50%;background:${isEkadashi(phase,date)?'var(--cal-vrat)':'rgba(232,190,90,0.90)'};margin-top:4px;"></div>`:''}
     </div>`;
   }
 
@@ -5769,10 +5872,10 @@ function selectCalDate(d){
 }
 
 
-function calSpiritualNote(phase, festival){
-  if(isAmavasya(phase)) return H?'🌑 पितरों का स्मरण करें':'🌑 Offer prayers to ancestors';
-  if(isPurnima(phase)) return H?'🌕 सत्यनारायण व्रत का दिन':'🌕 Auspicious for Satyanarayan Vrat';
-  if(isEkadashi(phase)) return H?'🙏 एकादशी व्रत — हरि का नाम लें':'🙏 Ekadashi — chant Hari Nam';
+function calSpiritualNote(phase, festival, date){
+  if(isAmavasya(phase,date)) return H?'🌑 पितरों का स्मरण करें':'🌑 Offer prayers to ancestors';
+  if(isPurnima(phase,date)) return H?'🌕 सत्यनारायण व्रत का दिन':'🌕 Auspicious for Satyanarayan Vrat';
+  if(isEkadashi(phase,date)) return H?'🙏 एकादशी व्रत — हरि का नाम लें':'🙏 Ekadashi — chant Hari Nam';
   if(festival && festival.t==='major') return H?'✨ आज विशेष पूजा का दिन है':'✨ Auspicious for special prayers';
   const d = new Date().getDay();
   const hi=['☀️ सूर्यदेव की पूजा करें','🕉️ शिव की आराधना करें','🙏 हनुमान चालीसा पढ़ें','📿 गणेश मंत्र जप करें','🌸 विष्णु सहस्रनाम पाठ करें','🌺 माँ लक्ष्मी का ध्यान करें','🪔 शनिदेव को तेल चढ़ाएं'];
@@ -5782,7 +5885,7 @@ function calSpiritualNote(phase, festival){
 function showCalDetail(date){
   const phase = calMoonPhase(date);
   const moon = calMoonEmoji(phase);
-  const tithi = calTithi(phase);
+  const tithi = calTithi(phase,date);
   const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
   const fests = calFest(dateKey);
   const festival = fests[0];
@@ -5816,9 +5919,9 @@ function showCalDetail(date){
     }).join('');
   }
 
-  const specialNote = isAmavasya(phase)?(H?'🌑 अमावस्या — पितृ तर्पण का दिन':'🌑 Amavasya — Day of ancestral worship'):
-    isPurnima(phase)?(H?'🌕 पूर्णिमा — व्रत का विशेष दिन':'🌕 Purnima — Auspicious for fasting'):
-    isEkadashi(phase)?(H?'🙏 एकादशी — व्रत एवं विष्णु पूजा':'🙏 Ekadashi — Fast & Vishnu Puja'):'';
+  const specialNote = isAmavasya(phase,date)?(H?'🌑 अमावस्या — पितृ तर्पण का दिन':'🌑 Amavasya — Day of ancestral worship'):
+    isPurnima(phase,date)?(H?'🌕 पूर्णिमा — व्रत का विशेष दिन':'🌕 Purnima — Auspicious for fasting'):
+    isEkadashi(phase,date)?(H?'🙏 एकादशी — व्रत एवं विष्णु पूजा':'🙏 Ekadashi — Fast & Vishnu Puja'):'';
 
   // Is this TODAY? If so, show the full real panchang data from API
   const today = new Date();
@@ -5900,7 +6003,7 @@ function showCalDetail(date){
     ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.85);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
     ${fullData}
     ${festHtml}
-    ${!p?`<div style='margin-top:6px;font-size:11px;color:rgba(255,255,255,0.74);font-style:italic;'>${calSpiritualNote(phase,festival)||''}</div>`:''}
+    ${!p?`<div style='margin-top:6px;font-size:11px;color:rgba(255,255,255,0.74);font-style:italic;'>${calSpiritualNote(phase,festival,date)||''}</div>`:''}
     ${fullBtn}
   `;
 }
@@ -5979,9 +6082,21 @@ function calcChoghadiya(sunrise, sunset, dow){
 
 function renderChoghadiya(sunrise, sunset){
   const dow = new Date().getDay();
-  const {day, night} = calcChoghadiya(sunrise, sunset, dow);
   const grid = document.getElementById('chogGrid');
   if(!grid) return;
+  // Engine first — its slots come off this city's real sunrise and sunset.
+  // The local weekday tables remain only as a pre-load stand-in.
+  let day, night;
+  const ep = window._panchangData && window._panchangData._p;
+  if(ep && ep.choghadiya){
+    const map=s=>({name_hi:s.hi,name_en:s.en,
+      time:pgFmt(s.start)+' – '+pgFmt(s.end),
+      q:(s.good?2:-1), color:(s.good?'#4ADE80':'#F87171'),
+      current:(Date.now()>=+new Date(s.start)&&Date.now()<+new Date(s.end))});
+    day=ep.choghadiya.day.map(map); night=ep.choghadiya.night.map(map);
+  } else {
+    const c=calcChoghadiya(sunrise, sunset, dow); day=c.day; night=c.night;
+  }
 
   const all = day; // show day choghadiya (8 slots in 4x2)
   grid.innerHTML = all.map(c => {
@@ -6002,6 +6117,18 @@ function renderChoghadiya(sunrise, sunset){
 function getVratsThisWeek(){
   const today = new Date();
   const vrats = [];
+  // Engine list for the year, filtered to the coming week. The weekday/tithi
+  // rules below apply only until the engine has loaded.
+  const PE=window.PanchangEngine;
+  let engineHits={};
+  if(PE){
+    try{
+      const c=pgCoords(), Y=today.getFullYear();
+      const add=(arr,ico)=>(arr||[]).forEach(x=>{ (engineHits[x.date]=engineHits[x.date]||[]).push({h:x.hi,e:x.en,i:ico}); });
+      add(PE.getVrats(Y,c.lat,c.lng,5.5),'🙏');
+      add(PE.getFestivals(Y,c.lat,c.lng,5.5),'🪔');
+    }catch(e){}
+  }
 
   for(let i=0;i<7;i++){
     const d = new Date(today);
@@ -6019,14 +6146,16 @@ function getVratsThisWeek(){
     if(dow===6) dayVrats.push({h:'शनिवार व्रत',e:'Saturday Fast',i:'🪔'});
 
     // Tithi-based vrats
-    if(isEkadashi(phase)) dayVrats.push({h:'एकादशी व्रत',e:'Ekadashi Fast',i:'📿'});
-    if(isAmavasya(phase)) dayVrats.push({h:'अमावस्या',e:'Amavasya',i:'🌑'});
-    if(isPurnima(phase)) dayVrats.push({h:'पूर्णिमा व्रत',e:'Purnima Fast',i:'🌕'});
-    const t = calTithi(phase);
+    if(isEkadashi(phase,d)) dayVrats.push({h:'एकादशी व्रत',e:'Ekadashi Fast',i:'📿'});
+    if(isAmavasya(phase,d)) dayVrats.push({h:'अमावस्या',e:'Amavasya',i:'🌑'});
+    if(isPurnima(phase,d)) dayVrats.push({h:'पूर्णिमा व्रत',e:'Purnima Fast',i:'🌕'});
+    const t = calTithi(phase,d);
     if(t.en==='Chaturthi') dayVrats.push({h:'संकष्टी चतुर्थी',e:'Sankashti Chaturthi',i:'🐘'});
     if(Math.abs(phase-12.83)<0.85 || Math.abs(phase-27.63)<0.85) dayVrats.push({h:'प्रदोष व्रत',e:'Pradosh Vrat',i:'🕉️'});
 
-    fests.forEach(function(f){ dayVrats.push({h:f.h, e:f.n, i:f.i}); });
+    // Engine's computed vrats/festivals win over the hand-maintained table.
+    if(engineHits[dateKey]) engineHits[dateKey].forEach(function(x){ dayVrats.push(x); });
+    else fests.forEach(function(f){ dayVrats.push({h:f.h, e:f.n, i:f.i}); });
 
     if(dayVrats.length > 0){
       const DAYS_HI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
@@ -6062,8 +6191,8 @@ function renderVrats(){
 // ══════════════════════════════
 function muhuratStatus(key, phase, dow){
   const isS = phase < 14.77;
-  const isAm = isAmavasya(phase);
-  const isEk = isEkadashi(phase);
+  const isAm = isAmavasya(phase,null);
+  const isEk = isEkadashi(phase,null);
   const ti = Math.floor(phase / _SYNODIC * 30) % 30;
   const badT = [7,13,22,28].includes(ti);
   if(key==='griha'){
