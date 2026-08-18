@@ -562,7 +562,9 @@ function vTimes(){
    getPanchang / getVrats / getFestivals / getLagnaTable. Nothing invented. */
 function xt(ico,name,sub,href){
   // '@name' hops out of this single-page app to a real page (kundli, buy flow)
-  var act = href.charAt(0)==='@' ? 'location.href=\''+href.slice(1)+'.html\'' : 'location.hash=\''+href+'\'';
+  var dest = href.slice(1);
+  if(href.charAt(0)==='@' && dest.indexOf('.')<0) dest += '.html';   // '@kundli' → kundli.html
+  var act = href.charAt(0)==='@' ? 'location.href=\''+dest+'\'' : 'location.hash=\''+href+'\'';
   return '<div class="xt" onclick="'+act+'"><div class="xt-i">'+ico+'</div>'
    +'<div class="xt-n dev">'+name+'</div><div class="xt-s">'+sub+'</div></div>';
 }
@@ -596,6 +598,11 @@ function vExplore(){
    +'<div class="xgrp">'+t('व्यक्तिगत ज्योतिष','Personal Astrology')+'</div><div class="xgrid">'
    +xt('💑',t('कुंडली मिलान','Match Kundali'),t('दो कुंडली — गुण मिलान','Two charts, Guna Milan'),'#match')
    +xt('📜',t('मेरी कुंडली','My Kundli'),t('260 पन्नों की मुफ़्त रिपोर्ट','Free 260-page report'),'@kundli')
+   +'</div>'
+
+   +'<div class="xgrp">'+t('साधना','Spiritual Practice')+'</div><div class="xgrid">'
+   +xt('🧘',t('साधना','Sadhana'),t('अपनी दैनिक साधना बनाएँ','Build your daily practice'),'@dashboard.html?go=sadhana')
+   +xt('🪔',t('जाप','Japam'),t('आज के देवता का मंत्र',"Today's deity mantra"),'@dashboard.html')
    +'</div>'
 
    +'<div class="xgrp">'+t('गहरी गणना','Deeper Calculations')+'</div><div class="xgrid">'
