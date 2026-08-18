@@ -322,12 +322,76 @@ function currentSeg(){
     if(now>=new Date(s.start).getTime()&&now<new Date(s.end).getTime())return {s:s,next:segs[i+1]||null};}
   return {s:null,next:segs[0]};
 }
+/* ══════════════════════════════════════════════════════════════════
+   ONE GOOD-WINDOW RULE — used everywhere a window is recommended.
+
+   A choghadiya slot flagged `good` is only good in isolation. The same
+   clock minutes are routinely also Rahu Kaal, Yamaganda, Gulika, Varjyam
+   or Dur Muhurtam — on the test day "Shubh 09:47–11:21" was byte-identical
+   to Rahu Kaal. Recommending and forbidding the same minutes is the one
+   error a devotee will actually catch, so a window is never recommended
+   until the forbidden periods have been cut out of it.
+
+   recommended = shubh choghadiya  MINUS  (rahu ∪ yamaganda ∪ gulika
+                                           ∪ varjyam ∪ dur muhurtam)
+   ══════════════════════════════════════════════════════════════════ */
+var GW_MIN_MINUTES = 12;   // a slice shorter than this is not worth naming
+
+function badWindows(p){
+  var out=[];
+  function add(w,hi,en){ if(w&&w.start&&w.end) out.push({s:+new Date(w.start),e:+new Date(w.end),hi:hi,en:en}); }
+  add(p.rahuKaal,   'राहु काल','Rahu Kaal');
+  add(p.gulikaKaal, 'गुलिक काल','Gulika Kaal');
+  add(p.yamaganda,  'यमगंड','Yamaganda');
+  (p.durMuhurtam||[]).forEach(function(w){ add(w,'दुर्मुहूर्त','Dur Muhurtam'); });
+  (p.varjyamAll||(p.varjyam?[p.varjyam]:[])).forEach(function(w){ add(w,'वर्ज्यम्','Varjyam'); });
+  return out.sort(function(a,b){return a.s-b.s;});
+}
+/* Cut every bad window out of one span; returns the surviving pieces. */
+function cutBad(startMs,endMs,bads){
+  var pieces=[{s:startMs,e:endMs}];
+  bads.forEach(function(b){
+    var next=[];
+    pieces.forEach(function(pc){
+      if(b.e<=pc.s||b.s>=pc.e){ next.push(pc); return; }     // no overlap
+      if(b.s>pc.s) next.push({s:pc.s,e:Math.min(b.s,pc.e)}); // head survives
+      if(b.e<pc.e) next.push({s:Math.max(b.e,pc.s),e:pc.e}); // tail survives
+    });
+    pieces=next;
+  });
+  return pieces.filter(function(pc){ return (pc.e-pc.s) >= GW_MIN_MINUTES*60000; });
+}
+/* Which forbidden periods overlap this span (for honest labelling). */
+function clashesWith(startMs,endMs,bads){
+  return bads.filter(function(b){ return b.s<endMs && b.e>startMs; });
+}
+/* Every genuinely clean, still-upcoming window of the day, in time order. */
+function cleanWindows(){
+  var p=panchang(), bads=badWindows(p), now=Date.now(), out=[];
+  p.choghadiya.day.concat(p.choghadiya.night).forEach(function(sg){
+    if(!sg.good) return;
+    cutBad(+new Date(sg.start), +new Date(sg.end), bads).forEach(function(pc){
+      if(pc.e>now) out.push({start:new Date(pc.s),end:new Date(pc.e),
+                             hi:sg.hi,en:sg.en,
+                             trimmed:(pc.s!==+new Date(sg.start)||pc.e!==+new Date(sg.end))});
+    });
+  });
+  // Abhijit is a recommended window too — and gets cut by the same rule.
+  if(p.abhijit) cutBad(+new Date(p.abhijit.start),+new Date(p.abhijit.end),bads).forEach(function(pc){
+    if(pc.e>now) out.push({start:new Date(pc.s),end:new Date(pc.e),hi:'अभिजित',en:'Abhijit',
+                           trimmed:(pc.s!==+new Date(p.abhijit.start)||pc.e!==+new Date(p.abhijit.end))});
+  });
+  return out.sort(function(a,b){return a.start-b.start;});
+}
 function nextGood(){
-  var p=panchang(),now=Date.now();
-  var segs=p.choghadiya.day.concat(p.choghadiya.night);
-  for(var i=0;i<segs.length;i++){var s=segs[i];
-    if(s.good&&new Date(s.end).getTime()>now)return s;}
-  return null;
+  var w=cleanWindows(), now=Date.now();
+  for(var i=0;i<w.length;i++) if(+w[i].end>now) return w[i];
+  return null;   // honest: some days genuinely have no clean window left
+}
+/* Is right now inside a forbidden period? */
+function nowBad(){
+  var b=clashesWith(Date.now(),Date.now()+1,badWindows(panchang()));
+  return b.length?b[0]:null;
 }
 
 /* ═════════ HUB ═════════ */
@@ -348,6 +412,7 @@ function vHub(){
       : t('△ आज का नक्षत्र आपके लिए सामान्य है — बड़े काम शुभ समय में करें','△ Today\'s nakshatra is neutral for you — keep big steps to good windows'))+'</div>';
   }
 
+  var nb=nowBad();   // is right now inside a forbidden period?
   var segName=cur.s?(H?cur.s.hi:cur.s.en):'—';
   var segCls=cur.s?(cur.s.good?'g':'b'):'';
   var until=cur.s?t('… '+fT(cur.s.end)+' तक','until '+fT(cur.s.end)):'';
@@ -364,7 +429,10 @@ function vHub(){
    +'<div class="d-state"><span class="d-seg dev '+segCls+'">'+segName+'</span>'
    +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
    +ribbonHTML()
-   +(ng&&(!cur.s||!cur.s.good)?'<div class="d-next">'+t('अगला शुभ समय: ','Next good window: ')+'<b class="dev">'+(H?ng.hi:ng.en)+'</b> '+fR(ng.start,ng.end)+'</div>':'')
+   +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+t('अभी ','Right now: ')+'<b class="dev">'+(H?nb.hi:nb.en)+'</b> '+t('चल रहा है — नया काम टालें','is running — hold new work')+'</div>':'')
+   +(ng?'<div class="d-next">'+t('अगला साफ़ शुभ समय: ','Next clean window: ')+'<b class="dev">'+(H?ng.hi:ng.en)+'</b> '+fR(ng.start,ng.end)
+        +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+t('(छाँटा हुआ)','(trimmed)')+'</small>':'')+'</div>'
+      :'<div class="d-next">'+t('आज आगे कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</div>')
    +tara
    +'</div>'
 
@@ -527,15 +595,34 @@ function vTimes(){
     return '<div class="row"><span class="r-k dev">'+name+stat(w)+'</span>'
      +'<span class="r-v '+(good?'good':'bad')+'">'+fR(w.start,w.end)+'</span></div>';
   }
+  var _bads=badWindows(p);
   var chog=p.choghadiya.day.concat(p.choghadiya.night).map(function(s,i){
     var live=(now>=new Date(s.start).getTime()&&now<new Date(s.end).getTime());
+    var hit=s.good?clashesWith(+new Date(s.start),+new Date(s.end),_bads):[];
     return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+(H?s.hi:s.en)
-     +(live?' <span class="tag now">'+t('अभी','NOW')+'</span>':'')+'</span>'
-     +'<span class="r-v '+(s.good?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
+     +(live?' <span class="tag now">'+t('अभी','NOW')+'</span>':'')
+     +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(H?hit[0].hi:hit[0].en)+'</small>':'')+'</span>'
+     +'<span class="r-v '+(s.good&&!hit.length?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
+  var cw=cleanWindows();
+  var recHtml = cw.length
+   ? cw.map(function(w){
+       var live=(now>=+w.start&&now<+w.end);
+       return '<div class="row"><span class="r-k dev">'+(H?w.hi:w.en)
+        +(live?' <span class="tag now">'+t('अभी','NOW')+'</span>':'')
+        +(w.trimmed?' <small style="color:rgba(212,168,67,0.62);">'+t('(छाँटा हुआ)','(trimmed)')+'</small>':'')
+        +'</span><span class="r-v good">'+fR(w.start,w.end)+'</span></div>';
+     }).join('')
+   : '<div class="row"><span class="r-k">'+t('आज कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</span></div>';
   app.innerHTML=pgHead(t('शुभ-अशुभ समय','Shubh & Ashubh Times'),CITY,'hub')
    +'<div class="dial">'
    +'<div class="d-now-lbl">'+t('आज का पूरा दिन','THE WHOLE DAY')+'</div>'
    +ribbonHTML()+'</div>'
+   +'<div class="subh">'+t('✅ सुझाए गए समय','✅ Recommended Windows')+'</div>'
+   +'<div class="card">'+recHtml+'</div>'
+   +'<div class="note" style="margin:-2px 2px 10px;">'
+   +t('ये वही शुभ खंड हैं जिनमें से राहु काल, यमगंड, गुलिक, वर्ज्यम् और दुर्मुहूर्त काट दिए गए हैं — इसलिए कुछ खंड छोटे हैं और कुछ गायब।',
+      'These are the auspicious slots with Rahu Kaal, Yamaganda, Gulika, Varjyam and Dur Muhurtam cut out — which is why some are shorter and some are missing.')+'</div>'
+   +'<div class="subh">'+t('सभी मुहूर्त','All Muhurtas')+'</div>'
    +'<div class="card">'
    +tr(t('ब्रह्म मुहूर्त','Brahma Muhurta'),p.brahmaMuhurta,true)
    +tr(t('अभिजीत मुहूर्त','Abhijit Muhurta'),p.abhijit,true)
@@ -886,8 +973,8 @@ function vMuhurtaRun(key){
         +'<b style="font-size:15px;color:#F7EED8;">'+when+'</b>'
         +'<span class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);">'+(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</span></div>'
         +plus+minus
-        +(r.abhijit?'<div style="font-size:10.5px;color:rgba(255,244,222,0.62);margin-top:5px;">⭐ '+t('अभिजित ','Abhijit ')+fR(r.abhijit.start,r.abhijit.end)+'</div>':'')
-        +(r.amritKaal?'<div style="font-size:10.5px;color:rgba(255,244,222,0.62);">🍯 '+t('अमृत काल ','Amrit Kaal ')+fR(r.amritKaal.start,r.amritKaal.end)+'</div>':'')
+        +window_(r,'abhijit','⭐',t('अभिजित ','Abhijit '))
+        +window_(r,'amritKaal','🍯',t('अमृत काल ','Amrit Kaal '))
         +'</div>';
     }).join('');
   }
@@ -902,15 +989,36 @@ function vMuhurtaRun(key){
    +'<div class="note">'+t('तिथि, नक्षत्र, वार, ताराबल और चंद्रबल — पाँचों जाँचे गए।','Tithi, nakshatra, weekday, tarabala and chandrabala all checked.')+'</div>';
 }
 var MUH_DAYS={};
+/* A suggested window inside a muhurta result goes through the same rule.
+   That day's own forbidden periods are recomputed — a good window on the
+   11th means nothing if the 11th's Rahu Kaal sits inside it. */
+function window_(r,key,ico,label){
+  var w=r[key]; if(!w) return '';
+  var day=new Date(r.date), pieces;
+  try{
+    var dp=PE.getPanchang(day,LAT,LNG,5.5);
+    pieces=cutBad(+new Date(w.start),+new Date(w.end),badWindows(dp));
+  }catch(e){ pieces=[{s:+new Date(w.start),e:+new Date(w.end)}]; }
+  if(!pieces.length)
+    return '<div style="font-size:10.5px;color:rgba(240,150,130,0.80);">'+ico+' '+label
+      +t('— उस दिन वर्ज्य समय से पूरा टकराता है','— fully blocked by a forbidden period that day')+'</div>';
+  return pieces.map(function(pc){
+    return '<div style="font-size:10.5px;color:rgba(255,244,222,0.62);margin-top:3px;">'
+      +ico+' '+label+fR(new Date(pc.s),new Date(pc.e))+'</div>';
+  }).join('');
+}
 /* ── shared segment-list renderer (choghadiya, hora) ── */
-function segList(arr,label){
+function segList(arr,label,bads){
   var now=Date.now(),h='';
   arr.forEach(function(sg){
     var a=new Date(sg.start).getTime(), b=new Date(sg.end).getTime();
     var live=now>=a&&now<b;
-    h+='<div class="sgrow '+(sg.good?'g':'b')+(live?' now':'')+'">'
-      +'<div class="sg-d" style="background:'+(sg.good?'#5ABE78':'#E66E5A')+'"></div>'
-      +'<div class="sg-n dev">'+(H?sg.hi:sg.en)+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')+'</div>'
+    var hit=(bads&&sg.good)?clashesWith(a,b,bads):[];
+    var ok=sg.good&&!hit.length;
+    h+='<div class="sgrow '+(ok?'g':'b')+(live?' now':'')+'">'
+      +'<div class="sg-d" style="background:'+(ok?'#5ABE78':(sg.good?'#E8A317':'#E66E5A'))+'"></div>'
+      +'<div class="sg-n dev">'+(H?sg.hi:sg.en)+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')
+      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+(H?hit[0].hi:hit[0].en)+t(' से टकराता है',' overlaps')+'</div>':'')+'</div>'
       +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
   });
   return '<div class="subh">'+label+'</div><div class="seglist">'+h+'</div>';
@@ -918,9 +1026,10 @@ function segList(arr,label){
 function vChogh(){
   var p=panchang();
   app.innerHTML=pgHead(t('चौघड़िया','Choghadiya'),t('सूर्योदय से सूर्योदय तक 16 खंड','16 slots, sunrise to sunrise'),'#explore')
-   +segList(p.choghadiya.day,t('दिन के चौघड़िया','Day Choghadiya'))
-   +segList(p.choghadiya.night,t('रात के चौघड़िया','Night Choghadiya'))
-   +'<div class="note">'+t('हरा = शुभ खंड, लाल = वर्ज्य। खंड सूर्योदय-सूर्यास्त से बनते हैं, घड़ी से नहीं।','Green = auspicious, red = avoid. Slots derive from actual sunrise/sunset, not clock hours.')+'</div>';
+   +segList(p.choghadiya.day,t('दिन के चौघड़िया','Day Choghadiya'),badWindows(p))
+   +segList(p.choghadiya.night,t('रात के चौघड़िया','Night Choghadiya'),badWindows(p))
+   +'<div class="note">'+t('हरा = साफ़ शुभ खंड। पीला = शुभ तो है पर राहु काल/वर्ज्यम् जैसे किसी वर्ज्य समय से टकराता है — पूरा भरोसा न करें। लाल = वर्ज्य।',
+      'Green = clean auspicious slot. Amber = auspicious but overlapping a forbidden period such as Rahu Kaal or Varjyam — do not rely on it. Red = avoid.')+'</div>';
 }
 function vHora(){
   var p=panchang();
