@@ -2285,22 +2285,37 @@ const D={
 const T=D[dow];
 
 // ── Rashi ──
+// Vedic-first. `e` is what the app SHOWS in English — the Sanskrit name, not
+// the Greek one. `w` keeps the Western label purely so someone who arrives
+// knowing "Scorpio" can still recognise themselves; it is never the headline.
 const Rs=[
-  {h:'मेष',e:'Aries',i:'♈',nh:'अश्विनी',ne:'Ashwini'},
-  {h:'वृषभ',e:'Taurus',i:'♉',nh:'कृत्तिका',ne:'Krittika'},
-  {h:'मिथुन',e:'Gemini',i:'♊',nh:'मृगशिरा',ne:'Mrigashira'},
-  {h:'कर्क',e:'Cancer',i:'♋',nh:'पुनर्वसु',ne:'Punarvasu'},
-  {h:'सिंह',e:'Leo',i:'♌',nh:'मघा',ne:'Magha'},
-  {h:'कन्या',e:'Virgo',i:'♍',nh:'हस्त',ne:'Hasta'},
-  {h:'तुला',e:'Libra',i:'♎',nh:'चित्रा',ne:'Chitra'},
-  {h:'वृश्चिक',e:'Scorpio',i:'♏',nh:'अनुराधा',ne:'Anuradha'},
-  {h:'धनु',e:'Sagittarius',i:'♐',nh:'मूल',ne:'Mula'},
-  {h:'मकर',e:'Capricorn',i:'♑',nh:'श्रवण',ne:'Shravana'},
-  {h:'कुंभ',e:'Aquarius',i:'♒',nh:'शतभिषा',ne:'Shatabhisha'},
-  {h:'मीन',e:'Pisces',i:'♓',nh:'रेवती',ne:'Revati'},
+  {h:'मेष',e:'Mesha',w:'Aries',i:'♈',nh:'अश्विनी',ne:'Ashwini'},
+  {h:'वृषभ',e:'Vrishabha',w:'Taurus',i:'♉',nh:'कृत्तिका',ne:'Krittika'},
+  {h:'मिथुन',e:'Mithuna',w:'Gemini',i:'♊',nh:'मृगशिरा',ne:'Mrigashira'},
+  {h:'कर्क',e:'Karka',w:'Cancer',i:'♋',nh:'पुनर्वसु',ne:'Punarvasu'},
+  {h:'सिंह',e:'Simha',w:'Leo',i:'♌',nh:'मघा',ne:'Magha'},
+  {h:'कन्या',e:'Kanya',w:'Virgo',i:'♍',nh:'हस्त',ne:'Hasta'},
+  {h:'तुला',e:'Tula',w:'Libra',i:'♎',nh:'चित्रा',ne:'Chitra'},
+  {h:'वृश्चिक',e:'Vrishchika',w:'Scorpio',i:'♏',nh:'अनुराधा',ne:'Anuradha'},
+  {h:'धनु',e:'Dhanu',w:'Sagittarius',i:'♐',nh:'मूल',ne:'Mula'},
+  {h:'मकर',e:'Makara',w:'Capricorn',i:'♑',nh:'श्रवण',ne:'Shravana'},
+  {h:'कुंभ',e:'Kumbha',w:'Aquarius',i:'♒',nh:'शतभिषा',ne:'Shatabhisha'},
+  {h:'मीन',e:'Meena',w:'Pisces',i:'♓',nh:'रेवती',ne:'Revati'},
 ];
-function getRashi(d){if(!d)return Rs[7];const dt=new Date(d),m=dt.getMonth(),day=dt.getDate();const c=[20,19,21,20,21,21,23,23,23,23,22,22];return Rs[day<c[m]?(m-1+12)%12:m];}
-const R=getRashi(U.dob);
+// This was a TROPICAL sun-sign lookup (Gregorian date cutoffs) dressed in
+// Vedic names, and with no DOB it silently returned Vrishchika for everyone.
+// A Vedic rashi is the MOON's sign and cannot be had from a calendar date, so
+// it is now only a rough placeholder while the real value is fetched, and
+// returns null when there is no date at all — the UI asks instead of guessing.
+function getRashi(d){
+  if(!d) return null;
+  const dt=new Date(d),m=dt.getMonth(),day=dt.getDate();
+  const c=[20,19,21,20,21,21,23,23,23,23,22,22];
+  return Rs[day<c[m]?(m-1+12)%12:m];
+}
+function rashiKnown(){ return !!(U.rashi||U.dob); }
+const R=getRashi(U.dob) || {h:'—',e:'—',w:'',i:'✨',nh:'—',ne:'—'};
+const R_KNOWN=!!getRashi(U.dob);
 
 // ── Greeting ──
 function greetMsg(){
@@ -2372,11 +2387,18 @@ function personalise(){
   // Chips
   document.getElementById('rl').textContent=H?'राशि':'Rashi';
   const jsb=document.getElementById('jdShareBtn');if(jsb)jsb.textContent=H?'📤 अपनों के साथ साझा करें':'📤 Share with Loved Ones';
-  document.getElementById('ri').textContent=R.i;
-  document.getElementById('rv').textContent=H?R.h:R.e;
+  document.getElementById('ri').textContent=R_KNOWN?R.i:'✨';
+  document.getElementById('rv').textContent=R_KNOWN?(H?R.h:R.e):(H?'जोड़ें':'Add');
+  var _rc=document.getElementById('rv');
+  if(_rc&&!R_KNOWN){ _rc.parentElement.style.cursor='pointer';
+    _rc.parentElement.onclick=function(){openSettings();}; }
   document.getElementById('tl').textContent=H?'तिथि':'Tithi';
   // tv updated by fetchPanchang from API
   document.getElementById('nl').textContent=H?'नक्षत्र':'Nakshatra';
+  var _nv=document.getElementById('nv');
+  if(_nv&&!U.nakshatra&&!U.dob){ _nv.textContent=H?'जोड़ें':'Add';
+    _nv.parentElement.style.cursor='pointer';
+    _nv.parentElement.onclick=function(){openSettings();}; }
   // Home v2 cards
   const _t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   _t('khBadge',H?'निःशुल्क':'FREE');
@@ -2404,7 +2426,9 @@ function personalise(){
   // Listen hero
   document.getElementById('lhTag').textContent=H?'✨ आज का पंचांग — आपके लिए':"✨ Today's Panchang — For you";
   document.getElementById('lhTitle').textContent=H?'दैनिक पंचांग सुनें':'Listen to Daily Panchang';
-  document.getElementById('lhSub').textContent=H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English');
+  document.getElementById('lhSub').textContent=R_KNOWN
+    ? (H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English'))
+    : (H?'जन्म विवरण जोड़ें':'Add your birth details');
   document.getElementById('pvDeity').textContent=H?T.d_hi:T.d_en;
   document.getElementById('pvTime').textContent=T.good;
   const pvPre=document.getElementById('pvPre');if(pvPre)pvPre.textContent=H?'"आज ':'"Today — ';
@@ -4880,6 +4904,11 @@ function openSettings(){
   document.getElementById('fbBtnTxt').textContent   = H2?'भेजें':'Send';
   const fbPh=document.getElementById('fbText');if(fbPh)fbPh.placeholder=H2?'आपका अनुभव लिखें...':'Share your experience...';
   document.getElementById('settTobNote').textContent = H2?'लग्न की सटीक जानकारी के लिए':'For accurate Lagna calculation';
+  var _tu=document.getElementById('settTobUnknown');
+  if(_tu){ _tu.checked=!!u.tobUnknown; settTobUnknown(true); }
+  var _tul=document.getElementById('settTobUnkLabel');
+  if(_tul) _tul.textContent = H2?'मुझे जन्म समय नहीं पता — सूर्योदय से गणना करें'
+                                :"I don't know my birth time — use sunrise";
   // Show overlay
   const ov = document.getElementById('settingsOverlay');
   ov.style.display='flex';
@@ -4918,7 +4947,9 @@ function saveSettings(){
   u.city = newCity;
   if(window._selectedCityLat){ u.city_lat = window._selectedCityLat; u.city_lon = window._selectedCityLon; }
   u.dob  = newDob;
-  u.tob  = newTob;
+  var _tu=document.getElementById('settTobUnknown');
+  u.tobUnknown = !!(_tu && _tu.checked);
+  u.tob  = u.tobUnknown ? '06:00' : newTob;
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
   // Regenerate name audio if name changed
   if(nameChanged && newName){
@@ -4962,13 +4993,22 @@ async function fetchBirthChart(){
   }catch(e){ console.log('Birth chart error:', e); }
 }
 
+// When the time was unknown we substituted sunrise, so anything that depends
+// on the exact minute — the nakshatra PADA and the lagna — is approximate.
+// Say it where it shows, rather than presenting a guess as a fact.
+function tobIsUnknown(){ try{return !!JSON.parse(localStorage.getItem('shubhdin_user')||'{}').tobUnknown;}catch(e){return false;} }
+function approxNote(){ return tobIsUnknown()
+  ? ' <span style="font-size:9px;color:rgba(212,168,67,0.72);">'+(H?'≈ समय अनुमानित':'≈ time assumed')+'</span>' : ''; }
 function updateBirthChips(data){
   // Home chips
   const rv = document.getElementById('rv');
   if(rv && data.rashi) rv.textContent = data.rashi;
 
   const nv = document.getElementById('nv');
-  if(nv && data.nakshatra) nv.textContent = data.nakshatra + (data.nakshatra_pada ? ' (P'+data.nakshatra_pada+')':'');
+  // pada depends on the exact birth minute — drop it when the time was assumed
+  if(nv && data.nakshatra) nv.innerHTML = data.nakshatra
+    + ((data.nakshatra_pada && !tobIsUnknown()) ? ' (P'+data.nakshatra_pada+')' : '')
+    + approxNote();
 
   // Panchang page - update nakshatra ruler row if exists
   const nakVal2 = document.getElementById('nakVal2');
@@ -5032,6 +5072,16 @@ document.addEventListener('click', function(e){
 });
 
 
+// Mirrors the onboarding option. Sunrise is stored as the working time so
+// every calculation still runs; the flag records that it is a stand-in.
+function settTobUnknown(quiet){
+  var on=document.getElementById('settTobUnknown').checked;
+  ['settTob_h','settTob_m'].forEach(function(id){
+    var e=document.getElementById(id); if(!e)return;
+    e.disabled=on; e.style.opacity=on?'0.35':'1';
+  });
+  if(on&&!quiet){ document.getElementById('settTob').value='06:00'; }
+}
 function updateSettTob(){
   const h = document.getElementById('settTob_h').value;
   const m = document.getElementById('settTob_m').value;
@@ -6150,6 +6200,10 @@ if('serviceWorker' in navigator){
         </select>
       </div>
       <input type="hidden" id="settTob" value=""/>
+      <label style="display:flex;align-items:center;gap:9px;margin-top:11px;cursor:pointer;">
+        <input type="checkbox" id="settTobUnknown" onchange="settTobUnknown()" style="width:17px;height:17px;accent-color:#D4A843;flex-shrink:0;">
+        <span id="settTobUnkLabel" style="font-size:12.5px;color:rgba(255,240,220,0.82);line-height:1.5;">मुझे जन्म समय नहीं पता — सूर्योदय से गणना करें</span>
+      </label>
     </div>
 
     <!-- Feedback -->
