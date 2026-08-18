@@ -2112,7 +2112,6 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
   <div class="tabbar">
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
-    <div class="tab" id="tab-listen" onclick="go('listen')"><span class="tab-icon">🙏</span><span class="tab-label" id="tl2" style="font-size:7.5px;">मार्गदर्शन</span></div>
     <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">🌅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
     <div class="tab" id="tab-mantras" onclick="go('mantras')"><span class="tab-icon">🕉️</span><span class="tab-label" id="tl-mantras" style="font-size:7.5px;">मंत्र</span></div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जाप</span></div>
@@ -2492,11 +2491,12 @@ function personalise(){
   document.getElementById('jdBtn').textContent = H?'↺ फिर से जाप करें':'↺ Jap Again';
 
   // Tab bar
-  document.getElementById('tl1').textContent=H?'होम':'Home';
-  document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
-  document.getElementById('tl3').textContent=H?'पूरा पंचांग':'Panchang';
+  const _tl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  _tl('tl1',H?'होम':'Home');
+  _tl('tl2',H?'मार्गदर्शन':'Guidance');
+  _tl('tl3',H?'पूरा पंचांग':'Panchang');
 
-  document.getElementById('tl4').textContent=H?'जाप':'Jap';
+  _tl('tl4',H?'जाप':'Jap');
   const tlm=document.getElementById('tl-mantras'); if(tlm) tlm.textContent=H?'मंत्र':'Mantras';
   const ps4=document.getElementById('ps4'); if(ps4) ps4.textContent=H?'🕐 चौघड़िया':'🕐 Choghadiya';
   const ps5=document.getElementById('ps5'); if(ps5) ps5.textContent=H?'🙏 इस सप्ताह के व्रत':'🙏 Fasts This Week';
@@ -3876,7 +3876,7 @@ function personaliseMarg(){
     const el=document.getElementById('pt-'+k+'-name');const es=document.getElementById('pt-'+k+'-sub');
     if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
   }
-  document.getElementById('tl2').textContent=H?'मार्गदर्शन':'Guidance';
+  const _t2=document.getElementById('tl2');if(_t2)_t2.textContent=H?'मार्गदर्शन':'Guidance';
   const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=H?'साधना':'Sadhana';
   const stt=document.getElementById('sadTitle');if(stt)stt.innerHTML=H?'साधना<small>My Sadhana</small>':'My Sadhana';
   const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=H?' दिन लगातार':' Day Streak';
@@ -4629,9 +4629,15 @@ setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio()
 updateSadhanaTab();
 renderSadhanaCard();
 // deep link from Explore: dashboard.html?go=sadhana
+// Explore (astrology.html) hops back here with ?go=<screen>.
+// Guidance and Sadhana no longer have bottom-nav tabs, so this is their entry.
 (function(){try{
   var g=new URLSearchParams(location.search).get('go');
-  if(g==='sadhana'){ history.replaceState(null,'',location.pathname); setTimeout(openSadhana,120); }
+  if(!g) return;
+  var ok={sadhana:1,listen:1,mantras:1,jap:1,panchang:1,home:1};
+  if(!ok[g]) return;
+  history.replaceState(null,'',location.pathname);
+  setTimeout(function(){ g==='sadhana'?openSadhana():go(g); },120);
 }catch(e){}})();
 loadBirthCache();
 getOrCreateUID(); // ensure UID exists
