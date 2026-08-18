@@ -2112,7 +2112,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 
   <div class="tabbar">
     <div class="tab on" id="tab-home" onclick="go('home')"><span class="tab-icon">🏠</span><span class="tab-label" id="tl1">होम</span></div>
-    <div class="tab" id="tab-panchang" onclick="go('panchang')"><span class="tab-icon">🌅</span><span class="tab-label" id="tl3" style="font-size:7.5px;">पूरा पंचांग</span></div>
+    <div class="tab" id="tab-astro" onclick="location.href='astrology.html'"><span class="tab-icon">🔮</span><span class="tab-label" id="tl3">ज्योतिष</span></div>
     <div class="tab" id="tab-mantras" onclick="go('mantras')"><span class="tab-icon">🕉️</span><span class="tab-label" id="tl-mantras" style="font-size:7.5px;">मंत्र</span></div>
     <div class="tab" id="tab-jap" onclick="go('jap')"><span class="tab-icon">🪔</span><span class="tab-label" id="tl4">जाप</span></div>
   </div>
@@ -2494,7 +2494,7 @@ function personalise(){
   const _tl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   _tl('tl1',H?'होम':'Home');
   _tl('tl2',H?'मार्गदर्शन':'Guidance');
-  _tl('tl3',H?'पूरा पंचांग':'Panchang');
+  _tl('tl3',H?'ज्योतिष':'Astrology');
 
   _tl('tl4',H?'जाप':'Jap');
   const tlm=document.getElementById('tl-mantras'); if(tlm) tlm.textContent=H?'मंत्र':'Mantras';
