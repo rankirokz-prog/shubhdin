@@ -245,7 +245,13 @@ function viewOnScreen(id){ location.href=id+'-report.html?autoview=1'; }
    this is all a new phone ever needs — the PDF was cached at first render. */
 async function checkAgain(id){
   var err=$('err-'+id), btn=$('again-'+id);
-  if(!SESSION){ showErr(err,t('पहले साइन इन करें।','Please sign in first.')); return; }
+  if(!SESSION){
+    // Nothing to ask the server without a session. Offer the step that helps
+    // rather than an instruction the buyer then has to act on themselves.
+    showErr(err,t('रिपोर्ट वापस पाने के लिए साइन इन करें।','Sign in to restore your report.'));
+    if(sb) signIn();
+    return;
+  }
   btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+t('जाँच रहे हैं…','Checking…');
   await restoreFromServer();
   var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
@@ -285,7 +291,11 @@ async function restoreFromServer(){
     var j=await apiJson(r);
     if(j && Array.isArray(j.reports)){
       j.reports.forEach(function(o){
-        ownedWrite(o.report,o.order_code,null,(o.paid_at||'').slice(0,10));
+        /* pdf_url now comes from list=1: the server HEAD-checks the deterministic
+           storage path and returns a URL only when a PDF genuinely exists, so its
+           presence means "openable right now". Passing null here silently threw
+           that away — "Check again" fetched the answer and discarded it. */
+        ownedWrite(o.report,o.order_code,o.pdf_url||null,(o.paid_at||'').slice(0,10));
       });
       render();
     }
