@@ -106,7 +106,20 @@ var PAYLINKS  = {};               // e.g. { marriage:'https://rzp.io/l/xxxx', ..
 
 var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
-var sb=window.supabase.createClient(SB_URL,SB_ANON);
+/* If the Supabase CDN is slow or blocked, an unguarded createClient throws and
+   kills the whole script — blank payment page on exactly the connections that
+   need it most. Guard it: the page renders and the form works; only sign-in
+   degrades, with a visible message instead of silence. */
+var sb=null;
+try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SB_URL,SB_ANON); }
+catch(e){ sb=null; }
+function sbDown(){
+  bdlog('supabase client unavailable');
+  var e=$('errA');
+  if(e){e.textContent=H?'साइन-इन सेवा लोड नहीं हो सकी। इंटरनेट जाँचकर पेज दोबारा खोलें।'
+                       :'Sign-in service could not load. Check your connection and reload the page.';
+       e.style.display='block';}
+}
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
 var H=(U.lang||'hi')==='hi';
 function $(id){return document.getElementById(id);}
@@ -442,6 +455,7 @@ function sdOwnedWrite(report,orderCode,pdfUrl){
 
 /* ── auth ── */
 function checkAuthThen(){
+  if(!sb){show('stAuth');sbDown();return;}
   sb.auth.getSession().then(function(r){
     if(r.data&&r.data.session)afterAuth(r.data.session);
     else show('stAuth');
@@ -454,6 +468,7 @@ function googleSignIn(){
   var rto=location.origin+location.pathname;
   try{localStorage.setItem('sd_buy_last',R);}catch(e){}
   bdlog('signIn redirectTo='+rto);
+  if(!sb){sbDown();return;}
   sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:rto}})
    .then(function(r){if(r.error){bdlog('signIn error: '+r.error.message);$('errA').textContent=r.error.message;$('errA').style.display='block';}});
 }
@@ -461,7 +476,7 @@ function absorbHash(){
   if(location.hash.indexOf('access_token=')>-1){
     try{var hp=new URLSearchParams(location.hash.slice(1));
       var at=hp.get('access_token'),rt=hp.get('refresh_token');
-      if(at&&rt)return sb.auth.setSession({access_token:at,refresh_token:rt});
+      if(at&&rt&&sb)return sb.auth.setSession({access_token:at,refresh_token:rt});
     }catch(e){}}
   return Promise.resolve(null);
 }
@@ -508,6 +523,24 @@ function doPay(){
 function showDone(){
   if(WA_NUMBER)$('btWa').style.display='block';
   show('stDone');
+  /* Pre-render the PDF now, in the background, so a cached copy exists even if
+     the buyer closes the tab without tapping Download. Without this, "paid and
+     left" is unrecoverable on a new phone: ownership self-heals from the orders
+     table but birth details don't, so nothing could ever be rendered later.
+     Safe to fire on every re-entry — report-pdf HEAD-checks its cache and
+     returns instantly when the PDF already exists. Failure is silent by design:
+     the buyer can still render via Download; this is belt-and-braces. */
+  try{
+    var det=details();
+    if(det&&SESSION&&SESSION.user){
+      fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:det,lang:H?'hi':'en'})})
+      .then(apiJson).then(function(j){
+        if(j&&j.ready&&j.url){PDF_URL=PDF_URL||j.url;sdOwnedWrite(R,ORDER_CODE,j.url);
+          bdlog('prerender '+(j.cached?'cached':'rendered'));}
+      }).catch(function(){bdlog('prerender failed (harmless)');});
+    }
+  }catch(e){}
 }
 
 /* ── delivery ── */
@@ -536,7 +569,7 @@ absorbHash().then(function(){
   var det=details();
   var hasTok=(location.hash.indexOf('access_token=')>-1);
   bdlog('branch: details='+(det?'yes':'no')+' token='+(hasTok?'yes':'no'));
-  if(det&&hasTok){sb.auth.getSession().then(function(r){
+  if(det&&hasTok){if(!sb){show('stAuth');sbDown();return;}sb.auth.getSession().then(function(r){
     if(r.data&&r.data.session)afterAuth(r.data.session); else show('stAuth');});return;}
   if(det){checkAuthThen();return;}
   show('stDetails');
