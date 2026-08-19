@@ -71,8 +71,27 @@ module.exports = async function handler(req, res) {
 
   // ── GET modes ──
   const q = req.query || {};
-  if (!q.uid || !q.report) return res.status(400).json({ error: 'uid and report required' });
+  if (!q.uid) return res.status(400).json({ error: 'uid required' });
   if (!(await verifyUser(q.uid, q.access_token))) return res.status(401).json({ error: 'auth mismatch' });
+
+  // list: every paid report for this uid, one call — feeds sd_owned_reports.
+  // Must sit before the report-required check: list has no report param.
+  if (q.list === '1') {
+    try {
+      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q.uid}&status=eq.paid&select=report,order_code,created_at&order=created_at.asc`,
+        { headers: H }).then(r => r.json());
+      if (!Array.isArray(rows)) return res.status(500).json({ error: 'orders query failed' });
+      const seen = {}, reports = [];
+      for (const r of rows) {
+        if (seen[r.report]) continue;
+        seen[r.report] = true;
+        reports.push({ report: r.report, order_code: r.order_code, paid_at: r.created_at });
+      }
+      return res.status(200).json({ ok: true, reports });
+    } catch (e) { return res.status(500).json({ error: 'list failed' }); }
+  }
+
+  if (!q.report) return res.status(400).json({ error: 'uid and report required' });
 
   if (q.dev === '1') {
     if (process.env.SD_DEV_FREE !== '1') return res.status(403).json({ error: 'dev mode disabled' });
