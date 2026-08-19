@@ -6014,7 +6014,7 @@ function selectCalDate(d){
   renderCalendar();
   showCalDetail(new Date(_calYear, _calMonth, d));
   const dt=document.getElementById('calDetail');
-  if(dt) dt.style.display='block';
+  if(dt){ dt.style.display='block'; dt.scrollTop=0; }
 }
 
 
@@ -6814,10 +6814,12 @@ if('serviceWorker' in navigator){
   </div>
 
   <!-- Calendar Grid -->
-  <div id="calGrid" style="flex:1;overflow-y:auto;padding:2px 8px 4px;-webkit-overflow-scrolling:touch;"></div>
+  <div id="calGrid" style="flex:1 1 auto;min-height:0;overflow-y:auto;padding:2px 8px 4px;-webkit-overflow-scrolling:touch;"></div>
 
   <!-- Detail Panel -->
-  <div id="calDetail" style="flex-shrink:0;background:linear-gradient(0deg,#1A0F0A,#241610);border-top:1px solid rgba(212,168,67,0.25);padding:14px 18px 30px;transition:all 0.3s ease;"></div>
+  <div id="calDetail" style="flex-shrink:0;max-height:50vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+       background:linear-gradient(0deg,#1A0F0A,#241610);border-top:1px solid rgba(212,168,67,0.25);
+       padding:14px 18px 34px;"></div>
 
 </div>
 
