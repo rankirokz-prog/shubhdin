@@ -52,7 +52,13 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
        <div class="h-s" id="hSub">आपकी खरीदी हुई रिपोर्ट्स</div></div>
 </div>
 <div class="wrap" id="root"></div>
-<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.22);font-family:monospace;">reports R1</div>
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;cursor:pointer;z-index:98;"
+     onclick="showDiag()">reports R2 · tap for state</div>
+<div id="diagWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.94);padding:16px;overflow:auto;"
+     onclick="this.style.display='none';">
+  <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">report state · tap anywhere to close</div>
+  <pre id="diagTxt" style="font-size:10px;color:#fff;font-family:monospace;white-space:pre-wrap;word-break:break-all;"></pre>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="report-catalog.js"></script>
@@ -113,6 +119,23 @@ function ownedWrite(report,orderCode,pdfUrl,date){
     localStorage.setItem('sd_owned_reports',JSON.stringify(a));
   }catch(e){}
 }
+/* Is this URL still good? A HEAD is enough and costs nothing. Anything other
+   than a clear "no" is treated as alive — a CORS-opaque or network-blipped
+   response must not throw away a URL that actually works. */
+async function urlAlive(u){
+  try{
+    var r=await fetch(u,{method:'HEAD'});
+    if(r.status===404||r.status===403||r.status===410) return false;
+    return true;
+  }catch(e){ return true; }
+}
+function forgetPdfUrl(id){
+  try{
+    var a=sdOwnedRead();
+    for(var i=0;i<a.length;i++) if(a[i].report===id) delete a[i].pdf_url;
+    localStorage.setItem('sd_owned_reports',JSON.stringify(a));
+  }catch(e){}
+}
 function buyDetails(id){
   try{ return JSON.parse(localStorage.getItem('sd_buy_'+id)||'null'); }catch(e){ return null; }
 }
@@ -148,12 +171,28 @@ function render(){
         +(o.date?t('खरीदा: ','Purchased: ')+fmtDate(o.date):'')
         +(o.order_code?' · '+o.order_code:'')
       +'</div>'
+      /* Two independent things decide what this row can do, and they were
+         invisible. A buyer (and Ram, over WhatsApp) can now read the state
+         instead of guessing why one report opens and another does not. */
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
+       +chip(!!o.pdf_url, t('PDF तैयार','PDF ready'), t('PDF अभी नहीं','PDF not made yet'))
+       +chip(canView,     t('विवरण इस फ़ोन में','details on this phone'),
+                          t('विवरण इस फ़ोन में नहीं','details not on this phone'))
+      +'</div>'
       +'<button class="btn" id="open-'+r.id+'" onclick="openReport(\''+r.id+'\')">'
       +'📄 '+t('रिपोर्ट खोलें','Open your report')+'</button>'
       /* Bonus only. On a cleared or different phone the stored inputs are gone
          and this would land on an empty form, so it is hidden there. */
-      +(canView?'<button class="btn sec" onclick="viewOnScreen(\''+r.id+'\')">👁️ '
-        +t('स्क्रीन पर देखें','View on screen')+'</button>':'')
+      +(canView
+        ? '<button class="btn sec" onclick="viewOnScreen(\''+r.id+'\')">👁️ '
+          +t('स्क्रीन पर देखें','View on screen')+'</button>'
+        /* Hidden because the on-screen view replays sd_buy_<report>, which is
+           local-only and is not restored from the server. Saying so beats an
+           absent button, which reads as a missing feature. */
+        : '<div style="font-size:10px;color:rgba(255,244,222,0.38);margin-top:9px;line-height:1.55;">'
+          +t('👁️ स्क्रीन पर देखना उसी फ़ोन पर मिलेगा जहाँ जन्म विवरण भरा था — PDF हर जगह खुलेगी।',
+             'On-screen view is available on the phone where the birth details were entered — the PDF opens anywhere.')
+          +'</div>')
       +'<div class="err" id="err-'+r.id+'" style="display:none;"></div>'
       /* Shown only after the above fires. Safe: it re-reads the server list,
          which is where a pdf_url will appear once one exists. No buy flow. */
@@ -168,6 +207,12 @@ function render(){
     var el=document.getElementById('row-'+location.hash.slice(1));
     if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
   }
+}
+function chip(ok,yes,no){
+  return '<span style="font-size:9.5px;padding:3px 9px;border-radius:20px;'
+   +(ok?'background:rgba(74,124,89,0.20);color:rgba(150,220,170,0.95);'
+       :'background:rgba(255,255,255,0.06);color:rgba(255,244,222,0.45);')
+   +'">'+(ok?'✓ ':'· ')+(ok?yes:no)+'</span>';
 }
 function emptyHTML(){
   return '<div class="empty"><div class="big">📁</div>'
@@ -194,14 +239,37 @@ async function openReport(id){
   var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
   if(!rec) return;
 
-  // 1 · this device already knows the URL
-  if(rec.pdf_url){ location.href=rec.pdf_url; return; }
+  /* 1 · This device knows a URL — but knowing one is not the same as it still
+     working. Supabase signed URLs expire, so a link stored weeks ago can 404.
+     Navigating blind meant the buyer tapped and nothing happened, with no
+     message and no way forward: the "some reports don't download" case.
+     Verify first; if it is dead, drop it and fall through to the paths that
+     can produce a fresh one. */
+  if(rec.pdf_url){
+    btn.disabled=true;
+    btn.innerHTML='<span class="spin">⏳</span> '+t('खोल रहे हैं…','Opening…');
+    var live=await urlAlive(rec.pdf_url);
+    btn.disabled=false; btn.innerHTML='📄 '+t('रिपोर्ट खोलें','Open your report');
+    if(live){ location.href=rec.pdf_url; return; }
+    forgetPdfUrl(id);          // stale — never leave a dead link in the record
+    rec=sdOwnedRead().filter(function(o){return o.report===id;})[0]||rec;
+  }
 
   /* 2 · No local URL. Order matters here: a missing sd_buy_<report> is the
      more specific blocker, because being signed in does not help render a
      report whose birth details this device no longer has — only an existing
      server-side PDF does, and "Check again" is what fetches that. Testing the
      session first hid this behind a less useful "please sign in". */
+  /* If we just dropped a stale URL and the buyer is signed in, ask the server
+     for a fresh one before telling them anything is wrong — the PDF almost
+     certainly still exists, only the signed link expired. */
+  if(!rec.pdf_url && SESSION){
+    btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+t('जाँच रहे हैं…','Checking…');
+    await restoreFromServer();
+    btn.disabled=false; btn.innerHTML='📄 '+t('रिपोर्ट खोलें','Open your report');
+    var fresh=sdOwnedRead().filter(function(o){return o.report===id;})[0];
+    if(fresh&&fresh.pdf_url&&await urlAlive(fresh.pdf_url)){ location.href=fresh.pdf_url; return; }
+  }
   var d=buyDetails(id);
   if(!d){
     /* Ownership self-heals from the server; sd_buy_<report> does not, so this
@@ -230,7 +298,9 @@ async function openReport(id){
     if(j&&j.ready&&j.url){
       ownedWrite(id,rec.order_code,j.url,rec.date);   // backfill for next time
       btn.disabled=false; btn.textContent=label;
+      render();                                        // chips must reflect the new state
       location.href=j.url;
+      return;
     }else{
       btn.disabled=false; btn.textContent=t('फिर कोशिश करें →','Try again →');
       showErr(err,(j&&(j.detail||j.error))||t('रिपोर्ट नहीं बन सकी।','Could not prepare the report.'));
@@ -302,6 +372,31 @@ async function restoreFromServer(){
   }catch(e){
     var m=$('syncMsg'); if(m) m.textContent=e.message;
   }
+}
+/* Exactly what this device holds, per report. Turns "it isn't downloading"
+   into a fact that can be read out over WhatsApp instead of guessed at. */
+function showDiag(){
+  var lines=[];
+  lines.push('signed in : '+(SESSION?('yes · '+SESSION.user.id.slice(0,8)):'no'));
+  lines.push('supabase  : '+(sb?'client ok':'CDN did not load'));
+  lines.push('');
+  var owned=sdOwnedRead();
+  lines.push('sd_owned_reports ('+owned.length+' entries)');
+  owned.forEach(function(o){
+    var known=!!reportById(o.report);
+    lines.push('  '+o.report+(known?'':'  [UNKNOWN ID]'));
+    lines.push('     date       : '+(o.date||'—'));
+    lines.push('     order_code : '+(o.order_code||'—'));
+    lines.push('     pdf_url    : '+(o.pdf_url?o.pdf_url:'ABSENT  → Open must ask the server'));
+    lines.push('     sd_buy_'+o.report+' : '+(buyDetails(o.report)?'present':'ABSENT  → cannot render here'));
+  });
+  lines.push('');
+  var strays=[];
+  try{ for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i);
+        if(k&&k.indexOf('sd_buy_')===0&&k!=='sd_buy_last') strays.push(k); } }catch(e){}
+  lines.push('sd_buy_* keys on device: '+(strays.join(', ')||'none'));
+  document.getElementById('diagTxt').textContent=lines.join('\n');
+  document.getElementById('diagWrap').style.display='block';
 }
 /* ── boot ── */
 render();                                  // paint from localStorage immediately
