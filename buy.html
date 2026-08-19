@@ -415,6 +415,31 @@ async function submitDetails(){
   checkAuthThen();
 }
 
+/* ── ownership record ─────────────────────────────────────────────────────────
+   sd_owned_reports = [{report, date, order_code, pdf_url}] — the client-side
+   record of what this person owns, written ONLY at payment-confirmed moments.
+   localStorage is the fast path; the orders table (via /api/order?list=1) is
+   the truth, and every server check writes back here so the record self-heals.
+   The read helper below is the canonical way to read this key — the app pages
+   (premium/home/settings) should copy it verbatim rather than re-interpreting. */
+function sdOwnedRead(){
+  try{
+    var a=JSON.parse(localStorage.getItem('sd_owned_reports')||'[]');
+    return Array.isArray(a)?a.filter(function(x){return x&&x.report;}):[];
+  }catch(e){return [];}
+}
+function sdOwnedWrite(report,orderCode,pdfUrl){
+  try{
+    var a=sdOwnedRead(), f=null;
+    for(var i=0;i<a.length;i++)if(a[i].report===report){f=a[i];break;}
+    if(!f){f={report:report,date:new Date().toISOString().slice(0,10)};a.push(f);}
+    if(orderCode)f.order_code=orderCode;
+    if(pdfUrl)f.pdf_url=pdfUrl;
+    localStorage.setItem('sd_owned_reports',JSON.stringify(a));
+    bdlog('owned+ '+report+(pdfUrl?' (pdf url saved)':''));
+  }catch(e){}
+}
+
 /* ── auth ── */
 function checkAuthThen(){
   sb.auth.getSession().then(function(r){
@@ -444,10 +469,19 @@ var SESSION=null;
 function afterAuth(sess){
   SESSION=sess;
   try{history.replaceState(null,'',location.pathname+'?r='+R);}catch(e){}
+  /* heal the local ownership record from the orders table — one call, all
+     reports. Fire-and-forget: the purchase flow below must not wait on it. */
+  fetch('/api/order?list=1&uid='+sess.user.id+'&access_token='+encodeURIComponent(sess.access_token))
+   .then(apiJson).then(function(j){
+     if(j&&Array.isArray(j.reports)){
+       j.reports.forEach(function(o){sdOwnedWrite(o.report,o.order_code);});
+       bdlog('owned list synced: '+j.reports.length);
+     }
+   }).catch(function(){});
   /* already paid? skip payment */
   fetch('/api/order?check=1&uid='+sess.user.id+'&report='+R+'&access_token='+encodeURIComponent(sess.access_token))
    .then(apiJson).then(function(j){
-     if(j&&j.paid){ORDER_CODE=j.order_code;showDone();}
+     if(j&&j.paid){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();}
      else showPay();
    }).catch(function(){showPay();});
 }
@@ -467,7 +501,7 @@ function doPay(){
   $('btPay').textContent='⏳';
   fetch('/api/order?dev=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
    .then(apiJson).then(function(j){
-     if(j&&j.ok){ORDER_CODE=j.order_code;showDone();}
+     if(j&&j.ok){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();}
      else{$('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';$('btPay').textContent='Retry →';}
    }).catch(function(e){$('errP').textContent=e.message;$('errP').style.display='block';});
 }
@@ -486,7 +520,7 @@ function doDownload(){
   fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:H?'hi':'en'})})
   .then(apiJson).then(function(j){
-    if(j&&j.ready&&j.url){PDF_URL=j.url;$('btDl').textContent=H?'⬇️ PDF डाउनलोड करें':'⬇️ Download PDF';location.href=j.url;}
+    if(j&&j.ready&&j.url){PDF_URL=j.url;sdOwnedWrite(R,ORDER_CODE,j.url);$('btDl').textContent=H?'⬇️ PDF डाउनलोड करें':'⬇️ Download PDF';location.href=j.url;}
     else{$('errX').textContent=(j&&(j.detail||j.error))||'failed';$('errX').style.display='block';
       $('btDl').textContent=H?'फिर कोशिश करें →':'Retry →';}
   }).catch(function(e){$('errX').textContent=e.message;$('errX').style.display='block';});
