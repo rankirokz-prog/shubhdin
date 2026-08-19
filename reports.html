@@ -193,6 +193,7 @@ function render(){
           +t('👁️ स्क्रीन पर देखना उसी फ़ोन पर मिलेगा जहाँ जन्म विवरण भरा था — PDF हर जगह खुलेगी।',
              'On-screen view is available on the phone where the birth details were entered — the PDF opens anywhere.')
           +'</div>')
+      +'<div id="manual-'+r.id+'" style="display:none;"></div>'
       +'<div class="err" id="err-'+r.id+'" style="display:none;"></div>'
       /* Shown only after the above fires. Safe: it re-reads the server list,
          which is where a pdf_url will appear once one exists. No buy flow. */
@@ -250,7 +251,7 @@ async function openReport(id){
     btn.innerHTML='<span class="spin">⏳</span> '+t('खोल रहे हैं…','Opening…');
     var live=await urlAlive(rec.pdf_url);
     btn.disabled=false; btn.innerHTML='📄 '+t('रिपोर्ट खोलें','Open your report');
-    if(live){ location.href=rec.pdf_url; return; }
+    if(live){ openPdf(id,rec.pdf_url); return; }
     forgetPdfUrl(id);          // stale — never leave a dead link in the record
     rec=sdOwnedRead().filter(function(o){return o.report===id;})[0]||rec;
   }
@@ -299,7 +300,7 @@ async function openReport(id){
       ownedWrite(id,rec.order_code,j.url,rec.date);   // backfill for next time
       btn.disabled=false; btn.textContent=label;
       render();                                        // chips must reflect the new state
-      location.href=j.url;
+      openPdf(id,j.url);
       return;
     }else{
       btn.disabled=false; btn.textContent=t('फिर कोशिश करें →','Try again →');
@@ -309,6 +310,52 @@ async function openReport(id){
     btn.disabled=false; btn.textContent=t('फिर कोशिश करें →','Try again →');
     showErr(err,e.message);
   }
+}
+/* ══════════════════════════════════════════════════════════════════
+   OPENING A PDF FROM AN INSTALLED PWA
+
+   `location.href = pdfUrl` works in a browser tab and SILENTLY DOES NOTHING
+   once the app is launched from the home-screen icon. It is a well-documented
+   standalone-PWA behaviour, not something wrong with the file: the same URL
+   downloads fine when the site is opened in Chrome. The app "loads" and no
+   file ever arrives — exactly the reported symptom, and the same reason the
+   free Kundli download fails.
+
+   An anchor with target=_blank hands the URL to the browser/OS instead of
+   trying to navigate the app shell. There is no reliable way to detect that
+   it failed, so a visible manual link is ALWAYS left behind — a paid report
+   must never depend on a mechanism we cannot verify.
+   ══════════════════════════════════════════════════════════════════ */
+function isStandalone(){
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+      || window.navigator.standalone===true;
+}
+function openPdf(id,url){
+  try{
+    var a=document.createElement('a');
+    a.href=url; a.target='_blank'; a.rel='noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  }catch(e){
+    try{ window.open(url,'_blank','noopener'); }catch(e2){ location.href=url; }
+  }
+  showManualLink(id,url);
+}
+/* Shown after every open attempt. Cheap insurance: if the tap did nothing,
+   this is a real <a> the user can long-press or tap, which the OS handles. */
+function showManualLink(id,url){
+  var box=$('manual-'+id); if(!box) return;
+  box.innerHTML='<div style="font-size:10.5px;color:rgba(255,244,222,0.55);line-height:1.6;margin-top:9px;">'
+    +t('डाउनलोड शुरू न हुआ हो तो यहाँ दबाएँ:','If the download did not start, tap here:')+'</div>'
+    +'<a href="'+url+'" target="_blank" rel="noopener" '
+    +'style="display:block;margin-top:6px;padding:10px;border-radius:11px;text-align:center;'
+    +'text-decoration:none;font-size:13px;font-weight:600;color:#BFEFD0;'
+    +'background:rgba(74,124,89,0.18);border:1px solid rgba(120,200,150,0.35);">'
+    +'📥 '+t('PDF ब्राउज़र में खोलें','Open the PDF in your browser')+'</a>'
+    +(isStandalone()
+      ? '<div style="font-size:10px;color:rgba(255,244,222,0.40);margin-top:7px;line-height:1.55;">'
+        +t('ऐप के अंदर से डाउनलोड कभी-कभी नहीं चलता — ऊपर वाला लिंक ब्राउज़र में खुलेगा।',
+           'Downloads sometimes do not run from inside an installed app — the link above opens in your browser.')+'</div>' : '');
+  box.style.display='block';
 }
 function viewOnScreen(id){ location.href=id+'-report.html?autoview=1'; }
 /* Re-asks the server. Once the buy side returns pdf_url in the list=1 payload,
@@ -325,7 +372,7 @@ async function checkAgain(id){
   btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+t('जाँच रहे हैं…','Checking…');
   await restoreFromServer();
   var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
-  if(rec&&rec.pdf_url){ location.href=rec.pdf_url; return; }
+  if(rec&&rec.pdf_url){ openPdf(id,rec.pdf_url); return; }
   btn.disabled=false; btn.innerHTML='🔄 '+t('दोबारा जाँचें','Check again');
   showErr(err,t('अभी तक PDF तैयार नहीं है। जिस फ़ोन से खरीदा था वहाँ एक बार खोलें।',
                 'No PDF is ready yet. Open it once on the phone you bought from.'));
