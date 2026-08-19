@@ -5117,6 +5117,10 @@ function openSettings(){
   document.getElementById('settDobLbl').textContent  = H2?'🗓️ जन्म तिथि':'🗓️ Date of Birth';
   document.getElementById('settTobLbl').textContent  = H2?'🕐 जन्म समय':'🕐 Time of Birth';
   document.getElementById('settFbLbl').textContent  = H2?'💬 फीडबैक':'💬 Feedback';
+  var _srt=document.getElementById('settRepTitle');
+  if(_srt) _srt.textContent = H2?'मेरी रिपोर्ट्स':'My Reports';
+  var _srs=document.getElementById('settRepSub');
+  if(_srs) _srs.textContent = H2?'खरीदी हुई रिपोर्ट्स खोलें':'Open the reports you own';
   document.getElementById('fbBtnTxt').textContent   = H2?'भेजें':'Send';
   const fbPh=document.getElementById('fbText');if(fbPh)fbPh.placeholder=H2?'आपका अनुभव लिखें...':'Share your experience...';
   document.getElementById('settTobNote').textContent = H2?'लग्न की सटीक जानकारी के लिए':'For accurate Lagna calculation';
@@ -6727,6 +6731,18 @@ if('serviceWorker' in navigator){
     <a href="/privacy-policy.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;border-right:1px solid rgba(212,168,67,0.10);">Privacy</a>
     <a href="/terms.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;border-right:1px solid rgba(212,168,67,0.10);">Terms</a>
     <a href="/contact.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;">Contact</a>
+  </div>
+  <!-- Door 3 — My Reports. Always present, so a buyer whose localStorage was
+       cleared still has a way in (the page itself does the server check). -->
+  <div style="flex-shrink:0;border-bottom:1px solid rgba(212,168,67,0.10);">
+    <a href="/reports.html" style="display:flex;align-items:center;gap:11px;padding:12px 18px;text-decoration:none;">
+      <span style="font-size:19px;">📁</span>
+      <span style="flex:1;">
+        <span id="settRepTitle" style="display:block;font-size:13.5px;color:rgba(255,240,220,0.90);font-weight:500;">मेरी रिपोर्ट्स</span>
+        <span id="settRepSub" style="display:block;font-size:10px;color:rgba(212,168,67,0.70);margin-top:2px;">खरीदी हुई रिपोर्ट्स खोलें</span>
+      </span>
+      <span style="color:rgba(212,168,67,0.55);font-size:17px;">›</span>
+    </a>
   </div>
 
   <!-- Body -->
