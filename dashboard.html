@@ -5545,6 +5545,16 @@ function calMoonEmoji(phase){
   return {e:'🌑',n:'Amavasya',h:'अमावस्या'};
 }
 
+/* Devotional names must not break mid-syllable — "Pancha-mi" reads wrong.
+   Long names get a conventional short form instead of a wrap. */
+var TITHI_SHORT_EN={Pratipada:'Pratipad',Chaturthi:'Chaturthi',Trayodashi:'Trayodash',
+  Chaturdashi:'Chaturdash',Dwadashi:'Dwadashi',Ekadashi:'Ekadashi',Ashtami:'Ashtami',
+  Panchami:'Panchami',Shashthi:'Shashthi',Saptami:'Saptami',Amavasya:'Amavasya'};
+function calShortTithi(n){
+  if(!n) return '';
+  if(H) return n;                       // Devanagari names already fit
+  return TITHI_SHORT_EN[n]||n;
+}
 function calTithi(phase,date){
   // Engine first — the mean-lunation index below is only a pre-load stand-in.
   var e = date ? calEngine(date) : null;
@@ -5941,9 +5951,9 @@ function renderCalendar(){
         <span style="font-size:15px;font-weight:${(isToday||isSelected)?'800':'600'};color:${dateColor};line-height:1;">${d}</span>
         <span style="font-size:11px;line-height:1;opacity:0.60;">${moon.e}</span>
       </div>
-      <div style="font-size:7.5px;color:var(--cal-tithi);margin-top:3px;line-height:1.15;
+      <div style="font-size:${(H?tithi.hi:calShortTithi(tithi.en)).length>9?'6.5px':'7.5px'};color:var(--cal-tithi);margin-top:3px;line-height:1.15;
            overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-           word-break:break-word;">${H?tithi.hi:tithi.en}</div>
+           word-break:keep-all;overflow-wrap:normal;hyphens:none;">${calShortTithi(H?tithi.hi:tithi.en)}</div>
       ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}${fests.length>1?`<span style="font-size:8px;color:rgba(212,168,67,0.62);vertical-align:top;">+${fests.length-1}</span>`:''}</div>`:(bankSat?`<div style="font-size:12px;margin-top:3px;line-height:1;opacity:0.75;">🏦</div>`:'')}
 
     </div>`;
@@ -6019,44 +6029,17 @@ function calSpiritualNote(phase, festival, date){
   return H ? hi[d] : en[d];
 }
 /* Per-date panchang, cached under the same sd_pan_<date>_<city> scheme. */
-function panchangForDate(date){
-  var ck='sd_pan_'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()
-         +'_'+((U.city||'x')+'').toLowerCase();
-  try{ var hit=JSON.parse(localStorage.getItem(ck)||'null'); if(hit) return hit; }catch(e){}
-  var PE=window.PanchangEngine; if(!PE) return null;
+/* First clean window of a date: its shubh choghadiya minus its OWN forbidden
+   periods — the same rule the astrology section applies. */
+function cleanWindowOf(q){
   try{
-    var c=pgCoords();
-    var q=PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,5.5);
-    var out={
-      tithi:(H?q.tithi.hi:q.tithi.en),
-      tithi_paksha:(q.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
-      nakshatra:(H?q.nakshatra.hi:q.nakshatra.en), yoga:(H?q.yoga.hi:q.yoga.en),
-      karana:(H?q.karana.hi:q.karana.en), weekday:(H?q.vara.hi:q.vara.en),
-      sunrise:pgFmt(q.sunrise), sunset:pgFmt(q.sunset),
-      moonrise:pgFmt(q.moonrise), moonset:pgFmt(q.moonset),
-      rahu_kaal:pgRange(q.rahuKaal), gulika:pgRange(q.gulikaKaal),
-      abhijit_muhurta:pgRange(q.abhijit), _raw:q
-    };
-    try{ var st=Object.assign({},out); delete st._raw; localStorage.setItem(ck,JSON.stringify(st)); }catch(e){}
-    return out;
-  }catch(e){ return null; }
-}
-/* ── B · computed guidance for the selected date ──
-   Replaces a static "Chant Ganesh mantra" line, which was generic filler of
-   exactly the kind just purged elsewhere. Every line below is derived from
-   that date's own data. */
-function calGuidance(date,obs){
-  var q=panchangForDate(date); var out=[];
-  if(q&&q.rahu_kaal) out.push('⚠️ '+(H?'राहु काल ':'Rahu Kaal ')+q.rahu_kaal);
-  // first clean window: the shubh choghadiya of THAT day minus its own
-  // forbidden periods — the same rule the astrology section applies
-  if(q&&q._raw){
-    var r=q._raw, bad=[];
-    [r.rahuKaal,r.gulikaKaal,r.yamaganda].forEach(function(w){ if(w) bad.push({s:+new Date(w.start),e:+new Date(w.end)}); });
-    (r.durMuhurtam||[]).forEach(function(w){ if(w) bad.push({s:+new Date(w.start),e:+new Date(w.end)}); });
-    var clean=null;
-    (r.choghadiya?r.choghadiya.day:[]).forEach(function(sg){
-      if(clean||!sg.good) return;
+    var bad=[];
+    [q.rahuKaal,q.gulikaKaal,q.yamaganda].forEach(function(w){ if(w) bad.push({s:+new Date(w.start),e:+new Date(w.end)}); });
+    (q.durMuhurtam||[]).forEach(function(w){ if(w) bad.push({s:+new Date(w.start),e:+new Date(w.end)}); });
+    (q.varjyamAll||[]).forEach(function(w){ if(w) bad.push({s:+new Date(w.start),e:+new Date(w.end)}); });
+    var found=null;
+    (q.choghadiya?q.choghadiya.day:[]).forEach(function(sg){
+      if(found||!sg.good) return;
       var pieces=[{s:+new Date(sg.start),e:+new Date(sg.end)}];
       bad.forEach(function(b){ var nx=[];
         pieces.forEach(function(pc){
@@ -6065,11 +6048,75 @@ function calGuidance(date,obs){
           if(b.e<pc.e) nx.push({s:Math.max(b.e,pc.s),e:pc.e});
         }); pieces=nx; });
       pieces=pieces.filter(function(pc){return pc.e-pc.s>=12*60000;});
-      if(pieces.length) clean=(H?sg.hi:sg.en)+' '+pgFmt(new Date(pieces[0].s))+'–'+pgFmt(new Date(pieces[0].e));
+      if(pieces.length) found={n:(H?sg.hi:sg.en),s:pgFmt(new Date(pieces[0].s)),e:pgFmt(new Date(pieces[0].e))};
     });
-    if(clean) out.push('✅ '+(H?'पहला साफ़ शुभ समय: ':'First clean window: ')+clean);
-  }
-  if(obs&&obs.length) out.push('🪔 '+obs.map(function(o){return H?o.hi:o.en;}).join(' · '));
+    return found;
+  }catch(e){ return null; }
+}
+function panchangForDate(date){
+  var ck='sd_pan_'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()
+         +'_'+((U.city||'x')+'').toLowerCase();
+  try{ var hit=JSON.parse(localStorage.getItem(ck)||'null');
+       // v2 = rich payload; a DOB change alters the personal rows, so the
+       // profile the entry was built for is part of its validity
+       if(hit && hit.v===2 && hit.forNak===(U.nakshatra||'') && hit.forRas===(U.rashi||'')) return hit;
+  }catch(e){}
+  var PE=window.PanchangEngine; if(!PE) return null;
+  try{
+    var c=pgCoords();
+    var q=PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,5.5);
+    // segments → "Ashtami until 19:42, then Navami"
+    function segs(arr){
+      return (arr||[]).map(function(s){ return {n:(H?s.hi:s.en), end:(s.end?pgFmt(s.end):'')}; });
+    }
+    function win(w){ return w?{s:pgFmt(w.start),e:pgFmt(w.end)}:null; }
+    function wins(a){ return (a||[]).map(win).filter(Boolean); }
+    // personal strength for THIS date, if the user's nakshatra/rashi are known
+    var mine=null;
+    try{
+      var myNak=(U.nakshatra||'').toLowerCase(), myRas=(U.rashi||'').toLowerCase();
+      var tb=q.tarabalam&&q.tarabalam[0], cb=q.chandrabalam&&q.chandrabalam[0];
+      if(myNak&&tb&&tb.all){
+        var row=tb.all.filter(function(x){return x.en.toLowerCase()===myNak;})[0];
+        if(row) mine={taraGood:!!row.good, tara:row.taraEn, verdict:row.verdict};
+      }
+      if(myRas&&cb&&cb.good){
+        var ok=cb.good.some(function(r){return (r.en||'').toLowerCase()===myRas;});
+        mine=mine||{}; mine.chandraGood=ok;
+        mine.moonIn=(H?cb.dayRashi.hi:cb.dayRashi.en);
+      }
+    }catch(e){}
+    var out={
+      v:2, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
+      tithi:(H?q.tithi.hi:q.tithi.en),
+      tithi_paksha:(q.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
+      nakshatra:(H?q.nakshatra.hi:q.nakshatra.en), yoga:(H?q.yoga.hi:q.yoga.en),
+      karana:(H?q.karana.hi:q.karana.en), weekday:(H?q.vara.hi:q.vara.en),
+      sunrise:pgFmt(q.sunrise), sunset:pgFmt(q.sunset),
+      moonrise:pgFmt(q.moonrise), moonset:pgFmt(q.moonset),
+      rahu_kaal:pgRange(q.rahuKaal), gulika:pgRange(q.gulikaKaal),
+      abhijit_muhurta:pgRange(q.abhijit),
+      seg:{tithi:segs(q.tithi.segments), nak:segs(q.nakshatra.segments),
+           yoga:segs(q.yoga.segments), karana:segs(q.karana.segments)},
+      ashubh:{rahu:win(q.rahuKaal), gulika:win(q.gulikaKaal), yama:win(q.yamaganda),
+              dur:wins(q.durMuhurtam), varjyam:wins(q.varjyamAll||(q.varjyam?[q.varjyam]:[]))},
+      shubh:{abhijit:win(q.abhijit), amrit:wins(q.amritKaalAll||(q.amritKaal?[q.amritKaal]:[])),
+             brahma:win(q.brahmaMuhurta)},
+      disha:(q.dishaShool?(H?q.dishaShool.hi:q.dishaShool.en):''),
+      panchaka:(q.panchaka?(H?(q.panchaka.hi||''):(q.panchaka.en||'')):''),
+      mine:mine, clean:cleanWindowOf(q)
+    };
+    try{ localStorage.setItem(ck,JSON.stringify(out)); }catch(e){}
+    return out;
+  }catch(e){ return null; }
+}
+/* ── B · computed guidance for the selected date ──
+   Replaces a static "Chant Ganesh mantra" line, which was generic filler of
+   exactly the kind just purged elsewhere. Every line below is derived from
+   that date's own data. */
+function calGuidance(date,obs,q){
+  q=q||panchangForDate(date); var out=[];
+
   // nearest upcoming Ekadashi, from the engine's own vrat list
   try{
     var PE=window.PanchangEngine;
@@ -6088,6 +6135,11 @@ function calGuidance(date,obs){
   var dd=D[date.getDay()];
   if(dd) out.push('🕉️ '+(H?(dd.d_hi+' का दिन — '+dd.chant):(dd.d_en+"'s day — "+dd.chant)));
   return out;
+}
+function orowCal(label,val){
+  return val?`<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);">
+    <div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>
+    <div style="font-size:12.5px;color:rgba(255,240,220,0.92);">${val}</div></div>`:'';
 }
 function showCalDetail(date){
   const phase = calMoonPhase(date);
@@ -6141,8 +6193,72 @@ function showCalDetail(date){
   const p = isToday ? (window._panchangData||panchangForDate(date)) : panchangForDate(date);
 
   // Build full data rows when we have real data (today)
-  let fullData = '';
-  if(p){
+  /* Rendered from the single payload above. Each limb gains its transition
+     time — "Ashtami until 19:42, then Navami" — which the engine has always
+     returned in .segments and the panel was discarding. */
+  let fullData='';
+  if(p && p.seg){
+    const line=(label,segArr,fallback)=>{
+      const S=segArr||[];
+      if(!S.length) return orowCal(label,fallback);
+      const cur=S[0], nxt=S[1];
+      const upto = cur.end ? `<span style="color:rgba(212,168,67,0.72);"> ${H?'तक':'until'} ${cur.end}</span>` : '';
+      const then = (nxt&&nxt.n) ? `<div style="font-size:11px;color:rgba(255,244,222,0.55);margin-top:1px;">${H?'फिर':'then'} ${nxt.n}${nxt.end?` <span style="color:rgba(212,168,67,0.55);">${H?'तक':'until'} ${nxt.end}</span>`:''}</div>` : '';
+      return `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);">
+        <div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>
+        <div style="font-size:12.5px;color:rgba(255,240,220,0.92);">${cur.n}${upto}</div>${then}</div>`;
+    };
+    const grp=(title,rows)=>rows.filter(Boolean).length
+      ? `<div style="margin-top:10px;"><div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(212,168,67,0.68);font-weight:700;margin-bottom:5px;">${title}</div>${rows.filter(Boolean).join('')}</div>` : '';
+    const w=(ico,name,x)=>x?`<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;">
+        <span style="color:rgba(255,244,222,0.72);">${ico} ${name}</span>
+        <span style="color:rgba(255,240,220,0.92);font-weight:500;">${x.s}–${x.e}</span></div>`:'';
+    const wl=(ico,name,arr)=>(arr||[]).map(x=>w(ico,name,x)).join('');
+
+    const shubh=grp('✅ '+(H?'शुभ समय':'Auspicious'),[
+      p.shubh&&p.shubh.abhijit ? w('⭐',(H?'अभिजित':'Abhijit'),p.shubh.abhijit)
+        : `<div style="font-size:11.5px;padding:3px 0;color:rgba(255,244,222,0.45);">⭐ ${H?'अभिजित — आज नहीं':'Abhijit — none'}${date.getDay()===3?(H?' (बुधवार)':' (Wednesday)'):''}</div>`,
+      p.shubh?wl('🍯',(H?'अमृत काल':'Amrit Kaal'),p.shubh.amrit):'',
+      p.shubh?w('🌄',(H?'ब्रह्म मुहूर्त':'Brahma Muhurta'),p.shubh.brahma):'',
+      p.clean?`<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;">
+        <span style="color:rgba(150,220,170,0.90);">✅ ${H?'पहला साफ़ समय':'First clean window'}</span>
+        <span style="color:rgba(150,220,170,0.95);font-weight:600;">${p.clean.n} ${p.clean.s}–${p.clean.e}</span></div>`:''
+    ]);
+    const ashubh=grp('⚠️ '+(H?'वर्ज्य समय':'Avoid'),[
+      p.ashubh?w('🚫',(H?'राहु काल':'Rahu Kaal'),p.ashubh.rahu):'',
+      p.ashubh?w('⛔',(H?'यमगंड':'Yamaganda'),p.ashubh.yama):'',
+      p.ashubh?w('⛔',(H?'गुलिक काल':'Gulika'),p.ashubh.gulika):'',
+      p.ashubh?wl('△',(H?'दुर्मुहूर्त':'Dur Muhurtam'),p.ashubh.dur):'',
+      p.ashubh?wl('△',(H?'वर्ज्यम्':'Varjyam'),p.ashubh.varjyam):''
+    ]);
+    const mine=p.mine?grp('⭐ '+(H?'आपके लिए':'For you'),[
+      p.mine.tara?`<div style="font-size:11.5px;padding:3px 0;color:${p.mine.taraGood?'rgba(150,220,170,0.90)':'rgba(240,150,130,0.88)'};">
+         ${p.mine.taraGood?'✓':'△'} ${H?'ताराबल':'Tarabala'}: ${p.mine.tara}${p.mine.verdict?' · '+p.mine.verdict:''}</div>`:'',
+      (p.mine.chandraGood!==undefined)?`<div style="font-size:11.5px;padding:3px 0;color:${p.mine.chandraGood?'rgba(150,220,170,0.90)':'rgba(255,244,222,0.60)'};">
+         ${p.mine.chandraGood?'✓':'—'} ${H?'चंद्रबल':'Chandrabala'}${p.mine.moonIn?' · '+(H?'चंद्र ':'Moon in ')+p.mine.moonIn:''}</div>`:''
+    ]):'';
+    const extras=grp((H?'अन्य':'Also'),[
+      p.disha?`<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;">
+        <span style="color:rgba(255,244,222,0.72);">🧭 ${H?'दिशा शूल':'Disha Shool'}</span>
+        <span style="color:rgba(255,240,220,0.92);">${p.disha}</span></div>`:'',
+      p.panchaka?`<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;">
+        <span style="color:rgba(255,244,222,0.72);">🔢 ${H?'पंचक':'Panchaka'}</span>
+        <span style="color:rgba(255,240,220,0.92);">${p.panchaka}</span></div>`:''
+    ]);
+
+    fullData=`<div style="margin-top:12px;">
+      ${line(H?'तिथि':'Tithi',p.seg.tithi,p.tithi)}
+      ${line(H?'नक्षत्र':'Nakshatra',p.seg.nak,p.nakshatra)}
+      ${line(H?'योग':'Yoga',p.seg.yoga,p.yoga)}
+      ${line(H?'करण':'Karana',p.seg.karana,p.karana)}
+      ${orowCal(H?'वार':'Weekday',p.weekday)}
+      <div style="margin-top:8px;">
+        ${w('🌅',(H?'सूर्योदय / सूर्यास्त':'Sunrise / Sunset'),{s:p.sunrise,e:p.sunset})}
+        ${w('🌙',(H?'चंद्रोदय / चंद्रास्त':'Moonrise / Moonset'),{s:p.moonrise,e:p.moonset})}
+      </div>
+      ${shubh}${ashubh}${mine}${extras}
+    </div>`;
+  } else if(p){
     const fmtT = (iso)=>{ if(!iso) return ''; try{ const d=new Date(iso); if(isNaN(d.getTime())) return ''; return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }catch(e){ return ''; } };
     const upto = H?'तक':'upto';
     const after = H?'के बाद':'after';
@@ -6215,7 +6331,7 @@ function showCalDetail(date){
     ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.85);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
     ${fullData}
     ${festHtml}
-    ${(()=>{const g=calGuidance(date,fests);
+    ${(()=>{const g=calGuidance(date,fests,p);
        return g.length?`<div style="margin-top:10px;padding-top:9px;border-top:1px solid rgba(212,168,67,0.12);">`
          +g.map(x=>`<div style="font-size:11.5px;color:rgba(255,244,222,0.78);line-height:1.75;">${x}</div>`).join('')
          +`</div>`:'';})()}
