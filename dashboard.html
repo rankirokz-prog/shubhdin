@@ -5711,6 +5711,72 @@ function bankSaturday(date){
 }
 // ── Everything notable in one month, from the same engine the grid uses.
 // Pure function — no DOM — so it can be tested directly.
+/* ══════════════════════════════════════════════════════════════════
+   OBSERVANCES — one source, one visual language.
+
+   The hand-maintained CAL_FESTIVALS table disagreed with the engine on the
+   dates that matter: it put Aja Ekadashi on 12 Aug where the engine computes
+   Kamika Ekadashi on the 9th and Shravana Putrada on the 23rd, and it listed
+   Nag Panchami on the 6th and Raksha Bandhan on the 9th where the engine says
+   the 17th and 27th (those look like stale 2025 dates). Two sources also gave
+   two visual treatments to the same vrat — a full orange border on one
+   Ekadashi and a bare purple dot on another.
+
+   So: the engine owns everything astronomical. The curated table is kept ONLY
+   for civil holidays (Independence Day, Gandhi Jayanti…), which are calendar
+   facts the engine does not and should not compute.
+   ══════════════════════════════════════════════════════════════════ */
+var _obsMemo={};
+function calObservances(year,month){
+  var key=year+'-'+month;
+  if(_obsMemo[key]) return _obsMemo[key];
+  var map={};
+  function put(dateKey,o){ (map[dateKey]=map[dateKey]||[]).push(o); }
+  var PE=window.PanchangEngine;
+  if(PE){
+    try{
+      var c=pgCoords(), pre=year+'-'+String(month+1).padStart(2,'0');
+      (PE.getVrats(year,c.lat,c.lng,5.5)||[]).forEach(function(v){
+        if(v.date.indexOf(pre)===0) put(v.date,{hi:v.hi,en:v.en,i:'🙏',cat:'vrat'});
+      });
+      (PE.getFestivals(year,c.lat,c.lng,5.5)||[]).forEach(function(f){
+        if(f.date.indexOf(pre)===0) put(f.date,{hi:f.hi,en:f.en,i:'🪔',cat:'major'});
+      });
+    }catch(e){}
+  }
+  // civil holidays only — never astronomical ones
+  Object.keys(CAL_FESTIVALS).forEach(function(k){
+    var f=CAL_FESTIVALS[k];
+    if(f.t==='national' && k.indexOf(year+'-'+String(month+1).padStart(2,'0'))===0)
+      put(k,{hi:f.h,en:f.n,i:f.i,cat:'national'});
+  });
+  (CAL_FEST_EXTRA?Object.keys(CAL_FEST_EXTRA):[]).forEach(function(k){
+    CAL_FEST_EXTRA[k].forEach(function(f){
+      if(f.t==='national' && k.indexOf(year+'-'+String(month+1).padStart(2,'0'))===0)
+        put(k,{hi:f.h,en:f.n,i:f.i,cat:'national'});
+    });
+  });
+  // priority when a day carries more than one: major > national > vrat > moon
+  var rank={major:0,national:1,vrat:2,moon:3};
+  Object.keys(map).forEach(function(k){
+    map[k].sort(function(a,b){return rank[a.cat]-rank[b.cat];});
+  });
+  _obsMemo[key]=map;
+  return map;
+}
+function obsFor(date){
+  var m=calObservances(date.getFullYear(),date.getMonth());
+  var k=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+  var list=(m[k]||[]).slice();
+  // Purnima and Amavasya are tithis, not listed vrats — added from the engine
+  // so they share the same list and the same marks as everything else.
+  var e=calEngine(date);
+  if(e){
+    if(e.tithiIdx===14) list.push({hi:'पूर्णिमा',en:'Purnima',i:'🌕',cat:'moon'});
+    if(e.tithiIdx===29) list.push({hi:'अमावस्या',en:'Amavasya',i:'🌑',cat:'moon'});
+  }
+  return list;
+}
 function calMonthEvents(year, month){
   const days=new Date(year,month+1,0).getDate(), out=[];
   // The curated table and the phase approximation disagree by 1–4 days on
@@ -5726,21 +5792,10 @@ function calMonthEvents(year, month){
     const date=new Date(year,month,d);
     const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const phase=calMoonPhase(date);
-    const fests=calFest(key);
-    let hasEk=false, hasMoon=false;
-    fests.forEach(function(f){
-      const nm=(f.n||'');
-      if(/Ekadashi/i.test(nm)) hasEk=true;
-      if(/Purnima|Amavasya/i.test(nm)) hasMoon=true;
-      out.push({d:d,date:date,hi:f.h,en:f.n,icon:f.i,cat:f.t==='national'?'national':(f.t==='major'?'major':'festival')});
+    obsFor(date).forEach(function(f){
+      out.push({d:d,date:date,hi:f.hi,en:f.en,icon:f.i,
+                cat:(f.cat==='moon'?(f.en==='Purnima'?'purnima':'amavasya'):f.cat)});
     });
-    // computed observances — only when the curated table doesn't already name them
-    if(!hasEk && !curatedEk && isEkadashi(phase,date))
-      out.push({d:d,date:date,hi:'एकादशी व्रत',en:'Ekadashi Vrat',icon:'🙏',cat:'vrat'});
-    if(!hasMoon && isPurnima(phase,date))
-      out.push({d:d,date:date,hi:'पूर्णिमा',en:'Purnima',icon:'🌕',cat:'purnima'});
-    if(!hasMoon && isAmavasya(phase,date))
-      out.push({d:d,date:date,hi:'अमावस्या',en:'Amavasya',icon:'🌑',cat:'amavasya'});
     const bs=bankSaturday(date);
     if(bs) out.push({d:d,date:date,hi:'बैंक अवकाश',en:'Bank Holiday',icon:'🏦',cat:'bank',sub_hi:bs.h,sub_en:bs.e});
   }
@@ -5818,6 +5873,14 @@ function renderCalendar(){
     const dh_hi=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
     const dh_en=['SUN','MON','TUE','WED','THU','FRI','SAT'];
     const labels = H ? dh_hi : dh_en;
+    const _lg=document.getElementById('calLegend');
+    if(_lg) _lg.innerHTML=[
+      ['#E8BE5A', H?'आज':'today'],
+      ['rgba(232,222,255,0.85)', H?'चुना हुआ':'selected'],
+      ['rgba(255,154,60,0.9)', H?'पर्व / व्रत':'festival / vrat'],
+      ['rgba(127,179,245,0.9)', H?'अवकाश':'holiday']
+    ].map(c=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:11px;font-size:9px;color:rgba(255,244,222,0.55);">
+        <span style="width:8px;height:8px;border-radius:2px;border:1.5px solid ${c[0]};"></span>${c[1]}</span>`).join('');
     DAY_HDR.innerHTML = labels.map((d,i)=>
       `<div style="text-align:center;font-size:9px;color:${i===0?'var(--cal-sun)':'rgba(212,168,67,0.72)'};font-weight:700;letter-spacing:0.6px;padding:3px 0 4px;">${d}</div>`
     ).join('');
@@ -5848,7 +5911,7 @@ function renderCalendar(){
     const phase = calMoonPhase(date);
     const moon = calMoonEmoji(phase);
     const tithi = calTithi(phase,date);
-    const fests = calFest(dateKey);
+    const fests = obsFor(date);          // engine-backed, priority-ordered
     const festival = fests[0];
     const bankSat = bankSaturday(date);
     const isToday = d===today.getDate() && _calMonth===today.getMonth() && _calYear===today.getFullYear();
@@ -5856,15 +5919,17 @@ function renderCalendar(){
     const isSun = date.getDay()===0;
     const isSat = date.getDay()===6;
     const isSpecial = isAmavasya(phase,date)||isPurnima(phase,date)||isEkadashi(phase,date);
-    const isMajor = fests.some(function(f){return f.t==='major';});
-    const isHoliday = bankSat || fests.some(function(f){return f.t==='national';});
+    const isMajor = fests.some(function(f){return f.cat==='major'||f.cat==='vrat';});
+    const isHoliday = bankSat || fests.some(function(f){return f.cat==='national';});
 
     // Cell border/bg
     // Cells sit LIGHTER than the page so each date reads as its own tile.
     // Each state is a different surface, not another opacity of the same one.
     let cellStyle = `min-height:66px;border-radius:10px;padding:5px 4px;cursor:pointer;position:relative;transition:all 0.15s;min-width:0;overflow:hidden;`;
-    if(isSelected) cellStyle += `background:var(--cal-sel);border:1.5px solid rgba(232,190,90,0.95);box-shadow:0 0 14px rgba(212,168,67,0.30);`;
-    else if(isToday) cellStyle += `background:#4A3114;border:1.5px solid rgba(212,168,67,0.75);box-shadow:0 0 12px rgba(212,168,67,0.22);`;
+    // Today is GOLD and only today. A selected day gets a pale ring instead,
+    // so two gold-ish blocks can never appear on one grid.
+    if(isToday) cellStyle += `background:#4A3114;border:2px solid #E8BE5A;box-shadow:0 0 14px rgba(232,190,90,0.40);`;
+    else if(isSelected) cellStyle += `background:#3D2A38;border:2px solid rgba(232,222,255,0.85);box-shadow:0 0 10px rgba(200,190,255,0.25);`;
     else if(isMajor) cellStyle += `background:#4A2718;border:1px solid rgba(255,154,60,0.55);box-shadow:inset 0 2px 0 rgba(255,154,60,0.85);`;
     else if(isHoliday) cellStyle += `background:#333A5C;border:1px solid rgba(127,179,245,0.45);`;
     else cellStyle += `background:var(--cal-cell);border:1px solid rgba(212,168,67,0.10);`;
@@ -5876,9 +5941,11 @@ function renderCalendar(){
         <span style="font-size:15px;font-weight:${(isToday||isSelected)?'800':'600'};color:${dateColor};line-height:1;">${d}</span>
         <span style="font-size:11px;line-height:1;opacity:0.60;">${moon.e}</span>
       </div>
-      <div style="font-size:8.5px;color:var(--cal-tithi);margin-top:3px;line-height:1.3;overflow:hidden;">${H?tithi.hi:tithi.en}</div>
+      <div style="font-size:7.5px;color:var(--cal-tithi);margin-top:3px;line-height:1.15;
+           overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+           word-break:break-word;">${H?tithi.hi:tithi.en}</div>
       ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}${fests.length>1?`<span style="font-size:8px;color:rgba(212,168,67,0.62);vertical-align:top;">+${fests.length-1}</span>`:''}</div>`:(bankSat?`<div style="font-size:12px;margin-top:3px;line-height:1;opacity:0.75;">🏦</div>`:'')}
-      ${isSpecial&&!festival?`<div style="width:5px;height:5px;border-radius:50%;background:${isEkadashi(phase,date)?'var(--cal-vrat)':'rgba(232,190,90,0.90)'};margin-top:4px;"></div>`:''}
+
     </div>`;
   }
 
@@ -5951,12 +6018,83 @@ function calSpiritualNote(phase, festival, date){
   const en=['☀️ Offer prayers to Surya Dev','🕉️ Ideal day to worship Shiva','🙏 Recite Hanuman Chalisa','📿 Chant Ganesh mantra','🌸 Read Vishnu Sahasranama','🌺 Worship Maa Lakshmi','🪔 Offer oil to Shani Dev'];
   return H ? hi[d] : en[d];
 }
+/* Per-date panchang, cached under the same sd_pan_<date>_<city> scheme. */
+function panchangForDate(date){
+  var ck='sd_pan_'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()
+         +'_'+((U.city||'x')+'').toLowerCase();
+  try{ var hit=JSON.parse(localStorage.getItem(ck)||'null'); if(hit) return hit; }catch(e){}
+  var PE=window.PanchangEngine; if(!PE) return null;
+  try{
+    var c=pgCoords();
+    var q=PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,5.5);
+    var out={
+      tithi:(H?q.tithi.hi:q.tithi.en),
+      tithi_paksha:(q.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
+      nakshatra:(H?q.nakshatra.hi:q.nakshatra.en), yoga:(H?q.yoga.hi:q.yoga.en),
+      karana:(H?q.karana.hi:q.karana.en), weekday:(H?q.vara.hi:q.vara.en),
+      sunrise:pgFmt(q.sunrise), sunset:pgFmt(q.sunset),
+      moonrise:pgFmt(q.moonrise), moonset:pgFmt(q.moonset),
+      rahu_kaal:pgRange(q.rahuKaal), gulika:pgRange(q.gulikaKaal),
+      abhijit_muhurta:pgRange(q.abhijit), _raw:q
+    };
+    try{ var st=Object.assign({},out); delete st._raw; localStorage.setItem(ck,JSON.stringify(st)); }catch(e){}
+    return out;
+  }catch(e){ return null; }
+}
+/* ── B · computed guidance for the selected date ──
+   Replaces a static "Chant Ganesh mantra" line, which was generic filler of
+   exactly the kind just purged elsewhere. Every line below is derived from
+   that date's own data. */
+function calGuidance(date,obs){
+  var q=panchangForDate(date); var out=[];
+  if(q&&q.rahu_kaal) out.push('⚠️ '+(H?'राहु काल ':'Rahu Kaal ')+q.rahu_kaal);
+  // first clean window: the shubh choghadiya of THAT day minus its own
+  // forbidden periods — the same rule the astrology section applies
+  if(q&&q._raw){
+    var r=q._raw, bad=[];
+    [r.rahuKaal,r.gulikaKaal,r.yamaganda].forEach(function(w){ if(w) bad.push({s:+new Date(w.start),e:+new Date(w.end)}); });
+    (r.durMuhurtam||[]).forEach(function(w){ if(w) bad.push({s:+new Date(w.start),e:+new Date(w.end)}); });
+    var clean=null;
+    (r.choghadiya?r.choghadiya.day:[]).forEach(function(sg){
+      if(clean||!sg.good) return;
+      var pieces=[{s:+new Date(sg.start),e:+new Date(sg.end)}];
+      bad.forEach(function(b){ var nx=[];
+        pieces.forEach(function(pc){
+          if(b.e<=pc.s||b.s>=pc.e){nx.push(pc);return;}
+          if(b.s>pc.s) nx.push({s:pc.s,e:Math.min(b.s,pc.e)});
+          if(b.e<pc.e) nx.push({s:Math.max(b.e,pc.s),e:pc.e});
+        }); pieces=nx; });
+      pieces=pieces.filter(function(pc){return pc.e-pc.s>=12*60000;});
+      if(pieces.length) clean=(H?sg.hi:sg.en)+' '+pgFmt(new Date(pieces[0].s))+'–'+pgFmt(new Date(pieces[0].e));
+    });
+    if(clean) out.push('✅ '+(H?'पहला साफ़ शुभ समय: ':'First clean window: ')+clean);
+  }
+  if(obs&&obs.length) out.push('🪔 '+obs.map(function(o){return H?o.hi:o.en;}).join(' · '));
+  // nearest upcoming Ekadashi, from the engine's own vrat list
+  try{
+    var PE=window.PanchangEngine;
+    if(PE){
+      var c=pgCoords(), base=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+      var nxt=(PE.getVrats(date.getFullYear(),c.lat,c.lng,5.5)||[])
+        .filter(function(v){return /Ekadashi/i.test(v.en)&&new Date(v.date+'T00:00:00')>base;})
+        .sort(function(a,b){return new Date(a.date)-new Date(b.date);})[0];
+      if(nxt){
+        var days=Math.round((new Date(nxt.date+'T00:00:00')-base)/86400000);
+        out.push('📿 '+(H?(nxt.hi+' — '+days+' दिन में'):(nxt.en+' in '+days+' day'+(days===1?'':'s'))));
+      }
+    }
+  }catch(e){}
+  // if a chant line stays, it is that weekday's own deity, never a fixed one
+  var dd=D[date.getDay()];
+  if(dd) out.push('🕉️ '+(H?(dd.d_hi+' का दिन — '+dd.chant):(dd.d_en+"'s day — "+dd.chant)));
+  return out;
+}
 function showCalDetail(date){
   const phase = calMoonPhase(date);
   const moon = calMoonEmoji(phase);
   const tithi = calTithi(phase,date);
   const dateKey = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-  const fests = calFest(dateKey);
+  const fests = obsFor(date);
   const festival = fests[0];
   const bankSat = bankSaturday(date);
   const DAYS_HI=['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
@@ -5970,9 +6108,11 @@ function showCalDetail(date){
 
   let festHtml = '';
   const drows = fests.map(function(f){
-    const meta = CEV_META[f.t==='national'?'national':(f.t==='major'?'major':'festival')];
-    const fColor = f.t==='major' ? 'rgba(255,140,30,0.85)' : f.t==='national' ? 'rgba(100,180,255,0.85)' : 'rgba(212,168,67,0.75)';
-    return {i:f.i, name:(H?f.h:f.n), label:(H?meta.hi:meta.en), color:fColor};
+    const meta = CEV_META[f.cat==='moon'?'purnima':(f.cat==='national'?'national':(f.cat==='major'?'major':'vrat'))]||CEV_META.festival;
+    const fColor = f.cat==='major' ? 'rgba(255,140,30,0.85)'
+                 : f.cat==='national' ? 'rgba(100,180,255,0.85)'
+                 : f.cat==='vrat' ? 'rgba(201,160,255,0.90)' : 'rgba(212,168,67,0.75)';
+    return {i:f.i, name:(H?f.hi:f.en), label:(H?meta.hi:meta.en), color:fColor};
   });
   if(bankSat) drows.push({i:'🏦', name:(H?'बैंक अवकाश':'Bank Holiday'),
     label:(H?bankSat.h:bankSat.e), color:'rgba(175,195,220,0.88)'});
@@ -5992,10 +6132,13 @@ function showCalDetail(date){
     isPurnima(phase,date)?(H?'🌕 पूर्णिमा — व्रत का विशेष दिन':'🌕 Purnima — Auspicious for fasting'):
     isEkadashi(phase,date)?(H?'🙏 एकादशी — व्रत एवं विष्णु पूजा':'🙏 Ekadashi — Fast & Vishnu Puja'):'';
 
-  // Is this TODAY? If so, show the full real panchang data from API
+  /* Any date, not just today. The engine computes 1700–2200, so restricting
+     taps to today threw away the app's own advantage — people want to know
+     what tithi a child was born on. Results reuse the same per-day cache the
+     rest of the page uses, so tapping a date twice never recomputes. */
   const today = new Date();
   const isToday = date.getDate()===today.getDate() && date.getMonth()===today.getMonth() && date.getFullYear()===today.getFullYear();
-  const p = (isToday && window._panchangData) ? window._panchangData : null;
+  const p = isToday ? (window._panchangData||panchangForDate(date)) : panchangForDate(date);
 
   // Build full data rows when we have real data (today)
   let fullData = '';
@@ -6072,7 +6215,10 @@ function showCalDetail(date){
     ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.85);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
     ${fullData}
     ${festHtml}
-    ${!p?`<div style='margin-top:6px;font-size:11px;color:rgba(255,255,255,0.74);font-style:italic;'>${calSpiritualNote(phase,festival,date)||''}</div>`:''}
+    ${(()=>{const g=calGuidance(date,fests);
+       return g.length?`<div style="margin-top:10px;padding-top:9px;border-top:1px solid rgba(212,168,67,0.12);">`
+         +g.map(x=>`<div style="font-size:11.5px;color:rgba(255,244,222,0.78);line-height:1.75;">${x}</div>`).join('')
+         +`</div>`:'';})()}
     ${fullBtn}
   `;
 }
@@ -6214,17 +6360,9 @@ function getVratsThisWeek(){
     if(dow===4) dayVrats.push({h:'गुरुवार व्रत',e:'Thursday Fast',i:'🌸'});
     if(dow===6) dayVrats.push({h:'शनिवार व्रत',e:'Saturday Fast',i:'🪔'});
 
-    // Tithi-based vrats
-    if(isEkadashi(phase,d)) dayVrats.push({h:'एकादशी व्रत',e:'Ekadashi Fast',i:'📿'});
-    if(isAmavasya(phase,d)) dayVrats.push({h:'अमावस्या',e:'Amavasya',i:'🌑'});
-    if(isPurnima(phase,d)) dayVrats.push({h:'पूर्णिमा व्रत',e:'Purnima Fast',i:'🌕'});
-    const t = calTithi(phase,d);
-    if(t.en==='Chaturthi') dayVrats.push({h:'संकष्टी चतुर्थी',e:'Sankashti Chaturthi',i:'🐘'});
-    if(Math.abs(phase-12.83)<0.85 || Math.abs(phase-27.63)<0.85) dayVrats.push({h:'प्रदोष व्रत',e:'Pradosh Vrat',i:'🕉️'});
-
-    // Engine's computed vrats/festivals win over the hand-maintained table.
-    if(engineHits[dateKey]) engineHits[dateKey].forEach(function(x){ dayVrats.push(x); });
-    else fests.forEach(function(f){ dayVrats.push({h:f.h, e:f.n, i:f.i}); });
+    // Everything tithi-based comes from the engine, which names them properly
+    // (Soma Pradosh, Sankashti Chaturthi, Shravana Putrada Ekadashi…).
+    obsFor(d).forEach(function(f){ dayVrats.push({h:f.hi, e:f.en, i:f.i}); });
 
     if(dayVrats.length > 0){
       const DAYS_HI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
@@ -6555,6 +6693,7 @@ if('serviceWorker' in navigator){
       </div>
     </div>
     <!-- Day headers -->
+    <div id="calLegend" style="margin:6px 0 0;line-height:1.6;"></div>
     <div id="calDayHdr" style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:4px -10px 0;"></div>
   </div>
 
