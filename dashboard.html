@@ -6145,6 +6145,12 @@ function orowCal(label,val){
     <div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>
     <div style="font-size:12.5px;color:rgba(255,240,220,0.92);">${val}</div></div>`:'';
 }
+// Close the calendar before leaving, or the overlay stays on top of wherever
+// we went and the tap looks like it did nothing.
+function calGoTimings(){
+  closeCalendar();
+  location.href='astrology.html#chogh';
+}
 function showCalDetail(date){
   const phase = calMoonPhase(date);
   const moon = calMoonEmoji(phase);
@@ -6321,7 +6327,13 @@ function showCalDetail(date){
   }
 
   // For today, add a button to the full panchang page
-  const fullBtn = isToday ? `<div onclick="go('panchang')" style="margin-top:10px;text-align:center;padding:9px;background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,140,30,0.08));border:1px solid rgba(212,168,67,0.25);border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;color:var(--gold);">📿 ${H?'पूरा पंचांग देखें':'View Full Panchang'} ›</div>` : '';
+  const fullBtn = isToday
+    ? `<div onclick="calGoTimings()" style="margin-top:12px;text-align:center;padding:10px;
+         background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,140,30,0.08));
+         border:1px solid rgba(212,168,67,0.25);border-radius:10px;cursor:pointer;
+         font-size:12px;font-weight:600;color:var(--gold);">🕐 ${H?'चौघड़िया और होरा':'Choghadiya & Hora'} ›</div>`
+    : `<div style="margin-top:12px;text-align:center;font-size:10.5px;color:rgba(255,244,222,0.42);line-height:1.6;">
+         ${H?'चौघड़िया और होरा केवल आज के लिए':'Choghadiya and hora are shown for today only'}</div>`;
 
   document.getElementById('calDetail').innerHTML = `
     <div style="font-size:11px;color:rgba(212,168,67,0.72);letter-spacing:0.5px;margin-bottom:6px;">${dateStr}${isToday?(H?' • आज':' • Today'):''}</div>
