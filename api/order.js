@@ -87,6 +87,19 @@ module.exports = async function handler(req, res) {
         seen[r.report] = true;
         reports.push({ report: r.report, order_code: r.order_code, paid_at: r.created_at });
       }
+      // pdf_url: the storage path is deterministic, so HEAD-check the cache and
+      // include the URL only when the PDF actually exists. Presence in the
+      // response therefore means "openable right now" — a buyer on a new phone
+      // gets restore → open with no birth details needed. Checks run in
+      // parallel; a failed HEAD just means no pdf_url for that report.
+      const BUCKET = 'shubhdin-audio';
+      await Promise.all(reports.map(async (rep) => {
+        const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/reports/${q.uid}/${rep.report}.pdf`;
+        try {
+          const head = await fetch(publicUrl, { method: 'HEAD' });
+          if (head.ok) rep.pdf_url = publicUrl + `?download=Shubh-Din-${rep.report}-report.pdf`;
+        } catch (e) {}
+      }));
       return res.status(200).json({ ok: true, reports });
     } catch (e) { return res.status(500).json({ error: 'list failed' }); }
   }
