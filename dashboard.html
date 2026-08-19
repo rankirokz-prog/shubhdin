@@ -4673,6 +4673,13 @@ function pgCacheKey(){
   var d=new Date();
   return 'sd_pan_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'_'+((U.city||'x')+'').toLowerCase();
 }
+/* One rule for accepting a cached payload, used by every reader. A cache entry
+   is only usable if it is the current shape AND was built for the profile in
+   effect now — otherwise it is recomputed rather than half-rendered. */
+function pgUsable(c){
+  return !!(c && c.v===2 && c.seg &&
+            c.forNak===(U.nakshatra||'') && c.forRas===(U.rashi||''));
+}
 function pgSweepCache(){
   try{
     var keep=pgCacheKey();
@@ -4749,7 +4756,7 @@ async function fetchPanchang(){
   // lazily when a deeper page (Full Panchang, calendar) actually needs it.
   pgSweepCache();
   try{ var c=JSON.parse(localStorage.getItem(pgCacheKey())||'null');
-       if(c){ window._panchangData=c; applyPanchang(c); return; } }catch(e){}
+       if(pgUsable(c)){ window._panchangData=c; applyPanchang(c); return; } }catch(e){}
   try{
     await ensureEngine();
     var p=enginePanchang();
@@ -5242,7 +5249,16 @@ async function fetchBirthChart(){
       u.nakshatra=local.nakshatra; u.nakshatra_pada=local.nakshatra_pada;
       u.rashi=local.rashi; u.lagna=local.lagna; u.birth_cache_key=cacheKey;
       localStorage.setItem('shubhdin_user',JSON.stringify(u));
+      U=u;
       updateBirthChips(local);
+      // the day's payload was built before this profile existed — rebuild it
+      // once now so its stamp matches and later visits are real cache hits
+      try{
+        var fresh=enginePanchang();
+        if(fresh){ window._panchangData=fresh;
+                   localStorage.setItem(pgCacheKey(),JSON.stringify(fresh));
+                   applyPanchang(fresh); }
+      }catch(e){}
       return;
     }
   }catch(e){ /* engine unavailable — fall through to the network */ }
@@ -6089,9 +6105,7 @@ function cleanWindowOf(q){
 function panchangForDate(date){
   var ck='sd_pan_'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()
          +'_'+((U.city||'x')+'').toLowerCase();
-  try{ var hit=JSON.parse(localStorage.getItem(ck)||'null');
-       if(hit && hit.v===2 && hit.forNak===(U.nakshatra||'') && hit.forRas===(U.rashi||'')) return hit;
-  }catch(e){}
+  try{ var hit=JSON.parse(localStorage.getItem(ck)||'null'); if(pgUsable(hit)) return hit; }catch(e){}
   var PE=window.PanchangEngine; if(!PE) return null;
   try{
     var c=pgCoords();
