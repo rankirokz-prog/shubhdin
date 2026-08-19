@@ -67,6 +67,7 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
 .r-buy .cta{padding:8px 13px;font-size:11.5px;}
 .note{text-align:center;font-size:10px;color:rgba(255,244,222,0.3);margin-top:24px;line-height:1.7;}
 </style>
+<script src="report-catalog.js"></script>
 </head>
 <body>
 <div class="hdr">
@@ -82,72 +83,69 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
 
 <script>
 // ─────────────────────────────────────────────────────────────
-// PRICING CONFIG — edit only this block to retune before launch
-// ─────────────────────────────────────────────────────────────
-var PRICES = {
-  marriage:{was:799,now:399},
-  love:    {was:499,now:199},
-  career:  {was:499,now:199},
-  child:   {was:499,now:199},
-  muhurta: {was:499,now:199},
-  annual:  {was:499,now:199},
-  forecast:{was:599,now:299}
-};
-var REPORTS = [
- {k:'marriage',hero:true,href:'marriage-report.html',ico:'💍',
-  hi:'विवाह मिलान',en:'Marriage Compatibility Report',
-  hook:'Will your charts align? What your two kundlis say about compatibility, doshas and the right time to marry.',
-  chips:['Guna Milan','Manglik Dosha','Marriage timing','Spouse nature','Shubh dates']},
- {k:'love',href:'love-report.html',ico:'❤️',
-  hi:'प्रेम रिपोर्ट',en:'Love & Relationship',
-  hook:'Your relationship patterns, partner nature and the periods that matter most in love.',
-  chips:['Love life','Partner nature','Compatibility','Relationship timing']},
- {k:'career',href:'career-report.html',ico:'💼',
-  hi:'करियर रिपोर्ट',en:'Career & Wealth',
-  hook:'Which path actually suits you — and when do the growth periods arrive?',
-  chips:['Career strengths','Right fields','Job vs business','Growth periods']},
- {k:'child',href:'child-report.html',ico:'👶',
-  hi:'संतान रिपोर्ट',en:'Child & Family',
-  hook:'Santaan yog in your chart, favourable timing and auspicious naming letters.',
-  chips:['Santaan Yog','Right timing','Family prospects','Naming letters']},
- {k:'muhurta',href:'muhurta-report.html',ico:'🕉️',
-  hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',
-  hook:'Shubh dates computed for your chart — marriage, griha pravesh, new business and more.',
-  chips:['Marriage','Griha Pravesh','Business start','Vehicle','Your shubh dates']},
- {k:'annual',href:'annual-report.html',ico:'🗓️',
-  hi:'वार्षिक फल',en:'Annual Varshaphal',
-  hook:'Your coming year, month by month — the strong periods, the careful ones, and remedies.',
-  chips:['Year ahead','Month-by-month','Major periods','Remedies']},
- {k:'forecast',href:'forecast-report.html',ico:'🔮',
-  hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',
-  hook:'A decade mapped from your dasha and transits — the turning points worth planning around.',
-  chips:['Dasha periods','Transits','Turning points','10-year timeline']}
-];
+/* Names and prices come from report-catalog.js — the single source shared with
+   My Reports. They used to live here AND in buy.html, which meant the sales
+   page could advertise a price the buy flow did not charge. */
+var REPORTS = REPORT_CATALOG;
 
-function pct(p){return Math.round((1-p.now/p.was)*100)+'% OFF';}
+/* Ownership is read from localStorage ONLY on this page — a deliberate call
+   from owned-contract.md. No Supabase client on the sales page. The cost is
+   that a cleared browser briefly shows an owned card as buyable until the next
+   signed-in visit heals the record; the server-backed truth lives one tap away
+   in My Reports. */
+var OWNED = sdOwnedIds();
+var ownedCount = Object.keys(OWNED).length;
+
 var root=document.getElementById('pageRoot'), h='';
+
+/* Door 1 — the strip. Nothing renders at zero owned, so the page stays pure
+   sales for someone who has bought nothing. */
+if(ownedCount>0){
+  h+='<a href="reports.html" style="display:flex;align-items:center;gap:11px;margin:0 0 16px;'
+   +'padding:13px 15px;border-radius:14px;text-decoration:none;'
+   +'background:linear-gradient(135deg,rgba(74,124,89,0.18),rgba(212,168,67,0.06));'
+   +'border:1px solid rgba(120,200,150,0.35);">'
+   +'<span style="font-size:21px;">📁</span>'
+   +'<span style="flex:1;"><span style="display:block;font-size:14.5px;font-weight:600;color:#BFEFD0;">'
+   +'My Reports ('+ownedCount+')</span>'
+   +'<span style="display:block;font-size:10.5px;color:rgba(255,244,222,0.60);margin-top:2px;">'
+   +'Open the reports you already own</span></span>'
+   +'<span style="color:rgba(191,239,208,0.75);font-size:18px;">›</span></a>';
+}
+
 REPORTS.forEach(function(r){
-  var p=PRICES[r.k];
+  var owned=!!OWNED[r.id];
   var chips=r.chips.map(function(c){return '<span class="chip">'+c+'</span>';}).join('');
+  // An owned card must never look buyable again: no price, no discount, and a
+  // link into the report rather than into the buy flow.
+  var href = owned ? 'reports.html#'+r.id : ('buy.html?r='+r.id);
+  var priceBlock = owned
+    ? '<span class="cta" style="background:linear-gradient(120deg,#4A7C59,#2E7D46);color:#EAFFEF;">Open your report →</span>'
+    : '<span class="was">₹'+r.was+'</span><span class="now">₹'+r.now+'</span>'
+      +'<span class="off">'+reportDiscount(r.id)+'</span>'
+      +'<span class="cta">'+(r.hero?'Get My Report →':'View →')+'</span>';
+  var ownedTag = owned
+    ? '<div style="position:absolute;top:12px;right:12px;background:rgba(74,124,89,0.90);color:#EAFFEF;'
+      +'font-size:9.5px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:20px;">OWNED</div>' : '';
   if(r.hero){
-    h+='<a class="hero" href="buy.html?r='+r.k+'">'
-      +'<div class="ribbon">🔥 MOST POPULAR</div>'
+    h+='<a class="hero" id="'+r.anchor+'" href="'+href+'" style="position:relative;">'
+      +(owned?ownedTag:'<div class="ribbon">🔥 MOST POPULAR</div>')
       +'<div class="h-row"><div class="h-ico">'+r.ico+'</div><div>'
       +'<div class="h-title">'+r.hi+'</div><div class="h-en">'+r.en+'</div></div></div>'
       +'<div class="hook">'+r.hook+'</div>'
       +'<div class="chips">'+chips+'</div>'
-      +'<div class="buy"><span class="was">₹'+p.was+'</span><span class="now">₹'+p.now+'</span>'
-      +'<span class="off">'+pct(p)+'</span><span class="cta">Get My Report →</span></div>'
-      +'<div class="vline">✨ Personalized analysis from your own birth chart</div>'
+      +'<div class="buy">'+priceBlock+'</div>'
+      +'<div class="vline">'+(owned?'✅ Already yours — open it any time'
+                                    :'✨ Personalized analysis from your own birth chart')+'</div>'
       +'</a>';
   } else {
-    h+='<a class="rep" href="buy.html?r='+r.k+'">'
+    h+='<a class="rep" id="'+r.anchor+'" href="'+href+'" style="position:relative;">'
+      +ownedTag
       +'<div class="r-top"><div class="r-ico">'+r.ico+'</div><div>'
       +'<div class="r-title">'+r.hi+'</div><div class="r-en">'+r.en+'</div></div></div>'
       +'<div class="hook r-hook">'+r.hook+'</div>'
       +'<div class="r-chips">'+chips+'</div>'
-      +'<div class="r-buy"><span class="was">₹'+p.was+'</span><span class="now">₹'+p.now+'</span>'
-      +'<span class="off">'+pct(p)+'</span><span class="cta">View →</span></div>'
+      +'<div class="r-buy">'+priceBlock+'</div>'
       +'</a>';
   }
 });
