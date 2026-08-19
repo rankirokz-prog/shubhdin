@@ -14,6 +14,7 @@ delete process.env.RZP_WEBHOOK_SECRET;
 
 const calls = [];
 let ORDERS = []; // rows the stub "table" returns
+let PDFS = [];   // reports whose cached PDF "exists" in storage
 
 global.fetch = async (url, opts) => {
   url = String(url);
@@ -21,6 +22,11 @@ global.fetch = async (url, opts) => {
   if (url.includes('/auth/v1/user')) {
     const tok = (opts.headers.Authorization || '').replace('Bearer ', '');
     return { json: async () => tok === 'good' ? { id: 'u1' } : {} };
+  }
+  if (url.includes('/storage/v1/object/public/')) {
+    const m = url.match(/reports\/[^/]+\/(\w+)\.pdf/);
+    const exists = m && PDFS.includes(m[1]);
+    return { ok: !!exists };
   }
   if (url.includes('/rest/v1/orders')) {
     if (opts && opts.method === 'POST') { return { ok: true, text: async () => '[]' }; }
@@ -55,6 +61,7 @@ const CASES = [
         { uid: 'u1', report: 'annual', status: 'paid', order_code: 'B', created_at: '2026-02-01' },
         { uid: 'u1', report: 'love', status: 'created', order_code: 'C', created_at: '2026-03-01' }
       ];
+      PDFS = [];
       const r = await call('GET', { list: '1', uid: 'u1', access_token: 'good' });
       const names = (r.body.reports || []).map(x => x.report).sort().join(',');
       return r.code === 200 && r.body.ok === true && names === 'annual,marriage';
@@ -75,6 +82,26 @@ const CASES = [
     async go() {
       const r = await call('GET', { list: '1', uid: 'u1', access_token: 'good' });
       return r.code === 200;
+    } },
+  { n: 'list=1 includes pdf_url only for reports whose cached PDF exists',
+    async go() {
+      ORDERS = [
+        { uid: 'u1', report: 'marriage', status: 'paid', order_code: 'A', created_at: '2026-01-01' },
+        { uid: 'u1', report: 'annual', status: 'paid', order_code: 'B', created_at: '2026-02-01' }
+      ];
+      PDFS = ['marriage'];
+      const r = await call('GET', { list: '1', uid: 'u1', access_token: 'good' });
+      const m = r.body.reports.find(x => x.report === 'marriage');
+      const a = r.body.reports.find(x => x.report === 'annual');
+      return r.code === 200 && typeof m.pdf_url === 'string' &&
+             m.pdf_url.includes('/reports/u1/marriage.pdf') && a.pdf_url === undefined;
+    } },
+  { n: 'list=1 pdf_url carries the download filename param',
+    async go() {
+      ORDERS = [{ uid: 'u1', report: 'career', status: 'paid', order_code: 'C', created_at: '2026-01-01' }];
+      PDFS = ['career'];
+      const r = await call('GET', { list: '1', uid: 'u1', access_token: 'good' });
+      return r.body.reports[0].pdf_url.includes('download=Shubh-Din-career-report.pdf');
     } },
   { n: 'UNCHANGED: check=1 still requires report — missing report → 400',
     async go() {
