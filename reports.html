@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark only">
+<title>मेरी रिपोर्ट्स — शुभ दिन</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--gold:#D4A843;--bgold:#E8BE5A;--saffron:#FF6B1A;--cream:#FFF4DE;}
+body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.9);
+ background:linear-gradient(165deg,#0D0500 0%,#241005 45%,#0D0500 100%);
+ padding:0 18px calc(34px + env(safe-area-inset-bottom));}
+.dev{font-family:'Tiro Devanagari Hindi',serif;}
+.hdr{display:flex;align-items:center;gap:11px;padding:16px 0 4px;}
+.back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;
+ color:rgba(212,168,67,0.85);font-size:18px;cursor:pointer;flex-shrink:0;}
+.h-t{font-size:17px;color:var(--gold);font-weight:600;}
+.h-s{font-size:10px;color:rgba(255,244,222,0.45);margin-top:1px;}
+.wrap{max-width:420px;margin:0 auto;}
+.card{border:1px solid rgba(212,168,67,0.26);border-radius:16px;padding:14px 15px;margin-bottom:11px;
+ background:linear-gradient(150deg,rgba(212,168,67,0.09),transparent);}
+.c-top{display:flex;align-items:center;gap:12px;}
+.c-ic{font-size:26px;flex-shrink:0;}
+.c-t1{font-size:15px;font-weight:600;color:var(--cream);}
+.c-t2{font-size:10.5px;color:rgba(255,244,222,0.52);margin-top:2px;}
+.c-meta{font-size:10px;color:rgba(212,168,67,0.62);margin-top:8px;letter-spacing:0.3px;}
+.btn{width:100%;margin-top:11px;padding:13px;border:none;border-radius:12px;font-size:14.5px;font-weight:600;
+ cursor:pointer;background:linear-gradient(120deg,var(--gold),#B8892F);color:#1A0D00;font-family:'Poppins',sans-serif;}
+.btn.sec{background:rgba(255,255,255,0.08);color:var(--cream);border:1px solid rgba(212,168,67,0.32);
+ font-weight:500;font-size:13px;padding:11px;margin-top:8px;}
+.btn:active{transform:scale(0.985);}
+.btn[disabled]{opacity:0.6;}
+.empty{text-align:center;padding:9vh 6px 0;}
+.empty .big{font-size:46px;}
+.empty .t{font-size:17px;color:var(--cream);font-weight:600;margin-top:15px;}
+.empty .s{font-size:12.5px;color:rgba(255,244,222,0.58);margin-top:11px;line-height:1.8;}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:11px;background:#fff;color:#1F1F1F;}
+.gbtn img{width:20px;height:20px;}
+.err{font-size:11.5px;color:#F2A08F;margin-top:9px;line-height:1.6;}
+.note{font-size:10px;color:rgba(255,244,222,0.33);text-align:center;margin-top:20px;line-height:1.7;}
+.spin{display:inline-block;animation:sp 1s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <button class="back" onclick="goBack()">←</button>
+  <div><div class="h-t dev" id="hTitle">मेरी रिपोर्ट्स</div>
+       <div class="h-s" id="hSub">आपकी खरीदी हुई रिपोर्ट्स</div></div>
+</div>
+<div class="wrap" id="root"></div>
+<div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.22);font-family:monospace;">reports R1</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="report-catalog.js"></script>
+<script>
+'use strict';
+/* ══════════════════════════════════════════════════════════════════
+   MY REPORTS — Door 2 of owned-contract.md
+
+   Unlike premium.html (localStorage only, deliberately), this page IS allowed
+   to hit the server: it is where the authoritative answer lives. If the local
+   record is empty but the buyer has an account, ?list=1 restores it.
+
+   Rules taken straight from the contract:
+     · sdOwnedRead() is copied verbatim (it lives in report-catalog.js) — a
+       corrupt record reads as [] and never throws.
+     · pdf_url ABSENT does not mean no PDF. It means this device has not
+       fetched the URL yet, so "Open" asks the server, which returns the
+       cached PDF instantly when one exists.
+     · "Open" never routes into the buy flow. A paid report must never send
+       its owner back to a payment page.
+   ══════════════════════════════════════════════════════════════════ */
+var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
+/* The owned list is local-first, so the page must render even if the Supabase
+   CDN is slow, blocked or offline. Creating the client unguarded threw and
+   killed the whole script — a buyer on a bad connection saw a blank page
+   instead of the reports already on their phone. Auth is an enhancement here,
+   not a prerequisite. */
+var sb=null;
+try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SB_URL,SB_ANON); }
+catch(e){ sb=null; }
+var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+var H=(U.lang||'hi')==='hi';
+var SESSION=null;
+function $(id){return document.getElementById(id);}
+function t(hi,en){return H?hi:en;}
+
+/* Same read-body-first guard buy.html uses: the service worker answers /api/
+   with an empty 503 when offline, so a bare r.json() throws parser noise
+   instead of a reason the buyer can act on. */
+async function apiJson(r){
+  var txt='';
+  try{txt=await r.text();}catch(e){}
+  if(!txt) throw new Error(t('सर्वर से संपर्क नहीं हो सका। इंटरनेट जाँचकर दोबारा कोशिश करें।',
+                             'Could not reach the server. Check your connection and try again.'));
+  try{return JSON.parse(txt);}
+  catch(e){ throw new Error(t('सर्वर से अप्रत्याशित उत्तर मिला।','Unexpected response from the server.')); }
+}
+
+/* Merge semantics per the contract: never overwrite an existing pdf_url. */
+function ownedWrite(report,orderCode,pdfUrl,date){
+  try{
+    var a=sdOwnedRead(), f=null;
+    for(var i=0;i<a.length;i++) if(a[i].report===report){f=a[i];break;}
+    if(!f){ f={report:report,date:date||new Date().toISOString().slice(0,10)}; a.push(f); }
+    if(orderCode) f.order_code=orderCode;
+    if(pdfUrl && !f.pdf_url) f.pdf_url=pdfUrl;
+    localStorage.setItem('sd_owned_reports',JSON.stringify(a));
+  }catch(e){}
+}
+function buyDetails(id){
+  try{ return JSON.parse(localStorage.getItem('sd_buy_'+id)||'null'); }catch(e){ return null; }
+}
+function goBack(){
+  if(document.referrer && document.referrer.indexOf(location.host)>-1) history.back();
+  else location.href='premium.html';
+}
+function fmtDate(d){
+  if(!d) return '';
+  try{ var x=new Date(d+(d.length===10?'T00:00:00':''));
+       if(isNaN(x)) return d;
+       return x.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short',year:'numeric'});
+  }catch(e){ return d; }
+}
+
+/* ── render ── */
+function render(){
+  var owned=sdOwnedRead().filter(function(o){return reportById(o.report);});
+  var root=$('root');
+  $('hTitle').textContent=t('मेरी रिपोर्ट्स','My Reports');
+  $('hSub').textContent=t('आपकी खरीदी हुई रिपोर्ट्स','Reports you own');
+
+  if(!owned.length){ root.innerHTML=emptyHTML(); return; }
+
+  root.innerHTML=owned.map(function(o){
+    var r=reportById(o.report);
+    var canView=!!buyDetails(o.report);   // on-screen reopen needs the local inputs
+    return '<div class="card" id="row-'+r.id+'">'
+      +'<div class="c-top"><div class="c-ic">'+r.ico+'</div>'
+      +'<div><div class="c-t1 dev">'+(H?r.hi:r.en)+'</div>'
+      +'<div class="c-t2">'+(H?r.en:r.hi)+'</div></div></div>'
+      +'<div class="c-meta">'
+        +(o.date?t('खरीदा: ','Purchased: ')+fmtDate(o.date):'')
+        +(o.order_code?' · '+o.order_code:'')
+      +'</div>'
+      +'<button class="btn" id="open-'+r.id+'" onclick="openReport(\''+r.id+'\')">'
+      +'📄 '+t('रिपोर्ट खोलें','Open your report')+'</button>'
+      /* Bonus only. On a cleared or different phone the stored inputs are gone
+         and this would land on an empty form, so it is hidden there. */
+      +(canView?'<button class="btn sec" onclick="viewOnScreen(\''+r.id+'\')">👁️ '
+        +t('स्क्रीन पर देखें','View on screen')+'</button>':'')
+      +'<div class="err" id="err-'+r.id+'" style="display:none;"></div>'
+      +'</div>';
+  }).join('')
+  + '<div class="note">'+t('रिपोर्ट्स आपके खाते से जुड़ी हैं — कभी भी दोबारा खोल सकते हैं।',
+                           'Your reports stay linked to your account — reopen them any time.')+'</div>';
+
+  if(location.hash){
+    var el=document.getElementById('row-'+location.hash.slice(1));
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+function emptyHTML(){
+  return '<div class="empty"><div class="big">📁</div>'
+   +'<div class="t dev">'+t('अभी कोई रिपोर्ट नहीं','No reports yet')+'</div>'
+   +'<div class="s">'+t('यहाँ आपकी खरीदी हुई रिपोर्ट्स दिखेंगी — कभी भी खोल सकते हैं।',
+                        'Reports you buy will appear here, ready to open any time.')+'</div>'
+   /* The record can be empty simply because this is a new phone. Signing in
+      restores it from the orders table, so offer that before offering to sell. */
+   +(SESSION
+      ? '<div class="s" id="syncMsg">'+t('आपके खाते में कोई खरीदी हुई रिपोर्ट नहीं मिली।',
+                                         'No purchases found on your account.')+'</div>'
+      : '<button class="btn gbtn" onclick="signIn()" style="margin-top:22px;">'
+        +'<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">'
+        +'<span>'+t('रिपोर्ट वापस पाने के लिए साइन इन करें','Bought a report? Sign in to restore')+'</span></button>')
+   +'<button class="btn sec" onclick="location.href=\'premium.html\'" style="margin-top:10px;">'
+   +t('रिपोर्ट्स देखें','Browse reports')+'</button>'
+   +'<div class="err" id="errTop" style="display:none;"></div></div>';
+}
+
+/* ── open: PDF first, exactly as the contract decides ── */
+async function openReport(id){
+  var btn=$('open-'+id), err=$('err-'+id);
+  if(err){err.style.display='none';}
+  var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
+  if(!rec) return;
+
+  // 1 · this device already knows the URL
+  if(rec.pdf_url){ location.href=rec.pdf_url; return; }
+
+  // 2 · it does not — but the server may already hold a cached PDF.
+  //     Absence of pdf_url is NOT absence of a PDF.
+  if(!SESSION){
+    showErr(err,t('रिपोर्ट खोलने के लिए साइन इन करें।','Please sign in to open this report.'));
+    return;
+  }
+  var d=buyDetails(id);
+  if(!d){
+    // The server needs the birth details to render, and this device no longer
+    // has them. Ownership is intact; we just cannot rebuild the PDF from here.
+    showErr(err,t('इस फ़ोन पर जन्म विवरण नहीं मिला। जिस फ़ोन से खरीदा था वहाँ से खोलें, या सहायता से संपर्क करें।',
+                  'The birth details are not on this phone. Open it on the phone you bought from, or contact support.'));
+    return;
+  }
+  var label=btn.textContent;
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin">⏳</span> '+t('रिपोर्ट तैयार हो रही है…','Preparing your report…');
+  try{
+    var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({report:id,uid:SESSION.user.id,access_token:SESSION.access_token,
+                           details:d,lang:H?'hi':'en'})});
+    var j=await apiJson(r);
+    if(j&&j.ready&&j.url){
+      ownedWrite(id,rec.order_code,j.url,rec.date);   // backfill for next time
+      btn.disabled=false; btn.textContent=label;
+      location.href=j.url;
+    }else{
+      btn.disabled=false; btn.textContent=t('फिर कोशिश करें →','Try again →');
+      showErr(err,(j&&(j.detail||j.error))||t('रिपोर्ट नहीं बन सकी।','Could not prepare the report.'));
+    }
+  }catch(e){
+    btn.disabled=false; btn.textContent=t('फिर कोशिश करें →','Try again →');
+    showErr(err,e.message);
+  }
+}
+function viewOnScreen(id){ location.href=id+'-report.html?autoview=1'; }
+function showErr(el,msg){ if(!el)return; el.textContent=msg; el.style.display='block'; }
+
+/* ── sign-in and server restore ── */
+function signIn(){
+  if(!sb){ showErr($('errTop'),t('साइन इन अभी उपलब्ध नहीं — इंटरनेट जाँचें।',
+                                 'Sign-in is unavailable right now — check your connection.')); return; }
+  var rto=location.origin+location.pathname;
+  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:rto}})
+   .then(function(r){ if(r.error) showErr($('errTop'),r.error.message); });
+}
+function absorbHash(){
+  if(!sb) return Promise.resolve(null);
+  if(location.hash.indexOf('access_token=')>-1){
+    try{ var hp=new URLSearchParams(location.hash.slice(1));
+      var at=hp.get('access_token'), rt=hp.get('refresh_token');
+      if(at&&rt) return sb.auth.setSession({access_token:at,refresh_token:rt});
+    }catch(e){}
+  }
+  return Promise.resolve(null);
+}
+/* The self-heal. Contract merge semantics: write results back, never clobber
+   an existing pdf_url. Runs on every signed-in visit, not only when empty —
+   a report bought on another phone should appear here too. */
+async function restoreFromServer(){
+  if(!SESSION) return;
+  try{
+    var r=await fetch('/api/order?list=1&uid='+SESSION.user.id
+                      +'&access_token='+encodeURIComponent(SESSION.access_token));
+    var j=await apiJson(r);
+    if(j && Array.isArray(j.reports)){
+      j.reports.forEach(function(o){
+        ownedWrite(o.report,o.order_code,null,(o.paid_at||'').slice(0,10));
+      });
+      render();
+    }
+  }catch(e){
+    var m=$('syncMsg'); if(m) m.textContent=e.message;
+  }
+}
+/* ── boot ── */
+render();                                  // paint from localStorage immediately
+absorbHash().then(function(){
+  return sb ? sb.auth.getSession() : null;   // no client → stay local-only
+}).then(function(r){
+  SESSION=(r&&r.data&&r.data.session)||null;
+  if(SESSION){
+    try{ history.replaceState(null,'',location.pathname+location.hash.replace(/access_token=[^&]*/,'')); }catch(e){}
+    restoreFromServer();
+  }else{
+    render();                              // repaint so the sign-in offer shows
+  }
+}).catch(function(){});
+</script>
+</body>
+</html>
