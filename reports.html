@@ -28,6 +28,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 .c-meta{font-size:10px;color:rgba(212,168,67,0.62);margin-top:8px;letter-spacing:0.3px;}
 .btn{width:100%;margin-top:11px;padding:13px;border:none;border-radius:12px;font-size:14.5px;font-weight:600;
  cursor:pointer;background:linear-gradient(120deg,var(--gold),#B8892F);color:#1A0D00;font-family:'Poppins',sans-serif;}
+.btn.sec.retry{border-style:dashed;}
 .btn.sec{background:rgba(255,255,255,0.08);color:var(--cream);border:1px solid rgba(212,168,67,0.32);
  font-weight:500;font-size:13px;padding:11px;margin-top:8px;}
 .btn:active{transform:scale(0.985);}
@@ -154,6 +155,10 @@ function render(){
       +(canView?'<button class="btn sec" onclick="viewOnScreen(\''+r.id+'\')">👁️ '
         +t('स्क्रीन पर देखें','View on screen')+'</button>':'')
       +'<div class="err" id="err-'+r.id+'" style="display:none;"></div>'
+      /* Shown only after the above fires. Safe: it re-reads the server list,
+         which is where a pdf_url will appear once one exists. No buy flow. */
+      +'<button class="btn sec retry" id="again-'+r.id+'" style="display:none;" onclick="checkAgain(\''+r.id+'\')">'
+      +'🔄 '+t('दोबारा जाँचें','Check again')+'</button>'
       +'</div>';
   }).join('')
   + '<div class="note">'+t('रिपोर्ट्स आपके खाते से जुड़ी हैं — कभी भी दोबारा खोल सकते हैं।',
@@ -192,18 +197,26 @@ async function openReport(id){
   // 1 · this device already knows the URL
   if(rec.pdf_url){ location.href=rec.pdf_url; return; }
 
-  // 2 · it does not — but the server may already hold a cached PDF.
-  //     Absence of pdf_url is NOT absence of a PDF.
-  if(!SESSION){
-    showErr(err,t('रिपोर्ट खोलने के लिए साइन इन करें।','Please sign in to open this report.'));
-    return;
-  }
+  /* 2 · No local URL. Order matters here: a missing sd_buy_<report> is the
+     more specific blocker, because being signed in does not help render a
+     report whose birth details this device no longer has — only an existing
+     server-side PDF does, and "Check again" is what fetches that. Testing the
+     session first hid this behind a less useful "please sign in". */
   var d=buyDetails(id);
   if(!d){
-    // The server needs the birth details to render, and this device no longer
-    // has them. Ownership is intact; we just cannot rebuild the PDF from here.
-    showErr(err,t('इस फ़ोन पर जन्म विवरण नहीं मिला। जिस फ़ोन से खरीदा था वहाँ से खोलें, या सहायता से संपर्क करें।',
-                  'The birth details are not on this phone. Open it on the phone you bought from, or contact support.'));
+    /* Ownership self-heals from the server; sd_buy_<report> does not, so this
+       device can OPEN an existing PDF but cannot ask the server to render one.
+       "Contact support" was the wrong ending — support is Ram on WhatsApp at
+       the petrol bunk, and every such message is his evening. Explain the
+       mechanism so the buyer can resolve it themselves. */
+    showErr(err,t('इस रिपोर्ट की PDF अभी बनी नहीं है। जिस फ़ोन से खरीदा था वहाँ एक बार खोल लें — उसके बाद यह हर जगह काम करेगी।',
+                  "This report's PDF hasn't been created yet. Open it once on the phone you bought from — after that it works everywhere."));
+    var again=$('again-'+id);
+    if(again) again.style.display='block';
+    return;
+  }
+  if(!SESSION){
+    showErr(err,t('रिपोर्ट बनाने के लिए साइन इन करें।','Please sign in to prepare this report.'));
     return;
   }
   var label=btn.textContent;
@@ -228,6 +241,19 @@ async function openReport(id){
   }
 }
 function viewOnScreen(id){ location.href=id+'-report.html?autoview=1'; }
+/* Re-asks the server. Once the buy side returns pdf_url in the list=1 payload,
+   this is all a new phone ever needs — the PDF was cached at first render. */
+async function checkAgain(id){
+  var err=$('err-'+id), btn=$('again-'+id);
+  if(!SESSION){ showErr(err,t('पहले साइन इन करें।','Please sign in first.')); return; }
+  btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+t('जाँच रहे हैं…','Checking…');
+  await restoreFromServer();
+  var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
+  if(rec&&rec.pdf_url){ location.href=rec.pdf_url; return; }
+  btn.disabled=false; btn.innerHTML='🔄 '+t('दोबारा जाँचें','Check again');
+  showErr(err,t('अभी तक PDF तैयार नहीं है। जिस फ़ोन से खरीदा था वहाँ एक बार खोलें।',
+                'No PDF is ready yet. Open it once on the phone you bought from.'));
+}
 function showErr(el,msg){ if(!el)return; el.textContent=msg; el.style.display='block'; }
 
 /* ── sign-in and server restore ── */
