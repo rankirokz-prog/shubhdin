@@ -4690,23 +4690,57 @@ function pgFmt(x){ if(!x) return ''; var d=new Date(x);
 function pgRange(w){ return w?(pgFmt(w.start)+'–'+pgFmt(w.end)):''; }
 /* Shape engine output into the flat form this page already renders, so every
    existing DOM write below keeps working without change. */
+/* THE single payload builder. Home, the Full Panchang tab and every calendar
+   date all render from this one shape, so a single cache key can never hold
+   two different shapes again — which is exactly what hid the transition times:
+   Home wrote a thin object over the calendar's rich one under the same key. */
+function buildPayload(q){
+  if(!q) return null;
+  function segs(arr){ return (arr||[]).map(function(s){ return {n:(H?s.hi:s.en), end:(s.end?pgFmt(s.end):'')}; }); }
+  function win(w){ return w?{s:pgFmt(w.start),e:pgFmt(w.end)}:null; }
+  function wins(a){ return (a||[]).map(win).filter(Boolean); }
+  var mine=null;
+  try{
+    var myNak=(U.nakshatra||'').toLowerCase(), myRas=(U.rashi||'').toLowerCase();
+    var tb=q.tarabalam&&q.tarabalam[0], cb=q.chandrabalam&&q.chandrabalam[0];
+    if(myNak&&tb&&tb.all){
+      var row=tb.all.filter(function(x){return x.en.toLowerCase()===myNak;})[0];
+      if(row) mine={taraGood:!!row.good, tara:row.taraEn, verdict:row.verdict};
+    }
+    if(myRas&&cb&&cb.good){
+      var ok=cb.good.some(function(r){return (r.en||'').toLowerCase()===myRas;});
+      mine=mine||{}; mine.chandraGood=ok; mine.moonIn=(H?cb.dayRashi.hi:cb.dayRashi.en);
+    }
+  }catch(e){}
+  return {
+    v:2, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
+    tithi:(H?q.tithi.hi:q.tithi.en),
+    tithi_paksha:(q.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
+    tithi_end:pgFmt(q.tithi.end),
+    nakshatra:(H?q.nakshatra.hi:q.nakshatra.en),
+    nakshatra_ruler:(q.nakshatra.lord?(H?q.nakshatra.lord.hi:q.nakshatra.lord.en):''),
+    nakshatra_end:pgFmt(q.nakshatra.end),
+    yoga:(H?q.yoga.hi:q.yoga.en), karana:(H?q.karana.hi:q.karana.en),
+    weekday:(H?q.vara.hi:q.vara.en),
+    sunrise:pgFmt(q.sunrise), sunset:pgFmt(q.sunset),
+    moonrise:pgFmt(q.moonrise), moonset:pgFmt(q.moonset),
+    rahu_kaal:pgRange(q.rahuKaal), gulika:pgRange(q.gulikaKaal),
+    abhijit_muhurta:pgRange(q.abhijit),
+    seg:{tithi:segs(q.tithi.segments), nak:segs(q.nakshatra.segments),
+         yoga:segs(q.yoga.segments), karana:segs(q.karana.segments)},
+    ashubh:{rahu:win(q.rahuKaal), gulika:win(q.gulikaKaal), yama:win(q.yamaganda),
+            dur:wins(q.durMuhurtam), varjyam:wins(q.varjyamAll||(q.varjyam?[q.varjyam]:[]))},
+    shubh:{abhijit:win(q.abhijit), amrit:wins(q.amritKaalAll||(q.amritKaal?[q.amritKaal]:[])),
+           brahma:win(q.brahmaMuhurta)},
+    disha:(q.dishaShool?(H?q.dishaShool.hi:q.dishaShool.en):''),
+    panchaka:(q.panchaka?(H?(q.panchaka.hi||''):(q.panchaka.en||'')):''),
+    mine:mine, clean:cleanWindowOf(q), choghadiya:q.choghadiya||null
+  };
+}
 function enginePanchang(){
   var PE=window.PanchangEngine; if(!PE) return null;
-  var c=pgCoords(), p=PE.getPanchang(new Date(),c.lat,c.lng,5.5);
-  return {
-    _p:p,
-    tithi:(H?p.tithi.hi:p.tithi.en),
-    tithi_paksha:(p.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
-    tithi_end:pgFmt(p.tithi.end),
-    nakshatra:(H?p.nakshatra.hi:p.nakshatra.en),
-    nakshatra_ruler:(p.nakshatra.lord?(H?p.nakshatra.lord.hi:p.nakshatra.lord.en):''),
-    nakshatra_end:pgFmt(p.nakshatra.end),
-    yoga:(H?p.yoga.hi:p.yoga.en), karana:(H?p.karana.hi:p.karana.en),
-    sunrise:pgFmt(p.sunrise), sunset:pgFmt(p.sunset),
-    moonrise:pgFmt(p.moonrise), moonset:pgFmt(p.moonset),
-    rahu_kaal:pgRange(p.rahuKaal), gulika:pgRange(p.gulikaKaal),
-    abhijit_muhurta:pgRange(p.abhijit), weekday:(H?p.vara.hi:p.vara.en)
-  };
+  var c=pgCoords();
+  return buildPayload(PE.getPanchang(new Date(),c.lat,c.lng,5.5));
 }
 async function fetchPanchang(){
   // Today's values do not change during the day, so a cache hit means Home
@@ -4721,8 +4755,7 @@ async function fetchPanchang(){
     var p=enginePanchang();
     if(p){
       window._panchangData=p;
-      try{ var st=Object.assign({},p); delete st._p;
-           localStorage.setItem(pgCacheKey(),JSON.stringify(st)); }catch(e){}
+      try{ localStorage.setItem(pgCacheKey(),JSON.stringify(p)); }catch(e){}
       applyPanchang(p);
       return;
     }
@@ -6057,55 +6090,12 @@ function panchangForDate(date){
   var ck='sd_pan_'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()
          +'_'+((U.city||'x')+'').toLowerCase();
   try{ var hit=JSON.parse(localStorage.getItem(ck)||'null');
-       // v2 = rich payload; a DOB change alters the personal rows, so the
-       // profile the entry was built for is part of its validity
        if(hit && hit.v===2 && hit.forNak===(U.nakshatra||'') && hit.forRas===(U.rashi||'')) return hit;
   }catch(e){}
   var PE=window.PanchangEngine; if(!PE) return null;
   try{
     var c=pgCoords();
-    var q=PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,5.5);
-    // segments → "Ashtami until 19:42, then Navami"
-    function segs(arr){
-      return (arr||[]).map(function(s){ return {n:(H?s.hi:s.en), end:(s.end?pgFmt(s.end):'')}; });
-    }
-    function win(w){ return w?{s:pgFmt(w.start),e:pgFmt(w.end)}:null; }
-    function wins(a){ return (a||[]).map(win).filter(Boolean); }
-    // personal strength for THIS date, if the user's nakshatra/rashi are known
-    var mine=null;
-    try{
-      var myNak=(U.nakshatra||'').toLowerCase(), myRas=(U.rashi||'').toLowerCase();
-      var tb=q.tarabalam&&q.tarabalam[0], cb=q.chandrabalam&&q.chandrabalam[0];
-      if(myNak&&tb&&tb.all){
-        var row=tb.all.filter(function(x){return x.en.toLowerCase()===myNak;})[0];
-        if(row) mine={taraGood:!!row.good, tara:row.taraEn, verdict:row.verdict};
-      }
-      if(myRas&&cb&&cb.good){
-        var ok=cb.good.some(function(r){return (r.en||'').toLowerCase()===myRas;});
-        mine=mine||{}; mine.chandraGood=ok;
-        mine.moonIn=(H?cb.dayRashi.hi:cb.dayRashi.en);
-      }
-    }catch(e){}
-    var out={
-      v:2, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
-      tithi:(H?q.tithi.hi:q.tithi.en),
-      tithi_paksha:(q.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
-      nakshatra:(H?q.nakshatra.hi:q.nakshatra.en), yoga:(H?q.yoga.hi:q.yoga.en),
-      karana:(H?q.karana.hi:q.karana.en), weekday:(H?q.vara.hi:q.vara.en),
-      sunrise:pgFmt(q.sunrise), sunset:pgFmt(q.sunset),
-      moonrise:pgFmt(q.moonrise), moonset:pgFmt(q.moonset),
-      rahu_kaal:pgRange(q.rahuKaal), gulika:pgRange(q.gulikaKaal),
-      abhijit_muhurta:pgRange(q.abhijit),
-      seg:{tithi:segs(q.tithi.segments), nak:segs(q.nakshatra.segments),
-           yoga:segs(q.yoga.segments), karana:segs(q.karana.segments)},
-      ashubh:{rahu:win(q.rahuKaal), gulika:win(q.gulikaKaal), yama:win(q.yamaganda),
-              dur:wins(q.durMuhurtam), varjyam:wins(q.varjyamAll||(q.varjyam?[q.varjyam]:[]))},
-      shubh:{abhijit:win(q.abhijit), amrit:wins(q.amritKaalAll||(q.amritKaal?[q.amritKaal]:[])),
-             brahma:win(q.brahmaMuhurta)},
-      disha:(q.dishaShool?(H?q.dishaShool.hi:q.dishaShool.en):''),
-      panchaka:(q.panchaka?(H?(q.panchaka.hi||''):(q.panchaka.en||'')):''),
-      mine:mine, clean:cleanWindowOf(q)
-    };
+    var out=buildPayload(PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,5.5));
     try{ localStorage.setItem(ck,JSON.stringify(out)); }catch(e){}
     return out;
   }catch(e){ return null; }
@@ -6418,7 +6408,7 @@ function renderChoghadiya(sunrise, sunset){
   // Engine first — its slots come off this city's real sunrise and sunset.
   // The local weekday tables remain only as a pre-load stand-in.
   let day, night;
-  const ep = window._panchangData && window._panchangData._p;
+  const ep = window._panchangData;
   if(ep && ep.choghadiya){
     const map=s=>({name_hi:s.hi,name_en:s.en,
       time:pgFmt(s.start)+' – '+pgFmt(s.end),
