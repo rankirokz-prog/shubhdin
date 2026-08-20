@@ -422,7 +422,13 @@ async function restoreFromServer(){
       render();
     }
   }catch(e){
-    var m=$('syncMsg'); if(m) m.textContent=e.message;
+    /* A devotee on a village connection should not be shown a raw exception
+       string like "Failed to fetch" or "network down". Say what it means and
+       what still works: their reports are safe, this device just could not
+       reach the account this minute. */
+    var m=$('syncMsg');
+    if(m) m.textContent=t('अभी आपके खाते से जुड़ नहीं पाए — इंटरनेट जाँचकर फिर देखें।',
+                          'Could not reach your account just now — check your connection and try again.');
   }
 }
 /* Exactly what this device holds, per report. Turns "it isn't downloading"
@@ -456,13 +462,29 @@ absorbHash().then(function(){
   return sb ? sb.auth.getSession() : null;   // no client → stay local-only
 }).then(function(r){
   SESSION=(r&&r.data&&r.data.session)||null;
+
+  /* Repaint the moment the session is known, on BOTH branches.
+     The old code repainted only when signed OUT. When signed IN it went
+     straight to restoreFromServer(), which repaints only if its fetch
+     succeeds AND returns a reports array — so after the Google redirect the
+     page kept showing the first paint, made while SESSION was still null,
+     which offers "Sign in to restore". The person had in fact signed in;
+     the screen simply never caught up, and leaving and reopening Settings →
+     Reports made it look correct because by then the session was ready
+     before the first paint. */
+  render();
+
   if(SESSION){
-    try{ history.replaceState(null,'',location.pathname+location.hash.replace(/access_token=[^&]*/,'')); }catch(e){}
+    /* Strip the WHOLE auth fragment, not just access_token. Removing one
+       parameter left refresh_token sitting in the address bar and in history. */
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
     restoreFromServer();
-  }else{
-    render();                              // repaint so the sign-in offer shows
   }
-}).catch(function(){});
+}).catch(function(){
+  /* Even if auth fails outright, the person must not be left looking at a
+     stale paint — localStorage reports still open without a session. */
+  render();
+});
 </script>
 </body>
 </html>
