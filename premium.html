@@ -86,7 +86,14 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
 /* Names and prices come from report-catalog.js — the single source shared with
    My Reports. They used to live here AND in buy.html, which meant the sales
    page could advertise a price the buy flow did not charge. */
-var REPORTS = REPORT_CATALOG;
+/* reportsForSale() drops anything withdrawn from sale (muhurta today) while
+   leaving reportById() intact, so a report someone already owns still resolves
+   by name, price and page and their OWNED card below still renders.
+   The typeof guard is deliberate: if this page is ever served against an older
+   cached report-catalog.js that has no reportsForSale, it falls back to the
+   full list and shows every card. A stale sales page is recoverable; a page
+   that throws here renders NO cards at all. */
+var REPORTS = (typeof reportsForSale === 'function') ? reportsForSale() : REPORT_CATALOG;
 
 /* Ownership is read from localStorage ONLY on this page — a deliberate call
    from owned-contract.md. No Supabase client on the sales page. The cost is
