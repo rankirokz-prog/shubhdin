@@ -1336,6 +1336,10 @@ route();
 (function(){
   if(typeof route!=='function'||typeof sdHashBack!=='function') return;
   sdHashBack({ route:route, home:'hub' });
+  /* Each Explore page must open at its own top; going back returns you to
+     where you were in the list you came from. */
+  if(typeof sdScrollRoutes==='function') sdScrollRoutes({ home:'hub' });
+  window.scrollTo(0,0);
 })();
 </script>
 </body>
