@@ -25,7 +25,13 @@
       route: 'buy.html?r=marriage',
       page: 'marriage-report.html',
       hook: 'Will your charts align? What your two kundlis say about compatibility, doshas and the right time to marry.',
-      chips: ['Guna Milan', 'Manglik Dosha', 'Marriage timing', 'Spouse nature', 'Shubh dates']
+      chips: ['Guna Milan', 'Manglik Dosha', 'Marriage timing', 'Shubh dates']
+      // 'Spouse nature' REMOVED. Marriage is a TWO-CHART report and never calls
+      // getLoveProfile; its six domain scores are compatibility BETWEEN two people,
+      // not a description of one spouse. Verified against the rendered PDF: 29
+      // sections, none of them spouse nature. The Love report answers that question
+      // properly (7th lord, elements, D9) and carries the 'Partner nature' chip,
+      // which IS backed — so this is a cross-sell, not a gap.
     },
     {
       id: 'love', ico: '❤️',
