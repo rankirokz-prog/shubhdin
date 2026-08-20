@@ -327,7 +327,7 @@
         <label id="dobLabel">जन्म तिथि</label>
         <span class="field-opt" id="dobOpt">वैकल्पिक</span>
       </div>
-      <input type="date" id="userDOB" onchange="onDOBChange()" max="2010-01-01" min="1940-01-01"/>
+      <input type="date" id="userDOB" onchange="onDOBChange()" min="1900-01-01" data-birthdate="1"/>
       <div class="field-hint" id="dobHint">💡 राशि की सटीक गणना के लिए</div>
     </div>
 
@@ -906,5 +906,6 @@ if('serviceWorker' in navigator){
 }
 </script>
 <div style="position:fixed;left:8px;bottom:6px;font-size:9px;color:rgba(255,255,255,0.22);z-index:99;font-family:monospace;">build L4</div>
+<script src="birthdate-guard.js"></script>
 </body>
 </html>
