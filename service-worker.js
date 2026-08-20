@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v81';
+const CACHE_NAME = 'shubhdin-v82';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -17,6 +17,7 @@ const CORE_FILES = [
   '/astronomy.min.js',
   '/panchang-engine.js',
   '/birthdate-guard.js',
+  '/nav-history.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
