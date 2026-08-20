@@ -29,6 +29,9 @@ const cut = (name) => {
   }
   throw new Error('unbalanced braces in ' + name);
 };
+const BADDATE  = cut('function sdBadDate(');
+const DATEMSG  = cut('function sdDateMsg(');
+const BADD     = cut('function badDate(');
 const SUBMIT   = cut('async function submitDetails()');
 const MISSD    = cut('function missD()');
 const SUNRISE  = cut('async function sunriseIST(');
@@ -44,6 +47,8 @@ function run(sc) {
     C: sc.C, R: sc.R, H: false,
     CPICK: sc.CPICK || {},
     $: el,
+    SD_TODAY: '2026-08-20',
+    bdlog: () => {},   // logging is a no-op under test
     val: (id) => (els[id] ? String(els[id].value).trim() : ''),
     geo: async () => sc.geoWorks ? sc.geo : null,
     loadEngine: async () => sc.engineBroken ? Promise.reject(new Error('load failed')) : PE,
@@ -55,6 +60,9 @@ function run(sc) {
   const fn = new Function('S', `
     with (S) {
       ${NOTIMEON}
+      ${BADDATE}
+      ${DATEMSG}
+      ${BADD}
       ${MISSD}
       ${SUNRISE}
       ${SUBMIT}
@@ -74,7 +82,7 @@ function run(sc) {
 // safeguard here — a generic note on a marriage report would understate it.
 function renderNote(C, H) {
   const PERSON = cut('function person(');
-  const S = { C, H };
+  const S = { C, H, SD_TODAY: '2026-08-20' };
   const fn = new Function('S', `with (S) { ${PERSON} return person('b','x'); }`);
   const html = fn(S);
   const i = html.indexOf('id="ntNote_b"');
@@ -158,11 +166,17 @@ const CASES = [
     expect: r => r.proceeded && HHMM.test(r.stored.btime) && r.stored.gtime === '11:10' &&
                  r.stored.timeUnknownB === true && r.stored.timeUnknownG === undefined },
 
-  { n: 'annual: unknown time still mirrors clat/clng from birth coords',
-    R: 'annual', C: {}, ticked: ['p'],
-    fields: { ...BASE, pplace: 'Delhi' }, geoWorks: true, geo: { lat: 28.6139, lng: 77.209 },
-    expect: r => r.proceeded && HHMM.test(r.stored.btime) &&
-                 r.stored.clat === r.stored.blat && r.stored.clng === r.stored.blng },
+  { n: 'annual: sunrise uses BIRTH coords, not the residence coords',
+    R: 'annual', C: { residence: true }, ticked: ['p'],
+    fields: { ...BASE, pplace: 'Delhi', cplace: 'Bengaluru' },
+    CPICK: { p: { lat: 28.6139, lng: 77.209 }, c: { lat: 12.9716, lng: 77.5946 } },
+    expect: r => {
+      const p = PE.getPanchang(new Date(Date.UTC(1990, 3, 12, 6, 0, 0)), 28.6139, 77.209);
+      const ist = new Date(p.sunrise.getTime() + 5.5 * 3600000);
+      const want = ('0' + ist.getUTCHours()).slice(-2) + ':' + ('0' + ist.getUTCMinutes()).slice(-2);
+      return r.proceeded && r.stored.btime === want &&
+             r.stored.clat === 12.9716 && r.stored.clat !== r.stored.blat;
+    } },
 
   { n: 'sunrise is a plausible clock time, not a UTC artefact (04:00–08:00 IST)',
     R: 'career', C: { gender: true }, ticked: ['p'],
