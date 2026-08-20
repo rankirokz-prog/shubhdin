@@ -130,7 +130,13 @@ var CFG={
  love:    {ic:'❤️',hi:'प्रेम रिपोर्ट',en:'Love & Relationship',was:499,now:199,gender:true},
  career:  {ic:'💼',hi:'करियर रिपोर्ट',en:'Career & Wealth',was:499,now:199,gender:true},
  child:   {ic:'👶',hi:'संतान रिपोर्ट',en:'Child & Family',was:499,now:199,gender:true},
- muhurta: {ic:'🕉️',hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',was:499,now:199},
+ /* muhurta: WITHDRAWN from sale (Aug 2026). Activity variants overlap 60–80%
+    on dates, so the paid report couldn't clear the honest-ceiling bar against
+    the free Explore finder. Removing it from CFG is the block: any old link,
+    bookmark or WhatsApp forward to ?r=muhurta now fails the CFG check below
+    and bounces to premium.html instead of taking money for a withdrawn report.
+    To restore: re-add the line below and re-add fromd/tod/activity collection.
+    muhurta: {ic:'🕉️',hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',was:499,now:199}, */
  annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199,residence:true},
  forecast:{ic:'🔮',hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',was:599,now:299}
 };
@@ -166,7 +172,19 @@ async function apiJson(r){
   }
 }
 bdlog('boot '+SD_BUILD+' r='+R+' path='+location.pathname+' q='+location.search.slice(0,20)+(location.hash.indexOf('access_token=')>-1?' hash=token':''));
-if(!CFG[R]){bdlog('no report id → premium.html');location.replace('premium.html');}
+var WITHDRAWN=['muhurta']; /* sold previously; links must not resolve to checkout */
+if(!CFG[R]){
+  /* a stale sd_buy_last for a withdrawn report would otherwise bounce the buyer
+     every time they open buy.html with no ?r= — clear it on the way out. */
+  if(WITHDRAWN.indexOf(R)>-1){try{localStorage.removeItem('sd_buy_last');}catch(e){}}
+  bdlog(WITHDRAWN.indexOf(R)>-1?('withdrawn report '+R+' → premium.html'):'no report id → premium.html');
+  location.replace('premium.html');
+  /* location.replace QUEUES navigation — it does not stop this script. Without
+     halting here the rest of the page still runs and paints a working checkout
+     for a withdrawn report until the new document loads, which on a slow
+     connection is seconds, not milliseconds. Throwing ends the inline script. */
+  throw new Error('shubhdin: no saleable report for "'+R+'" — redirecting');
+}
 var C=CFG[R]||{};
 $('hTitle').textContent=H?C.hi:C.en;
 $('sIco').textContent=C.ic; $('sT1').textContent=H?C.hi:C.en; $('sT2').textContent=H?C.en:C.hi;
