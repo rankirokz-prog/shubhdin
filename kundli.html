@@ -118,7 +118,26 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 'use strict';
 var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
-var sb=window.supabase.createClient(SB_URL,SB_ANON);
+/* The free Kundli is the acquisition page, so it must render even when the
+   Supabase CDN is slow, blocked or offline. Creating the client unguarded
+   threw and killed the whole script — a first-time visitor on a bad connection
+   saw a blank page instead of the form. Auth is an enhancement here: the
+   report generates on-device, and sign-in only adds the server PDF. */
+var sb=null;
+try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SB_URL,SB_ANON); }
+catch(e){ sb=null; }
+/* Every sbAuth().* call goes through this, so a missing client is a no-op
+   rather than a thrown error at nine separate call sites. */
+function sbAuth(){
+  if(sb&&sb.auth) return sb.auth;
+  return { getSession:function(){ return Promise.resolve({data:{session:null}}); },
+           setSession:function(){ return Promise.resolve({data:{session:null}}); },
+           onAuthStateChange:function(){ return {data:{subscription:{unsubscribe:function(){}}}}; },
+           signInWithOAuth:function(){
+             dlog('signIn blocked: auth client unavailable');
+             return Promise.resolve({error:{message:(H?'साइन इन सेवा लोड नहीं हो सकी। इंटरनेट जाँचकर पेज दोबारा खोलें।':'Sign-in service could not load. Check your connection and reload.')}});
+           } };
+}
 function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]');
   a.push(new Date().toISOString().slice(11,19)+' '+m);if(a.length>40)a=a.slice(-40);
   localStorage.setItem('shubhdin_auth_debug',JSON.stringify(a));}catch(e){}
@@ -126,7 +145,7 @@ function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug'
 function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
   try{pnl.textContent=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]').join('\n');}catch(e){}}
 dlog('KUNDLI boot K9 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
-sb.auth.onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
+sbAuth().onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
 
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
 var H=(U.lang||'hi')==='hi';
@@ -216,7 +235,7 @@ function submitDetails(){
 
 /* ── 2 · google gate (Supabase OAuth) ── */
 function checkAuthThen(){
-  sb.auth.getSession().then(function(r){
+  sbAuth().getSession().then(function(r){
     if(r.data&&r.data.session)startPrep(r.data.session.user);
     else show('stAuth');
   });
@@ -224,7 +243,7 @@ function checkAuthThen(){
 function googleSignIn(){
   var rto=location.origin+location.pathname;
   dlog('signIn click, redirectTo='+rto);
-  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:rto}})
+  sbAuth().signInWithOAuth({provider:'google',options:{redirectTo:rto}})
    .then(function(r){if(r.error){dlog('signIn ERROR: '+r.error.message);
      $('errAuth').textContent=r.error.message;$('errAuth').style.display='block';}
      else dlog('signIn: redirecting to Google…');});
@@ -277,7 +296,7 @@ function finishPrep(email){
 var PDF_URL=localStorage.getItem('shubhdin_kundli_pdf')||null;
 function requestServerPdf(){
   if(PDF_URL)return;
-  sb.auth.getSession().then(function(r){
+  sbAuth().getSession().then(function(r){
     var sess=r.data&&r.data.session; if(!sess)return;
     var det=null; try{det=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');}catch(e){}
     if(!det)return;
@@ -294,15 +313,64 @@ function requestServerPdf(){
   });
 }
 function updateDlBtn(){var b=$('rdBtn');if(b&&PDF_URL){b.textContent=H?'⬇️ PDF डाउनलोड करें (260 पन्ने)':'⬇️ Download PDF (260 pages)';}}
+/* ══════════════════════════════════════════════════════════════════
+   OPENING THE PDF FROM AN INSTALLED PWA
+
+   `location.href = PDF_URL` works in a browser tab and SILENTLY DOES NOTHING
+   once the app is launched from the home-screen icon — a documented
+   standalone-PWA behaviour, not a problem with the file. The button appears to
+   work, the app navigates, and no file ever arrives.
+
+   An anchor with target=_blank hands the URL to the browser/OS instead of
+   trying to navigate the app shell. Failure cannot be detected, so a visible
+   manual link is always left behind.
+
+   Same fix as reports.html; kept identical so the two do not drift.
+   ══════════════════════════════════════════════════════════════════ */
+function kIsStandalone(){
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+      || window.navigator.standalone===true;
+}
+function kOpenPdf(url){
+  try{
+    var a=document.createElement('a');
+    a.href=url; a.target='_blank'; a.rel='noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  }catch(e){
+    try{ window.open(url,'_blank','noopener'); }catch(e2){ location.href=url; }
+  }
+  kShowManualLink(url);
+}
+function kShowManualLink(url){
+  var host=$('rdBtn'); if(!host) return;
+  var box=$('kManualDl');
+  if(!box){
+    box=document.createElement('div');
+    box.id='kManualDl';
+    (host.parentNode||document.body).insertBefore(box, host.nextSibling);
+  }
+  box.innerHTML='<div style="font-size:10.5px;color:rgba(255,244,222,0.55);line-height:1.6;margin-top:9px;">'
+    +(H?'डाउनलोड शुरू न हुआ हो तो यहाँ दबाएँ:':'If the download did not start, tap here:')+'</div>'
+    +'<a href="'+url+'" target="_blank" rel="noopener" '
+    +'style="display:block;margin-top:6px;padding:11px;border-radius:12px;text-align:center;'
+    +'text-decoration:none;font-size:13.5px;font-weight:600;color:#BFEFD0;'
+    +'background:rgba(74,124,89,0.18);border:1px solid rgba(120,200,150,0.35);">'
+    +'📥 '+(H?'PDF ब्राउज़र में खोलें':'Open the PDF in your browser')+'</a>'
+    +(kIsStandalone()
+      ? '<div style="font-size:10px;color:rgba(255,244,222,0.40);margin-top:7px;line-height:1.55;">'
+        +(H?'ऐप के अंदर से डाउनलोड कभी-कभी नहीं चलता — ऊपर वाला लिंक ब्राउज़र में खुलेगा।'
+           :'Downloads sometimes do not run from inside an installed app — the link above opens in your browser.')
+        +'</div>' : '');
+}
 function viewKundli(){location.href='kundli-report.html?autoview=1';}
 function downloadKundli(){
-  if(PDF_URL){dlog('pdf: downloading file');location.href=PDF_URL;return;}
+  if(PDF_URL){dlog('pdf: downloading file');kOpenPdf(PDF_URL);return;}
   /* not ready yet: one quick retry, else fall back to on-device save */
   var b=$('rdBtn'); if(b)b.textContent=H?'⏳ अंतिम पन्ने तैयार हो रहे हैं…':'⏳ Finishing the last pages…';
   requestServerPdf();
   var tries=0, pv=setInterval(function(){
     tries++;
-    if(PDF_URL){clearInterval(pv);updateDlBtn();location.href=PDF_URL;}
+    if(PDF_URL){clearInterval(pv);updateDlBtn();kOpenPdf(PDF_URL);}
     else if(tries>20){clearInterval(pv);dlog('pdf: server slow → device fallback');
       location.href='kundli-report.html?autopdf=1';}
   },4000);
@@ -316,7 +384,7 @@ function absorbHashTokens(){
       var at=hp.get('access_token'), rt=hp.get('refresh_token');
       dlog('hash tokens: at='+(at?'yes':'MISSING')+' rt='+(rt?'yes':'MISSING'));
       if(at&&rt){
-        return sb.auth.setSession({access_token:at,refresh_token:rt}).then(function(r){
+        return sbAuth().setSession({access_token:at,refresh_token:rt}).then(function(r){
           dlog('setSession: '+(r.error?('ERROR '+r.error.message):'ok — session established'));
           return r; });
       }
@@ -335,7 +403,7 @@ absorbHashTokens().then(function(){
     try{history.replaceState(null,'',location.pathname);}catch(e){}
     startPrep(user); }
 
-  if(ready){ dlog('boot: ready state'); updateDlBtn(); requestServerPdf(); sb.auth.getSession().then(function(r){
+  if(ready){ dlog('boot: ready state'); updateDlBtn(); requestServerPdf(); sbAuth().getSession().then(function(r){
       var u=r.data&&r.data.session&&r.data.session.user;
       if(u&&u.email)$('rdMail').textContent=(H?'खाता: ':'Account: ')+u.email;});
     show('stReady'); return; }
@@ -344,13 +412,13 @@ absorbHashTokens().then(function(){
     /* just back from Google: the token exchange is ASYNC — wait for it */
     $('ppT').textContent=H?'साइन इन हो रहा है…':'Signing you in…';
     $('ppStep').textContent=''; show('stPrep');
-    sb.auth.onAuthStateChange(function(ev,session){
+    sbAuth().onAuthStateChange(function(ev,session){
       if(session&&session.user){ $('ppT').textContent=H?'आपकी कुंडली बन रही है…':'Preparing your Kundli…'; proceed(session.user); }
     });
     /* belt & braces: poll too, and time out to the auth screen with a message */
     var tries=0, pv=setInterval(function(){
       tries++;
-      sb.auth.getSession().then(function(r){
+      sbAuth().getSession().then(function(r){
         if(r.data&&r.data.session){clearInterval(pv);
           $('ppT').textContent=H?'आपकी कुंडली बन रही है…':'Preparing your Kundli…';
           proceed(r.data.session.user);}
@@ -362,7 +430,7 @@ absorbHashTokens().then(function(){
     return;
   }
 
-  if(det){ dlog('boot: det only'); sb.auth.getSession().then(function(r){
+  if(det){ dlog('boot: det only'); sbAuth().getSession().then(function(r){
       dlog('getSession: '+(r.data&&r.data.session?'session ok':'none')+(r.error?' err='+r.error.message:''));
       if(r.data&&r.data.session)startPrep(r.data.session.user);
       else show('stAuth');
