@@ -1105,21 +1105,22 @@ function vMuhurtaRun(key){
    +t(days+' दिनों में ','Across '+days+' days ')+'<b>'+(res.totalFound||list.length)+'</b>'
    +t(' शुभ दिन मिले — सबसे अच्छे '+list.length+' नीचे',' auspicious days found — best '+list.length+' shown')+'</div>'
    +sortBar+body
-   +'<div class="cta" onclick="muhurtaBuy(\''+key+'\')">'
-   +'<div class="cta-t">'+t('इससे आगे का मुहूर्त चाहिए?','Need the full muhurta workup?')+'</div>'
-   +'<div class="cta-s">'+t('विस्तृत '+(H?m.hi:m.hi)+' मुहूर्त रिपोर्ट में हर तिथि का घंटा-दर-घंटा लग्न, चौघड़िया और होरा, वर्ज्य काल, और आपकी कुंडली के अनुसार क्रम में लगी सूची मिलती है।',
-      'The detailed '+m.en+' Muhurta Report adds hour-by-hour lagna for each date, choghadiya and hora windows, periods to avoid, and the dates ranked against your own chart.')+'</div>'
-   +'<div class="cta-b">'+t('विस्तृत '+m.hi+' रिपोर्ट देखें →','View Detailed '+m.en+' Report →')+'</div></div>'
    +'<div class="note">'+t('तिथि, नक्षत्र, वार, ताराबल और चंद्रबल — पाँचों जाँचे गए। सुझाए गए समय में से राहु काल, यमगंड, गुलिक, वर्ज्यम् और दुर्मुहूर्त काटे जा चुके हैं।',
       'Tithi, nakshatra, weekday, tarabala and chandrabala all checked. Rahu Kaal, Yamaganda, Gulika, Varjyam and Dur Muhurtam are already cut out of the suggested windows.')+'</div>';
 }
-/* Carry the chosen activity into the buy flow instead of dropping the user on
-   a generic muhurta purchase. Sent both ways: a URL param the buy page can read
-   now, and a stored intent the report side can pick up later. */
-function muhurtaBuy(key){
-  try{ localStorage.setItem('sd_muhurta_activity',key); }catch(e){}
-  location.href='buy.html?r=muhurta&for='+encodeURIComponent(key);
-}
+/* The paid Muhurta report was withdrawn from sale (see report-catalog.js), so
+   the upsell that used to sit under these results is gone and muhurtaBuy() with
+   it. Nothing here links to buy.html?r=muhurta any more — an upsell to a
+   delisted report would take money for something no longer offered.
+
+   The old CTA also promised more than the report delivered: "hour-by-hour lagna
+   for each date, choghadiya and hora windows". The report prints none of those.
+   They ARE the bar for bringing it back, and until then this page says nothing
+   about a paid version. The finder below is the whole feature, free.
+
+   sd_muhurta_activity is no longer written. Nothing read it — buy.html never
+   collected an occasion, which is why every muhurta buyer silently received
+   griha-pravesh dates whatever they had chosen here. */
 
 var MUH_DAYS={}, MUH_SORT={};
 /* A suggested window inside a muhurta result goes through the same rule.
