@@ -122,18 +122,15 @@ function ownedWrite(report,orderCode,pdfUrl,date){
 /* Is this URL still good? A HEAD is enough and costs nothing. Anything other
    than a clear "no" is treated as alive — a CORS-opaque or network-blipped
    response must not throw away a URL that actually works. */
-async function urlAlive(u){
+/* The server existence-checks pdf_url before returning it in list=1, so a
+   present URL opens. The client-side HEAD probe that used to sit here is gone:
+   it duplicated a check the server already does, cost a round trip on every
+   tap, and could only ever fail open. */
+function dropPdfUrl(id){
   try{
-    var r=await fetch(u,{method:'HEAD'});
-    if(r.status===404||r.status===403||r.status===410) return false;
-    return true;
-  }catch(e){ return true; }
-}
-function forgetPdfUrl(id){
-  try{
-    var a=sdOwnedRead();
-    for(var i=0;i<a.length;i++) if(a[i].report===id) delete a[i].pdf_url;
-    localStorage.setItem('sd_owned_reports',JSON.stringify(a));
+    var a=sdOwnedRead(), changed=false;
+    for(var i=0;i<a.length;i++) if(a[i].report===id && a[i].pdf_url){ delete a[i].pdf_url; changed=true; }
+    if(changed) localStorage.setItem('sd_owned_reports',JSON.stringify(a));
   }catch(e){}
 }
 function buyDetails(id){
@@ -199,6 +196,12 @@ function render(){
          which is where a pdf_url will appear once one exists. No buy flow. */
       +'<button class="btn sec retry" id="again-'+r.id+'" style="display:none;" onclick="checkAgain(\''+r.id+'\')">'
       +'🔄 '+t('दोबारा जाँचें','Check again')+'</button>'
+      /* NO "re-enter details to rebuild" button here, deliberately.
+         It would let one purchase produce unlimited reports: type a different
+         name and birth date, get another chart, repeat. The report is sold for
+         ONE chart, and a prominent button inviting fresh details turns that
+         into a feature. A buyer who has genuinely lost their details is a rare
+         support case; unlimited free reports would not be rare at all. */
       +'</div>';
   }).join('')
   + '<div class="note">'+t('रिपोर्ट्स आपके खाते से जुड़ी हैं — कभी भी दोबारा खोल सकते हैं।',
@@ -246,15 +249,7 @@ async function openReport(id){
      message and no way forward: the "some reports don't download" case.
      Verify first; if it is dead, drop it and fall through to the paths that
      can produce a fresh one. */
-  if(rec.pdf_url){
-    btn.disabled=true;
-    btn.innerHTML='<span class="spin">⏳</span> '+t('खोल रहे हैं…','Opening…');
-    var live=await urlAlive(rec.pdf_url);
-    btn.disabled=false; btn.innerHTML='📄 '+t('रिपोर्ट खोलें','Open your report');
-    if(live){ openPdf(id,rec.pdf_url); return; }
-    forgetPdfUrl(id);          // stale — never leave a dead link in the record
-    rec=sdOwnedRead().filter(function(o){return o.report===id;})[0]||rec;
-  }
+  if(rec.pdf_url){ openPdf(id,rec.pdf_url); return; }
 
   /* 2 · No local URL. Order matters here: a missing sd_buy_<report> is the
      more specific blocker, because being signed in does not help render a
@@ -269,7 +264,7 @@ async function openReport(id){
     await restoreFromServer();
     btn.disabled=false; btn.innerHTML='📄 '+t('रिपोर्ट खोलें','Open your report');
     var fresh=sdOwnedRead().filter(function(o){return o.report===id;})[0];
-    if(fresh&&fresh.pdf_url&&await urlAlive(fresh.pdf_url)){ location.href=fresh.pdf_url; return; }
+    if(fresh&&fresh.pdf_url){ openPdf(id,fresh.pdf_url); return; }
   }
   var d=buyDetails(id);
   if(!d){
@@ -278,10 +273,16 @@ async function openReport(id){
        "Contact support" was the wrong ending — support is Ram on WhatsApp at
        the petrol bunk, and every such message is his evening. Explain the
        mechanism so the buyer can resolve it themselves. */
-    showErr(err,t('इस रिपोर्ट की PDF अभी बनी नहीं है। जिस फ़ोन से खरीदा था वहाँ एक बार खोल लें — उसके बाद यह हर जगह काम करेगी।',
-                  "This report's PDF hasn't been created yet. Open it once on the phone you bought from — after that it works everywhere."));
-    var again=$('again-'+id);
-    if(again) again.style.display='block';
+    /* No server PDF and no local details: nothing here can produce the file.
+       An earlier version offered a "re-enter your details" button that went to
+       the buy form — buy.html's check=1 returns paid:true for an owner and
+       skips payment, so it worked. It was removed: the report is sold for ONE
+       chart, and that button would have let a single purchase generate charts
+       for anyone whose birth details the buyer chose to type. A rare stranded
+       buyer is a support case; unlimited free reports would not be rare. */
+    showErr(err,t('इस रिपोर्ट की PDF अभी बनी नहीं है, और जन्म विवरण इस फ़ोन में नहीं है। जिस फ़ोन से खरीदा था वहाँ एक बार खोल लें — उसके बाद यह हर जगह खुलेगी।',
+                  "This report's PDF hasn't been created yet, and the birth details aren't on this phone. Open it once on the phone you bought from — after that it opens anywhere."));
+    var again=$('again-'+id); if(again) again.style.display='block';
     return;
   }
   if(!SESSION){
@@ -413,6 +414,10 @@ async function restoreFromServer(){
            presence means "openable right now". Passing null here silently threw
            that away — "Check again" fetched the answer and discarded it. */
         ownedWrite(o.report,o.order_code,o.pdf_url||null,(o.paid_at||'').slice(0,10));
+        // A URL the server no longer returns is a file that no longer exists.
+        // Without this, one written in an older session could never be cleared
+        // and the buyer would tap a dead link forever with no way back.
+        if(!o.pdf_url) dropPdfUrl(o.report);
       });
       render();
     }
