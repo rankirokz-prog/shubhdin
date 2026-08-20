@@ -214,7 +214,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
     <div><label>Gender / लिंग</label><select id="pgender"><option>Female</option><option>Male</option></select></div>
   </div>
   <div class="row">
-    <div><label>Birth Date</label><input id="bdate" type="date" value="1996-12-06"></div>
+    <div><label>Birth Date</label><input id="bdate" type="date" value="1996-12-06" min="1900-01-01" data-birthdate="1"></div>
     <div><label>Birth Time (24h)</label><input id="btime" type="time" value="15:47"></div>
   </div>
   <div class="row">
@@ -368,6 +368,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 <script src="report-content.js"></script>
 
 <script src="love-content.js"></script>
+<script src="birthdate-guard.js"></script>
 <script>
 
 function sdPrint(){
