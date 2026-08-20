@@ -3,7 +3,10 @@
 const fs=require('fs');
 const CFG={
  marriage:{two:true}, love:{gender:true}, career:{gender:true}, child:{gender:true},
- muhurta:{}, annual:{residence:true}, forecast:{}
+ annual:{residence:true}, forecast:{}
+ /* muhurta withdrawn from sale Aug 2026 — buy.html no longer emits for it.
+    muhurta-report.html still exists and keeps its bridge, so it can be
+    re-enabled by restoring the CFG entry. */
 };
 function emit(R){
   const C=CFG[R]; let k=[];
