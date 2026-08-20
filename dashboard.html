@@ -6956,5 +6956,20 @@ function mlStop(silent){
 window.mlStop=mlStop;
 </script>
 <script src="birthdate-guard.js"></script>
+<script src="nav-history.js"></script>
+<script>
+/* Tabs become history entries. Called after go() and openSadhana() exist, and
+   after the boot go('home') has run, so the hash — not the default — decides
+   which tab is showing when the page opens. */
+(function(){
+  if(typeof go!=='function'||typeof sdTabHistory!=='function') return;
+  sdTabHistory({
+    tabs:{home:1,mantras:1,jap:1,panchang:1,sadhana:1,listen:1,'sadhana-jap':1},
+    home:'home',
+    render:go,
+    open:{ sadhana:function(){ go('sadhana'); if(typeof renderSadhana==='function') renderSadhana(); } }
+  });
+})();
+</script>
 </body>
 </html
