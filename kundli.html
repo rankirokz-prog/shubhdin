@@ -62,7 +62,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
   <label id="lbName">पूरा नाम</label><input id="fName" type="text" autocomplete="name">
   <label id="lbGender">लिंग</label>
   <select id="fGender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>
-  <label id="lbDob">जन्म तिथि</label><input id="fDob" type="date">
+  <label id="lbDob">जन्म तिथि</label><input id="fDob" type="date" min="1900-01-01" data-birthdate="1">
   <label id="lbTime">जन्म समय</label><input id="fTime" type="time">
   <label id="lbPlace">जन्म स्थान</label>
   <div style="position:relative;">
@@ -446,5 +446,6 @@ absorbHashTokens().then(function(){
 function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block';renderDbg();}
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
 </script>
+<script src="birthdate-guard.js"></script>
 </body>
 </html>
