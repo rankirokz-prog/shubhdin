@@ -93,4 +93,48 @@
     };
   };
 
+  /* ── standalone pages: ← returns to wherever you came FROM ──────── */
+  /* kundli.html and premium.html hard-coded `location.href='dashboard.html'`,
+     so opening Kundli from Explore and pressing ← dumped you on Home instead
+     of back in Explore. Going back through history returns you to the exact
+     screen — including the astrology hash you left from.
+     The fallback still matters: opened cold from the home-screen icon or a
+     shared link there is no history to go back to, and history.back() would
+     leave the site entirely. */
+  /* Every page that loads this file records itself on the way out. That gives
+     sdBack a signal that is actually trustworthy:
+       · document.referrer is empty under a strict referrer policy and on
+         file://, which sent every back tap to the fallback
+       · history.length counts entries the browser made for other sites too —
+         arriving from a Google result would make history.back() leave the app
+     sessionStorage is per-tab and survives same-tab navigation, so a stored
+     same-origin previous page means "you got here from inside the app". */
+  var PREV = 'sd_navPrev';
+  try {
+    w.addEventListener('pagehide', function () {
+      try { sessionStorage.setItem(PREV, location.href); } catch (e) {}
+    });
+  } catch (e) {}
+
+  w.sdBack = function (fallback) {
+    var dest = fallback || 'dashboard.html', cameFromApp = false;
+    try {
+      var prev = sessionStorage.getItem(PREV);
+      cameFromApp = !!prev && prev.indexOf(location.origin) === 0
+                    && prev.split('#')[0] !== location.href.split('#')[0];
+    } catch (e) {}
+
+    if (cameFromApp && history.length > 1) {
+      var here = location.href;
+      history.back();
+      // If that went nowhere, the person must not be left staring at the page
+      // they just tried to leave.
+      setTimeout(function () {
+        if (location.href === here) location.href = dest;
+      }, 450);
+      return;
+    }
+    location.href = dest;
+  };
+
 })(window);
