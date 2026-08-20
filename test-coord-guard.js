@@ -22,6 +22,9 @@ const cut = (name) => {
   }
   throw new Error('unbalanced braces in ' + name);
 };
+const BADDATE  = cut('function sdBadDate(');
+const DATEMSG  = cut('function sdDateMsg(');
+const BADD     = cut('function badDate(');
 const SUBMIT   = cut('async function submitDetails()');
 const MISSD    = cut('function missD()');
 const SUNRISE  = cut('async function sunriseIST(');
@@ -38,6 +41,7 @@ function run(scenario) {
     C: scenario.C, R: scenario.R, H: false,
     CPICK: scenario.CPICK || {},
     $: el,
+    SD_TODAY: '2026-08-20',
     bdlog: () => {},   // logging is a no-op under test
     val: (id) => (els[id] ? String(els[id].value).trim() : ''),
     geo: async () => scenario.geoWorks ? { lat: scenario.geo.lat, lng: scenario.geo.lng } : null,
@@ -51,6 +55,9 @@ function run(scenario) {
   const fn = new Function('S', `
     with (S) {
       ${NOTIMEON}
+      ${BADDATE}
+      ${DATEMSG}
+      ${BADD}
       ${MISSD}
       ${SUNRISE}
       ${SUBMIT}
@@ -138,6 +145,37 @@ const CASES = [
     fields: { ...BASE, pplace: 'Nowhere', cplace: 'Bengaluru' },
     CPICK: { c: { lat: 12.9716, lng: 77.5946 } }, geoWorks: false,
     expect: r => !r.proceeded && r.stored === null && r.manualShown.includes('man_p') },
+
+  { n: 'FUTURE birth date (2028) → BLOCKED, nothing stored, future-specific message',
+    R: 'career', C: { gender: true },
+    fields: { pname: 'Ram', pdate: '2028-05-10', ptime: '05:30', pplace: 'Eluru' },
+    CPICK: { p: { lat: 16.7107, lng: 81.0952 } },
+    expect: r => !r.proceeded && r.stored === null && /cannot be in the future/i.test(r.err) },
+
+  { n: 'tomorrow is also rejected (not just far-future years)',
+    R: 'career', C: { gender: true },
+    fields: { pname: 'Ram', pdate: '2026-08-21', ptime: '05:30', pplace: 'Eluru' },
+    CPICK: { p: { lat: 16.7107, lng: 81.0952 } },
+    expect: r => !r.proceeded && r.stored === null },
+
+  { n: 'today is ACCEPTED — a newborn chart is legitimate',
+    R: 'career', C: { gender: true },
+    fields: { pname: 'Ram', pdate: '2026-08-20', ptime: '05:30', pplace: 'Eluru' },
+    CPICK: { p: { lat: 16.7107, lng: 81.0952 } },
+    expect: r => r.proceeded && r.stored.bdate === '2026-08-20' },
+
+  { n: 'pre-1900 date rejected as implausible',
+    R: 'career', C: { gender: true },
+    fields: { pname: 'Ram', pdate: '1823-05-10', ptime: '05:30', pplace: 'Eluru' },
+    CPICK: { p: { lat: 16.7107, lng: 81.0952 } },
+    expect: r => !r.proceeded && r.stored === null },
+
+  { n: 'marriage: BRIDE future-dated → BLOCKED even though groom is valid',
+    R: 'marriage', C: { two: true },
+    fields: { bname: 'A', bdate: '1990-04-12', btime: '05:30', bplace: 'Eluru',
+              gname: 'B', gdate: '2028-08-03', gtime: '11:10', gplace: 'Pune' },
+    CPICK: { b: { lat: 16.7107, lng: 81.0952 }, g: { lat: 18.5204, lng: 73.8567 } },
+    expect: r => !r.proceeded && r.stored === null && /future/i.test(r.err) },
 
   { n: 'missing required field → BLOCKED with the missing-field message, not the coord one',
     R: 'love', C: { gender: true }, fields: { pname: 'Ram', pplace: 'Vizag' },
