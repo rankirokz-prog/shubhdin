@@ -807,7 +807,7 @@ function vBpForm(slot){
    +'<label class="bpl">'+t('नाम','Name')+'</label>'
    +'<input class="bpi" id="bpName" type="text" value="'+(pr.name||'').replace(/"/g,'&quot;')+'">'
    +'<div class="bprow"><div><label class="bpl">'+t('जन्म तिथि','Date of Birth')+'</label>'
-   +'<input class="bpi" id="bpDob" type="date" value="'+(pr.dob||'')+'"></div>'
+   +'<input class="bpi" id="bpDob" type="date" value="'+(pr.dob||'')+'" min="1900-01-01" data-birthdate="1"></div>'
    +'<div><label class="bpl">'+t('जन्म समय','Time of Birth')+'</label>'
    +'<input class="bpi" id="bpTob" type="time" value="'+(pr.tob||'')+'"></div></div>'
    +'<label class="bpl">'+t('जन्म स्थान','Birth Place')+'</label>'
@@ -1327,5 +1327,6 @@ function vFest(){
 })();
 route();
 </script>
+<script src="birthdate-guard.js"></script>
 </body>
 </html>
