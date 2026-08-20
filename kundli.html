@@ -52,7 +52,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 </style>
 </head>
 <body>
-<div class="hdr"><button class="back" onclick="location.href='dashboard.html'">←</button>
+<div class="hdr"><button class="back" onclick="sdBack('dashboard.html')">←</button>
 <div class="h-t dev" id="hTitle">निःशुल्क कुंडली</div></div>
 <div class="wrap">
 
@@ -447,5 +447,6 @@ function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
 </script>
 <script src="birthdate-guard.js"></script>
+<script src="nav-history.js"></script>
 </body>
 </html>
