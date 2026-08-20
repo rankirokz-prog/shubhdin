@@ -1328,5 +1328,14 @@ function vFest(){
 route();
 </script>
 <script src="birthdate-guard.js"></script>
+<script src="nav-history.js"></script>
+<script>
+/* The ← button now goes back through history instead of pushing another
+   entry, so the trail no longer replays forwards-backwards. */
+(function(){
+  if(typeof route!=='function'||typeof sdHashBack!=='function') return;
+  sdHashBack({ route:route, home:'hub' });
+})();
+</script>
 </body>
 </html>
