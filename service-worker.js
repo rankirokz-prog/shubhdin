@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v80';
+const CACHE_NAME = 'shubhdin-v81';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -16,6 +16,7 @@ const CORE_FILES = [
   // which is the exact failure this local-first change was made to remove.
   '/astronomy.min.js',
   '/panchang-engine.js',
+  '/birthdate-guard.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
