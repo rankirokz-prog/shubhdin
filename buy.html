@@ -173,6 +173,30 @@ $('sIco').textContent=C.ic; $('sT1').textContent=H?C.hi:C.en; $('sT2').textConte
 $('sWas').textContent='₹'+C.was; $('sNow').textContent='₹'+C.now;
 
 /* ── details form per report ── */
+/* ── birth-date sanity ────────────────────────────────────────────────────────
+   buy.html previously accepted a birth date of 2028 — the engine will happily
+   compute a full chart for someone not yet born, and here that is a PAID wrong
+   report. max= alone is not a gate: it stops the picker, but typed and pasted
+   values still reach the field on several mobile browsers. So the real check
+   runs in submitDetails, before the payload is built.
+   Computed at runtime so it can never go stale. */
+var SD_TODAY=(function(){var d=new Date();
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);})();
+/* '' = valid; otherwise a reason code */
+function sdBadDate(v){
+  if(!v)return 'missing';
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return 'malformed';
+  if(v>SD_TODAY)return 'future';
+  if(v<'1900-01-01')return 'ancient';
+  return '';
+}
+function sdDateMsg(reason){
+  if(reason==='future')return H?'जन्म तिथि भविष्य की नहीं हो सकती। कृपया सही तिथि भरें।'
+                               :'A birth date cannot be in the future. Please check the date.';
+  return H?'जन्म तिथि सही नहीं लगती। कृपया दोबारा जाँचें।'
+          :'That birth date does not look right. Please check it.';
+}
+
 function person(prefix,label){
   var g=prefix==='p'; // primary naming: reports use pname or bname/gname
   return '<div class="sect dev">'+label+'</div>'
@@ -233,30 +257,6 @@ $('formRoot').innerHTML = (C.two
  + (C.residence?residenceBlock():'');
 /* prefill from profile */
 (function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
-
-/* ── birth-date sanity ────────────────────────────────────────────────────────
-   buy.html previously accepted a birth date of 2028 — the engine will happily
-   compute a full chart for someone not yet born, and here that is a PAID wrong
-   report. max= alone is not a gate: it stops the picker, but typed and pasted
-   values still reach the field on several mobile browsers. So the real check
-   runs in submitDetails, before the payload is built.
-   Computed at runtime so it can never go stale. */
-var SD_TODAY=(function(){var d=new Date();
-  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);})();
-/* '' = valid; otherwise a reason code */
-function sdBadDate(v){
-  if(!v)return 'missing';
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return 'malformed';
-  if(v>SD_TODAY)return 'future';
-  if(v<'1900-01-01')return 'ancient';
-  return '';
-}
-function sdDateMsg(reason){
-  if(reason==='future')return H?'जन्म तिथि भविष्य की नहीं हो सकती। कृपया सही तिथि भरें।'
-                               :'A birth date cannot be in the future. Please check the date.';
-  return H?'जन्म तिथि सही नहीं लगती। कृपया दोबारा जाँचें।'
-          :'That birth date does not look right. Please check it.';
-}
 
 function val(id){var e=$(id);return e?e.value.trim():'';}
 function noTimeOn(prefix){var c=$('f_'+prefix+'notime');return !!(c&&c.checked);}
