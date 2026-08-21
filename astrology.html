@@ -219,6 +219,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 
 <script src="astronomy.min.js"></script>
 <script src="panchang-engine.js"></script>
+<script src="report-catalog.js"></script>
 <script>
 'use strict';
 /* ── user context ─────────────────────────────────────────── */
@@ -728,7 +729,16 @@ function vExplore(){
 
    +'<div class="xgrp">'+t('व्यक्तिगत ज्योतिष','Personal Astrology')+'</div><div class="xgrid">'
    +xt('💑',t('कुंडली मिलान','Match Kundali'),t('दो कुंडली — गुण मिलान','Two charts, Guna Milan'),'#match')
-   +xt('📜',t('मेरी कुंडली','My Kundli'),t('260 पन्नों की मुफ़्त रिपोर्ट','Free 260-page report'),'@kundli')
+   /* Same claim as the Kundli card on the dashboard, worded for a small tile.
+      Chapter count leads because 17 is countable in the report's own contents
+      page; the page figure comes from the catalog so it lives in one place.
+      The live copy said "Free 260-page report" — over-claiming a number a
+      devotee can literally count (the report measures about 255) and
+      disagreeing with the dashboard, which says 250+. */
+   +xt('📜',t('मेरी कुंडली','My Kundli'),
+        (typeof kundliPages==='function')
+          ? t('17 अध्याय · '+kundliPages(true,'short')+' · मुफ़्त','17 chapters · '+kundliPages(false,'short')+' · free')
+          : t('17 अध्याय · 250+ पन्ने · मुफ़्त','17 chapters · 250+ pages · free'),'@kundli')
    +'</div>'
 
    +'<div class="xgrp">'+t('साधना','Spiritual Practice')+'</div><div class="xgrid">'
