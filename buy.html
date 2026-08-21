@@ -101,8 +101,11 @@ input:focus{outline:none;border-color:var(--gold);}
 'use strict';
 /* ══ CONFIG — fill as accounts arrive ══ */
 var WA_NUMBER = '';               // e.g. '9198XXXXXXXX' → WhatsApp button appears
-var PAYLINKS  = {};               // e.g. { marriage:'https://rzp.io/l/xxxx', ... } → real payment
-/* dev mode: while PAYLINKS empty + server SD_DEV_FREE=1, a ₹0 test-pay button works */
+/* No PAYLINKS map. Static dashboard links carry fixed notes and cannot say WHICH
+   buyer clicked, so their webhook hits the "no notes" early-return and marks
+   nothing paid — money in, nothing out. api/order.js ?create=1 mints a link per
+   purchase with notes{uid,report} instead. Prices live there too; C.now below is
+   display only. While the server has no Razorpay keys, a ₹0 dev path is used. */
 
 var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
@@ -545,31 +548,80 @@ function afterAuth(sess){
      }
    }).catch(function(){});
   /* already paid? skip payment */
+  /* returning from Razorpay? the webhook may lag the buyer by seconds — poll
+     rather than showing the payment screen to someone who has just paid. */
+  var backFromRzp=(location.search.indexOf('rzp=1')>-1);
   fetch('/api/order?check=1&uid='+sess.user.id+'&report='+R+'&access_token='+encodeURIComponent(sess.access_token))
    .then(apiJson).then(function(j){
      if(j&&j.paid){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();}
+     else if(backFromRzp){bdlog('back from razorpay, webhook not in yet');confirmAfterPay();}
      else showPay();
-   }).catch(function(){showPay();});
+   }).catch(function(){ backFromRzp?confirmAfterPay():showPay(); });
 }
 function showPay(){
   $('payS').textContent=(H?'राशि: ':'Amount: ')+'₹'+C.now+' · '+(H?C.hi:C.en);
-  if(!PAYLINKS[R]){$('btPay').textContent=H?'₹0 टेस्ट भुगतान (डेव) →':'₹0 test payment (dev) →';}
+  $('btPay').textContent=H?'भुगतान करें →':'Pay →';
+  $('btPay').disabled=false;
   show('stPay');
 }
 var ORDER_CODE=null;
 function doPay(){
-  if(PAYLINKS[R]){
-    /* real Razorpay payment link; reference notes carry uid+report via link config */
-    location.href=PAYLINKS[R];
-    return;
-  }
-  /* dev-free mode */
-  $('btPay').textContent='⏳';
+  $('btPay').textContent='⏳';$('errP').style.display='none';
+  /* Ask the server to mint a payment link for THIS buyer. We send no amount —
+     the server owns the price. If payments aren't configured yet it answers
+     503 and we fall back to the ₹0 dev path below. */
+  fetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token),
+    {method:'POST'})
+   .then(apiJson).then(function(j){
+     if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();return;}
+     if(j&&j.ok&&j.url){bdlog('payment link created');ORDER_CODE=j.order_code||ORDER_CODE;location.href=j.url;return;}
+     if(j&&j.error==='payments not configured yet'){devPay();return;}
+     $('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';
+     $('btPay').textContent=H?'दोबारा कोशिश करें →':'Retry →';
+   }).catch(function(e){
+     $('errP').textContent=e.message;$('errP').style.display='block';
+     $('btPay').textContent=H?'दोबारा कोशिश करें →':'Retry →';
+   });
+}
+/* ₹0 test path — only reachable while the server has no Razorpay keys */
+function devPay(){
   fetch('/api/order?dev=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
    .then(apiJson).then(function(j){
      if(j&&j.ok){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();}
      else{$('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';$('btPay').textContent='Retry →';}
    }).catch(function(e){$('errP').textContent=e.message;$('errP').style.display='block';});
+}
+/* ── returning from Razorpay ──────────────────────────────────────────────────
+   The buyer comes back in ~2s; the webhook may land at ~6s. Without this they
+   would see the payment screen again having just paid — exactly the frightened
+   WhatsApp message we are trying to prevent. So: poll, say what is happening,
+   and if the webhook never arrives give them the order code and a route rather
+   than silence. Delay is tolerable; silence is not. */
+function confirmAfterPay(){
+  show('stPay');
+  var btn=$('btPay'); btn.disabled=true;
+  var tries=0;
+  $('errP').style.display='none';
+  btn.textContent=H?'⏳ आपका भुगतान जाँचा जा रहा है…':'⏳ Confirming your payment…';
+  var iv=setInterval(function(){
+    tries++;
+    fetch('/api/order?check=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
+     .then(apiJson).then(function(j){
+       if(j&&j.paid){clearInterval(iv);btn.disabled=false;ORDER_CODE=j.order_code;
+         sdOwnedWrite(R,j.order_code);bdlog('payment confirmed after '+tries+' polls');showDone();return;}
+       if(tries>=15){clearInterval(iv);btn.disabled=false;payPending();}
+     }).catch(function(){ if(tries>=15){clearInterval(iv);btn.disabled=false;payPending();} });
+  },2000);
+}
+/* webhook hasn't arrived after ~30s — never leave them wondering */
+function payPending(){
+  bdlog('payment still unconfirmed after 15 polls');
+  $('btPay').textContent=H?'फिर से जाँचें →':'Check again →';
+  var oc=ORDER_CODE?(' ('+(H?'ऑर्डर कोड: ':'Order code: ')+ORDER_CODE+')'):'';
+  $('errP').textContent=(H
+    ?'आपका भुगतान मिल गया है, पुष्टि में थोड़ा समय लग रहा है। रिपोर्ट कुछ ही मिनटों में आपके खाते में आ जाएगी'
+    :'Your payment has gone through; confirmation is taking a moment. The report will appear in your account within a few minutes')+oc+'.';
+  $('errP').style.display='block';
 }
 function showDone(){
   if(WA_NUMBER)$('btWa').style.display='block';
