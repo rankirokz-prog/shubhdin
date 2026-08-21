@@ -116,6 +116,73 @@
       chips: ['Dasha periods', 'Transits', 'Turning points', '10-year timeline']
     }
   ];
+  /* ── the FREE Kundli ────────────────────────────────────────────────
+     Deliberately NOT in CATALOG. That array is the paid list: premium.html
+     renders a sales card for every entry and reports.html treats entries as
+     ownable, both keyed on the ids in owned-contract.md. A free report added
+     there would render with a price and become "ownable", which it is not.
+
+     It lives here anyway because its claims were drifting exactly the way
+     prices used to: the page count appeared in NINE user-facing places across
+     dashboard.html, kundli.html and astrology.html.
+
+     MEASURED, not estimated. Rendered to A4 at 10mm margins:
+         246  .page divs in the DOM
+         263  actual pages in the printed PDF
+     They differ because some .page divs overflow onto a second printed sheet.
+     A devotee counts the PDF, so 263 is the number that matters. An earlier
+     note in this file said "around 255"; that figure matched neither count
+     and was never verified.
+
+     The label stays "250+" rather than 263. It is true on the count a reader
+     can check, it survives a future trim to the report, and it does not have
+     to be re-verified every time a chapter changes — which an exact figure
+     would, and never was. Page count also shifts with paper size and margins,
+     so an exact number is only exact for one set of print settings.
+
+     RE-VERIFY BEFORE RAISING THIS. The measurement above was taken against a
+     pre-U1 engine copy, so a chart needing getNamakshara or getSahams may
+     render more pages than counted here. 250+ is safe under both counts; any
+     higher figure needs re-measuring on the current engine.
+
+     features[] carries only what renders for EVERY chart. Yoga count, dosha
+     count and Sade Sati passage count all vary per chart — a young chart may
+     have had one Saturn passage, an older one three — so those are named
+     without numbers. Same rule that removed the 'Spouse nature' chip. */
+  root.FREE_KUNDLI = {
+    pages: '250+',
+    pagesLabel: { hi: '250+ पन्नों की विस्तृत कुंडली PDF', en: '250+ Page Detailed Kundli PDF' },
+    pagesShort: { hi: '250+ पन्ने', en: '250+ pages' },
+    /* Hindi needs the oblique form before a postposition: "250+ पन्ने की" is
+       ungrammatical, "250+ पन्नों की" is correct. pagesShort stands alone
+       ("PDF डाउनलोड करें (250+ पन्ने)"), pagesOf is for "… की विस्तृत कुंडली". */
+    pagesOf:    { hi: '250+ पन्नों', en: '250+ pages' },
+    tagline:    { hi: 'आपके जन्म क्षण से गणना — कोई टेम्पलेट नहीं',
+                  en: 'Computed from your birth moment, not a template' },
+    features: [
+      { hi: 'पूरे जीवन की विंशोत्तरी दशा — अंतर्दशा तक',
+        en: 'Full lifetime Vimshottari dasha, down to antardasha' },
+      { hi: '30 वर्ष का वार्षिक फल — 2026 से 2055 तक',
+        en: '30 years of yearly outlook, 2026 → 2055' },
+      { hi: 'संपूर्ण अष्टकवर्ग — सर्वाष्टकवर्ग और सातों भिन्नाष्टकवर्ग',
+        en: 'Complete Ashtakavarga — Sarvashtakavarga and all 7 Bhinnashtakavargas' },
+      { hi: 'साढ़े साती के काल, तिथियों सहित',
+        en: 'Sade Sati periods, dated' },
+      { hi: 'योग और दोष — ईमानदार संदर्भ के साथ',
+        en: 'Yogas and doshas, with honest context' },
+      { hi: 'गुरु, शनि और राहु का गोचर — अगले 10 वर्ष',
+        en: 'Jupiter, Saturn and Rahu transits for the next 10 years' }
+    ]
+  };
+  /* Every surface must call this rather than hardcoding a number again. */
+  root.kundliPages = function (hindi, form) {
+    var k = root.FREE_KUNDLI;
+    if (form === 'short') return hindi ? k.pagesShort.hi : k.pagesShort.en;
+    if (form === 'of')    return hindi ? k.pagesOf.hi    : k.pagesOf.en;
+    if (form === 'label') return hindi ? k.pagesLabel.hi : k.pagesLabel.en;
+    return k.pages;
+  };
+
   var byId = {};
   CATALOG.forEach(function (r) { byId[r.id] = r; });
   root.REPORT_CATALOG = CATALOG;
