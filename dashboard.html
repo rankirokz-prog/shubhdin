@@ -3490,10 +3490,18 @@ let currentAudio=null;
 function getScriptVersion(){return Math.floor(Date.now()/(7*24*60*60*1000))%2===0?'a':'b';}
 function getDayKey(){return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];}
 function getScriptUrl(){return 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/scripts/'+getDayKey()+'_'+getScriptVersion()+'.mp3';}
-function getNameUrl(){
-  const nk=(U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
-  return nk?'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/names/'+nk+'.mp3':null;
-}
+/* PERSONALISED NAME AUDIO — REMOVED.
+   This sent the user's NAME to ElevenLabs at runtime (/api/generate-name) to
+   synthesise a per-person greeting clip. Removed at Ram's decision: the feature
+   was never wanted, and it was the only place a personal detail was sent to a
+   text-to-speech service — so removing it also takes ElevenLabs out of the
+   privacy policy's list of parties that receive user data.
+
+   The daily Listen audio is unaffected. Its greeting, time and day-context
+   clips are Ram's own recordings in his own bucket; the playlist simply no
+   longer inserts a spoken name after the greeting. Both remaining call sites
+   already guarded on a null URL, so this degrades cleanly. */
+function getNameUrl(){ return null; }
 // ── Modular Audio Stitching System ──
 const BASE = 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/';
 // Seeded random — same result on same day + same settings
@@ -3863,10 +3871,7 @@ async function playPanchang(){
     },600);
   }
 }
-async function ensureNameAudio(){
-  if(!U.name)return;const nu=getNameUrl();if(!nu)return;
-  try{const r=await fetch(nu,{method:'HEAD'});if(!r.ok)fetch('/api/generate-name?name='+encodeURIComponent(U.name));}catch(e){}
-}
+/* ensureNameAudio() removed with the name-audio feature. */
 
 // ── Margadarshan ──
 const PROBLEMS={
@@ -4929,7 +4934,7 @@ function updateSadhanaTab(){
 // Clear old birth cache if rashi is empty (old wrong field name)
 const _u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
 if(_u.birth_cache_key && !_u.rashi){ _u.birth_cache_key=''; localStorage.setItem('shubhdin_user',JSON.stringify(_u)); }
-setWallpaper();personalise();personaliseMarg();fetchPanchang();ensureNameAudio();
+setWallpaper();personalise();personaliseMarg();fetchPanchang();
 updateSadhanaTab();
 renderSadhanaCard();
 renderWallpaperCard();
@@ -5197,10 +5202,7 @@ function saveSettings(){
   u.tobUnknown = !!(_tu && _tu.checked);
   u.tob  = u.tobUnknown ? '06:00' : newTob;
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
-  // Regenerate name audio if name changed
-  if(nameChanged && newName){
-    fetch(((location.protocol==='https:'&&location.host)?'':'https://www.shubhdin.app')+'/api/generate-name?name='+encodeURIComponent(newName)).catch(()=>{});
-  }
+  // (name-audio regeneration removed with the feature)
   // Clear birth cache so it refetches with new DOB/TOB
   u.birth_cache_key = '';
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
@@ -6756,6 +6758,7 @@ if('serviceWorker' in navigator){
     <a href="/about.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;border-right:1px solid rgba(212,168,67,0.10);">About</a>
     <a href="/privacy-policy.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;border-right:1px solid rgba(212,168,67,0.10);">Privacy</a>
     <a href="/terms.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;border-right:1px solid rgba(212,168,67,0.10);">Terms</a>
+    <a href="/refund-policy.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;border-right:1px solid rgba(212,168,67,0.10);">Refund</a>
     <a href="/contact.html" style="flex:1;text-align:center;padding:8px 4px;font-size:10px;color:rgba(212,168,67,0.78);text-decoration:none;">Contact</a>
   </div>
   <!-- Door 3 — My Reports. Always present, so a buyer whose localStorage was
