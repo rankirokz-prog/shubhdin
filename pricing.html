@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — ShubhDin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Georgia',serif;background:#0A0300;color:rgba(255,255,255,0.80);padding:0;}
+.header{background:linear-gradient(155deg,#0D0500,#2C1208);padding:48px 24px 24px;border-bottom:1px solid rgba(212,168,67,0.15);}
+.brand{font-family:Georgia,serif;color:#D4A843;font-size:20px;margin-bottom:6px;}
+h1{font-size:22px;color:#fff;font-weight:600;margin-bottom:4px;}
+.updated{font-size:12px;color:rgba(212,168,67,0.50);}
+.body{padding:28px 24px 60px;max-width:680px;margin:0 auto;}
+h2{font-size:16px;color:#D4A843;margin:28px 0 10px;font-weight:600;}
+p,li{font-size:14px;line-height:1.8;color:rgba(255,255,255,0.70);margin-bottom:8px;}
+ul{padding-left:20px;margin-bottom:12px;}
+a{color:#D4A843;}
+.footer{text-align:center;padding:20px;font-size:12px;color:rgba(255,255,255,0.30);border-top:1px solid rgba(212,168,67,0.10);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="brand">🕉️ ShubhDin — शुभ दिन</div>
+  <h1>Pricing</h1>
+  <div class="updated">Last updated: August 2026</div>
+</div>
+<div class="body">
+
+<p>Everything below is in Indian Rupees and includes any applicable taxes. Each report is a <b>one-time purchase</b> — there is no subscription and nothing renews.</p>
+
+<h2>Free</h2>
+<ul>
+  <li><b>Kundli Report</b> — 17 chapters, 250+ pages. No charge. A free Google sign-in is needed so the report stays linked to you and can be reopened on another phone.</li>
+  <li><b>Daily panchang, rashifal, muhurta finder, mantras and sadhana</b> — free to use.</li>
+</ul>
+
+<h2>Paid Reports</h2>
+<p id="priceRows">Loading prices…</p>
+<noscript><ul>
+  <li><b>Marriage Compatibility Report</b> — <b>Rs 399</b></li>
+  <li><b>Love &amp; Relationship</b> — <b>Rs 199</b></li>
+  <li><b>Career &amp; Wealth</b> — <b>Rs 199</b></li>
+  <li><b>Child &amp; Family</b> — <b>Rs 199</b></li>
+  <li><b>Annual Varshaphal</b> — <b>Rs 199</b></li>
+  <li><b>10-Year Forecast</b> — <b>Rs 299</b></li>
+</ul></noscript>
+
+<h2>What you get</h2>
+<p>Reports are digital PDFs, generated from the birth details you enter and delivered in the app immediately. Nothing is posted or shipped, so no delivery charge applies.</p>
+
+<h2>Payment</h2>
+<p>Payments are processed by Razorpay. Card and UPI details go to Razorpay directly and are never seen or stored by us.</p>
+
+<h2>Refunds</h2>
+<p>When we refund, and how quickly we decide, is set out on the <a href="/refund-policy.html">Refund &amp; Cancellation</a> page.</p>
+
+</div>
+
+<script src="report-catalog.js"></script>
+<script>
+/* Prices are rendered from report-catalog.js — the same file the sales page and
+   the buy flow read. Typing them into this page by hand is exactly how a
+   pricing page ends up advertising a number the checkout does not charge. */
+(function(){
+  var host=document.getElementById('priceRows');
+  try{
+    var list=(typeof reportsForSale==='function')?reportsForSale():REPORT_CATALOG;
+    host.outerHTML='<ul>'+list.map(function(r){
+      return '<li><b>'+r.en+'</b> — <b>Rs '+r.now+'</b>'
+        +(r.was&&r.was>r.now?' <span style="opacity:.6;">(regular Rs '+r.was+')</span>':'')+'</li>';
+    }).join('')+'</ul>';
+  }catch(e){
+    /* Catalog unavailable. A pricing page that says "see the app" is no use to
+       someone checking prices from the website, so fall back to a written list.
+       If these ever disagree with report-catalog.js, the catalog is right —
+       it is what the checkout charges. */
+    host.outerHTML='<ul>'
+      +'<li><b>Marriage Compatibility Report</b> — <b>Rs 399</b></li>'
+      +'<li><b>Love &amp; Relationship</b> — <b>Rs 199</b></li>'
+      +'<li><b>Career &amp; Wealth</b> — <b>Rs 199</b></li>'
+      +'<li><b>Child &amp; Family</b> — <b>Rs 199</b></li>'
+      +'<li><b>Annual Varshaphal</b> — <b>Rs 199</b></li>'
+      +'<li><b>10-Year Forecast</b> — <b>Rs 299</b></li></ul>';
+  }
+})();
+</script>
+
+<div class="footer"><div style="margin-bottom:10px;font-size:12px;"><a href="/about.html">About</a> · <a href="/privacy-policy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/refund-policy.html">Refund</a> · <a href="/pricing.html">Pricing</a> · <a href="/contact.html">Contact</a></div>© 2026 ShubhDin. Made with 🙏 for every devotee.</div>
+</body>
+</html>
