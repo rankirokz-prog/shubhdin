@@ -2410,18 +2410,44 @@ function personalise(){
   const _t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   _t('khBadge',H?'निःशुल्क':'FREE');
   _t('khTag',H?'✨ आपकी निःशुल्क कुंडली रिपोर्ट':'✨ YOUR FREE KUNDLI REPORT');
+  /* 17 is countable in the report's own table of contents, so it is a claim a
+     devotee can check — which is the point. Page count stays as the catalog
+     reports it; the two together say size AND substance. */
   // KH_PAGES: set to verified PDF page count (e.g. '78') to show 'N-Page'; '' hides it
-  const KH_PAGES='260';  // real PDF: 264 pages, rounded down
-  _t('khTitle',(KH_PAGES?(H?KH_PAGES+' पन्नों की विस्तृत कुंडली PDF':KH_PAGES+'-Page Detailed Kundli PDF')
-               :(H?'संपूर्ण विस्तृत कुंडली PDF':'Full Detailed Kundli PDF')));
-  _t('khSub',H?'राशि • नक्षत्र • लग्न • दशा • भविष्यफल और बहुत कुछ':'Rashi • Nakshatra • Lagna • Dasha • Predictions & more');
+  /* Page count comes from report-catalog.js so the claim lives in ONE place.
+     It used to be hardcoded here and in eight other spots, all saying 260
+     while the report measures about 255 — an over-claim on a number a devotee
+     can count. The fallback keeps the card working against an older cached
+     catalog; it deliberately under-claims rather than restating a figure. */
+  const KH_PAGES=(typeof kundliPages==='function')?kundliPages(false):'250+';
+  const KH_LABEL=(typeof kundliPages==='function')?kundliPages(H,'label')
+                 :(H?'250+ पन्नों की विस्तृत कुंडली PDF':'250+ Page Detailed Kundli PDF');
+  const KH_SHORT=(typeof kundliPages==='function')?kundliPages(H,'short')
+                 :(H?'250+ पन्ने':'250+ pages');
+  const KH_OF   =(typeof kundliPages==='function')?kundliPages(H,'of')
+                 :(H?'250+ पन्नों':'250+ pages');
+  _t('khTitle',(H?'17 अध्याय · ':'17 Chapters · ')+KH_LABEL);
+  /* Every item named here is a chapter the report actually prints, checked
+     against the 17-chapter TOC and the engine calls kundli-report.html makes
+     (getBirthChart, getAshtakavarga, getYogas, getDoshas, getVimshottariDasha,
+     dashaSubPeriods, getTransitPeriods, getLagnaTable, getPanchang).
+
+     The old line — "Rashi • Nakshatra • Lagna • Dasha • Predictions & more" —
+     was true but described what EVERY free kundli site gives away, so it sold
+     the report short. Ashtakavarga house strength, the yoga and dosha
+     analysis, and dasha broken to pratyantar level are the things a free tool
+     does not print, and they are all in there. "Predictions & more" is dropped:
+     vague, and the one phrase on the card that promised nothing checkable. */
+  _t('khSub',H?'अष्टकवर्ग • योग • दोष • दशा–प्रत्यंतर • उपाय'
+              :'Ashtakavarga • Yogas • Doshas • Dasha to pratyantar • Remedies');
   _t('khFree',H?'मुफ़्त':'FREE');
   _t('khBtn',H?'मेरी मुफ़्त कुंडली पाएं →':'Download My Free Kundli →');
   if(localStorage.getItem('shubhdin_kundli_ready')==='1'){
     _t('khBadge',H?'तैयार':'READY');
     _t('khTag',H?'📜 आपकी कुंडली':'📜 YOUR KUNDLI');
     _t('khTitle',H?'मेरी कुंडली':'My Kundli');
-    _t('khSub',H?'260 पन्नों की विस्तृत कुंडली — कभी भी देखें या डाउनलोड करें':'Your 260-page detailed Kundli — view or download anytime');
+    _t('khSub',H?(KH_OF+' की विस्तृत कुंडली — कभी भी देखें या डाउनलोड करें')
+                 :('Your detailed Kundli, '+KH_SHORT+' — view or download anytime'));
     const kf=document.getElementById('khFree'); if(kf&&kf.parentElement)kf.parentElement.style.display='none';
     _t('khBtn',H?'देखें / डाउनलोड करें →':'View / Download →');
   }
@@ -6956,6 +6982,7 @@ function mlStop(silent){
 window.mlStop=mlStop;
 </script>
 <script src="birthdate-guard.js"></script>
+<script src="report-catalog.js"></script>
 <script src="nav-history.js"></script>
 <script>
 /* Tabs become history entries. Called after go() and openSadhana() exist, and
