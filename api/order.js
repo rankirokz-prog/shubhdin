@@ -1,10 +1,17 @@
-// api/order.js — one function, three jobs:
+// api/order.js — one function, five jobs:
 //  1) GET  ?check=1&uid=..&report=..&access_token=..   → { paid, order_code }
-//  2) GET  ?dev=1&uid=..&report=..&access_token=..     → marks a ₹0 test order
+//  2) GET  ?list=1&uid=..&access_token=..              → every paid report + pdf_url
+//  3) GET  ?dev=1&uid=..&report=..&access_token=..     → marks a ₹0 test order
 //        (works only while env SD_DEV_FREE === '1'; pre-launch testing)
-//  3) POST  Razorpay webhook (payment_link.paid / payment.captured)
+//  4) POST ?create=1&uid=..&report=..&access_token=..  → Razorpay payment link
+//        for THIS buyer, with notes{uid,report} so the webhook can attribute it.
+//        The client never sends an amount; see PRICES below.
+//  5) POST  Razorpay webhook (payment_link.paid / payment.captured)
 //        verified with env RZP_WEBHOOK_SECRET; expects notes { uid, report }.
 //        Inert until keys are configured — safe to deploy today.
+//
+// env: SUPABASE_URL, SUPABASE_SERVICE_KEY, SD_DEV_FREE,
+//      RZP_KEY_ID, RZP_KEY_SECRET, RZP_WEBHOOK_SECRET
 //
 // orders table (run once in Supabase SQL editor):
 //   create table if not exists orders (
@@ -17,6 +24,23 @@
 //   );
 
 const crypto = require('crypto');
+
+// ── PRICE AUTHORITY ──────────────────────────────────────────────────────────
+// This table is the ONLY place a price is decided. buy.html's CFG and
+// report-catalog.js are display copies; neither is trusted and neither is read
+// here. The client never sends an amount — there is no amount field to tamper
+// with — so a posted ₹1 is impossible by construction rather than by validation.
+// A report absent from this table cannot be paid for at all: that is how a
+// withdrawn report (muhurta, Aug 2026) stays unsellable even via an old link.
+const PRICES = {
+  marriage: 399,
+  love:     199,
+  career:   199,
+  child:    199,
+  annual:   199,
+  forecast: 299
+  // muhurta: WITHDRAWN — do not re-add without restoring buy.html's CFG entry
+};
 
 function code(uid, report) {
   return 'SD-' + crypto.createHash('sha1').update(uid + ':' + report)
@@ -48,6 +72,62 @@ module.exports = async function handler(req, res) {
       }).then(r => r.json());
       return who && who.id === uid;
     } catch (e) { return false; }
+  }
+
+  // ── create a payment link for THIS buyer ──
+  // Must precede the webhook branch: both are POST, but the webhook arrives
+  // with no query string. A link created here carries notes{uid,report}, which
+  // is the whole point — a static dashboard link cannot know who clicked it,
+  // so its webhook would hit the "no notes" early-return and silently mark
+  // nothing paid. Money in, nothing out. This is that bug's fix.
+  if (req.method === 'POST' && (req.query || {}).create === '1') {
+    const q0 = req.query || {};
+    if (!q0.uid || !q0.report) return res.status(400).json({ error: 'uid and report required' });
+    if (!(await verifyUser(q0.uid, q0.access_token))) return res.status(401).json({ error: 'auth mismatch' });
+
+    const amount = PRICES[q0.report];
+    if (!amount) return res.status(400).json({ error: 'not for sale' });   // withdrawn or unknown
+
+    // Already paid? Send them to their report instead of a second payment page.
+    // This is the back-button duplicate, which is the common one.
+    try {
+      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q0.uid}&report=eq.${q0.report}&status=eq.paid&select=order_code`,
+        { headers: H }).then(r => r.json());
+      if (Array.isArray(rows) && rows.length) {
+        return res.status(200).json({ ok: true, already: true, order_code: rows[0].order_code });
+      }
+    } catch (e) { /* fall through and let them pay rather than blocking a sale */ }
+
+    const keyId = process.env.RZP_KEY_ID, keySecret = process.env.RZP_KEY_SECRET;
+    if (!keyId || !keySecret) return res.status(503).json({ error: 'payments not configured yet' });
+
+    const site = 'https://' + (req.headers['x-forwarded-host'] || req.headers.host);
+    const auth = 'Basic ' + Buffer.from(keyId + ':' + keySecret).toString('base64');
+    try {
+      const rr = await fetch('https://api.razorpay.com/v1/payment_links', {
+        method: 'POST',
+        headers: { Authorization: auth, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: amount * 100,                 // paise
+          currency: 'INR',
+          description: 'Shubh Din — ' + q0.report + ' report',
+          reference_id: code(q0.uid, q0.report) + '-' + Date.now(),
+          notes: { uid: q0.uid, report: q0.report },   // ← what the webhook reads
+          notify: { sms: false, email: false },
+          reminder_enable: false,
+          callback_url: site + '/buy.html?r=' + encodeURIComponent(q0.report) + '&rzp=1',
+          callback_method: 'get'
+        })
+      });
+      const j = await rr.json();
+      if (!rr.ok || !j.short_url) {
+        return res.status(502).json({ error: 'payment link failed',
+          detail: String((j && j.error && j.error.description) || rr.status).slice(0, 150) });
+      }
+      return res.status(200).json({ ok: true, url: j.short_url, order_code: code(q0.uid, q0.report) });
+    } catch (e) {
+      return res.status(502).json({ error: 'payment link failed', detail: String(e.message).slice(0, 150) });
+    }
   }
 
   // ── Razorpay webhook ──
