@@ -200,6 +200,7 @@
   .skip-link{display:block;text-align:center;font-size:11px;color:rgba(26,10,0,0.30);cursor:pointer;margin-top:8px;background:none;border:none;font-family:'Poppins',sans-serif;width:100%;padding:4px;}
 
   /* Welcome */
+  .vi-sub{font-size:9.5px;line-height:1.45;color:rgba(26,10,0,0.42);margin-top:3px;}
   .welcome{text-align:center;}
   .w-om{font-family:'Tiro Devanagari Hindi',serif;font-size:48px;color:var(--gold);display:block;margin-bottom:10px;animation:omGlow 2s ease-in-out infinite;}
   .w-title{font-size:19px;font-weight:700;color:var(--dark);margin-bottom:5px;}
@@ -282,17 +283,20 @@
   <!-- ── STEP 1: HOOK (in chosen language) ── -->
   <div class="step active" id="step1">
     <span class="hook-om">ॐ</span>
-    <div class="hook-title" id="hookTitle">आपका दैनिक आध्यात्मिक साथी</div>
-    <div class="hook-sub" id="hookSub">10 सेकंड में — पंचांग, राशिफल और साधना सब आपकी भाषा में</div>
+    <div class="hook-title" id="hookTitle">आपका दिन, आपकी कुंडली से</div>
+    <div class="hook-sub" id="hookSub">पंचांग, मुहूर्त और दैनिक जप — आपकी कुंडली और आपके शहर के अनुसार</div>
 
     <div class="value-grid">
-      <div class="vi"><span class="vi-icon">🔊</span><div class="vi-text" id="v1">दैनिक पंचांग</div></div>
-      <div class="vi"><span class="vi-icon">🌼</span><div class="vi-text" id="v2">राशि मार्गदर्शन</div></div>
-      <div class="vi"><span class="vi-icon">🪔</span><div class="vi-text" id="v3">108 जप साधना</div></div>
+      <div class="vi"><span class="vi-icon">📜</span><div class="vi-text" id="v1">निःशुल्क कुंडली</div>
+        <div class="vi-sub" id="v1s">जन्म कुंडली से बनी विस्तृत रिपोर्ट</div></div>
+      <div class="vi"><span class="vi-icon">📅</span><div class="vi-text" id="v2">दैनिक पंचांग</div>
+        <div class="vi-sub" id="v2s">आपके शहर के समय</div></div>
+      <div class="vi"><span class="vi-icon">📿</span><div class="vi-text" id="v3">दैनिक जप</div>
+        <div class="vi-sub" id="v3s">आज के देवता, गिनती के साथ</div></div>
     </div>
 
-    <div class="trust-line" id="trustLine">🙏 उपयोग के लिए मुफ़्त • आपका डेटा सुरक्षित</div>
-    <button class="btn-cta" onclick="goStep(2)"><span id="cta1">यात्रा शुरू करें</span> ✨</button>
+    <div class="trust-line" id="trustLine">🙏 उपयोग के लिए मुफ़्त • आपका विवरण आपके फ़ोन में ही रहता है</div>
+    <button class="btn-cta" onclick="goStep(2)"><span id="cta1">मेरी यात्रा शुरू करें</span> ✨</button>
   </div>
 
   <!-- ── STEP 2: NAME ── -->
@@ -441,11 +445,13 @@
   // ── Text ──
   const T = {
     hi:{
-      hookTitle:'आपका दैनिक आध्यात्मिक साथी',
-      hookSub:'10 सेकंड में — पंचांग, राशिफल और साधना सब आपकी भाषा में',
-      v1:'दैनिक पंचांग', v2:'राशि मार्गदर्शन', v3:'108 जप साधना',
-      trust:'🙏 उपयोग के लिए मुफ़्त • आपका डेटा सुरक्षित',
-      cta1:'यात्रा शुरू करें',
+      hookTitle:'आपका दिन, आपकी कुंडली से',
+      hookSub:'पंचांग, मुहूर्त और दैनिक जप — आपकी कुंडली और आपके शहर के अनुसार',
+      v1:'निःशुल्क कुंडली', v1s:'जन्म कुंडली से बनी विस्तृत रिपोर्ट',
+      v2:'दैनिक पंचांग',   v2s:'आपके शहर के समय',
+      v3:'दैनिक जप',       v3s:'आज के देवता, गिनती के साथ',
+      trust:'🙏 उपयोग के लिए मुफ़्त • आपका विवरण आपके फ़ोन में ही रहता है',
+      cta1:'मेरी यात्रा शुरू करें',
       s2title:'आपका नाम क्या है?', s2desc:'हम आपको हर सुबह नाम से बुलाएंगे',
       greeting:'🙏 नमस्कार,', nameLabel:'आपका नाम', namePH:'जैसे: राम, प्रिया, सीता...',
       cta2:'अपनी राशि देखें',
@@ -466,10 +472,12 @@
       enterTxt:'शुभ दिन खोलें',
     },
     en:{
-      hookTitle:'Your Daily Spiritual Companion',
-      hookSub:'Get your panchang, rashi guidance & sadhana in 10 seconds',
-      v1:'Daily Panchang', v2:'Rashi Guidance', v3:'108 Jap Sadhana',
-      trust:'🙏 Free to use • Your data is always safe',
+      hookTitle:'Your day, from your own chart',
+      hookSub:'Panchang, muhurat and daily jap — calculated for your chart and your city',
+      v1:'Free Kundli',   v1s:'A detailed report from your birth chart',
+      v2:'Daily Panchang', v2s:'Timings for your city',
+      v3:'Daily Jap',      v3s:"Today's deity, counted",
+      trust:'🙏 Free to use • Your details stay on your phone',
       cta1:'Begin My Journey',
       s2title:"What's your name?", s2desc:"We'll greet you by name every morning",
       greeting:'🙏 Welcome,', nameLabel:'Your Name', namePH:'e.g. Ravi, Priya...',
@@ -522,6 +530,10 @@
     const ph = (id,v) => { const el=document.getElementById(id); if(el) el.placeholder=v; };
     s('hookTitle',t.hookTitle); s('hookSub',t.hookSub);
     s('v1',t.v1); s('v2',t.v2); s('v3',t.v3);
+    /* The three card sub-lines. Without these the cards kept their Hindi
+       markup defaults after switching to English — the headline changed and
+       the detail underneath did not. */
+    s('v1s',t.v1s); s('v2s',t.v2s); s('v3s',t.v3s);
     s('trustLine',t.trust); s('cta1',t.cta1);
     s('s2title',t.s2title); s('s2desc',t.s2desc);
     s('nameLabel',t.nameLabel); ph('userName',t.namePH); s('cta2',t.cta2);
