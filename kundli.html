@@ -58,7 +58,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 
 <!-- 1 · DETAILS -->
 <div class="stage" id="stDetails">
-  <div class="lead" id="ldDetails">अपना जन्म विवरण भरें — आपकी 260 पन्नों की विस्तृत कुंडली इन्हीं से बनेगी।</div>
+  <div class="lead" id="ldDetails">अपना जन्म विवरण भरें — आपकी विस्तृत कुंडली इन्हीं से बनेगी।</div>
   <label id="lbName">पूरा नाम</label><input id="fName" type="text" autocomplete="name">
   <label id="lbGender">लिंग</label>
   <select id="fGender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>
@@ -103,8 +103,8 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 <div class="stage" id="stReady">
   <div class="ready">
     <div class="r-em">📜</div>
-    <div class="r-t dev" id="rdT">🎉 आपकी 260 पन्नों की कुंडली तैयार है!</div>
-    <div class="r-s" id="rdS">राशि • नक्षत्र • लग्न • दशा • भविष्यफल — सब कुछ, आपके जन्म विवरण से।</div>
+    <div class="r-t dev" id="rdT">🎉 आपकी विस्तृत कुंडली तैयार है!</div>
+    <div class="r-s" id="rdS">अष्टकवर्ग • योग • दोष • दशा–प्रत्यंतर • उपाय — 17 अध्याय, आपके जन्म विवरण से।</div>
     <div class="r-mail" id="rdMail"></div>
     <button class="btn" onclick="downloadKundli()" id="rdBtn">⬇️ PDF डाउनलोड करने के लिए यहाँ क्लिक करें</button>
     <div style="margin-top:12px;font-size:11px;color:rgba(212,168,67,0.7);cursor:pointer;" onclick="viewKundli()" id="rdView">या स्क्रीन पर देखें →</div>
@@ -155,7 +155,7 @@ function show(id){document.querySelectorAll('.stage').forEach(function(s){s.clas
 /* i18n */
 if(!H){
   $('hTitle').textContent='Free Kundli';
-  $('ldDetails').textContent='Fill your birth details — your 260-page detailed Kundli is built from these.';
+  $('ldDetails').textContent='Fill your birth details — your detailed Kundli is built from these.';
   $('lbName').textContent='Full name';$('lbGender').textContent='Gender';$('lbDob').textContent='Date of birth';
   $('lbTime').textContent='Time of birth';$('lbPlace').textContent='Place of birth';
   $('btDetails').textContent='Create my Kundli →';$('errDetails').textContent='Please fill all details';
@@ -164,8 +164,17 @@ if(!H){
   $('auB').textContent='Continue with Google';
   $('ppT').textContent='Preparing your Kundli…';
   $('ppNote').textContent='Please stay on this screen — just a few moments';
-  $('rdT').textContent='🎉 Your 260-page Kundli is ready!';
-  $('rdS').textContent='Rashi • Nakshatra • Lagna • Dasha • Predictions — all from your birth details.';
+  /* No page figure in this line. The live copy read "Your 260-page Kundli is
+     ready!" — a number hardcoded at the exact moment the reader is about to
+     open the PDF and can count it. The download button below states the count,
+     once, from the catalog. */
+  $('rdT').textContent='🎉 Your detailed Kundli is ready!';
+  /* Same claim as the Kundli card on the dashboard and the Explore tile, so a
+     reader meets one description of this report, not three. Each item is a
+     chapter that actually prints — checked against the 17-chapter TOC and the
+     engine calls kundli-report.html makes. "Predictions" is dropped: it was
+     the one word here promising nothing a reader could check. */
+  $('rdS').textContent='Ashtakavarga • Yogas • Doshas • Dasha to pratyantar • Remedies — 17 chapters, from your birth details.';
   $('rdBtn').textContent='⬇️ Click here to download PDF';
   $('rdView').textContent='or view on screen →';
   $('rdTease').textContent='💍 Want deeper insight on marriage, career and the years ahead? See Premium Reports →';
@@ -251,9 +260,9 @@ function googleSignIn(){
 
 /* ── 3 · preparing (30s labor-staged) ── */
 var STEPS_HI=['ग्रहों की स्थिति की गणना हो रही है…','लग्न और भाव बन रहे हैं…','16 वर्ग कुंडलियाँ तैयार हो रही हैं…',
- 'दशा-अंतर्दशा की गणना…','योग और दोष की जाँच…','आपके 260 पन्ने लिखे जा रहे हैं…'];
+ 'दशा-अंतर्दशा की गणना…','योग और दोष की जाँच…','आपकी कुंडली लिखी जा रही है…'];
 var STEPS_EN=['Calculating planetary positions…','Building lagna and houses…','Preparing 16 varga charts…',
- 'Computing dasha periods…','Checking yogas and doshas…','Writing your 260 pages…'];
+ 'Computing dasha periods…','Checking yogas and doshas…','Writing your Kundli…'];
 function startPrep(user){
   show('stPrep');
   /* geocode the birth place during the preparation window (Nominatim, free) */
@@ -312,7 +321,11 @@ function requestServerPdf(){
     }).catch(function(e){dlog('pdf request failed: '+e.message);});
   });
 }
-function updateDlBtn(){var b=$('rdBtn');if(b&&PDF_URL){b.textContent=H?'⬇️ PDF डाउनलोड करें (260 पन्ने)':'⬇️ Download PDF (260 pages)';}}
+function updateDlBtn(){var b=$('rdBtn');if(!b||!PDF_URL)return;
+  /* Page count from report-catalog.js — see FREE_KUNDLI there for why it is
+     "250+" and not an exact figure. */
+  var pg=(typeof kundliPages==='function')?kundliPages(H,'short'):(H?'250+ पन्ने':'250+ pages');
+  b.textContent=H?('⬇️ PDF डाउनलोड करें ('+pg+')'):('⬇️ Download PDF ('+pg+')');}
 /* ══════════════════════════════════════════════════════════════════
    OPENING THE PDF FROM AN INSTALLED PWA
 
@@ -447,6 +460,7 @@ function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
 </script>
 <script src="birthdate-guard.js"></script>
+<script src="report-catalog.js"></script>
 <script src="nav-history.js"></script>
 </body>
 </html>
