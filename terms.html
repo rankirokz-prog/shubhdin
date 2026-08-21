@@ -20,7 +20,11 @@ a{color:#D4A843;}
 </style>
 </head>
 <body>
-<div class="header">
+<div class="header" style="position:relative;"><button onclick="sdLegalBack()" aria-label="Back"
+  style="position:absolute;left:16px;top:16px;width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.10);border:1px solid rgba(212,168,67,0.35);
+  color:#D4A843;font-size:19px;line-height:1;cursor:pointer;font-family:inherit;">&#8592;</button>
+
   <div class="brand">🕉️ ShubhDin — शुभ दिन</div>
   <h1>Terms of Use</h1>
   <div class="updated">Last updated: August 2026</div>
@@ -81,5 +85,18 @@ a{color:#D4A843;}
 <p>These terms are governed by the laws of India. Any dispute is subject to the exclusive jurisdiction of the courts at Eluru, Andhra Pradesh.</p>
 
 <div class="footer"><div style="margin-bottom:10px;font-size:12px;"><a href="/about.html">About</a> · <a href="/privacy-policy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/refund-policy.html">Refund</a> · <a href="/pricing.html">Pricing</a> · <a href="/contact.html">Contact</a></div>© 2026 ShubhDin. Made with 🙏 for every devotee.</div>
+<script>
+/* These pages are opened from Settings, and from a footer link on each other.
+   history.back() returns you wherever you came from — including the tab you
+   were on in the app. A cold open (shared link, bookmark, or a reviewer
+   landing here directly) has nothing to go back to, so it falls through to
+   the app instead of leaving the person stranded on a policy page. */
+function sdLegalBack(){
+  if(document.referrer && document.referrer.indexOf(location.origin)===0 && history.length>1){
+    history.back(); return;
+  }
+  location.href='dashboard.html';
+}
+</script>
 </body>
 </html>
