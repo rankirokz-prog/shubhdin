@@ -144,6 +144,58 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // ── confirm a payment directly with Razorpay ──
+  // The webhook is delivery-dependent: it can be unconfigured, redirected,
+  // rate-limited, or simply never arrive, and the buyer pays the price for it.
+  // Razorpay returns razorpay_payment_id on the callback URL, so we can ask
+  // Razorpay itself whether that payment is real, captured, belongs to THIS
+  // buyer, and is for the right amount. This is the primary confirmation path;
+  // the webhook is now only a backstop for buyers who close the tab.
+  if ((req.query || {}).confirm === '1') {
+    const q1 = req.query || {};
+    if (!q1.uid || !q1.report || !q1.payment_id) return res.status(400).json({ error: 'uid, report and payment_id required' });
+    if (!(await verifyUser(q1.uid, q1.access_token))) return res.status(401).json({ error: 'auth mismatch' });
+
+    const keyId = (process.env.RZP_KEY_ID || '').trim();
+    const keySecret = (process.env.RZP_KEY_SECRET || '').trim();
+    if (!keyId || !keySecret) return res.status(503).json({ error: 'payments not configured yet' });
+    const auth = 'Basic ' + Buffer.from(keyId + ':' + keySecret).toString('base64');
+
+    try {
+      const pay = await fetch('https://api.razorpay.com/v1/payments/' + encodeURIComponent(q1.payment_id),
+        { headers: { Authorization: auth } }).then(r => r.json());
+      if (!pay || !pay.id) return res.status(404).json({ error: 'payment not found' });
+      if (pay.status !== 'captured' && pay.status !== 'authorized') {
+        return res.status(200).json({ paid: false, status: pay.status || 'unknown' });
+      }
+
+      // notes live on the payment, or on its order, or on the payment link
+      let notes = pay.notes || {};
+      if ((!notes.uid || !notes.report) && pay.order_id) {
+        try {
+          const ord = await fetch('https://api.razorpay.com/v1/orders/' + pay.order_id,
+            { headers: { Authorization: auth } }).then(r => r.json());
+          if (ord && ord.notes && ord.notes.uid) notes = ord.notes;
+        } catch (e) {}
+      }
+      // the payment must belong to this signed-in buyer — otherwise anyone could
+      // replay someone else's payment id and claim a report
+      if (notes.uid && notes.uid !== q1.uid) return res.status(403).json({ error: 'payment belongs to another account' });
+      const report = notes.report || q1.report;
+      const expect = PRICES[report];
+      if (!expect) return res.status(400).json({ error: 'not for sale' });
+      if (Math.round((pay.amount || 0) / 100) !== expect) {
+        return res.status(409).json({ error: 'amount mismatch', paid_amount: Math.round((pay.amount || 0) / 100), expected: expect });
+      }
+
+      const up = await upsertPaid(q1.uid, report, expect, pay.id);
+      if (!up.ok) return res.status(500).json({ error: 'order write failed' });
+      return res.status(200).json({ ok: true, paid: true, report: report, order_code: code(q1.uid, report), via: 'confirm' });
+    } catch (e) {
+      return res.status(502).json({ error: 'confirm failed', detail: String(e.message).slice(0, 150) });
+    }
+  }
+
   // ── Razorpay webhook ──
   if (req.method === 'POST') {
     const secret = process.env.RZP_WEBHOOK_SECRET;
@@ -156,6 +208,14 @@ module.exports = async function handler(req, res) {
     const raw = (typeof req.rawBody === 'string') ? req.rawBody
               : Buffer.isBuffer(req.rawBody) ? req.rawBody.toString('utf8') : null;
     const reser = JSON.stringify(req.body || {});
+    // An empty body on a webhook POST almost always means the request was
+    // redirected (apex -> www) and the body was dropped in transit. Signature
+    // verification would then fail as a plain 401 and hide the real cause.
+    if (reser === '{}' && !raw) {
+      return res.status(400).json({ error: 'empty webhook body',
+        why: 'no payload received — if the webhook URL is the apex domain, point it at https://www.shubhdin.app/api/order so the POST is not redirected',
+        host: req.headers.host || null, referer: req.headers.referer || null });
+    }
     const hmac = (s) => crypto.createHmac('sha256', secret).update(s).digest('hex');
     const okSig = (raw && hmac(raw) === sig) || hmac(reser) === sig;
     if (!okSig) return res.status(401).json({ error: 'bad signature',
