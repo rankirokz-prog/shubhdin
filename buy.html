@@ -600,7 +600,7 @@ function doPay(){
      /* show Razorpay's actual reason, not just "failed" — this is the message
         that tells you whether it's keys, mode, or something else. */
      var why=(j&&j.detail)?((j.error||'error')+' — '+j.detail):((j&&j.error)||'failed');
-     if(j&&j.mode)why+=' ['+j.mode+' keys '+(j.key_prefix||'')+']';
+     if(j&&j.mode)why+=' ['+j.mode+' · '+(j.key_id||'?')+' · secret '+(j.secret_len||0)+' chars]';
      bdlog('pay failed: '+why);
      $('errP').textContent=why;$('errP').style.display='block';
      $('btPay').textContent=H?'दोबारा कोशिश करें →':'Retry →';
