@@ -52,6 +52,32 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 </style>
 <script src="font-loader.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
+<script>
+/* Language tables must load BEFORE the page's own script runs. A dynamically
+   appended <script> does not block the parser, so the chosen-language file
+   arrived after the page had already painted and every A() call fell through
+   to Hindi — verified by snapshotting all 46 screens, where every English
+   screen came back in Hindi. document.write during initial parse IS parser-
+   blocking, which is the ordering guarantee needed here.
+   Hindi always loads as the fallback; the chosen language loads beside it. */
+window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
+if(window.SD_LANG&&window.SD_LANG!=='hi')
+  document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
+/* If app-strings-loader.js itself fails to arrive, A() is undefined and EVERY
+   call site throws — the page half-renders and stops. Verified by blocking the
+   file: "A is not defined", and the screen died partway. This shim defines the
+   minimum so the page completes; the real loader overwrites it when it lands. */
+window.addEventListener('DOMContentLoaded',function(){},false);
+if(typeof window.A!=='function'){
+  window.A=function(k){return String(k).replace(/^[a-z]+\./,'').replace(/_/g,' ')
+                        .replace(/^./,function(c){return c.toUpperCase();});};
+  window.AF=function(k,v){return String(window.A(k)).replace(/\{(\w+)\}/g,function(_,n){
+                        return (v&&v[n]!=null)?v[n]:'';});};
+  window.AP=function(k,n,v){var o={};if(v)for(var p in v)o[p]=v[p];o.n=n;return window.AF(k,o);};
+}
+</script>
 </head>
 <body>
 <div class="hdr"><button class="back" onclick="sdBack('dashboard.html')">←</button>
@@ -137,7 +163,7 @@ function sbAuth(){
            onAuthStateChange:function(){ return {data:{subscription:{unsubscribe:function(){}}}}; },
            signInWithOAuth:function(){
              dlog('signIn blocked: auth client unavailable');
-             return Promise.resolve({error:{message:(H?'साइन इन सेवा लोड नहीं हो सकी। इंटरनेट जाँचकर पेज दोबारा खोलें।':'Sign-in service could not load. Check your connection and reload.')}});
+             return Promise.resolve({error:{message:(A('kundli.sign_in_service_could_not_load_che'))}});
            } };
 }
 function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]');
@@ -203,12 +229,12 @@ function kSearchCity(q){
   _kCity.lat=null;_kCity.lng=null;
   if(!q||q.length<2){dd.style.display='none';return;}
   clearTimeout(_kTimer);
-  dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.4);font-size:13px;">'+(H?'खोज रहे हैं…':'Searching…')+'</div>';
+  dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.4);font-size:13px;">'+(A('astrol.searching'))+'</div>';
   dd.style.display='block';
   _kTimer=setTimeout(function(){
     fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&countrycodes=in&limit=6&format=json',{headers:{'Accept-Language':'en'}})
     .then(function(r){return r.json();}).then(function(rs){
-      if(!rs.length){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(H?'कोई परिणाम नहीं':'No results')+'</div>';return;}
+      if(!rs.length){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(A('astrol.no_results'))+'</div>';return;}
       dd.innerHTML=rs.map(function(r){
         var name=r.display_name.split(',')[0].trim();
         var sub=r.display_name.split(',').slice(1,3).join(',').trim();
@@ -216,7 +242,7 @@ function kSearchCity(q){
          +'<div style="font-size:14px;color:#fff;font-weight:600;">'+name+'</div>'
          +'<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">'+sub+'</div></div>';
       }).join('');
-    }).catch(function(){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(H?'खोज विफल':'Search failed')+'</div>';});
+    }).catch(function(){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(A('astrol.search_failed'))+'</div>';});
   },400);
 }
 function kPickCity(name,lat,lng){
@@ -225,8 +251,8 @@ function kPickCity(name,lat,lng){
 }
 function kDetectLoc(){
   var t=document.getElementById('kGpsTxt');
-  t.textContent=H?'⏳ ढूंढ रहे हैं…':'⏳ Detecting…';
-  if(!navigator.geolocation){t.textContent=H?'❌ GPS उपलब्ध नहीं':'❌ GPS not available';return;}
+  t.textContent=A('kundli.detecting');
+  if(!navigator.geolocation){t.textContent=A('kundli.gps_not_available');return;}
   navigator.geolocation.getCurrentPosition(function(pos){
     fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json')
     .then(function(r){return r.json();}).then(function(d){
@@ -239,9 +265,9 @@ function kDetectLoc(){
    red stops being read. Deliberately-equal and accidentally-equal must look
    different in the source. */
     t.textContent=fmt(t2('✓ {city}','✓ {city}'), {city:city});}
-      else t.textContent=H?'शहर नहीं मिला — खोजें':'City not found — search instead';
-    }).catch(function(){t.textContent=H?'विफल — खोजें':'Failed — search instead';});
-  },function(){t.textContent=H?'अनुमति नहीं मिली — खोजें':'Permission denied — search instead';});
+      else t.textContent=A('kundli.city_not_found_search_instead');
+    }).catch(function(){t.textContent=A('kundli.failed_search_instead');});
+  },function(){t.textContent=A('kundli.permission_denied_search_instead');});
 }
 
 /* ── 1 · details ── */
@@ -375,23 +401,22 @@ function kShowManualLink(url){
     (host.parentNode||document.body).insertBefore(box, host.nextSibling);
   }
   box.innerHTML='<div style="font-size:10.5px;color:rgba(255,244,222,0.55);line-height:1.6;margin-top:9px;">'
-    +(H?'डाउनलोड शुरू न हुआ हो तो यहाँ दबाएँ:':'If the download did not start, tap here:')+'</div>'
+    +(A('kundli.if_the_download_did_not_start_tap_'))+'</div>'
     +'<a href="'+url+'" target="_blank" rel="noopener" '
     +'style="display:block;margin-top:6px;padding:11px;border-radius:12px;text-align:center;'
     +'text-decoration:none;font-size:13.5px;font-weight:600;color:#BFEFD0;'
     +'background:rgba(74,124,89,0.18);border:1px solid rgba(120,200,150,0.35);">'
-    +'📥 '+(H?'PDF ब्राउज़र में खोलें':'Open the PDF in your browser')+'</a>'
+    +'📥 '+(A('kundli.open_the_pdf_in_your_browser'))+'</a>'
     +(kIsStandalone()
       ? '<div style="font-size:10px;color:rgba(255,244,222,0.40);margin-top:7px;line-height:1.55;">'
-        +(H?'ऐप के अंदर से डाउनलोड कभी-कभी नहीं चलता — ऊपर वाला लिंक ब्राउज़र में खुलेगा।'
-           :'Downloads sometimes do not run from inside an installed app — the link above opens in your browser.')
+        +(A('kundli.downloads_sometimes_do_not_run_fro'))
         +'</div>' : '');
 }
 function viewKundli(){location.href='kundli-report.html?autoview=1';}
 function downloadKundli(){
   if(PDF_URL){dlog('pdf: downloading file');kOpenPdf(PDF_URL);return;}
   /* not ready yet: one quick retry, else fall back to on-device save */
-  var b=$('rdBtn'); if(b)b.textContent=H?'⏳ अंतिम पन्ने तैयार हो रहे हैं…':'⏳ Finishing the last pages…';
+  var b=$('rdBtn'); if(b)b.textContent=A('kundli.finishing_the_last_pages');
   requestServerPdf();
   var tries=0, pv=setInterval(function(){
     tries++;
@@ -435,20 +460,20 @@ absorbHashTokens().then(function(){
 
   if(det&&hasAuthParams){ dlog('boot: det+authParams → waiting for exchange');
     /* just back from Google: the token exchange is ASYNC — wait for it */
-    $('ppT').textContent=H?'साइन इन हो रहा है…':'Signing you in…';
+    $('ppT').textContent=A('kundli.signing_you_in');
     $('ppStep').textContent=''; show('stPrep');
     sbAuth().onAuthStateChange(function(ev,session){
-      if(session&&session.user){ $('ppT').textContent=H?'आपकी कुंडली बन रही है…':'Preparing your Kundli…'; proceed(session.user); }
+      if(session&&session.user){ $('ppT').textContent=A('kundli.preparing_your_kundli'); proceed(session.user); }
     });
     /* belt & braces: poll too, and time out to the auth screen with a message */
     var tries=0, pv=setInterval(function(){
       tries++;
       sbAuth().getSession().then(function(r){
         if(r.data&&r.data.session){clearInterval(pv);
-          $('ppT').textContent=H?'आपकी कुंडली बन रही है…':'Preparing your Kundli…';
+          $('ppT').textContent=A('kundli.preparing_your_kundli');
           proceed(r.data.session.user);}
         else if(tries>16){clearInterval(pv); dlog('exchange TIMEOUT after 8s'); show('stAuth'); renderDbgAuto();
-          $('errAuth').textContent=H?'साइन इन पूरा नहीं हुआ — कृपया फिर से कोशिश करें':'Sign-in didn\'t complete — please try again';
+          $('errAuth').textContent=A('kundli.sign_in_didn_t_complete_please_try_2');
           $('errAuth').style.display='block';}
       });
     },500);
