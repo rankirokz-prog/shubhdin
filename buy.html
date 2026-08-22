@@ -597,7 +597,12 @@ function doPay(){
      if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();return;}
      if(j&&j.ok&&j.url){bdlog('payment link created');ORDER_CODE=j.order_code||ORDER_CODE;location.href=j.url;return;}
      if(j&&j.error==='payments not configured yet'){devPay();return;}
-     $('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';
+     /* show Razorpay's actual reason, not just "failed" — this is the message
+        that tells you whether it's keys, mode, or something else. */
+     var why=(j&&j.detail)?((j.error||'error')+' — '+j.detail):((j&&j.error)||'failed');
+     if(j&&j.mode)why+=' ['+j.mode+' keys '+(j.key_prefix||'')+']';
+     bdlog('pay failed: '+why);
+     $('errP').textContent=why;$('errP').style.display='block';
      $('btPay').textContent=H?'दोबारा कोशिश करें →':'Retry →';
    }).catch(function(e){
      $('errP').textContent=e.message;$('errP').style.display='block';
