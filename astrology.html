@@ -215,6 +215,32 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 </style>
 <script src="font-loader.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
+<script>
+/* Language tables must load BEFORE the page's own script runs. A dynamically
+   appended <script> does not block the parser, so the chosen-language file
+   arrived after the page had already painted and every A() call fell through
+   to Hindi — verified by snapshotting all 46 screens, where every English
+   screen came back in Hindi. document.write during initial parse IS parser-
+   blocking, which is the ordering guarantee needed here.
+   Hindi always loads as the fallback; the chosen language loads beside it. */
+window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
+if(window.SD_LANG&&window.SD_LANG!=='hi')
+  document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
+/* If app-strings-loader.js itself fails to arrive, A() is undefined and EVERY
+   call site throws — the page half-renders and stops. Verified by blocking the
+   file: "A is not defined", and the screen died partway. This shim defines the
+   minimum so the page completes; the real loader overwrites it when it lands. */
+window.addEventListener('DOMContentLoaded',function(){},false);
+if(typeof window.A!=='function'){
+  window.A=function(k){return String(k).replace(/^[a-z]+\./,'').replace(/_/g,' ')
+                        .replace(/^./,function(c){return c.toUpperCase();});};
+  window.AF=function(k,v){return String(window.A(k)).replace(/\{(\w+)\}/g,function(_,n){
+                        return (v&&v[n]!=null)?v[n]:'';});};
+  window.AP=function(k,n,v){var o={};if(v)for(var p in v)o[p]=v[p];o.n=n;return window.AF(k,o);};
+}
+</script>
 </head>
 <body>
 <div id="app"></div>
@@ -228,7 +254,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
 var H=(U.lang||'hi')==='hi';
 var LAT=parseFloat(U.city_lat)||23.1793, LNG=parseFloat(U.city_lon)||75.7849; // fallback: Ujjain
-var CITY=U.city||(H?'उज्जैन':'Ujjain');
+var CITY=U.city||(A('astrol.ujjain'));
 var PE=window.PanchangEngine;
 
 /* ── i18n micro-dict ─────────────────────────────────────── */
@@ -462,8 +488,8 @@ function vHub(){
     var mine=(U.nakshatra||'').toLowerCase();
     var ok=p.tarabalam[0].good.some(function(n){return n.en.toLowerCase()===mine;});
     tara='<div class="d-tara '+(ok?'ok':'no')+'">'+(ok
-      ? t('✓ आज का नक्षत्र आपके लिए अनुकूल है','✓ Today\'s nakshatra is favourable for you')
-      : t('△ आज का नक्षत्र आपके लिए सामान्य है — बड़े काम शुभ समय में करें','△ Today\'s nakshatra is neutral for you — keep big steps to good windows'))+'</div>';
+      ? A('astrol.today_s_nakshatra_is_favourable_fo_2')
+      : A('astrol.today_s_nakshatra_is_neutral_for_y_2'))+'</div>';
   }
 
   var nb=nowBad();   // is right now inside a forbidden period?
@@ -479,53 +505,53 @@ function vHub(){
   app.innerHTML=
    '<div style="position:fixed;left:7px;bottom:3px;z-index:99;font-size:8.5px;font-family:monospace;color:rgba(255,255,255,0.22);">'+SD_BUILD+'</div>'
    +'<div class="hdr"><button class="back" onclick="location.href=\'dashboard.html\'">←</button>'
-   +'<div><div class="h-t dev">'+t('आज का ज्योतिष','Astrology Today')+'</div>'
+   +'<div><div class="h-t dev">'+A('dashbo.astrology_today')+'</div>'
    +'<div class="h-s">'+greg+' · <span class="dev">'+hindu+'</span></div></div>'
    +'<div class="h-city">📍 '+CITY+'</div></div>'
 
    +'<div class="dial">'
-   +'<div class="d-now-lbl">'+t('अभी चल रहा है','RIGHT NOW')+'</div>'
+   +'<div class="d-now-lbl">'+A('astrol.right_now')+'</div>'
    +'<div style="display:flex;align-items:center;gap:12px;margin:7px 0 2px;flex-wrap:wrap;">'
    +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
    +'<span style="width:14px;height:5px;border-radius:3px;background:#5ABE78;"></span>'+t('शुभ','Auspicious')+'</span>'
    +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
    +'<span style="width:14px;height:5px;border-radius:3px;background:#E66E5A;"></span>'+t('वर्ज्य','Avoid')+'</span>'
    +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
-   +'<span style="width:2px;height:11px;background:#FFE9B8;"></span>'+t('अभी','Now')+'</span>'
-   +'<span style="font-size:9.5px;color:rgba(255,244,222,0.40);">'+t('सूर्योदय से सूर्योदय','sunrise to sunrise')+'</span></div>'
+   +'<span style="width:2px;height:11px;background:#FFE9B8;"></span>'+A('astrol.now')+'</span>'
+   +'<span style="font-size:9.5px;color:rgba(255,244,222,0.40);">'+A('astrol.sunrise_to_sunrise')+'</span></div>'
    +'<div class="d-state"><span class="d-seg dev '+segCls+'">'+segName+'</span>'
    +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
    +ribbonHTML()
-   +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+t('नया काम टालें — यह वर्ज्य काल है','Hold new work — this is a forbidden period')+'</div>':'')
+   +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+A('astrol.hold_new_work_this_is_a_forbidden_')+'</div>':'')
    +(ng?'<div class="d-next">'+fmt(t('अगला साफ़ शुभ समय: <b class="dev">{name}</b> {range}',
           'Next clean window: <b class="dev">{name}</b> {range}'),
         {name:(H?ng.hi:ng.en), range:fR(ng.start,ng.end)})
-        +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+t('(छाँटा हुआ)','(trimmed)')+'</small>':'')+'</div>'
-      :'<div class="d-next">'+t('आज आगे कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</div>')
+        +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+A('astrol.trimmed')+'</small>':'')+'</div>'
+      :'<div class="d-next">'+A('astrol.no_clean_window_left_today')+'</div>')
    +tara
    +'</div>'
 
    +'<div class="grid">'
-   +sec('🐏',t('राशिफल','Rashifal'),fmt(t('चंद्रमा आज <b class="dev">{rashi}</b> राशि में — अपनी राशि देखें',
+   +sec('🐏',A('astrol.rashifal'),fmt(t('चंद्रमा आज <b class="dev">{rashi}</b> राशि में — अपनी राशि देखें',
           'Moon today in <b class="dev">{rashi}</b> — check your rashi'),
         {rashi:(H?p.moonSign.hi:p.moonSign.en)}),'#rashifal')
-   +sec('📿',t('पंचांग','Panchang'),'<b class="dev">'+(H?p.tithi.hi:p.tithi.en)+'</b> • <span class="dev">'+(H?p.nakshatra.hi:p.nakshatra.en)+'</span> • <span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>','#panchang')
-   +sec('⏰',t('शुभ-अशुभ समय','Shubh & Ashubh Times'),timesTeaser(p),'#times')
+   +sec('📿',A('astrol.panchang'),'<b class="dev">'+(H?p.tithi.hi:p.tithi.en)+'</b> • <span class="dev">'+(H?p.nakshatra.hi:p.nakshatra.en)+'</span> • <span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>','#panchang')
+   +sec('⏰',A('astrol.shubh_ashubh_times'),timesTeaser(p),'#times')
    +'</div>'
 
-   +'<div class="limbs">'+miniLimb(t('तिथि','TITHI'),H?p.tithi.hi:p.tithi.en)
-   +miniLimb(t('नक्षत्र','NAKSHATRA'),H?p.nakshatra.hi:p.nakshatra.en)
-   +miniLimb(t('योग','YOGA'),H?p.yoga.hi:p.yoga.en)
-   +miniLimb(t('करण','KARANA'),H?p.karana.hi:p.karana.en)
-   +miniLimb(t('वार','VARA'),H?p.vara.hi:p.vara.en)+'</div>'
+   +'<div class="limbs">'+miniLimb(A('astrol.tithi'),H?p.tithi.hi:p.tithi.en)
+   +miniLimb(A('astrol.nakshatra'),H?p.nakshatra.hi:p.nakshatra.en)
+   +miniLimb(A('astrol.yoga'),H?p.yoga.hi:p.yoga.en)
+   +miniLimb(A('astrol.karana'),H?p.karana.hi:p.karana.en)
+   +miniLimb(A('astrol.vara'),H?p.vara.hi:p.vara.en)+'</div>'
 
    +todayObservance()
    +'<div class="xcard" onclick="location.hash=\'#explore\'">'
-   +'<div class="xc-ic">🧭</div><div><div class="xc-t dev">'+t('और जानें','Explore More')+'</div>'
-   +'<div class="xc-s">'+t('चौघड़िया • होरा • तारा-चंद्र बल • व्रत-पर्व • हिन्दू कैलेंडर','Choghadiya • Hora • Tara & Chandra bala • Vrats • Hindu calendar')+'</div></div>'
+   +'<div class="xc-ic">🧭</div><div><div class="xc-t dev">'+A('astrol.explore_more')+'</div>'
+   +'<div class="xc-s">'+A('astrol.choghadiya_hora_tara_chandra_bala_')+'</div></div>'
    +'<div class="xc-go">›</div></div>'
-   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
-   +'<div class="note">'+t('सभी समय आपके शहर के लिए गणना से — शुभ दिन इंजन','All timings computed for your city — Shubh Din engine')+'</div>';
+   +'<div class="ad">'+A('astrol.ad')+'</div>'
+   +'<div class="note">'+A('astrol.all_timings_computed_for_your_city')+'</div>';
 
   tick=setInterval(function(){
     var c=currentSeg();
@@ -553,7 +579,7 @@ function timesTeaser(p){
         {range:fR(rk.start,rk.end), mins:mins(new Date(rk.start).getTime()-now)});
   if(rk&&now>=new Date(rk.start).getTime()&&now<new Date(rk.end).getTime())
     return '<span class="bad">'+fmt(t('अभी राहु काल — {end} तक','Rahu Kaal now — until {end}'), {end:fT(rk.end)})+'</span>';
-  return t('राहु काल समाप्त — पूरा दिन देखें','Rahu Kaal over — see the full day');
+  return A('astrol.rahu_kaal_over_see_the_full_day');
 }
 
 /* ═════════ RASHIFAL ═════════ */
@@ -563,22 +589,22 @@ function vRashiGrid(){
   var g='';
   for(var i=0;i<12;i++){
     g+='<div class="rt'+(i===mine?' mine':'')+'" onclick="location.hash=\'#rashifal/'+i+'\'">'
-     +(i===mine?'<span class="you">'+t('आपकी','YOU')+'</span>':'')
+     +(i===mine?'<span class="you">'+A('astrol.you')+'</span>':'')
      +'<div class="dot '+(goodSet[i]?'g':'b')+'"></div>'
      +'<div class="em">'+RASHI[i][3]+'</div><div class="nm dev">'+(H?RASHI[i][0]:RASHI[i][1])+'</div></div>';
   }
-  app.innerHTML=pgHead(t('राशिफल','Rashifal'),fmt(t('चंद्रमा आज {rashi} राशि में','Moon today in {rashi}'), {rashi:(H?p.moonSign.hi:p.moonSign.en)}),'hub')
-   +(mine>=0?tobUnknownNote():needBirth(t('तब आपकी राशि यहाँ अपने आप चुनी रहेगी','Then your own rashi will be marked here automatically')))
+  app.innerHTML=pgHead(A('astrol.rashifal'),fmt(t('चंद्रमा आज {rashi} राशि में','Moon today in {rashi}'), {rashi:(H?p.moonSign.hi:p.moonSign.en)}),'hub')
+   +(mine>=0?tobUnknownNote():needBirth(A('astrol.then_your_own_rashi_will_be_marked')))
    +'<div style="display:flex;align-items:center;gap:14px;padding:2px 4px 9px;flex-wrap:wrap;">'
    +'<span style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:rgba(255,244,222,0.70);">'
    +'<span style="width:8px;height:8px;border-radius:50%;background:#5ABE78;"></span>'
-   +t('चंद्रबल अनुकूल','Moon favours you today')+'</span>'
+   +A('astrol.moon_favours_you_today')+'</span>'
    +'<span style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:rgba(255,244,222,0.70);">'
    +'<span style="width:8px;height:8px;border-radius:50%;background:#E66E5A;"></span>'
-   +t('सामान्य','Ordinary')+'</span></div>'
+   +A('astrol.ordinary')+'</span></div>'
    +'<div class="rgrid">'+g+'</div>'
-   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
-   +'<div class="brandline">'+t('गणना से, अनुमान से नहीं','COMPUTED, NOT GUESSED')+'</div>';
+   +'<div class="ad">'+A('astrol.ad')+'</div>'
+   +'<div class="brandline">'+A('astrol.computed_not_guessed')+'</div>';
 }
 
 function vRashi(i){
@@ -588,14 +614,14 @@ function vRashi(i){
   var house=((moon-i+12)%12); /* 0-based: 0 = moon in own rashi (1st house) */
   var cb=p.chandrabalam&&p.chandrabalam[0]?p.chandrabalam[0].good.some(function(r){return r.index===i;}):false;
   var stars=cb?'★★★★☆':'★★☆☆☆';
-  var verdict=cb?t('आज चंद्रबल आपके साथ है','Chandrabala is with you today')
-               :t('आज सामान्य दिन — बड़े निर्णय शुभ समय में लें','A neutral day — keep big decisions to good windows');
+  var verdict=cb?A('astrol.chandrabala_is_with_you_today')
+               :A('astrol.a_neutral_day_keep_big_decisions_t');
   var ds=p.dishaShool;
-  app.innerHTML=pgHead(t('राशिफल','Rashifal'),fmt(t('आज • {date}','Today • {date}'),
+  app.innerHTML=pgHead(A('astrol.rashifal'),fmt(t('आज • {date}','Today • {date}'),
         {date:new Date().toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short'})}),'rashifal')
    +'<div class="card"><div class="verdict">'
    +'<div class="v-em">'+RASHI[i][3]+'</div>'
-   +'<div class="v-name dev">'+(H?RASHI[i][0]:RASHI[i][1])+(i===mine?' <span class="tag g">'+t('आपकी राशि','your rashi')+'</span>':'')+'</div>'
+   +'<div class="v-name dev">'+(H?RASHI[i][0]:RASHI[i][1])+(i===mine?' <span class="tag g">'+A('astrol.your_rashi')+'</span>':'')+'</div>'
    +'<div class="v-stars">'+stars+'</div>'
    +'<div class="v-line '+(cb?'good':'')+' dev">'+verdict+'</div>'
    +'</div></div>'
@@ -604,17 +630,17 @@ function vRashi(i){
           '<b>Moon</b> today is in your <b>{n}{ord} house</b> — <span class="dev">{theme}</span>'),
         {n:(house+1), ord:ordinal(house+1), theme:HOUSE[house][H?0:1]}))
    +factor(cb?'✅':'⚠️',fmt(t('<b>चंद्रबल:</b> {verdict}','<b>Chandrabala:</b> {verdict}'),
-        {verdict: cb?t('अनुकूल — शुभ कार्यों के लिए अच्छा दिन','favourable — a good day for auspicious work')
-                    :t('प्रतिकूल — नई शुरुआत शुभ मुहूर्त में ही करें','unfavourable — start new things only in a good muhurta')}))
+        {verdict: cb?A('astrol.favourable_a_good_day_for_auspicio')
+                    :A('explor.unfavourable_start_new_things_only')}))
    +factor('🧭',fmt(t('<b>दिशाशूल:</b> आज <b class="dev">{dir}</b> दिशा की यात्रा टालें',
           '<b>Disha Shool:</b> avoid starting travel toward the <b class="dev">{dir}</b> today'),
         {dir:(H?ds.hi:ds.en)}))
    +'</div>'
    +'<div class="sec" onclick="location.hash=\'#times\'"><div class="s-ico">⏰</div><div class="s-b">'
-   +'<div class="s-t dev">'+t('आज के शुभ समय देखें','See today\'s good windows')+'</div>'
-   +'<div class="s-live">'+t('चौघड़िया • अभिजित • राहु काल','Choghadiya • Abhijit • Rahu Kaal')+'</div></div><div class="s-go">›</div></div>'
-   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
-   +'<div class="brandline">'+t('गणना से, अनुमान से नहीं','COMPUTED, NOT GUESSED')+'</div>';
+   +'<div class="s-t dev">'+A('astrol.see_today_s_good_windows_2')+'</div>'
+   +'<div class="s-live">'+A('astrol.choghadiya_abhijit_rahu_kaal')+'</div></div><div class="s-go">›</div></div>'
+   +'<div class="ad">'+A('astrol.ad')+'</div>'
+   +'<div class="brandline">'+A('astrol.computed_not_guessed')+'</div>';
 }
 function factor(i,txt){return '<div class="factor"><div class="f-i">'+i+'</div><div class="f-t">'+txt+'</div></div>';}
 function ordinal(n){return n===1?'st':n===2?'nd':n===3?'rd':'th';}
@@ -622,32 +648,32 @@ function ordinal(n){return n===1?'st':n===2?'nd':n===3?'rd':'th';}
 /* ═════════ PANCHANG ═════════ */
 function vPanchang(){
   var p=panchang(),hc=p.hinduCalendar;
-  app.innerHTML=pgHead(t('पंचांग','Panchang'),CITY+' • '+fT(new Date()),'hub')
+  app.innerHTML=pgHead(A('astrol.panchang'),CITY+' • '+fT(new Date()),'hub')
    +'<div class="card">'
-   +prow('🌅 '+t('सूर्योदय / सूर्यास्त','Sunrise / Sunset'),fT(p.sunrise)+' / '+fT(p.sunset))
-   +prow('🌙 '+t('चंद्रोदय / चंद्रास्त','Moonrise / Moonset'),fT(p.moonrise)+' / '+fT(p.moonset))
-   +prow('🌄 '+t('ब्रह्म मुहूर्त','Brahma Muhurta'),p.brahmaMuhurta?fR(p.brahmaMuhurta.start,p.brahmaMuhurta.end):'—')
-   +prow('☀️ '+t('सूर्य / चंद्र राशि','Sun / Moon Sign'),'<span class="dev">'+(H?p.sunSign.hi:p.sunSign.en)+' / '+(H?p.moonSign.hi:p.moonSign.en)+'</span>')
-   +prow('🧭 '+t('दिशा शूल','Disha Shool'),'<span class="dev">'+(H?p.dishaShool.hi:p.dishaShool.en)+'</span>')
+   +prow('🌅 '+A('dashbo.sunrise_sunset'),fT(p.sunrise)+' / '+fT(p.sunset))
+   +prow('🌙 '+A('dashbo.moonrise_moonset'),fT(p.moonrise)+' / '+fT(p.moonset))
+   +prow('🌄 '+A('dashbo.brahma_muhurta'),p.brahmaMuhurta?fR(p.brahmaMuhurta.start,p.brahmaMuhurta.end):'—')
+   +prow('☀️ '+A('astrol.sun_moon_sign'),'<span class="dev">'+(H?p.sunSign.hi:p.sunSign.en)+' / '+(H?p.moonSign.hi:p.moonSign.en)+'</span>')
+   +prow('🧭 '+A('dashbo.disha_shool'),'<span class="dev">'+(H?p.dishaShool.hi:p.dishaShool.en)+'</span>')
    +'</div>'
    +'<div class="card">'
    +limbRow('tithi',t('तिथि','Tithi'),p.tithi)
    +limbRow('nakshatra',t('नक्षत्र','Nakshatra'),p.nakshatra)
    +limbRow('yoga',t('योग','Yoga'),p.yoga)
    +limbRow('karana',t('करण','Karana'),p.karana)
-   +prow(t('वार','Vara'),'<span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>')
+   +prow(A('dashbo.vara'),'<span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>')
    +'</div>'
    +'<div class="card">'
-   +prow(t('विक्रम संवत्','Vikram Samvat'),hc.vikramSamvat||'—')
-   +prow(t('शक संवत्','Shaka Samvat'),hc.shakaSamvat||'—')
-   +prow(t('माह (पूर्णिमांत)','Month (Purnimanta)'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
-   +prow(t('माह (अमांत)','Month (Amanta)'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+(hc.amantaMonth.adhik?' <span class="tag b">'+t('अधिक','Adhik')+'</span>':'')+'</span>')
-   +prow(t('पक्ष','Paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha)+'</span>')
-   +orow(t('ऋतु','Ritu'),L(hc.ritu))
-   +orow(t('अयन','Ayana'),L(hc.ayana))
+   +prow(A('dashbo.vikram_samvat'),hc.vikramSamvat||'—')
+   +prow(A('astrol.shaka_samvat'),hc.shakaSamvat||'—')
+   +prow(A('astrol.month_purnimanta'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
+   +prow(A('astrol.month_amanta'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+(hc.amantaMonth.adhik?' <span class="tag b">'+A('astrol.adhik')+'</span>':'')+'</span>')
+   +prow(A('dashbo.paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha)+'</span>')
+   +orow(A('astrol.ritu'),L(hc.ritu))
+   +orow(A('astrol.ayana'),L(hc.ayana))
    +'</div>'
-   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
-   +'<div class="note">'+t('किसी भी लिंब पर टैप करें — आज के सभी बदलाव समय के साथ','Tap any limb for today\'s full timeline')+'</div>';
+   +'<div class="ad">'+A('astrol.ad')+'</div>'
+   +'<div class="note">'+A('astrol.tap_any_limb_for_today_s_full_time_2')+'</div>';
 }
 function prow(k,v){return '<div class="row"><span class="r-k">'+k+'</span><span class="r-v">'+v+'</span></div>';}
 function limbRow(key,label,limb){
@@ -666,24 +692,24 @@ function vLimb(key){
   if(!map[key])return vPanchang();
   var limb=map[key][0],label=map[key][1];
   var extra='';
-  if(key==='nakshatra')extra='<div class="card">'+prow(t('स्वामी ग्रह','Lord'),limb.lord||'—')+prow(t('पाद','Pada'),limb.pada||'—')+'</div>';
+  if(key==='nakshatra')extra='<div class="card">'+prow(A('astrol.lord'),limb.lord||'—')+prow(A('astrol.pada'),limb.pada||'—')+'</div>';
   var segs=(limb.segments||[]).map(function(s){
     return '<div class="seg"><span class="sv dev">'+(H?s.hi:s.en)+'</span><span class="st">'+fmt(t('समाप्ति {time}','ends {time}'), {time:fT(s.end)})+'</span></div>';}).join('');
-  app.innerHTML=pgHead(label,t('आज का पूरा क्रम','Today\'s full sequence'),'panchang')
+  app.innerHTML=pgHead(label,A('astrol.today_s_full_sequence_2'),'panchang')
    +'<div class="card"><div style="text-align:center;padding:8px 0 12px;">'
    +'<div class="v-name dev">'+(H?limb.hi:limb.en)+'</div>'
-   +'<div class="pg-s" style="margin-top:4px;">'+t('अभी चल रहा है','running now')+'</div></div>'
+   +'<div class="pg-s" style="margin-top:4px;">'+A('astrol.running_now')+'</div></div>'
    +segs+'</div>'+extra
-   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>';
+   +'<div class="ad">'+A('astrol.ad')+'</div>';
 }
 
 /* ═════════ TIMES ═════════ */
 function vTimes(){
   var p=panchang(),now=Date.now();
   function stat(w){if(!w)return '';var a=new Date(w.start).getTime(),b=new Date(w.end).getTime();
-    return now>=a&&now<b?' <span class="tag now">'+t('अभी','NOW')+'</span>':'';}
+    return now>=a&&now<b?' <span class="tag now">'+A('dashbo.now')+'</span>':'';}
   function tr(name,w,good){
-    if(!w)return '<div class="row"><span class="r-k dev">'+name+'</span><span class="r-v"><small>'+t('आज नहीं','not today')+'</small></span></div>';
+    if(!w)return '<div class="row"><span class="r-k dev">'+name+'</span><span class="r-v"><small>'+A('astrol.not_today')+'</small></span></div>';
     return '<div class="row"><span class="r-k dev">'+name+stat(w)+'</span>'
      +'<span class="r-v '+(good?'good':'bad')+'">'+fR(w.start,w.end)+'</span></div>';
   }
@@ -692,7 +718,7 @@ function vTimes(){
     var live=(now>=new Date(s.start).getTime()&&now<new Date(s.end).getTime());
     var hit=s.good?clashesWith(+new Date(s.start),+new Date(s.end),_bads):[];
     return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+(H?s.hi:s.en)
-     +(live?' <span class="tag now">'+t('अभी','NOW')+'</span>':'')
+     +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
      +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(H?hit[0].hi:hit[0].en)+'</small>':'')+'</span>'
      +'<span class="r-v '+(s.good&&!hit.length?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
   var cw=cleanWindows();
@@ -700,38 +726,37 @@ function vTimes(){
    ? cw.map(function(w){
        var live=(now>=+w.start&&now<+w.end);
        return '<div class="row"><span class="r-k dev">'+(H?w.hi:w.en)
-        +(live?' <span class="tag now">'+t('अभी','NOW')+'</span>':'')
-        +(w.trimmed?' <small style="color:rgba(212,168,67,0.62);">'+t('(छाँटा हुआ)','(trimmed)')+'</small>':'')
+        +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
+        +(w.trimmed?' <small style="color:rgba(212,168,67,0.62);">'+A('astrol.trimmed')+'</small>':'')
         +'</span><span class="r-v good">'+fR(w.start,w.end)+'</span></div>';
      }).join('')
-   : '<div class="row"><span class="r-k">'+t('आज आगे कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</span></div>';
-  app.innerHTML=pgHead(t('शुभ-अशुभ समय','Shubh & Ashubh Times'),CITY,'hub')
+   : '<div class="row"><span class="r-k">'+A('astrol.no_clean_window_left_today')+'</span></div>';
+  app.innerHTML=pgHead(A('astrol.shubh_ashubh_times'),CITY,'hub')
    +'<div class="dial">'
-   +'<div class="d-now-lbl">'+t('आज का पूरा दिन','THE WHOLE DAY')+'</div>'
+   +'<div class="d-now-lbl">'+A('astrol.the_whole_day')+'</div>'
    +ribbonHTML()+'</div>'
-   +'<div class="subh">'+t('✅ सुझाए गए समय','✅ Recommended Windows')+'</div>'
+   +'<div class="subh">'+A('astrol.recommended_windows')+'</div>'
    +'<div class="card">'+recHtml+'</div>'
    +'<div class="note" style="margin:-2px 2px 10px;">'
-   +t('ये वही शुभ खंड हैं जिनमें से राहु काल, यमगंड, गुलिक, वर्ज्यम् और दुर्मुहूर्त काट दिए गए हैं — इसलिए कुछ खंड छोटे हैं और कुछ गायब।',
-      'These are the auspicious slots with Rahu Kaal, Yamaganda, Gulika, Varjyam and Dur Muhurtam cut out — which is why some are shorter and some are missing.')+'</div>'
-   +'<div class="subh">'+t('सभी मुहूर्त','All Muhurtas')+'</div>'
+   +A('astrol.these_are_the_auspicious_slots_wit')+'</div>'
+   +'<div class="subh">'+A('astrol.all_muhurtas')+'</div>'
    +'<div class="card">'
-   +tr(t('ब्रह्म मुहूर्त','Brahma Muhurta'),p.brahmaMuhurta,true)
-   +tr(t('अभिजित मुहूर्त','Abhijit Muhurta'),p.abhijit,true)
-   +tr(t('अमृत काल','Amrit Kaal'),p.amritKaal,true)
-   +(p.muhurtas&&p.muhurtas.vijaya?tr(t('विजय मुहूर्त','Vijaya Muhurta'),p.muhurtas.vijaya,true):'')
-   +(p.muhurtas&&p.muhurtas.godhuli?tr(t('गोधूलि मुहूर्त','Godhuli Muhurta'),p.muhurtas.godhuli,true):'')
+   +tr(A('dashbo.brahma_muhurta'),p.brahmaMuhurta,true)
+   +tr(A('dashbo.abhijit_muhurta'),p.abhijit,true)
+   +tr(A('dashbo.amrit_kaal'),p.amritKaal,true)
+   +(p.muhurtas&&p.muhurtas.vijaya?tr(A('explor.vijaya_muhurta'),p.muhurtas.vijaya,true):'')
+   +(p.muhurtas&&p.muhurtas.godhuli?tr(A('explor.godhuli_muhurta'),p.muhurtas.godhuli,true):'')
    +'</div>'
    +'<div class="card">'
    +tr(t('राहु काल','Rahu Kaal'),p.rahuKaal,false)
-   +tr(t('यमगंड','Yamaganda'),p.yamaganda,false)
-   +tr(t('गुलिक काल','Gulika Kaal'),p.gulikaKaal,false)
-   +tr(t('वर्ज्यम्','Varjyam'),p.varjyam,false)
-   +(p.durMuhurtam||[]).map(function(w,i){return tr(t('दुर्मुहूर्त','Dur Muhurtam')+(i?' '+(i+1):''),w,false);}).join('')
+   +tr(A('dashbo.yamaganda'),p.yamaganda,false)
+   +tr(A('dashbo.gulika_kaal'),p.gulikaKaal,false)
+   +tr(A('dashbo.varjyam'),p.varjyam,false)
+   +(p.durMuhurtam||[]).map(function(w,i){return tr(A('dashbo.dur_muhurtam')+(i?' '+(i+1):''),w,false);}).join('')
    +'</div>'
-   +'<div class="card"><div class="pg-s" style="margin-bottom:6px;letter-spacing:1px;">'+t('चौघड़िया','CHOGHADIYA')+'</div>'+chog+'</div>'
-   +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
-   +'<div class="note">'+t('सभी समय आपके शहर के लिए गणना से','All timings computed for your city')+'</div>';
+   +'<div class="card"><div class="pg-s" style="margin-bottom:6px;letter-spacing:1px;">'+A('astrol.choghadiya')+'</div>'+chog+'</div>'
+   +'<div class="ad">'+A('astrol.ad')+'</div>'
+   +'<div class="note">'+A('astrol.all_timings_computed_for_your_city_2')+'</div>';
 }
 
 /* boot */
@@ -761,53 +786,53 @@ function todayObservance(){
   }).join('')+'</div>';
 }
 function vExplore(){
-  app.innerHTML=pgHead(t('और जानें','Explore'),t('आज से आगे — दूसरी तारीख़, मुहूर्त खोज और गहरी गणना','Beyond today — other dates, muhurta search, deeper calculations'),'#hub')
+  app.innerHTML=pgHead(A('explor.explore'),A('explor.beyond_today_other_dates_muhurta_s'),'#hub')
 
-   +'<div class="xgrp">'+t('किसी भी दिन का पंचांग','Panchang for Any Day')+'</div><div class="xgrid">'
-   +xt('📅',t('तारीख़ चुनें','Pick a Date'),t('किसी भी दिन की पूरी गणना','Full panchang, any date'),'#pick')
+   +'<div class="xgrp">'+A('astrol.panchang_for_any_day')+'</div><div class="xgrid">'
+   +xt('📅',A('astrol.pick_a_date'),A('astrol.full_panchang_any_date'),'#pick')
    +'</div>'
 
-   +'<div class="xgrp">'+t('मुहूर्त खोजें','Find a Muhurta')+'</div><div class="xgrid">'
-   +xt('🏠',t('गृह प्रवेश','Griha Pravesh'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/griha_pravesh')
-   +xt('💼',t('व्यापार आरंभ','New Business'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/business')
-   +xt('🚗',t('वाहन खरीद','Vehicle'),t('शुभ दिन खोजें','Find good dates'),'#muhurta/vehicle')
+   +'<div class="xgrp">'+A('astrol.find_a_muhurta')+'</div><div class="xgrid">'
+   +xt('🏠',t('गृह प्रवेश','Griha Pravesh'),A('explor.find_good_dates'),'#muhurta/griha_pravesh')
+   +xt('💼',A('explor.new_business'),A('explor.find_good_dates'),'#muhurta/business')
+   +xt('🚗',t('वाहन खरीद','Vehicle'),A('explor.find_good_dates'),'#muhurta/vehicle')
    +'</div>'
    +'<div class="note" style="margin:6px 2px 0;cursor:pointer;" onclick="location.hash=\'#match\'">'
-   +t('विवाह की तिथि दोनों कुंडलियों से निकलती है → कुंडली मिलान','Marriage dates need both charts → Match Kundali')+' ›</div>'
+   +A('matchk.marriage_dates_need_both_charts_ma')+' ›</div>'
 
-   +'<div class="xgrp">'+t('व्यक्तिगत ज्योतिष','Personal Astrology')+'</div><div class="xgrid">'
-   +xt('💑',t('कुंडली मिलान','Match Kundali'),t('दो कुंडली — गुण मिलान','Two charts, Guna Milan'),'#match')
+   +'<div class="xgrp">'+A('astrol.personal_astrology')+'</div><div class="xgrid">'
+   +xt('💑',A('matchk.match_kundali'),A('matchk.two_charts_guna_milan'),'#match')
    /* Same claim as the Kundli card on the dashboard, worded for a small tile.
       Chapter count leads because 17 is countable in the report's own contents
       page; the page figure comes from the catalog so it lives in one place.
       The live copy said "Free 260-page report" — over-claiming a number a
       devotee can literally count (the report measures about 255) and
       disagreeing with the dashboard, which says 250+. */
-   +xt('📜',t('मेरी कुंडली','My Kundli'),
+   +xt('📜',A('home.my_kundli'),
         (typeof kundliPages==='function')
           ? t('17 अध्याय · '+kundliPages(true,'short')+' · मुफ़्त','17 chapters · '+kundliPages(false,'short')+' · free')
-          : t('17 अध्याय · 250+ पन्ने · मुफ़्त','17 chapters · 250+ pages · free'),'@kundli')
+          : A('astrol.17_chapters_250_pages_free'),'@kundli')
    +'</div>'
 
-   +'<div class="xgrp">'+t('साधना','Spiritual Practice')+'</div><div class="xgrid">'
-   +xt('🧘',t('साधना','Sadhana'),t('अपनी दैनिक साधना बनाएँ','Build your daily practice'),'@dashboard.html?go=listen')
+   +'<div class="xgrp">'+A('astrol.spiritual_practice')+'</div><div class="xgrid">'
+   +xt('🧘',A('dashbo.sadhana'),A('astrol.build_your_daily_practice'),'@dashboard.html?go=listen')
    +'</div>'
 
-   +'<div class="xgrp">'+t('गहरी गणना','Deeper Calculations')+'</div><div class="xgrid">'
-   +xt('🕐',t('चौघड़िया','Choghadiya'),t('पूरे 16 खंड','All 16 slots'),'#chogh')
-   +xt('⏳',t('होरा','Hora'),t('24 ग्रह होरा','24 planetary hours'),'#hora')
-   +xt('✨',t('ताराबल','Tarabala'),t('सभी 27 नक्षत्र','All 27 nakshatras'),'#tara')
-   +xt('🌙',t('चंद्रबल','Chandrabala'),t('सभी 12 राशि','All 12 rashis'),'#chandra')
-   +xt('🔭',t('लग्न सारणी','Lagna Table'),t('दिन भर के लग्न','Lagnas through the day'),'#lagna')
+   +'<div class="xgrp">'+A('astrol.deeper_calculations')+'</div><div class="xgrid">'
+   +xt('🕐',A('astrol.choghadiya_2'),A('astrol.all_16_slots'),'#chogh')
+   +xt('⏳',A('astrol.hora'),A('astrol.24_planetary_hours'),'#hora')
+   +xt('✨',A('dashbo.tarabala'),A('astrol.all_27_nakshatras'),'#tara')
+   +xt('🌙',A('dashbo.chandrabala'),A('astrol.all_12_rashis'),'#chandra')
+   +xt('🔭',A('astrol.lagna_table'),A('astrol.lagnas_through_the_day'),'#lagna')
    +'</div>'
 
-   +'<div class="xgrp">'+t('कैलेंडर','Calendar')+'</div><div class="xgrid">'
-   +xt('🙏',t('व्रत','Vrats'),t('आने वाले व्रत','Upcoming fasts'),'#vrats')
-   +xt('🪔',t('त्योहार','Festivals'),t('इस वर्ष के पर्व','This year'),'#fest')
-   +xt('📜',t('संवत् • मास','Samvat & Masa'),t('हिन्दू कैलेंडर','Hindu calendar'),'#hcal')
+   +'<div class="xgrp">'+A('astrol.calendar')+'</div><div class="xgrid">'
+   +xt('🙏',A('astrol.vrats'),A('astrol.upcoming_fasts'),'#vrats')
+   +xt('🪔',A('astrol.festivals'),A('astrol.this_year'),'#fest')
+   +xt('📜',A('astrol.samvat_masa'),A('astrol.hindu_calendar'),'#hcal')
    +'</div>'
 
-   +'<div class="note">'+t('आज का पंचांग, राशिफल और शुभ-अशुभ समय "आज का ज्योतिष" पर हैं — यहाँ वही दोबारा नहीं दिखाया गया।','Today\'s panchang, rashifal and timings live on Astrology Today — they are deliberately not repeated here.')+'</div>';
+   +'<div class="note">'+A('astrol.today_s_panchang_rashifal_and_timi_2')+'</div>';
 }
 
 /* ═════════ SHARED BIRTH-PROFILE SYSTEM ═════════
@@ -855,47 +880,44 @@ function vBpForm(slot){
   var pr=bpRead(slot)||{}, ti=BP_TITLES[slot]||BP_TITLES.self;
   BP_PICK={lat:pr.lat,lng:pr.lng};
   var why = slot==='self'
-    ? t('जन्म विवरण से गणना आपके अपने नक्षत्र और चंद्रराशि पर आधारित हो जाती है — तभी शुभ दिन आपके लिए निकलते हैं, सामान्य नहीं। यह एक बार भरना है, फिर पूरे ऐप में काम आएगा।',
-        'With your birth details every calculation is scored against your own nakshatra and Moon rashi — that is what makes a date auspicious for you rather than in general. Enter it once; the whole app will use it.')
-    : t('गुण मिलान चंद्र नक्षत्र से होता है, इसलिए दोनों का जन्म विवरण चाहिए। सही समय जितना सटीक, मिलान उतना भरोसेमंद।',
-        'Guna Milan is computed from the Moon nakshatra, so both charts are needed. The more exact the birth time, the more reliable the match.');
-  app.innerHTML=pgHead(H?ti.hi:ti.en,t('एक बार भरें — आगे अपने आप इस्तेमाल होगा','Enter once — reused automatically'),BP_RET)
+    ? A('shared.with_your_birth_details_every_calc')
+    : A('astrol.guna_milan_is_computed_from_the_mo');
+  app.innerHTML=pgHead(H?ti.hi:ti.en,A('shared.enter_once_reused_automatically'),BP_RET)
    +'<div class="bpwhy">'+why+'</div>'
    +'<div class="bpf">'
-   +'<label class="bpl">'+t('नाम','Name')+'</label>'
+   +'<label class="bpl">'+A('astrol.name')+'</label>'
    +'<input class="bpi" id="bpName" type="text" value="'+(pr.name||'').replace(/"/g,'&quot;')+'">'
-   +'<div class="bprow"><div><label class="bpl">'+t('जन्म तिथि','Date of Birth')+'</label>'
+   +'<div class="bprow"><div><label class="bpl">'+A('astrol.date_of_birth')+'</label>'
    +'<input class="bpi" id="bpDob" type="date" value="'+(pr.dob||'')+'" min="1900-01-01" data-birthdate="1"></div>'
-   +'<div><label class="bpl">'+t('जन्म समय','Time of Birth')+'</label>'
+   +'<div><label class="bpl">'+A('astrol.time_of_birth')+'</label>'
    +'<input class="bpi" id="bpTob" type="time" value="'+(pr.tob||'')+'"></div></div>'
-   +'<label class="bpl">'+t('जन्म स्थान','Birth Place')+'</label>'
+   +'<label class="bpl">'+A('astrol.birth_place')+'</label>'
    +'<div style="position:relative;">'
-   +'<input class="bpi" id="bpPlace" type="text" autocomplete="off" placeholder="'+t('शहर खोजें…','Search city…')+'" '
+   +'<input class="bpi" id="bpPlace" type="text" autocomplete="off" placeholder="'+A('shared.search_city')+'" '
    +'value="'+(pr.place||'').replace(/"/g,'&quot;')+'" oninput="bpCity(this.value)">'
    +'<div class="bpdd" id="bpDD"></div></div>'
-   +'<button class="bpbtn" onclick="bpSave()">'+t('सहेजें और आगे बढ़ें →','Save & Continue →')+'</button>'
+   +'<button class="bpbtn" onclick="bpSave()">'+A('shared.save_continue')+'</button>'
    +'<div class="bperr" id="bpErr"></div>'
    +'</div>'
-   +'<div class="note">'+t('विवरण आपके फ़ोन में सुरक्षित रहता है और पूरे ऐप में दोबारा नहीं पूछा जाएगा।',
-       'Saved on your phone and never asked for again anywhere in the app.')+'</div>';
+   +'<div class="note">'+A('shared.saved_on_your_phone_and_never_aske')+'</div>';
 }
 function bpCity(q){
   var dd=document.getElementById('bpDD'); if(!dd) return;
   BP_PICK={};
   if(!q||q.length<2){dd.style.display='none';return;}
   clearTimeout(_bpTimer);
-  dd.innerHTML='<div><div class="n1">'+t('खोज रहे हैं…','Searching…')+'</div></div>'; dd.style.display='block';
+  dd.innerHTML='<div><div class="n1">'+A('astrol.searching')+'</div></div>'; dd.style.display='block';
   _bpTimer=setTimeout(function(){
     fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&limit=6&format=json',{headers:{'Accept-Language':'en'}})
     .then(function(r){return r.json();}).then(function(rs){
-      if(!rs.length){dd.innerHTML='<div><div class="n1">'+t('कोई परिणाम नहीं','No results')+'</div></div>';return;}
+      if(!rs.length){dd.innerHTML='<div><div class="n1">'+A('astrol.no_results')+'</div></div>';return;}
       dd.innerHTML=rs.map(function(r){
         var nm=r.display_name.split(',')[0].trim().replace(/'/g,'');
         var sub=r.display_name.split(',').slice(1,3).join(',').trim();
         return '<div onclick="bpPickCity(\''+nm+'\','+r.lat+','+r.lon+')">'
           +'<div class="n1">'+nm+'</div><div class="n2">'+sub+'</div></div>';
       }).join('');
-    }).catch(function(){dd.innerHTML='<div><div class="n1">'+t('खोज विफल','Search failed')+'</div></div>';});
+    }).catch(function(){dd.innerHTML='<div><div class="n1">'+A('astrol.search_failed')+'</div></div>';});
   },420);
 }
 function bpPickCity(nm,lat,lng){
@@ -908,12 +930,12 @@ function bpSave(){
   var err=document.getElementById('bpErr');
   var dob=v('bpDob'), tob=v('bpTob'), place=v('bpPlace');
   function fail(m){err.textContent=m;err.style.display='block';}
-  if(!dob||!tob) return fail(t('जन्म तिथि और समय दोनों भरें','Please fill both date and time of birth'));
-  if(!place) return fail(t('जन्म स्थान भरें','Please enter the birth place'));
+  if(!dob||!tob) return fail(A('astrol.please_fill_both_date_and_time_of_'));
+  if(!place) return fail(A('astrol.please_enter_the_birth_place'));
   if(BP_PICK.lat==null){
     var old=bpRead(BP_SLOT);
     if(old&&old.place===place&&old.lat!=null) BP_PICK={lat:old.lat,lng:old.lng};
-    else return fail(t('सूची में से शहर चुनें — निर्देशांक चाहिए','Pick the city from the list — coordinates are needed'));
+    else return fail(A('astrol.pick_the_city_from_the_list_coordi'));
   }
   bpWrite(BP_SLOT,{name:v('bpName'),dob:dob,tob:tob,place:place,lat:BP_PICK.lat,lng:BP_PICK.lng});
   location.hash=BP_RET;
@@ -923,7 +945,7 @@ function pcard(slot,ico,label,ret){
   var pr=bpRead(slot);
   return '<div class="pcard'+(pr?'':' empty')+'" onclick="goBp(\''+slot+'\',\''+ret+'\')">'
    +'<div class="pc-i">'+ico+'</div><div><div class="pc-n dev">'+(pr&&pr.name?pr.name:label)+'</div>'
-   +'<div class="pc-s">'+(pr?bpLine(pr):t('विवरण भरें','Tap to enter details'))+'</div></div>'
+   +'<div class="pc-s">'+(pr?bpLine(pr):A('shared.tap_to_enter_details'))+'</div></div>'
    +'<div class="pc-go">'+(pr?'✎':'+')+'</div></div>';
 }
 function vMatch(){
@@ -933,34 +955,32 @@ function vMatch(){
      be the standard trick and exactly the wrong one for this brand. */
   var upfront='<div class="card" style="margin-bottom:12px;">'
    +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(150,220,170,0.9);text-transform:uppercase;margin-bottom:6px;">'
-   +t('यहाँ मुफ़्त में मिलेगा','Free here')+'</div>'
+   +A('astrol.free_here')+'</div>'
    +'<div style="font-size:11.5px;color:rgba(255,244,222,0.80);line-height:1.75;">'
-   +t('36 में से गुण अंक • आठों कूट अलग-अलग • मंगल दोष का निर्णय • नाड़ी, भकूट और गण दोष — कटे या नहीं',
-      'Score out of 36 · all eight kootas individually · Mangal Dosha verdict · Nadi, Bhakoot and Gana dosha — cancelled or standing')+'</div>'
+   +A('astrol.score_out_of_36_all_eight_kootas_i')+'</div>'
    +'<div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(217,196,255,0.9);text-transform:uppercase;margin:11px 0 6px;">'
-   +t('विस्तृत रिपोर्ट में','In the paid report')+'</div>'
+   +A('astrol.in_the_paid_report')+'</div>'
    +'<div style="font-size:11.5px;color:rgba(255,244,222,0.68);line-height:1.75;">'
-   +t('दोष परिहार का शास्त्रीय विश्लेषण • दोनों की नवांश (D9) कुंडली • सप्तम भाव और अष्टकवर्ग बल • विवाह के शुभ काल • उपाय',
-      'Classical dosha-cancellation analysis · both Navamsa (D9) charts · 7th-house and Ashtakavarga strength · marriage timing windows · remedies')+'</div>'
+   +A('astrol.classical_dosha_cancellation_analy')+'</div>'
    +'<div style="font-size:10.5px;color:rgba(255,244,222,0.45);margin-top:10px;">'
-   +t('विवरण आपके फ़ोन में रहता है। गणना भी यहीं होती है।','Details stay on your phone. The calculation runs here too.')+'</div></div>';
+   +A('astrol.details_stay_on_your_phone_the_cal')+'</div></div>';
 
-  app.innerHTML=pgHead(t('कुंडली मिलान','Match Kundali'),t('दोनों का जन्म विवरण — फिर गुण मिलान','Both birth charts, then Guna Milan'),'#explore')
+  app.innerHTML=pgHead(A('matchk.match_kundali'),A('matchk.both_birth_charts_then_guna_milan'),'#explore')
    +upfront
-   +pcard('boy','🤵',t('वर','Groom'),'#match')
+   +pcard('boy','🤵',A('matchk.groom'),'#match')
    +(!boy&&me?useMine('boy'):'')
-   +pcard('girl','👰',t('वधू','Bride'),'#match')
+   +pcard('girl','👰',A('matchk.bride'),'#match')
    +(!girl&&me?useMine('girl'):'')
    +(ready
-     ? '<button class="bpbtn" onclick="location.hash=\'#match/result\'">'+t('मिलान देखें →','See the Match →')+'</button>'
-     : '<div class="note">'+t('दोनों विवरण भरने पर मिलान अपने आप उपलब्ध हो जाएगा।','The match unlocks once both sets of details are in.')+'</div>');
+     ? '<button class="bpbtn" onclick="location.hash=\'#match/result\'">'+A('matchk.see_the_match')+'</button>'
+     : '<div class="note">'+A('matchk.the_match_unlocks_once_both_sets_o')+'</div>');
 }
 /* One tap to reuse the details already saved for this user. */
 function useMine(slot){
   var me=bpRead('self');
   return '<div style="margin:-4px 2px 11px;text-align:right;">'
    +'<span onclick="copySelf(\''+slot+'\')" style="font-size:11.5px;color:rgba(232,190,90,0.92);cursor:pointer;">'
-   +t('↩ मेरा विवरण यहाँ भरें','↩ Use my details here')
+   +A('astrol.use_my_details_here')
    +' <small style="color:rgba(255,244,222,0.45);">('+(me.name||bpLine(me).split(' · ')[0])+')</small></span></div>';
 }
 function copySelf(slot){
@@ -973,7 +993,7 @@ function vMatchResult(){
   if(!boy||!girl) return vMatch();
   var g=null,mm=null;
   try{ g=PE.getGunaMilanFull(bpDate(boy),bpDate(girl)); }catch(e){}
-  if(!g){app.innerHTML=pgHead(t('कुंडली मिलान','Match Kundali'),'','#match')+'<div class="note">—</div>';return;}
+  if(!g){app.innerHTML=pgHead(A('matchk.match_kundali'),'','#match')+'<div class="note">—</div>';return;}
   try{ mm=PE.getManglikMatch(bpDate(boy),boy.lat,boy.lng,bpDate(girl),girl.lat,girl.lng); }catch(e){}
   var eff=(g.effectiveTotal!=null?g.effectiveTotal:g.total);
   var pct=Math.round(eff/g.max*100);
@@ -986,33 +1006,31 @@ function vMatchResult(){
       +'<div class="kt-p" style="color:'+(ok?'#8FE0A8':'#F0A08E')+'">'+k.obtained+'/'+k.max+'</div></div>';
   }).join('');
   var flags='';
-  if(mm&&mm.verdict) flags+='<div class="kt"><div class="kt-n"><div class="dev">'+t('मंगल दोष','Mangal Dosha')+'</div>'
+  if(mm&&mm.verdict) flags+='<div class="kt"><div class="kt-n"><div class="dev">'+A('astrol.mangal_dosha')+'</div>'
     +'<div class="kt-d">'+(H?mm.verdict.hi:mm.verdict.en)+'</div></div></div>';
   ['nadi','bhakoot','gana'].forEach(function(k){
     var d=g.parihara&&g.parihara[k]; if(!d||!d.dosha) return;
-    var st=d.cancelled?t('परिहार सहित — कट गया','cancelled by parihara'):(d.softened?t('कुछ हल्का','partly softened'):t('यथावत','stands'));
+    var st=d.cancelled?A('astrol.cancelled_by_parihara'):(d.softened?A('astrol.partly_softened'):A('astrol.stands'));
     flags+='<div class="kt"><div style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:'+(d.cancelled?'#5ABE78':'#E8A317')+'"></div>'
       +'<div class="kt-n"><div class="dev">'+t(k==='nadi'?'नाड़ी दोष':k==='bhakoot'?'भकूट दोष':'गण दोष',
         k==='nadi'?'Nadi Dosha':k==='bhakoot'?'Bhakoot Dosha':'Gana Dosha')+'</div>'
       +'<div class="kt-d">'+st+'</div></div></div>';
   });
-  if(!flags) flags='<div class="kt"><div class="kt-n">'+t('कोई बड़ा दोष नहीं ✓','No major dosha ✓')+'</div></div>';
-  app.innerHTML=pgHead(t('गुण मिलान','Guna Milan'),(boy.name||t('वर','Groom'))+' · '+(girl.name||t('वधू','Bride')),'#match')
+  if(!flags) flags='<div class="kt"><div class="kt-n">'+A('astrol.no_major_dosha')+'</div></div>';
+  app.innerHTML=pgHead(t('गुण मिलान','Guna Milan'),(boy.name||A('matchk.groom'))+' · '+(girl.name||A('matchk.bride')),'#match')
    +'<div class="score"><div><span class="sc-n">'+eff+'</span><span class="sc-m">/'+g.max+'</span></div>'
    +'<div class="sc-v dev">'+(H?(g.effectiveVerdict||g.verdict):(g.effectiveVerdict||g.verdict))+' · '+pct+'%</div>'
    +(g.effectiveTotal!=null&&g.effectiveTotal!==g.total
       ? '<div class="sc-e">'+t('कच्चा योग '+g.total+'/'+g.max+' — परिहार लगाने के बाद '+eff,
           'Raw score '+g.total+'/'+g.max+' — '+eff+' after parihara applied')+'</div>' : '')
    +'</div>'
-   +'<div class="subh">'+t('अष्टकूट — आठों कूट','Ashtakoota — all eight')+'</div>'+kt
-   +'<div class="subh">'+t('दोष जाँच','Dosha Check')+'</div>'+flags
+   +'<div class="subh">'+A('matchk.ashtakoota_all_eight')+'</div>'+kt
+   +'<div class="subh">'+A('astrol.dosha_check')+'</div>'+flags
    +'<div class="cta" onclick="location.href=\'buy.html?r=marriage\'">'
-   +'<div class="cta-t">'+t('पूरा विवाह विश्लेषण चाहिए?','Want the complete marriage analysis?')+'</div>'
-   +'<div class="cta-s">'+t('विस्तृत विवाह रिपोर्ट में यह सब जुड़ता है — दोष परिहार का शास्त्रीय विश्लेषण, दोनों की नवांश (D9) कुंडली, सप्तम भाव और अष्टकवर्ग बल, विवाह के शुभ काल, और उपाय।',
-      'The detailed Marriage Report adds what a score cannot show — classical dosha-cancellation analysis, both Navamsa (D9) charts, 7th-house and Ashtakavarga strength, marriage timing windows, and remedies.')+'</div>'
-   +'<div class="cta-b">'+t('विस्तृत विवाह रिपोर्ट देखें →','View Detailed Marriage Report →')+'</div></div>'
-   +'<div class="note">'+t('गुण अंक एक संकेत है, निर्णय नहीं — अंतिम राय अपने पुरोहित से लें।',
-      'The guna score is an indicator, not a verdict — take the final call with your purohit.')+'</div>';
+   +'<div class="cta-t">'+A('astrol.want_the_complete_marriage_analysi')+'</div>'
+   +'<div class="cta-s">'+A('astrol.the_detailed_marriage_report_adds_')+'</div>'
+   +'<div class="cta-b">'+A('astrol.view_detailed_marriage_report')+'</div></div>'
+   +'<div class="note">'+A('astrol.the_guna_score_is_an_indicator_not')+'</div>';
 }
 /* ── Panchang for any date (Today can only ever show today) ── */
 function vPick(iso){
@@ -1023,24 +1041,24 @@ function vPick(iso){
   if(q){
     var hc=q.hinduCalendar;
     body='<div class="card">'
-     +prow(t('वार','Vara'),'<span class="dev">'+(H?q.vara.hi:q.vara.en)+'</span>')
+     +prow(A('dashbo.vara'),'<span class="dev">'+(H?q.vara.hi:q.vara.en)+'</span>')
      +prow(t('तिथि','Tithi'),'<span class="dev">'+(H?q.tithi.hi:q.tithi.en)+'</span> · '+t(q.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',q.tithi.paksha))
      +prow(t('नक्षत्र','Nakshatra'),'<span class="dev">'+(H?q.nakshatra.hi:q.nakshatra.en)+'</span>')
      +prow(t('योग','Yoga'),'<span class="dev">'+(H?q.yoga.hi:q.yoga.en)+'</span>')
      +prow(t('करण','Karana'),'<span class="dev">'+(H?q.karana.hi:q.karana.en)+'</span>')
-     +prow('🌅 '+t('सूर्योदय / सूर्यास्त','Sunrise / Sunset'),fT(q.sunrise)+' – '+fT(q.sunset))
-     +prow('⭐ '+t('अभिजित','Abhijit'),q.abhijit?fR(q.abhijit.start,q.abhijit.end):t('आज नहीं','none'))
+     +prow('🌅 '+A('dashbo.sunrise_sunset'),fT(q.sunrise)+' – '+fT(q.sunset))
+     +prow('⭐ '+A('dashbo.abhijit'),q.abhijit?fR(q.abhijit.start,q.abhijit.end):A('astrol.none'))
      +prow('🚫 '+t('राहु काल','Rahu Kaal'),q.rahuKaal?fR(q.rahuKaal.start,q.rahuKaal.end):'—')
-     +prow('📜 '+t('मास','Masa'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span> · '+fmt(t('वि.सं. {y}','V.S. {y}'), {y:hc.vikramSamvat}))
+     +prow('📜 '+A('astrol.masa'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span> · '+fmt(t('वि.सं. {y}','V.S. {y}'), {y:hc.vikramSamvat}))
      +'</div>';
   }
-  app.innerHTML=pgHead(t('किसी भी दिन का पंचांग','Panchang for Any Day'),CITY,'#explore')
+  app.innerHTML=pgHead(A('astrol.panchang_for_any_day'),CITY,'#explore')
    +'<div class="card" style="padding:12px 14px;"><input id="pkD" type="date" value="'+val+'" '
    +'onchange="location.hash=\'#pick/\'+this.value" '
    +'style="width:100%;background:#2A1912;border:1px solid rgba(212,168,67,0.3);border-radius:10px;'
    +'padding:11px 12px;color:#F7EED8;font-size:15px;font-family:inherit;color-scheme:dark;"></div>'
    +body
-   +'<div class="note">'+t('गणना आपके शहर के निर्देशांक से — तारीख़ बदलिए, पूरा पंचांग बदल जाएगा।','Computed for your city\'s coordinates — change the date and the whole panchang recomputes.')+'</div>';
+   +'<div class="note">'+A('astrol.computed_for_your_city_s_coordinat_2')+'</div>';
 }
 /* ── Muhurta finder: scores real dates against YOUR birth chart ── */
 // Marriage is deliberately NOT here. A marriage muhurta needs both charts —
@@ -1054,12 +1072,11 @@ var MUH_META={
 function vMuhurtaPick(){
   var g='';
   Object.keys(MUH_META).forEach(function(k){var m=MUH_META[k];
-    g+=xt(m.i,H?m.hi:m.en,t('शुभ दिन खोजें','Find good dates'),'#muhurta/'+k);});
-  app.innerHTML=pgHead(t('मुहूर्त खोजें','Find a Muhurta'),t('आपकी कुंडली से शुभ तिथियाँ','Dates scored against your chart'),'#explore')
+    g+=xt(m.i,H?m.hi:m.en,A('explor.find_good_dates'),'#muhurta/'+k);});
+  app.innerHTML=pgHead(A('astrol.find_a_muhurta'),A('astrol.dates_scored_against_your_chart'),'#explore')
    +'<div class="xgrid">'+g+'</div>'
    +'<div class="note" style="cursor:pointer;" onclick="location.hash=\'#match\'">'
-   +t('विवाह की तिथि यहाँ नहीं है — उसके लिए वर और वधू दोनों की कुंडली चाहिए, एक से नहीं निकलती। → कुंडली मिलान',
-      'Marriage is not here — a marriage date needs both the bride\'s and the groom\'s charts, not one. → Match Kundali')+' ›</div>';
+   +A('matchk.marriage_is_not_here_a_marriage_da_2')+' ›</div>';
 }
 function birthDT(){
   if(!U.dob) return null;
@@ -1067,17 +1084,16 @@ function birthDT(){
 }
 function vMuhurtaRun(key){
   var m=MUH_META[key]; if(!m) return vMuhurtaPick();
-  var head=pgHead((m.i+' ')+(H?m.hi:m.en),t('आपकी कुंडली से शुभ तिथियाँ','Auspicious dates from your own chart'),'#explore');
+  var head=pgHead((m.i+' ')+(H?m.hi:m.en),A('astrol.auspicious_dates_from_your_own_cha'),'#explore');
   var pr=bpRead('self');
 
   /* No birth details? Ask for them HERE, with the reason — never a detour to Settings. */
   if(!pr){
     app.innerHTML=head
-     +'<div class="bpwhy">'+t('इस खोज में तिथि, नक्षत्र और वार तो सबके लिए एक जैसे हैं — पर ताराबल और चंद्रबल आपके अपने जन्म नक्षत्र से निकलते हैं। वही एक सामान्य सूची को <b>आपकी</b> सूची बनाते हैं।',
-        'Tithi, nakshatra and weekday are the same for everyone — but tarabala and chandrabala are computed from <b>your</b> birth nakshatra. That is what turns a generic list into your list.')+'</div>'
+     +'<div class="bpwhy">'+A('astrol.tithi_nakshatra_and_weekday_are_th')+'</div>'
      +'<div class="pcard empty" onclick="goBp(\'self\',\'#muhurta/'+key+'\')">'
-     +'<div class="pc-i">🎂</div><div><div class="pc-n dev">'+t('जन्म विवरण भरें','Enter Birth Details')+'</div>'
-     +'<div class="pc-s">'+t('एक बार — पूरे ऐप में काम आएगा','Once — used across the whole app')+'</div></div>'
+     +'<div class="pc-i">🎂</div><div><div class="pc-n dev">'+A('astrol.enter_birth_details')+'</div>'
+     +'<div class="pc-s">'+A('astrol.once_used_across_the_whole_app')+'</div></div>'
      +'<div class="pc-go">+</div></div>';
     return;
   }
@@ -1086,19 +1102,18 @@ function vMuhurtaRun(key){
   var res=null;
   try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),12); }catch(e){}
 
-  var controls='<div class="subh">'+t('कितने दिनों में खोजें','Search window')+'</div>'
+  var controls='<div class="subh">'+A('astrol.search_window')+'</div>'
    +'<div class="xgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:9px;">'
    +[30,90,180].map(function(d){
       return '<div class="xt" style="padding:9px 6px;'+(d===days?'border-color:rgba(232,190,90,0.9);background:#4A3114;':'')+'" '
        +'onclick="MUH_DAYS[\''+key+'\']='+d+';route();"><div class="xt-n">'+d+' '+t('दिन','days')+'</div></div>';
     }).join('')+'</div>'
    +'<div class="pcard" onclick="goBp(\'self\',\'#muhurta/'+key+'\')"><div class="pc-i">🎂</div>'
-   +'<div><div class="pc-n dev">'+(pr.name||t('आपका विवरण','Your details'))+'</div>'
+   +'<div><div class="pc-n dev">'+(pr.name||A('astrol.your_details'))+'</div>'
    +'<div class="pc-s">'+bpLine(pr)+'</div></div><div class="pc-go">✎</div></div>';
 
   if(!res||!res.results||!res.results.length){
-    app.innerHTML=head+controls+'<div class="note">'+t('इस अवधि में इस कार्य के लिए कोई शुभ दिन नहीं मिला। शर्तें ढीली करके दिन बनाना आसान था — नहीं किया। अवधि बढ़ाकर देखिए।',
-      'No auspicious day for this in the chosen window. Loosening the rules to manufacture one would have been easy — we did not. Try a longer window.')+'</div>';
+    app.innerHTML=head+controls+'<div class="note">'+A('astrol.no_auspicious_day_for_this_in_the_')+'</div>';
     return;
   }
 
@@ -1133,8 +1148,8 @@ function vMuhurtaRun(key){
       +'<div class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);margin-bottom:5px;">'
       +(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</div>'
       +plus+minus
-      +window_(r,'abhijit','⭐',t('अभिजित','Abhijit'))
-      +window_(r,'amritKaal','🍯',t('अमृत काल','Amrit Kaal'))
+      +window_(r,'abhijit','⭐',A('dashbo.abhijit'))
+      +window_(r,'amritKaal','🍯',A('dashbo.amrit_kaal'))
       +'</div>';
   }
 
@@ -1144,27 +1159,25 @@ function vMuhurtaRun(key){
   } else {
     var clean=list.filter(function(r){return !(r.minus||[]).length;});
     var caveat=list.filter(function(r){return (r.minus||[]).length;});
-    body=(clean.length?'<div class="subh">'+t('✅ साफ़ तिथियाँ','✅ Clean dates')+'</div>'
+    body=(clean.length?'<div class="subh">'+A('astrol.clean_dates')+'</div>'
           +clean.map(function(r,i){return card(r,i+1);}).join(''):'')
-        +(caveat.length?'<div class="subh">'+t('⚠️ इनमें कुछ कमी है','⚠️ These carry a caveat')+'</div>'
-          +'<div class="note" style="margin:-2px 2px 8px;">'+t('ये भी शुभ हैं, पर हर एक में एक कमी है — नीचे लिखी है। कोई साफ़ तिथि न मिले तभी इन्हें चुनें।',
-             'Still auspicious, but each carries one flaw, named below. Choose these only if no clean date suits you.')+'</div>'
+        +(caveat.length?'<div class="subh">'+A('astrol.these_carry_a_caveat')+'</div>'
+          +'<div class="note" style="margin:-2px 2px 8px;">'+A('astrol.still_auspicious_but_each_carries_')+'</div>'
           +caveat.map(function(r,i){return card(r,clean.length+i+1);}).join(''):'');
   }
 
   var sortBar='<div class="subh" style="display:flex;align-items:center;gap:8px;">'
-   +'<span>'+(sortBy==='score'?t('क्रम: सर्वोत्तम पहले','Order: best first'):t('क्रम: तारीख़ अनुसार','Order: by date'))+'</span>'
+   +'<span>'+(sortBy==='score'?A('astrol.order_best_first'):A('astrol.order_by_date'))+'</span>'
    +'<span style="margin-left:auto;font-weight:600;color:rgba(232,190,90,0.9);cursor:pointer;text-transform:none;letter-spacing:0;font-size:11px;" '
    +'onclick="MUH_SORT[\''+key+'\']=\''+(sortBy==='score'?'date':'score')+'\';route();">'
-   +(sortBy==='score'?t('तारीख़ अनुसार दिखाएँ ⇅','Sort by date ⇅'):t('सर्वोत्तम पहले दिखाएँ ⇅','Sort by best ⇅'))+'</span></div>';
+   +(sortBy==='score'?A('astrol.sort_by_date'):A('astrol.sort_by_best'))+'</span></div>';
 
   app.innerHTML=head+controls
    +'<div class="note" style="margin:2px 2px 4px;">'
    +t(days+' दिनों में ','Across '+days+' days ')+'<b>'+(res.totalFound||list.length)+'</b>'
    +t(' शुभ दिन मिले — सबसे अच्छे '+list.length+' नीचे',' auspicious days found — best '+list.length+' shown')+'</div>'
    +sortBar+body
-   +'<div class="note">'+t('तिथि, नक्षत्र, वार, ताराबल और चंद्रबल — पाँचों जाँचे गए। सुझाए गए समय में से राहु काल, यमगंड, गुलिक, वर्ज्यम् और दुर्मुहूर्त काटे जा चुके हैं।',
-      'Tithi, nakshatra, weekday, tarabala and chandrabala all checked. Rahu Kaal, Yamaganda, Gulika, Varjyam and Dur Muhurtam are already cut out of the suggested windows.')+'</div>';
+   +'<div class="note">'+A('astrol.tithi_nakshatra_weekday_tarabala_a')+'</div>';
 }
 /* The paid Muhurta report was withdrawn from sale (see report-catalog.js), so
    the upsell that used to sit under these results is gone and muhurtaBuy() with
@@ -1189,8 +1202,8 @@ function window_(r,key,ico,label){
   if(!w){
     var wd=new Date(r.date).getDay();
     var why = (key==='abhijit'&&wd===3)
-      ? t('— बुधवार को अभिजित नहीं लिया जाता','— Abhijit is not taken on a Wednesday')
-      : t('— उस दिन नहीं','— none that day');
+      ? A('astrol.abhijit_is_not_taken_on_a_wednesda')
+      : A('astrol.none_that_day');
     return '<div style="font-size:10.5px;color:rgba(255,244,222,0.42);margin-top:3px;">'+ico+' '+label+why+'</div>';
   }
   var day=new Date(r.date), pieces;
@@ -1200,7 +1213,7 @@ function window_(r,key,ico,label){
   }catch(e){ pieces=[{s:+new Date(w.start),e:+new Date(w.end)}]; }
   if(!pieces.length)
     return '<div style="font-size:10.5px;color:rgba(240,150,130,0.80);">'+ico+' '+label
-      +t('— उस दिन वर्ज्य समय से पूरा टकराता है','— fully blocked by a forbidden period that day')+'</div>';
+      +A('astrol.fully_blocked_by_a_forbidden_perio')+'</div>';
   return pieces.map(function(pc){
     return '<div style="font-size:10.5px;color:rgba(255,244,222,0.62);margin-top:3px;">'
       +ico+' '+label+fR(new Date(pc.s),new Date(pc.e))+'</div>';
@@ -1216,7 +1229,7 @@ function segList(arr,label,bads){
     var ok=sg.good&&!hit.length;
     h+='<div class="sgrow '+(ok?'g':'b')+(live?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(ok?'#5ABE78':(sg.good?'#E8A317':'#E66E5A'))+'"></div>'
-      +'<div class="sg-n dev">'+(H?sg.hi:sg.en)+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')
+      +'<div class="sg-n dev">'+(H?sg.hi:sg.en)+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
       +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+fmt(t('{what} से टकराता है','overlaps {what}'), {what:(H?hit[0].hi:hit[0].en)})+'</div>':'')+'</div>'
       +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
   });
@@ -1224,23 +1237,22 @@ function segList(arr,label,bads){
 }
 function vChogh(){
   var p=panchang();
-  app.innerHTML=pgHead(t('चौघड़िया','Choghadiya'),t('सूर्योदय से सूर्योदय तक 16 खंड','16 slots, sunrise to sunrise'),'#explore')
-   +segList(p.choghadiya.day,t('दिन के चौघड़िया','Day Choghadiya'),badWindows(p))
-   +segList(p.choghadiya.night,t('रात के चौघड़िया','Night Choghadiya'),badWindows(p))
-   +'<div class="note">'+t('हरा = साफ़ शुभ खंड। पीला = शुभ तो है पर राहु काल/वर्ज्यम् जैसे किसी वर्ज्य समय से टकराता है — पूरा भरोसा न करें। लाल = वर्ज्य।',
-      'Green = clean auspicious slot. Amber = auspicious but overlapping a forbidden period such as Rahu Kaal or Varjyam — do not rely on it. Red = avoid.')+'</div>';
+  app.innerHTML=pgHead(A('astrol.choghadiya_2'),A('astrol.16_slots_sunrise_to_sunrise'),'#explore')
+   +segList(p.choghadiya.day,A('astrol.day_choghadiya'),badWindows(p))
+   +segList(p.choghadiya.night,A('astrol.night_choghadiya'),badWindows(p))
+   +'<div class="note">'+A('astrol.green_clean_auspicious_slot_amber_')+'</div>';
 }
 function vHora(){
   var p=panchang();
   var day=p.hora.filter(function(x){return x.dayTime;}), night=p.hora.filter(function(x){return !x.dayTime;});
-  app.innerHTML=pgHead(t('होरा','Hora'),t('24 ग्रह होरा — हर होरा का स्वामी','24 planetary hours and their lords'),'#explore')
-   +segList(day,t('दिन की होरा','Daytime Hora'))
-   +segList(night,t('रात की होरा','Night Hora'))
-   +'<div class="note">'+t('हर होरा का स्वामी ग्रह उस समय शुरू किए कार्यों पर प्रभाव डालता है।','Each hora is ruled by a planet said to colour the work begun in it.')+'</div>';
+  app.innerHTML=pgHead(A('astrol.hora'),A('astrol.24_planetary_hours_and_their_lords'),'#explore')
+   +segList(day,A('astrol.daytime_hora'))
+   +segList(night,A('astrol.night_hora'))
+   +'<div class="note">'+A('astrol.each_hora_is_ruled_by_a_planet_sai')+'</div>';
 }
 function vTara(){
   var p=panchang(), tb=p.tarabalam&&p.tarabalam[0];
-  if(!tb){app.innerHTML=pgHead(t('ताराबल','Tarabala'),'','#explore')+'<div class="note">—</div>';return;}
+  if(!tb){app.innerHTML=pgHead(A('dashbo.tarabala'),'','#explore')+'<div class="note">—</div>';return;}
   var mine=(U.nakshatra||'').toLowerCase();
   var rows=tb.all.map(function(n){
     var me=n.en.toLowerCase()===mine;
@@ -1249,16 +1261,16 @@ function vTara(){
       +'<div class="sg-n dev">'+(H?n.hi:n.en)+(me?' <span class="sg-now">'+t('आपका','YOURS')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+n.taraEn+' · '+n.verdict+'</div></div>';
   }).join('');
-  app.innerHTML=pgHead(t('ताराबल','Tarabala'),fmt(t('आज का नक्षत्र <span class="dev">{nak}</span>','Day nakshatra <span class="dev">{nak}</span>'),
+  app.innerHTML=pgHead(A('dashbo.tarabala'),fmt(t('आज का नक्षत्र <span class="dev">{nak}</span>','Day nakshatra <span class="dev">{nak}</span>'),
         {nak:(H?tb.dayNakshatra.hi:tb.dayNakshatra.en)}),'#explore')
-   +(mine?tobUnknownNote():needBirth(t('तब पता चलेगा कि इनमें से कौन सी पंक्ति आपकी है','Then we can show which of these rows is yours')))
-   +'<div class="subh">'+t('सभी 27 नक्षत्रों के लिए फल','Verdict for all 27 nakshatras')+'</div>'
+   +(mine?tobUnknownNote():needBirth(A('astrol.then_we_can_show_which_of_these_ro')))
+   +'<div class="subh">'+A('astrol.verdict_for_all_27_nakshatras')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
-   +'<div class="note">'+t('अपने जन्म नक्षत्र से गिनकर — तीसरा, पाँचवाँ और सातवाँ तारा वर्ज्य माने जाते हैं।','Counted from your birth nakshatra — the 3rd, 5th and 7th taras are the ones classical texts avoid.')+'</div>';
+   +'<div class="note">'+A('astrol.counted_from_your_birth_nakshatra_')+'</div>';
 }
 function vChandra(){
   var p=panchang(), cb=p.chandrabalam&&p.chandrabalam[0];
-  if(!cb){app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),'','#explore')+'<div class="note">—</div>';return;}
+  if(!cb){app.innerHTML=pgHead(A('dashbo.chandrabala'),'','#explore')+'<div class="note">—</div>';return;}
   var goodSet={}; cb.good.forEach(function(r){goodSet[r.index]=1;});
   var mineIdx=myRashiIdx(), rows='';
   for(var i=0;i<12;i++){
@@ -1266,30 +1278,30 @@ function vChandra(){
     rows+='<div class="sgrow '+(g?'g':'b')+(me?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(g?'#5ABE78':'#E66E5A')+'"></div>'
       +'<div class="sg-n dev">'+(H?RASHI[i][0]:RASHI[i][1])+(me?' <span class="sg-now">'+t('आपकी','YOURS')+'</span>':'')+'</div>'
-      +'<div class="sg-t">'+(g?t('अनुकूल','Favourable'):t('सामान्य','Neutral'))+'</div></div>';
+      +'<div class="sg-t">'+(g?A('astrol.favourable'):A('astrol.neutral'))+'</div></div>';
   }
-  app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),fmt(t('चंद्रमा आज <span class="dev">{rashi}</span> राशि में','Moon today in <span class="dev">{rashi}</span>'),
+  app.innerHTML=pgHead(A('dashbo.chandrabala'),fmt(t('चंद्रमा आज <span class="dev">{rashi}</span> राशि में','Moon today in <span class="dev">{rashi}</span>'),
         {rashi:(H?cb.dayRashi.hi:cb.dayRashi.en)}),'#explore')
-   +(mineIdx>=0?tobUnknownNote():needBirth(t('तब पता चलेगा कि इनमें से कौन सी राशि आपकी है','Then we can show which of these rashis is yours')))
-   +'<div class="subh">'+t('सभी 12 राशियों के लिए','For all 12 rashis')+'</div>'
+   +(mineIdx>=0?tobUnknownNote():needBirth(A('astrol.then_we_can_show_which_of_these_ra')))
+   +'<div class="subh">'+A('astrol.for_all_12_rashis')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
-   +'<div class="note">'+t('चंद्रबल गोचर चंद्रमा की आपकी जन्मराशि से स्थिति पर निर्भर करता है।','Chandrabala depends on where the transiting Moon sits from your birth rashi.')+'</div>';
+   +'<div class="note">'+A('astrol.chandrabala_depends_on_where_the_t')+'</div>';
 }
 // prow, but the row disappears rather than printing an empty or "undefined"
 function orow(k,v){ return v?prow(k,'<span class="dev">'+v+'</span>'):''; }
 function vHcal(){
   var p=panchang(), hc=p.hinduCalendar;
-  app.innerHTML=pgHead(t('हिन्दू कैलेंडर','Hindu Calendar'),t('संवत्, मास, ऋतु और अयन','Samvat, masa, ritu and ayana'),'#explore')
+  app.innerHTML=pgHead(A('astrol.hindu_calendar_2'),A('astrol.samvat_masa_ritu_and_ayana'),'#explore')
    +'<div class="card">'
-   +prow(t('अमांत मास','Amanta Month'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span>')
-   +prow(t('पूर्णिमांत मास','Purnimanta Month'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
-   +prow(t('पक्ष','Paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha+' Paksha')+'</span>')
-   +prow(t('विक्रम संवत्','Vikram Samvat'),hc.vikramSamvat)
-   +prow(t('शक संवत्','Shaka Samvat'),hc.shakaSamvat)
-   +(hc.gujaratiSamvat?prow(t('गुजराती संवत्','Gujarati Samvat'),hc.gujaratiSamvat):'')
-   +orow(t('संवत्सर','Samvatsara'),L(hc.samvatsara))
-   +orow(t('ऋतु','Ritu'),L(hc.ritu))
-   +orow(t('अयन','Ayana'),L(hc.ayana))
+   +prow(A('astrol.amanta_month'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span>')
+   +prow(A('astrol.purnimanta_month'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
+   +prow(A('dashbo.paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha+' Paksha')+'</span>')
+   +prow(A('dashbo.vikram_samvat'),hc.vikramSamvat)
+   +prow(A('astrol.shaka_samvat'),hc.shakaSamvat)
+   +(hc.gujaratiSamvat?prow(A('astrol.gujarati_samvat'),hc.gujaratiSamvat):'')
+   +orow(A('astrol.samvatsara'),L(hc.samvatsara))
+   +orow(A('astrol.ritu'),L(hc.ritu))
+   +orow(A('astrol.ayana'),L(hc.ayana))
    +'</div>';
 }
 /* Every dot used to be the same gold, which told the reader nothing. The one
@@ -1307,7 +1319,7 @@ var LAGNA_QUALITY=[
    "yours" row was ever meant to be there. */
 function needBirth(what){
   return '<div class="pcard empty" onclick="goBp(\'self\',\''+location.hash+'\')">'
-   +'<div class="pc-i">🎂</div><div><div class="pc-n dev">'+t('जन्म विवरण जोड़ें','Add your birth details')+'</div>'
+   +'<div class="pc-i">🎂</div><div><div class="pc-n dev">'+A('dashbo.add_your_birth_details')+'</div>'
    +'<div class="pc-s">'+what+'</div></div><div class="pc-go">+</div></div>';
 }
 /* Moon can change nakshatra within a single day, so an assumed birth time can
@@ -1316,8 +1328,7 @@ function tobUnknownNote(){
   var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
   if(!u.tobUnknown) return '';
   return '<div class="note" style="color:rgba(232,190,90,0.78);">'
-   +t('≈ आपका जन्म समय अज्ञात है, इसलिए सूर्योदय से गणना हुई है। चंद्रमा एक दिन में नक्षत्र बदल सकता है, इसलिए यह पंक्ति बदल भी सकती है।',
-      '≈ Your birth time is unknown, so sunrise was used. The Moon can change nakshatra within a day, so this row may shift.')+'</div>';
+   +A('astrol.your_birth_time_is_unknown_so_sunr')+'</div>';
 }
 function vLagna(){
   var tbl=[]; try{ tbl=PE.getLagnaTable(new Date(),LAT,LNG,5.5)||[]; }catch(e){}
@@ -1327,7 +1338,7 @@ function vLagna(){
     var nm=l.rashi?(H?l.rashi.hi:l.rashi.en):(H?l.hi:l.en);
     var q=LAGNA_QUALITY[(l.rashiIndex!=null?l.rashiIndex:0)%3];
     rows+='<div class="sgrow'+(live?' now':'')+'"><div class="sg-d" style="background:'+q.c+'"></div>'
-      +'<div class="sg-n dev">'+(nm||'—')+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')
+      +'<div class="sg-n dev">'+(nm||'—')+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
       +'<div style="font-size:9.5px;color:'+q.c+';opacity:0.85;margin-top:2px;">'+(H?q.hi:q.en)+'</div></div>'
       +'<div class="sg-t">'+fR(l.start,l.end)+'</div></div>';
   });
@@ -1337,11 +1348,11 @@ function vLagna(){
       +'<span style="font-size:10.5px;color:rgba(255,244,222,0.72);"><b style="color:'+q.c+';">'+(H?q.hi:q.en)+'</b> — '
       +(H?q.use_hi:q.use_en)+'</span></div>';
   }).join('');
-  app.innerHTML=pgHead(t('लग्न सारणी','Lagna Table'),t('आज दिन भर उदय होने वाले लग्न','Ascendants rising through today'),'#explore')
-   +'<div class="subh">'+t('लग्न का स्वभाव','What the colours mean')+'</div>'
+  app.innerHTML=pgHead(A('astrol.lagna_table'),A('astrol.ascendants_rising_through_today'),'#explore')
+   +'<div class="subh">'+A('astrol.what_the_colours_mean')+'</div>'
    +'<div style="padding:2px 4px 10px;">'+legend+'</div>'
    +'<div class="seglist">'+(rows||'<div class="note">—</div>')+'</div>'
-   +'<div class="note">'+t('मुहूर्त निकालते समय अंत में लग्न ही देखा जाता है — यही सारणी उसका आधार है।','Lagna is what a muhurta is finally judged on; this table is that basis.')+'</div>';
+   +'<div class="note">'+A('explor.lagna_is_what_a_muhurta_is_finally')+'</div>';
 }
 function obsList(list,icon,emptyMsg){
   var today=new Date(); today.setHours(0,0,0,0);
@@ -1351,7 +1362,7 @@ function obsList(list,icon,emptyMsg){
     var d=new Date(x.date+'T00:00:00');
     var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short'});
     var days=Math.round((d-today)/86400000);
-    var rel=days===0?t('आज','Today'):days===1?t('कल','Tomorrow'):plural(days, t('{n} दिन में','in {n} day'), t('{n} दिन में','in {n} days'));
+    var rel=days===0?A('dashbo.today_3'):days===1?A('dashbo.tomorrow'):plural(days, t('{n} दिन में','in {n} day'), t('{n} दिन में','in {n} days'));
     return '<div class="sgrow'+(days===0?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
       +'<div class="sg-n dev">'+icon+' '+(H?x.hi:x.en)+'</div>'
       +'<div class="sg-t">'+when+' · '+rel+'</div></div>';
@@ -1359,13 +1370,13 @@ function obsList(list,icon,emptyMsg){
 }
 function vVrats(){
   var l=[]; try{ l=PE.getVrats(new Date().getFullYear(),LAT,LNG,5.5)||[]; }catch(e){}
-  app.innerHTML=pgHead(t('व्रत','Vrats'),t('आने वाले व्रत — गणना से','Upcoming fasts, computed'),'#explore')
-   +obsList(l,'🙏',t('इस वर्ष आगे कोई व्रत नहीं','No further vrats this year'));
+  app.innerHTML=pgHead(A('astrol.vrats'),A('astrol.upcoming_fasts_computed'),'#explore')
+   +obsList(l,'🙏',A('astrol.no_further_vrats_this_year'));
 }
 function vFest(){
   var l=[]; try{ l=PE.getFestivals(new Date().getFullYear(),LAT,LNG,5.5)||[]; }catch(e){}
-  app.innerHTML=pgHead(t('त्योहार','Festivals'),t('इस वर्ष के आने वाले पर्व','Upcoming festivals this year'),'#explore')
-   +obsList(l,'🪔',t('इस वर्ष आगे कोई पर्व नहीं','No further festivals this year'));
+  app.innerHTML=pgHead(A('astrol.festivals'),A('astrol.upcoming_festivals_this_year'),'#explore')
+   +obsList(l,'🪔',A('astrol.no_further_festivals_this_year'));
 }
 
 /* The engine is already on this page, so a user who has given a birth date
