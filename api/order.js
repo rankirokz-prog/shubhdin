@@ -131,7 +131,12 @@ module.exports = async function handler(req, res) {
         // redeploy, or were pasted with stray whitespace.
         return res.status(502).json({ error: 'payment link failed',
           detail: String((j && j.error && j.error.description) || ('HTTP ' + rr.status)).slice(0, 160),
-          rzp_status: rr.status, mode: mode, key_prefix: keyId.slice(0, 8) });
+          rzp_status: rr.status, mode: mode,
+          // key_id is not a secret (it is used client-side in Checkout), so show
+          // enough of it to compare against the Razorpay dashboard. 'rzp_live'
+          // alone was 8 chars and told you nothing.
+          key_id: keyId.slice(0, 20), key_len: keyId.length,
+          secret_len: keySecret.length });
       }
       return res.status(200).json({ ok: true, url: j.short_url, order_code: code(q0.uid, q0.report) });
     } catch (e) {
