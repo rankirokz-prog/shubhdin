@@ -629,6 +629,20 @@ function confirmAfterPay(){
   var tries=0;
   $('errP').style.display='none';
   btn.textContent=H?'⏳ आपका भुगतान जाँचा जा रहा है…':'⏳ Confirming your payment…';
+  /* Primary path: hand Razorpay's own payment id back to our server, which asks
+     Razorpay directly whether it is real, captured, ours and the right amount.
+     This does not depend on webhook delivery at all. The poll below stays as a
+     fallback for buyers who arrive without a payment id. */
+  var pid=payProof();
+  if(pid){
+    fetch('/api/order?confirm=1&uid='+SESSION.user.id+'&report='+R+'&payment_id='+encodeURIComponent(pid)
+      +'&access_token='+encodeURIComponent(SESSION.access_token))
+     .then(apiJson).then(function(j){
+       if(j&&j.paid){ORDER_CODE=j.order_code||ORDER_CODE;sdOwnedWrite(R,ORDER_CODE);clearProof();
+         bdlog('confirmed directly with razorpay');btn.disabled=false;showDone();}
+       else bdlog('direct confirm says not paid: '+((j&&j.status)||(j&&j.error)||'?'));
+     }).catch(function(e){bdlog('direct confirm failed: '+e.message);});
+  }
   var iv=setInterval(function(){
     tries++;
     fetch('/api/order?check=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
