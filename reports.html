@@ -44,6 +44,8 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 .spin{display:inline-block;animation:sp 1s linear infinite;}
 @keyframes sp{to{transform:rotate(360deg);}}
 </style>
+<script src="font-loader.js"></script>
+<script>try{sdLoadFonts();}catch(e){}</script>
 </head>
 <body>
 <div class="hdr">
@@ -94,6 +96,10 @@ var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e
 var H=(U.lang||'hi')==='hi';
 var SESSION=null;
 function $(id){return document.getElementById(id);}
+/* A label glued to a value cannot be translated: the label precedes the value
+   in English and may follow it elsewhere. One template, one token. */
+function sdFmt(tpl,vals){return String(tpl).replace(/\{(\w+)\}/g,function(_,k){
+  return (vals&&vals[k]!==undefined&&vals[k]!==null)?vals[k]:'';});}
 function t(hi,en){return H?hi:en;}
 
 /* Same read-body-first guard buy.html uses: the service worker answers /api/
@@ -165,7 +171,7 @@ function render(){
       +'<div><div class="c-t1 dev">'+(H?r.hi:r.en)+'</div>'
       +'<div class="c-t2">'+(H?r.en:r.hi)+'</div></div></div>'
       +'<div class="c-meta">'
-        +(o.date?t('खरीदा: ','Purchased: ')+fmtDate(o.date):'')
+        +(o.date?sdFmt(t('खरीदा: {date}','Purchased: {date}'), {date:fmtDate(o.date)}):'')
         +(o.order_code?' · '+o.order_code:'')
       +'</div>'
       /* Two independent things decide what this row can do, and they were
@@ -188,7 +194,7 @@ function render(){
            absent button, which reads as a missing feature. */
         : '<div style="font-size:10px;color:rgba(255,244,222,0.38);margin-top:9px;line-height:1.55;">'
           +t('👁️ स्क्रीन पर देखना उसी फ़ोन पर मिलेगा जहाँ जन्म विवरण भरा था — PDF हर जगह खुलेगी।',
-             'On-screen view is available on the phone where the birth details were entered — the PDF opens anywhere.')
+             '👁️ On-screen view is available on the phone where the birth details were entered — the PDF opens anywhere.')
           +'</div>')
       +'<div id="manual-'+r.id+'" style="display:none;"></div>'
       +'<div class="err" id="err-'+r.id+'" style="display:none;"></div>'
