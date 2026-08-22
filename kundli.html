@@ -50,6 +50,8 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 .r-mail{font-size:10.5px;color:rgba(212,168,67,0.75);margin-top:6px;}
 .tease{margin-top:26px;border:1px dashed rgba(212,168,67,0.3);border-radius:14px;padding:12px;font-size:11px;color:rgba(255,244,222,0.6);cursor:pointer;}
 </style>
+<script src="font-loader.js"></script>
+<script>try{sdLoadFonts();}catch(e){}</script>
 </head>
 <body>
 <div class="hdr"><button class="back" onclick="sdBack('dashboard.html')">←</button>
@@ -150,6 +152,11 @@ sbAuth().onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?'
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
 var H=(U.lang||'hi')==='hi';
 function $(id){return document.getElementById(id);}
+/* One translatable sentence rather than a label glued to a value — the label
+   precedes the value in English and may not in every language. */
+function t2(hi,en){return H?hi:en;}
+function fmt(tpl,vals){return String(tpl).replace(/\{(\w+)\}/g,function(_,k){
+  return (vals&&vals[k]!==undefined&&vals[k]!==null)?vals[k]:'';});}
 function show(id){document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');}
 
 /* i18n */
@@ -226,7 +233,12 @@ function kDetectLoc(){
       var a=d.address||{};
       var city=a.city||a.town||a.village||a.county||'';
       if(city){$('fPlace').value=city;_kCity.lat=pos.coords.latitude;_kCity.lng=pos.coords.longitude;
-        t.textContent=(H?'✓ ':'✓ ')+city;}
+        /* Both sides are set explicitly even though they are identical — a checkmark
+   plus a city name needs no translation. Leaving the Hindi side accidentally
+   equal to the English keeps the hi===en gate red, and a gate that is always
+   red stops being read. Deliberately-equal and accidentally-equal must look
+   different in the source. */
+    t.textContent=fmt(t2('✓ {city}','✓ {city}'), {city:city});}
       else t.textContent=H?'शहर नहीं मिला — खोजें':'City not found — search instead';
     }).catch(function(){t.textContent=H?'विफल — खोजें':'Failed — search instead';});
   },function(){t.textContent=H?'अनुमति नहीं मिली — खोजें':'Permission denied — search instead';});
@@ -297,7 +309,7 @@ function startPrep(user){
 }
 function finishPrep(email){
   localStorage.setItem('shubhdin_kundli_ready','1');
-  if(email)$('rdMail').textContent=(H?'खाता: ':'Account: ')+email;
+  if(email)$('rdMail').textContent=fmt(H?'खाता: {email}':'Account: {email}', {email:email});
   show('stReady');
 }
 
@@ -418,7 +430,7 @@ absorbHashTokens().then(function(){
 
   if(ready){ dlog('boot: ready state'); updateDlBtn(); requestServerPdf(); sbAuth().getSession().then(function(r){
       var u=r.data&&r.data.session&&r.data.session.user;
-      if(u&&u.email)$('rdMail').textContent=(H?'खाता: ':'Account: ')+u.email;});
+      if(u&&u.email)$('rdMail').textContent=fmt(H?'खाता: {email}':'Account: {email}', {email:u.email});});
     show('stReady'); return; }
 
   if(det&&hasAuthParams){ dlog('boot: det+authParams → waiting for exchange');
