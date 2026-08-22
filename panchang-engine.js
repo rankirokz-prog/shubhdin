@@ -770,7 +770,7 @@
     { en: 'Vat Savitri Vrat', hi: '\u0935\u091F \u0938\u093E\u0935\u093F\u0924\u094D\u0930\u0940 \u0935\u094D\u0930\u0924', month: 1, paksha: 'K', tithi: 15, anchor: 'udaya' },
     { en: 'Guru Purnima', hi: '\u0917\u0941\u0930\u0941 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month: 3, paksha: 'S', tithi: 15, anchor: 'udaya' },
     { en: 'Nag Panchami', hi: '\u0928\u093E\u0917 \u092A\u0902\u091A\u092E\u0940', month: 4, paksha: 'S', tithi: 5, anchor: 'udaya' },
-    { en: 'Raksha Bandhan', hi: '\u0930\u0915\u094D\u0937\u093E \u092C\u0902\u0927\u0928', month: 4, paksha: 'S', tithi: 15, anchor: 'aparahna' },
+    { en: 'Raksha Bandhan', hi: '\u0930\u0915\u094D\u0937\u093E \u092C\u0902\u0927\u0928', month: 4, paksha: 'S', tithi: 15, anchor: 'aparahna', avoidBhadra: true },
     { en: 'Krishna Janmashtami', hi: '\u0915\u0943\u0937\u094D\u0923 \u091C\u0928\u094D\u092E\u093E\u0937\u094D\u091F\u092E\u0940', month: 4, paksha: 'K', tithi: 8, anchor: 'nishita' },
     { en: 'Ganesh Chaturthi', hi: '\u0917\u0923\u0947\u0936 \u091A\u0924\u0941\u0930\u094D\u0925\u0940', month: 5, paksha: 'S', tithi: 4, anchor: 'madhyahna' },
     { en: 'Anant Chaturdashi', hi: '\u0905\u0928\u0902\u0924 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month: 5, paksha: 'S', tithi: 14, anchor: 'udaya' },
@@ -818,7 +818,53 @@
   }
 
   // Choose the celebration DAY for a tithi window [Ts, Te) given the anchor.
-  function anchorDay(Ts, Te, anchor, lat, lng, tz) {
+  /* ── Bhadra (Vishti karana) ────────────────────────────────────────────
+     Bhadra is the 7th movable karana. A karana is half a tithi, so the karana
+     number is floor(elongation / 6) — ZERO-based, exactly as karNameFn passes
+     it — and Vishti falls wherever (k - 1) % 7 === 6 for k in 1..56. That is
+     karanaName()'s own mapping, reused here rather than restated so the two
+     can never disagree.
+
+     WHY FESTIVALS NEED THIS
+     Choosing a festival day on tithi-presence alone can pick a day on which
+     the ritual cannot actually be performed. Raksha Bandhan 2026 is the case:
+     Purnima runs through the aparahna of 27 Aug, so the old rule matched that
+     day — but Bhadra covers 09:09 to 21:32, ruling out the whole afternoon
+     and evening. The 28th carries Purnima from sunrise to 09:48 with no
+     Bhadra, and that is the day the country observes.
+
+     WHY ONLY RAKSHA BANDHAN CARRIES THE FLAG
+     Holika Dahan is also Bhadra-forbidden, but it resolves in the OPPOSITE
+     direction: when Bhadra covers pradosh the dahan is performed later the
+     SAME night, once Bhadra has passed — it does not move to the next day.
+     Flagging it pushed Holika Dahan onto Holi itself in 2024, 2025, 2026 and
+     2027. The two sharing one date is structurally impossible, since the
+     dahan is the night before, and that collision is what caught the mistake.
+     A same-night "after Bhadra ends" window is a real rule worth adding, but
+     it needs its own logic and classical sourcing, not this flag.
+     ───────────────────────────────────────────────────────────────────── */
+  function isBhadra(ms) {
+    // Index exactly as the panchang itself does: buildSegments(..., 6, karNameFn)
+    // passes floor(elongation / 6), which is ZERO-based. Adding one — the
+    // obvious-looking "karanas are 1..60" correction — inverted the answer:
+    // it reported Bhadra during Vanija and missed the real Vishti window.
+    var k = Math.floor(elongAt(ms) / 6);
+    return (k >= 1 && k <= 56) && ((k - 1) % 7) === 6;
+  }
+  // Is any part of [a,b) inside Bhadra? Sampled every 6 minutes: a Vishti
+  // karana never runs shorter than about six hours, so this cannot miss one.
+  function bhadraOverlaps(a, b) {
+    if (!(b > a)) return false;
+    for (var t = a; t < b; t += 360000) if (isBhadra(t)) return true;
+    return isBhadra(b - 1);
+  }
+
+  function anchorDay(Ts, Te, anchor, lat, lng, tz, avoidBhadra) {
+    // A window counts as usable if some part of it is free of Bhadra.
+    function hasClearSpan(a, b) {
+      for (var t = a; t < b; t += 360000) if (!isBhadra(t)) return true;
+      return false;
+    }
     var base = new Date(Ts + tz * 3600000);
     var d0 = Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()) - tz * 3600000;
     for (var k = 0; k <= 2; k++) {
@@ -850,16 +896,30 @@
           var D5 = (ssW.getTime() - srW.getTime()) / 5;
           var wi = (anchor === 'madhyahna') ? 2 : 3;
           var wS = srW.getTime() + wi * D5, wE = srW.getTime() + (wi + 1) * D5;
-          if (wS < Te && wE > Ts) return d0 + k * 86400000 + 6 * 3600000;
+          if (wS < Te && wE > Ts) {
+            // Bhadra-forbidden rules skip a day whose qualifying window is
+            // wholly inside Bhadra, and fall through to the next candidate.
+            var ovS = Math.max(wS, Ts), ovE = Math.min(wE, Te);
+            if (!(avoidBhadra && bhadraOverlaps(ovS, ovE) && !hasClearSpan(ovS, ovE)))
+              return d0 + k * 86400000 + 6 * 3600000;
+          }
         }
         continue;
       }
-      if (point != null && point >= Ts && point < Te) return d0 + k * 86400000 + 6 * 3600000;
+      if (point != null && point >= Ts && point < Te) {
+        if (!(avoidBhadra && isBhadra(point))) return d0 + k * 86400000 + 6 * 3600000;
+      }
     }
     // Fallback 1: udaya rule; Fallback 2 (kshaya tithi): the day the tithi begins.
     for (var k2 = 0; k2 <= 2; k2++) {
       var sr2 = findSunrise(new Date(d0 + k2 * 86400000 + 6 * 3600000), lat, lng, tz);
-      if (sr2 && sr2.getTime() >= Ts && sr2.getTime() < Te) return d0 + k2 * 86400000 + 6 * 3600000;
+      if (sr2 && sr2.getTime() >= Ts && sr2.getTime() < Te) {
+        // For a Bhadra-forbidden rule the udaya day must ALSO offer a clear span
+        // between sunrise and the end of the tithi — that is the morning window
+        // people are actually told to use when the previous afternoon is lost.
+        if (avoidBhadra && !hasClearSpan(sr2.getTime(), Te)) continue;
+        return d0 + k2 * 86400000 + 6 * 3600000;
+      }
     }
     return d0 + 6 * 3600000;
   }
@@ -884,7 +944,7 @@
         var idx = (F.paksha === 'S') ? F.tithi - 1 : 14 + F.tithi;
         var Ts = (idx === 0) ? M.start : bisectElong(M.start, M.end, idx * 12);
         var Te = (idx === 29) ? M.end : bisectElong(Ts + 60000, M.end, (idx + 1) * 12);
-        var dayMs = anchorDay(Ts, Te, F.anchor || 'udaya', lat, lng, tz);
+        var dayMs = anchorDay(Ts, Te, F.anchor || 'udaya', lat, lng, tz, !!F.avoidBhadra);
         if (F.nextDay) dayMs += 86400000;
         var ds = dateStr(dayMs);
         if (ds.slice(0, 4) === String(yearCE)) out.push({ date: ds, en: F.en, hi: F.hi });
