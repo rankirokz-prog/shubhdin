@@ -1565,6 +1565,32 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 </style>
 <script src="font-loader.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
+<script>
+/* Language tables must load BEFORE the page's own script runs. A dynamically
+   appended <script> does not block the parser, so the chosen-language file
+   arrived after the page had already painted and every A() call fell through
+   to Hindi — verified by snapshotting all 46 screens, where every English
+   screen came back in Hindi. document.write during initial parse IS parser-
+   blocking, which is the ordering guarantee needed here.
+   Hindi always loads as the fallback; the chosen language loads beside it. */
+window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
+if(window.SD_LANG&&window.SD_LANG!=='hi')
+  document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
+/* If app-strings-loader.js itself fails to arrive, A() is undefined and EVERY
+   call site throws — the page half-renders and stops. Verified by blocking the
+   file: "A is not defined", and the screen died partway. This shim defines the
+   minimum so the page completes; the real loader overwrites it when it lands. */
+window.addEventListener('DOMContentLoaded',function(){},false);
+if(typeof window.A!=='function'){
+  window.A=function(k){return String(k).replace(/^[a-z]+\./,'').replace(/_/g,' ')
+                        .replace(/^./,function(c){return c.toUpperCase();});};
+  window.AF=function(k,v){return String(window.A(k)).replace(/\{(\w+)\}/g,function(_,n){
+                        return (v&&v[n]!=null)?v[n]:'';});};
+  window.AP=function(k,n,v){var o={};if(v)for(var p in v)o[p]=v[p];o.n=n;return window.AF(k,o);};
+}
+</script>
 </head>
 <body>
 
@@ -2293,7 +2319,7 @@ function panTr(val, map){
   const rmap = makeRevMap(map);
   return YOGA_EN_HI[val] || rmap[val] || val;
 }
-const name=U.name||(H?'मित्र':'Friend');
+const name=U.name||(A('dashbo.friend'));
 
 // ── Day config ──
 const dow=new Date().getDay();
@@ -2416,24 +2442,24 @@ function personalise(){
   document.getElementById('greetName').textContent=displayName+(H?' जी 🙏':' 🙏');
 
   // Chips
-  document.getElementById('rl').textContent=H?'राशि':'Rashi';
-  const jsb=document.getElementById('jdShareBtn');if(jsb)jsb.textContent=H?'📤 अपनों के साथ साझा करें':'📤 Share with Loved Ones';
+  document.getElementById('rl').textContent=A('dashbo.rashi');
+  const jsb=document.getElementById('jdShareBtn');if(jsb)jsb.textContent=A('dashbo.share_with_loved_ones');
   document.getElementById('ri').textContent=R_KNOWN?R.i:'✨';
-  document.getElementById('rv').textContent=R_KNOWN?(H?R.h:R.e):(H?'जोड़ें':'Add');
+  document.getElementById('rv').textContent=R_KNOWN?(H?R.h:R.e):(A('dashbo.add'));
   var _rc=document.getElementById('rv');
   if(_rc&&!R_KNOWN){ _rc.parentElement.style.cursor='pointer';
     _rc.parentElement.onclick=function(){openSettings();}; }
-  document.getElementById('tl').textContent=H?'तिथि':'Tithi';
+  document.getElementById('tl').textContent=A('dashbo.tithi');
   // tv updated by fetchPanchang from API
-  document.getElementById('nl').textContent=H?'नक्षत्र':'Nakshatra';
+  document.getElementById('nl').textContent=A('dashbo.nakshatra');
   var _nv=document.getElementById('nv');
-  if(_nv&&!U.nakshatra&&!U.dob){ _nv.textContent=H?'जोड़ें':'Add';
+  if(_nv&&!U.nakshatra&&!U.dob){ _nv.textContent=A('dashbo.add');
     _nv.parentElement.style.cursor='pointer';
     _nv.parentElement.onclick=function(){openSettings();}; }
   // Home v2 cards
   const _t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
   _t('khBadge',H?'निःशुल्क':'FREE');
-  _t('khTag',H?'✨ आपकी निःशुल्क कुंडली रिपोर्ट':'✨ YOUR FREE KUNDLI REPORT');
+  _t('khTag',A('home.your_free_kundli_report'));
   /* 17 is countable in the report's own table of contents, so it is a claim a
      devotee can check — which is the point. Page count stays as the catalog
      reports it; the two together say size AND substance. */
@@ -2445,7 +2471,7 @@ function personalise(){
      catalog; it deliberately under-claims rather than restating a figure. */
   const KH_PAGES=(typeof kundliPages==='function')?kundliPages(false):'250+';
   const KH_LABEL=(typeof kundliPages==='function')?kundliPages(H,'label')
-                 :(H?'250+ पन्नों की विस्तृत कुंडली PDF':'250+ Page Detailed Kundli PDF');
+                 :(A('dashbo.250_page_detailed_kundli_pdf'));
   const KH_SHORT=(typeof kundliPages==='function')?kundliPages(H,'short')
                  :(H?'250+ पन्ने':'250+ pages');
   const KH_OF   =(typeof kundliPages==='function')?kundliPages(H,'of')
@@ -2462,30 +2488,29 @@ function personalise(){
      analysis, and dasha broken to pratyantar level are the things a free tool
      does not print, and they are all in there. "Predictions & more" is dropped:
      vague, and the one phrase on the card that promised nothing checkable. */
-  _t('khSub',H?'अष्टकवर्ग • योग • दोष • दशा–प्रत्यंतर • उपाय'
-              :'Ashtakavarga • Yogas • Doshas • Dasha to pratyantar • Remedies');
+  _t('khSub',A('home.ashtakavarga_yogas_doshas_dasha_to'));
   _t('khFree',H?'मुफ़्त':'FREE');
-  _t('khBtn',H?'मेरी मुफ़्त कुंडली पाएं →':'Download My Free Kundli →');
+  _t('khBtn',A('home.download_my_free_kundli'));
   if(localStorage.getItem('shubhdin_kundli_ready')==='1'){
-    _t('khBadge',H?'तैयार':'READY');
-    _t('khTag',H?'📜 आपकी कुंडली':'📜 YOUR KUNDLI');
-    _t('khTitle',H?'मेरी कुंडली':'My Kundli');
+    _t('khBadge',A('dashbo.ready'));
+    _t('khTag',A('home.your_kundli'));
+    _t('khTitle',A('home.my_kundli'));
     _t('khSub',H?(KH_OF+' की विस्तृत कुंडली — कभी भी देखें या डाउनलोड करें')
                  :('Your detailed Kundli, '+KH_SHORT+' — view or download anytime'));
     const kf=document.getElementById('khFree'); if(kf&&kf.parentElement)kf.parentElement.style.display='none';
-    _t('khBtn',H?'देखें / डाउनलोड करें →':'View / Download →');
+    _t('khBtn',A('home.view_download'));
   }
-  _t('pmTitle',H?'प्रीमियम रिपोर्ट्स':'Premium Reports');
-  _t('pmSub',H?'जीवन के हर पहलू की गहरी जानकारी':'Deeper personalized astrology insights');
-  _t('agTitle',H?'आज का ज्योतिष':'Astrology Today');
-  _t('agSub',H?'पंचांग • मुहूर्त • राशि • नक्षत्र':'Panchang • Muhurat • Rashi • Nakshatra');
+  _t('pmTitle',A('dashbo.premium_reports'));
+  _t('pmSub',A('dashbo.deeper_personalized_astrology_insi'));
+  _t('agTitle',A('dashbo.astrology_today'));
+  _t('agSub',A('dashbo.panchang_muhurat_rashi_nakshatra'));
   // nv updated by fetchPanchang from API (today's nakshatra)
   // Listen hero
   document.getElementById('lhTag').textContent=H?'✨ आज का पंचांग — आपके लिए':"✨ Today's Panchang — For you";
-  document.getElementById('lhTitle').textContent=H?'दैनिक पंचांग सुनें':'Listen to Daily Panchang';
+  document.getElementById('lhTitle').textContent=A('dashbo.listen_to_daily_panchang');
   document.getElementById('lhSub').textContent=R_KNOWN
     ? (H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English'))
-    : (H?'जन्म विवरण जोड़ें':'Add your birth details');
+    : (A('dashbo.add_your_birth_details'));
   var _pv=document.getElementById('pvTime');
   /* Read the existing value BEFORE the line is re-rendered — replacing the
      markup destroys the old pvTime node along with whatever it held. */
@@ -2506,16 +2531,16 @@ function personalise(){
       {deity: (H?T.d_hi:T.d_en), time: _pvTime});
   }
   // Times
-  document.getElementById('goodLbl').textContent=H?'शुभ समय':'Good Time';
+  document.getElementById('goodLbl').textContent=A('dashbo.good_time');
   // left blank on purpose — applyPanchang fills it from the engine.
   // A weekday constant here would be a guess, and the audio reads this node.
   if(!document.getElementById('goodTime').textContent.match(/\d/))
     document.getElementById('goodTime').textContent='—';
-  document.getElementById('goodSub').textContent=H?'महत्वपूर्ण कार्य करें':'Do important work';
-  document.getElementById('avoidLbl').textContent=H?'राहु काल':'Rahu Kaal';
+  document.getElementById('goodSub').textContent=A('dashbo.do_important_work');
+  document.getElementById('avoidLbl').textContent=A('dashbo.rahu_kaal');
   if(!document.getElementById('avoidTime').textContent.match(/\d/))
     document.getElementById('avoidTime').textContent='—';
-  document.getElementById('avoidSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new work';
+  document.getElementById('avoidSub').textContent=A('dashbo.avoid_new_work');
   // Japa thumbnail
   document.getElementById('jtDeity').textContent=T.ico;
   const dimg=document.getElementById('jtDeityImg');
@@ -2523,20 +2548,20 @@ function personalise(){
   // "Sadhana" is the Explore feature with its own streak. This card is the
   // daily deity jap that feeds the HOME streak — two different things.
   document.getElementById('jtTag').textContent=isShravan()
-    ?(H?'🎧 श्रवण जप — लक्ष्मी अष्टोत्तर':'🎧 Shravana Jap — Lakshmi Ashtottara')
-    :(H?'🪔 आज का जप':'🪔 Today\'s Jap');
+    ?(A('dashbo.shravana_jap_lakshmi_ashtottara'))
+    :(A('dashbo.today_s_jap_2'));
   // jtBg: keep dark gradient only, no deity image (deity shown on right via jtDeityImg)
   document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
   document.getElementById('jtBenefit').textContent=isShravan()
-    ?(H?'🎧 108 नाम • 4 मिनट':'🎧 108 names • 4 minutes')
-    :(H?'👉 28 बار • 4 मिनट':'👉 28 times • 4 minutes');
+    ?(A('dashbo.108_names_4_minutes'))
+    :(A('dashbo.28_times_4_minutes'));
   document.getElementById('jtBtn').textContent=isShravan()
-    ?(H?'🎧 108 नामों का जप सुनें':'🎧 Listen 108 Names')
-    :(H?'28 बार जाप शुरू करें':'Start 28 times chanting');
+    ?(A('dashbo.listen_108_names'))
+    :(A('dashbo.start_28_times_chanting'));
   // Streak
   renderStreakCard();
   document.getElementById('skIco').textContent='🔥';
-  document.getElementById('skUnit').textContent=isShravan()?(H?'108 नाम':'108 names'):(H?'28 जाप':'28 chants');
+  document.getElementById('skUnit').textContent=isShravan()?(A('dashbo.108_names')):(A('dashbo.28_chants'));
   // Listen screen
   // Panchang
   document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
@@ -2576,56 +2601,56 @@ function personalise(){
       saarEl.style.background='linear-gradient(135deg,rgba(74,124,89,0.12),rgba(74,124,89,0.06))';
       saarEl.style.borderColor='rgba(74,124,89,0.30)';
       if(saarIcon) saarIcon.textContent='🟢';
-      saarTitle.textContent=H?'आज का दिन: शुभ ✨':'Today: Auspicious ✨';
+      saarTitle.textContent=A('dashbo.today_auspicious');
       saarSub.textContent=H?'महत्वपूर्ण कार्य कर सकते हैं — '+suffix:'Good day for important tasks';
     } else if(level==='ashubh'){
       saarEl.style.background='linear-gradient(135deg,rgba(198,40,40,0.08),rgba(198,40,40,0.04))';
       saarEl.style.borderColor='rgba(198,40,40,0.25)';
       if(saarIcon) saarIcon.textContent='🔴';
-      saarTitle.textContent=H?'आज सावधानी रखें ⚠️':'Today: Be Cautious ⚠️';
+      saarTitle.textContent=A('dashbo.today_be_cautious');
       saarSub.textContent=H?'नए कार्य टालें — '+suffix:'Avoid starting new tasks today';
     } else {
       saarEl.style.background='linear-gradient(135deg,rgba(212,168,67,0.10),rgba(255,107,26,0.05))';
       saarEl.style.borderColor='rgba(212,168,67,0.25)';
       if(saarIcon) saarIcon.textContent='🟡';
-      saarTitle.textContent=H?'आज का दिन: सामान्य':'Today: Normal Day';
+      saarTitle.textContent=A('dashbo.today_normal_day');
       saarSub.textContent=H?'सोच-समझकर कार्य करें — '+suffix:'Proceed thoughtfully today';
     }
   }
-  document.getElementById('sl1').textContent=H?'सूर्योदय':'Sunrise';
-  document.getElementById('sl2').textContent=H?'चंद्रोदय':'Moonrise';
-  document.getElementById('sl3').textContent=H?'सूर्यास्त':'Sunset';
-  document.getElementById('ps1').textContent=H?'📿 पाँच तत्व':'📿 Pancha Tattva';
-  document.getElementById('varLbl').textContent=H?'वार':'Vara';
+  document.getElementById('sl1').textContent=A('dashbo.sunrise');
+  document.getElementById('sl2').textContent=A('dashbo.moonrise');
+  document.getElementById('sl3').textContent=A('dashbo.sunset');
+  document.getElementById('ps1').textContent=A('dashbo.pancha_tattva');
+  document.getElementById('varLbl').textContent=A('dashbo.vara');
   document.getElementById('varVal').textContent=H?df_h[dow]:df_e[dow];
   document.getElementById('varSub').textContent=H?T.d_hi+' का दिन':T.d_en+" Day";
-  document.getElementById('nakLbl2').textContent=H?'नक्षत्र':'Nakshatra';
-  document.getElementById('tithiLbl').textContent=H?'तिथि':'Tithi';
-  document.getElementById('yogLbl').textContent=H?'योग':'Yoga';
-  document.getElementById('karLbl').textContent=H?'करण':'Karana';
-  document.getElementById('varLbl').textContent=H?'वार':'Day';
+  document.getElementById('nakLbl2').textContent=A('dashbo.nakshatra');
+  document.getElementById('tithiLbl').textContent=A('dashbo.tithi');
+  document.getElementById('yogLbl').textContent=A('dashbo.yoga');
+  document.getElementById('karLbl').textContent=A('dashbo.karana');
+  document.getElementById('varLbl').textContent=A('dashbo.day');
   document.getElementById('nakVal2').textContent=H?R.nh:R.ne;
-  document.getElementById('ps2').textContent=H?'⚠️ अशुभ समय':'⚠️ Inauspicious Times';
-  document.getElementById('rahuLbl').textContent=H?'राहु काल':'Rahu Kaal';
+  document.getElementById('ps2').textContent=A('dashbo.inauspicious_times');
+  document.getElementById('rahuLbl').textContent=A('dashbo.rahu_kaal');
   if(!document.getElementById('rahuTime').textContent.match(/\d/))
     document.getElementById('rahuTime').textContent='—';
-  document.getElementById('rahuSub').textContent=H?'नया कार्य शुरू न करें':'Avoid new tasks';
-  document.getElementById('gulLbl').textContent=H?'गुलिक काल':'Gulika Kaal';
-  document.getElementById('gulSub').textContent=H?'महत्वपूर्ण कार्य टालें':'Postpone important work';
-  document.getElementById('ps3').textContent=H?'✨ शुभ समय':'✨ Auspicious Time';
-  document.getElementById('yogLbl').textContent=H?'योग':'Yoga';
-  document.getElementById('karLbl').textContent=H?'करण':'Karana';
-  document.getElementById('yogSub').textContent=H?'उत्तम दिन':'Auspicious day';
-  document.getElementById('abTitle').textContent=H?'अभिजित मुहूर्त':'Abhijit Muhurta';
-  document.getElementById('abDesc').textContent=H?'सबसे शुभ — नए काम शुरू करें':'Most auspicious — start new work';
-  document.getElementById('abSub').textContent=H?'दोपहर':'Afternoon';
+  document.getElementById('rahuSub').textContent=A('dashbo.avoid_new_tasks');
+  document.getElementById('gulLbl').textContent=A('dashbo.gulika_kaal');
+  document.getElementById('gulSub').textContent=A('dashbo.postpone_important_work');
+  document.getElementById('ps3').textContent=A('dashbo.auspicious_time');
+  document.getElementById('yogLbl').textContent=A('dashbo.yoga');
+  document.getElementById('karLbl').textContent=A('dashbo.karana');
+  document.getElementById('yogSub').textContent=A('dashbo.auspicious_day');
+  document.getElementById('abTitle').textContent=A('dashbo.abhijit_muhurta');
+  document.getElementById('abDesc').textContent=A('dashbo.most_auspicious_start_new_work');
+  document.getElementById('abSub').textContent=A('dashbo.afternoon');
   // Japa screen — new immersive design
   const jCT = document.getElementById('jContTxt');
-  if(jCT) jCT.textContent = H?'निरंतर सुनें':'Listen Continuously';
+  if(jCT) jCT.textContent = A('dashbo.listen_continuously');
   const jpt = document.getElementById('jplayTxt');
-  if(jpt && !jPlay) jpt.textContent = H?'🙏 जाप शुरू करें':'🙏 Start Chanting';
+  if(jpt && !jPlay) jpt.textContent = A('dashbo.start_chanting');
   const jfl = document.getElementById('jFocusLine');
-  if(jfl) jfl.textContent = H ? 'मन को शांत करें… श्रद्धा से जाप करें' : 'Focus your mind… chant with devotion';
+  if(jfl) jfl.textContent = A('dashbo.focus_your_mind_chant_with_devotio');
   const jImgBg = document.getElementById('jImgBg');
   if(jImgBg && T.img) jImgBg.style.backgroundImage = "url('"+T.img+"')";
   const jdn = document.getElementById('jDeityName');
@@ -2633,35 +2658,35 @@ function personalise(){
   const jpill = document.getElementById('jPill');
   if(jpill) jpill.textContent = H?df_h[dow]:df_e[dow];
   const jgl2 = document.getElementById('jGoalLine');
-  if(jgl2) jgl2.textContent = isShravan()?(H?'आज का लक्ष्य: 108 नाम':'Today\'s goal: 108 names'):(H?'आज का लक्ष्य: 28 जाप':'Today\'s goal: 28 chants');
-  document.getElementById('jdTitle').textContent = H?'28 जाप पूर्ण! 🙏':'28 Chants Complete! 🙏';
+  if(jgl2) jgl2.textContent = isShravan()?(A('dashbo.today_s_goal_108_names_2')):(A('dashbo.today_s_goal_28_chants_2'));
+  document.getElementById('jdTitle').textContent = A('dashbo.28_chants_complete');
   document.getElementById('jdSub').textContent = H?T.d_hi+' की कृपा आप पर सदा बनी रहे 🌸':'May '+T.d_en+'\'s blessings always be with you 🌸';
-  document.getElementById('jdStreakLbl').textContent = H?'आपकी साधना यात्रा':'Your sadhana journey';
-  document.getElementById('jdBtn').textContent = H?'↺ फिर से जाप करें':'↺ Jap Again';
+  document.getElementById('jdStreakLbl').textContent = A('dashbo.your_sadhana_journey');
+  document.getElementById('jdBtn').textContent = A('dashbo.jap_again');
 
   // Tab bar
   const _tl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  _tl('tl1',H?'होम':'Home');
-  _tl('tl2',H?'मार्गदर्शन':'Guidance');
-  _tl('tl3',H?'ज्योतिष':'Astrology');
+  _tl('tl1',A('dashbo.home'));
+  _tl('tl2',A('dashbo.guidance'));
+  _tl('tl3',A('dashbo.astrology'));
 
-  _tl('tl4',H?'जाप':'Jap');
-  const tlm=document.getElementById('tl-mantras'); if(tlm) tlm.textContent=H?'मंत्र':'Mantras';
-  const ps4=document.getElementById('ps4'); if(ps4) ps4.textContent=H?'🕐 चौघड़िया':'🕐 Choghadiya';
-  const ps5=document.getElementById('ps5'); if(ps5) ps5.textContent=H?'🙏 इस सप्ताह के व्रत':'🙏 Fasts This Week';
-  const ps6=document.getElementById('ps6'); if(ps6) ps6.textContent=H?'💍 शुभ मुहूर्त':'💍 Auspicious Muhurta';
+  _tl('tl4',A('dashbo.jap'));
+  const tlm=document.getElementById('tl-mantras'); if(tlm) tlm.textContent=A('dashbo.mantras');
+  const ps4=document.getElementById('ps4'); if(ps4) ps4.textContent=A('dashbo.choghadiya');
+  const ps5=document.getElementById('ps5'); if(ps5) ps5.textContent=A('dashbo.fasts_this_week');
+  const ps6=document.getElementById('ps6'); if(ps6) ps6.textContent=A('dashbo.auspicious_muhurta');
   // the icon shows the real date, and re-renders if the app is left open past midnight
   renderCalIcon();
   // Calendar button
   const _cbt=document.getElementById('calBtnTitle');
-  if(_cbt) _cbt.textContent=H?'पंचांग कैलेंडर':'Panchang Calendar';
+  if(_cbt) _cbt.textContent=A('dashbo.panchang_calendar');
   const _cbs=document.getElementById('calBtnSub');
-  if(_cbs) _cbs.textContent=H?'त्योहार • चंद्र • पंचांग':'Festivals • Moon • Panchang';
+  if(_cbs) _cbs.textContent=A('dashbo.festivals_moon_panchang');
   // Friday: update jCountPill and jOf to show 108
   const _pill=document.getElementById('jCountPill');
   if(_pill) _pill.textContent=isShravan()?'0/108':'0/28';
   const _jof=document.getElementById('jOf');
-  if(_jof) _jof.textContent=isShravan()?(H?'108 में से':'of 108'):(H?'28 में से':'of 28');
+  if(_jof) _jof.textContent=isShravan()?(A('dashbo.of_108')):(A('dashbo.of_28'));
 }
 
 // ── Streak ──
@@ -2696,26 +2721,26 @@ function renderStreakCard(){
       sub=document.getElementById('skSub'), num=document.getElementById('skNum'),
       unit=document.getElementById('skUnit');
   if(!ti) return;
-  var goal=isShravan()?(H?'108 नाम':'108 names'):(H?'28 जाप':'28 chants');
+  var goal=isShravan()?(A('dashbo.108_names')):(A('dashbo.28_chants'));
   if(s.state==='none'){
     if(ico)ico.textContent='✨';
-    ti.textContent=H?'आज से शुरू करें':'Start today';
-    sub.textContent=H?'एक दिन का जाप — यात्रा यहीं से':'One day of jap — the journey starts here';
+    ti.textContent=A('dashbo.start_today');
+    sub.textContent=A('dashbo.one_day_of_jap_the_journey_starts_');
     if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
   } else if(s.state==='done'){
     if(ico)ico.textContent='🔥';
     ti.textContent=(H?'🔥 '+s.count+' दिन लगातार':'🔥 '+s.count+' day streak');
-    sub.textContent=H?'आज पूरा हुआ ✅':'Today complete ✅';
-    if(num)num.textContent=H?'कल फिर मिलते हैं':'See you tomorrow';
+    sub.textContent=A('dashbo.today_complete');
+    if(num)num.textContent=A('dashbo.see_you_tomorrow');
     goal='';
   } else if(s.state==='pending'){
     if(ico)ico.textContent='🔥';
     ti.textContent=(H?'🔥 '+s.count+' दिन लगातार':'🔥 '+s.count+' day streak');
-    sub.textContent=H?'आज का जाप बाकी है — क्रम बनाए रखें':'Today is pending — keep it going';
+    sub.textContent=A('dashbo.today_is_pending_keep_it_going');
     if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
   } else {
     if(ico)ico.textContent='🪔';
-    ti.textContent=H?'फिर से शुरू करें':'Begin again';
+    ti.textContent=A('dashbo.begin_again');
     sub.textContent=plural(s.count,
       t2('पिछला क्रम {n} दिन का था — आज से नया','Your last streak reached {n} day — start a new one today'),
       t2('पिछला क्रम {n} दिन का था — आज से नया','Your last streak reached {n} days — start a new one today'));
@@ -2977,8 +3002,8 @@ function updateJ(){
       const isFriNow=isShravan();
       document.getElementById('jdTitle').textContent=H?(isFriNow?'🙏 आज लक्ष्मी अष्टोत्तर जप पूर्ण हुआ':'🙏 आज का जप पूर्ण हुआ'):'28 Chants Complete! 🙏';
       document.getElementById('jdSub').textContent=H?'मन शांत हो, बुद्धि प्रसन्न हो':"May your mind be at peace";
-      document.getElementById('jdStreakLbl').textContent=H?'आपने अपनी साधना जारी रखी':'Your sadhana continues';
-      document.getElementById('jdBtn').textContent=H?'एक और माला करें 🙏':'One More Mala 🙏';
+      document.getElementById('jdStreakLbl').textContent=A('dashbo.your_sadhana_continues');
+      document.getElementById('jdBtn').textContent=A('dashbo.one_more_mala');
       // Share card
       const T2=D[dow];
       const mantras_display={0:'ॐ सूर्याय नमः',1:'ॐ नमः शिवाय',2:'ॐ हनुमते नमः',3:'ॐ गं गणपतये नमः',4:'श्री राम जय राम जय जय राम',5:'ॐ महालक्ष्म्यै नमः',6:'ॐ शनैश्चराय नमः'};
@@ -2998,9 +3023,9 @@ function updateJ(){
       startParticles();
       // Delay home card update by 1s
       setTimeout(()=>{
-        document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(H?'🔥 आज से लगातार जप शुरू करें':'🔥 Start your streak');
+        document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(A('dashbo.start_your_streak'));
         document.getElementById('skNum').textContent=H?'आज का लक्ष्य':"Today's goal";
-        document.getElementById('skUnit').textContent=H?'पूरा हुआ ✅':'completed ✅';
+        document.getElementById('skUnit').textContent=A('dashbo.completed');
       },1000);
     },450); // 450ms silence/dim pause
   }
@@ -3165,7 +3190,7 @@ function toggleJap(){
   jPlay=!jPlay;
   const btn=document.getElementById('jplayBtn');
   document.getElementById('jplayIco').textContent='';
-  document.getElementById('jplayTxt').textContent=jPlay?(H?'⏸ रोकें':'⏸ Pause'):(H?'🙏 जाप शुरू करें':'🙏 Start Chanting');
+  document.getElementById('jplayTxt').textContent=jPlay?(A('dashbo.pause')):(A('dashbo.start_chanting'));
   if(btn)btn.classList.toggle('playing',jPlay);
   const jbg=document.getElementById('jImgBg');if(jbg)jbg.classList.toggle('chanting',jPlay);
   if(jPlay){
@@ -3342,7 +3367,7 @@ function resetJap(){
   const btn=document.getElementById('jplayBtn');if(btn)btn.classList.remove('playing');
   document.getElementById('jNum').textContent='0';
   document.getElementById('jplayIco').textContent='';
-  document.getElementById('jplayTxt').textContent=H?'🙏 जाप शुरू करें':'🙏 Start Chanting';
+  document.getElementById('jplayTxt').textContent=A('dashbo.start_chanting');
   document.getElementById('jCountPill').textContent='0/'+(isShravan()?108:28);
   document.getElementById('jdone').classList.remove('show');
   buildMala();
@@ -3465,7 +3490,7 @@ function shareJap(){
   const text=H
     ?`🙏 आज मैंने ${count} ${dtype_hi[dow]} का जप किया\n\n${mantras[dow]}\n\nमन शांत हो, बुद्धि प्रसन्न हो 🕉️`
     :`🙏 Today I completed ${count_en} of ${dtype_en[dow]}\n\n${mantras[dow]}\n\nMay your mind be at peace 🕉️`;
-  doShare(H?'शुभ दिन':'Shubh Din', text);
+  doShare(A('dashbo.shubh_din'), text);
 }
 function goJap(){go('jap');setTimeout(()=>{if(!jPlay&&jCount===0)toggleJap();},300);}
 buildMantra();buildMala();
@@ -4044,12 +4069,12 @@ function openProblem(key) {
 
   // Scroll to top + show
   // Section labels
-  const ml=document.getElementById('poMantraLbl');if(ml)ml.innerHTML=H?'🕉️ मंत्र':'🕉️ Mantra';
-  const hl=document.getElementById('poHowLbl');if(hl)hl.textContent=H?'कैसे करें':'How to Practice';
-  const al=document.getElementById('poActionLbl');if(al)al.innerHTML=H?'🪔 बाहरी उपाय':'🪔 Supportive Practices';
+  const ml=document.getElementById('poMantraLbl');if(ml)ml.innerHTML=A('dashbo.mantra');
+  const hl=document.getElementById('poHowLbl');if(hl)hl.textContent=A('dashbo.how_to_practice');
+  const al=document.getElementById('poActionLbl');if(al)al.innerHTML=A('dashbo.supportive_practices');
   // Microcopy & button
   const mc=document.getElementById('poMicrocopy');if(mc)mc.textContent=H?('यह एक '+p.duration+' की साधना है — रोज़ पूरा करना आवश्यक है'):('This is a '+(p.duration_en||p.duration)+' sadhana. Consistency is important.');
-  const sb=document.querySelector('.po-start-btn');if(sb)sb.textContent=H?'🙏 साधना शुरू करें':'🙏 Start Sadhana';
+  const sb=document.querySelector('.po-start-btn');if(sb)sb.textContent=A('dashbo.start_sadhana');
   document.querySelector('.po-body').scrollTop = 0;
   document.getElementById('probOverlay').classList.add('open');
 }
@@ -4061,15 +4086,15 @@ function closeProblem(){
   document.getElementById('poWaves').classList.remove('on');currentProbKey=null;
 }
 async function toggleProblemAudio(){
-  if(probPlaying&&probAudio){probAudio.pause();probPlaying=false;document.getElementById('poBtn').textContent=H?'▶ सुनें':'▶ Listen';document.getElementById('poWaves').classList.remove('on');return;}
+  if(probPlaying&&probAudio){probAudio.pause();probPlaying=false;document.getElementById('poBtn').textContent=A('dashbo.listen');document.getElementById('poWaves').classList.remove('on');return;}
   const p=PROBLEMS[currentProbKey];if(!p)return;
-  document.getElementById('poBtn').textContent=H?'⏸ रोकें':'⏸ Pause';document.getElementById('poWaves').classList.add('on');probPlaying=true;
+  document.getElementById('poBtn').textContent=A('dashbo.pause');document.getElementById('poWaves').classList.add('on');probPlaying=true;
   const sb='https://dulfiljhfchkccqwqniv.supabase.co';
   const nk=(U.name||'').toLowerCase().replace(/[^a-z0-9ऀ-ॿ]/gi,'');
   async function playOne(url){return new Promise(r=>{const a=new Audio(url);probAudio=a;a.onended=r;a.onerror=r;a.play().catch(r);});}
   try{if(nk)await playOne(sb+'/storage/v1/object/public/shubhdin-audio/names/'+nk+'.mp3');
   await playOne(sb+'/storage/v1/object/public/shubhdin-audio/problems/'+p.audio+'.mp3');}catch(e){}
-  if(probPlaying){probPlaying=false;document.getElementById('poBtn').textContent=H?'▶ सुनें':'▶ Listen';document.getElementById('poWaves').classList.remove('on');}
+  if(probPlaying){probPlaying=false;document.getElementById('poBtn').textContent=A('dashbo.listen');document.getElementById('poWaves').classList.remove('on');}
 }
 let pocAudio=null,pocPlaying=false;
 async function playPowerOfChant(){
@@ -4099,32 +4124,32 @@ async function playPowerOfChant(){
 function personaliseMarg(){
   document.getElementById('margTitle').innerHTML=H?'मार्गदर्शन<small>MARGADARSHAN</small>':'Guidance';
   document.getElementById('margSub').textContent=H?'शिव की शरण में — हर समस्या का हल':"In Mahadev grace — solution to every problem";
-  document.getElementById('pocTitle').textContent=H?'जाप की शक्ति — एक छोटा सा उदाहरण':'Power of Chanting — A Motivational Story';
-  document.getElementById('pocSub').textContent=H?'1 मिनट सुनें — एक सरल सीख जो दिल को छू जाए':'Listen for 2 minutes — your mind will calm and your faith will grow';
-  document.getElementById('pocStory').textContent=H?'"जाप में ऐसी शक्ति है जो जीवन बदल सकती है"':'"Chanting has the power to transform life"';
-  document.getElementById('probLabel').textContent=H?'अपनी समस्या चुनें 👇':'Choose your concern 👇';
+  document.getElementById('pocTitle').textContent=A('dashbo.power_of_chanting_a_motivational_s');
+  document.getElementById('pocSub').textContent=A('dashbo.listen_for_2_minutes_your_mind_wil');
+  document.getElementById('pocStory').textContent=A('dashbo.chanting_has_the_power_to_transfor');
+  document.getElementById('probLabel').textContent=A('dashbo.choose_your_concern');
   const tiles={vivah:['विवाह समस्या','Marriage Problem'],dhan:['धन और करियर','Money & Career'],swasthya:['स्वास्थ्य समस्या','Health Problem'],vidya:['पढ़ाई और एकाग्रता','Study & Focus'],ghar:['गृह शांति','Family Peace']};
   const subs={vivah:['शादी में रुकावट दूर करें','Remove marriage obstacles'],dhan:['पैसे और नौकरी में सुधार लाएं','Improve finances & career'],swasthya:['शरीर और मन को स्वस्थ करें','Heal body and mind'],vidya:['ध्यान और याददाश्त बढ़ाएं','Improve focus & memory'],ghar:['घर में शांति और सकारात्मकता लाएं','Bring peace & positivity home']};
   for(const[k,v]of Object.entries(tiles)){
     const el=document.getElementById('pt-'+k+'-name');const es=document.getElementById('pt-'+k+'-sub');
     if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
   }
-  const _t2=document.getElementById('tl2');if(_t2)_t2.textContent=H?'मार्गदर्शन':'Guidance';
-  const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=H?'साधना':'Sadhana';
+  const _t2=document.getElementById('tl2');if(_t2)_t2.textContent=A('dashbo.guidance');
+  const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=A('dashbo.sadhana');
   const stt=document.getElementById('sadTitle');if(stt)stt.innerHTML=H?'साधना<small>MY SADHANA</small>':'My Sadhana<small>साधना</small>';
   // Named explicitly so nobody thinks the app lost their jap streak.
-  const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=plural(1, t2('{n} दिन — साधना क्रम','{n} day Sadhana streak'), t2('दिन — साधना क्रम','day Sadhana streak'));
+  const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=plural(1, t2('{n} दिन — साधना क्रम','{n} day Sadhana streak'), A('dashbo.day_sadhana_streak'));
   const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?'आज का लक्ष्य':"Today's Goal";
-  const stu=document.getElementById('sadTodayUnit');if(stu)stu.textContent=H?'जप':'Chants';
-  const sth=document.getElementById('sadJTapHint');if(sth)sth.textContent=H?'हर जाप के लिए टैप करें':'Tap for every jap';
-  const slj=document.getElementById('sadLblJap');if(slj)slj.textContent=H?'कुल जप':'Total Chants';
-  const sld=document.getElementById('sadLblDays');if(sld)sld.textContent=H?'कुल दिन':'Total Days';
-  const slb=document.getElementById('sadLblBest');if(slb)slb.textContent=H?'सर्वश्रेष्ठ':'Best Streak';
-  const scb=document.getElementById('sadContinueBtn');if(scb)scb.textContent=H?'🙏 साधना जारी रखें':'🙏 Continue Sadhana';
-  const sdb=document.getElementById('sadDoneBadge');if(sdb)sdb.textContent=H?'✨ आज की साधना पूर्ण':'✨ Today\'s Sadhana Complete';
-  const snt=document.getElementById('sadNoneTitle');if(snt)snt.textContent=H?'कोई साधना नहीं':'No Active Sadhana';
-  const snd=document.getElementById('sadNoneDesc');if(snd)snd.textContent=H?'मार्गदर्शन में जाकर अपनी समस्या चुनें और साधना शुरू करें':'Visit Guidance to choose your practice and begin your sadhana';
-  const snb=document.getElementById('sadNoneBtn');if(snb)snb.textContent=H?'🙏 साधना चुनें':'🙏 Choose Sadhana';
+  const stu=document.getElementById('sadTodayUnit');if(stu)stu.textContent=A('dashbo.chants');
+  const sth=document.getElementById('sadJTapHint');if(sth)sth.textContent=A('dashbo.tap_for_every_jap');
+  const slj=document.getElementById('sadLblJap');if(slj)slj.textContent=A('dashbo.total_chants');
+  const sld=document.getElementById('sadLblDays');if(sld)sld.textContent=A('dashbo.total_days');
+  const slb=document.getElementById('sadLblBest');if(slb)slb.textContent=A('dashbo.best_streak');
+  const scb=document.getElementById('sadContinueBtn');if(scb)scb.textContent=A('dashbo.continue_sadhana');
+  const sdb=document.getElementById('sadDoneBadge');if(sdb)sdb.textContent=A('dashbo.today_s_sadhana_complete_2');
+  const snt=document.getElementById('sadNoneTitle');if(snt)snt.textContent=A('dashbo.no_active_sadhana');
+  const snd=document.getElementById('sadNoneDesc');if(snd)snd.textContent=A('dashbo.visit_guidance_to_choose_your_prac');
+  const snb=document.getElementById('sadNoneBtn');if(snb)snb.textContent=A('dashbo.choose_sadhana');
   const spt=document.getElementById('sadPageTitle');if(spt)spt.innerHTML=H?'साधना<small>MY SADHANA</small>':'My Sadhana<small>साधना</small>';
 }
 
@@ -4137,7 +4162,7 @@ function shareWallpaper(){
   const text=H
     ?`🌅 आज का शुभ दिन\nतिथि: ${tithi} | शुभ समय: ${shubhTime}\n\n${T.d_hi} का दिन — ${T.day_hi}\n🕉️ shubhdin.app`
     :`🌅 Today\'s Shubh Din\nTithi: ${tithi} | Auspicious time: ${shubhTime}\n\n${T.d_en} Day — ${T.day_en}\n🕉️ shubhdin.app`;
-  doShare(H?'शुभ दिन':'Shubh Din', text);
+  doShare(A('dashbo.shubh_din'), text);
 }
 
 
@@ -4170,7 +4195,7 @@ function startSadhana(key){
   saveSadhana(s);
   closeProblem();
   // Show success toast
-  showSadhanaToast(H?'✨ आपकी साधना शुरू हो गई':'✨ Your Sadhana Has Started');
+  showSadhanaToast(A('dashbo.your_sadhana_has_started'));
   updateSadhanaTab();
   setTimeout(()=>{ go('sadhana'); renderSadhana(); }, 800);
 }
@@ -4195,7 +4220,7 @@ function renderSadhanaCard(){
    +'<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--saffron),var(--gold),transparent);"></div>'
    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;">'
    +'<div style="font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(212,168,67,0.78);font-weight:700;">'
-   +(H?'मेरी साधना':'MY SADHANA')+'</div>'
+   +(A('dashbo.my_sadhana_2'))+'</div>'
    +(s.streak?'<div style="font-size:11.5px;color:rgba(255,150,0,0.90);font-weight:600;">🔥 '+plural(s.streak, t2('{n} दिन साधना','{n} day sadhana'), t2('{n} दिन साधना','{n} day sadhana'))+'</div>':'')
    +'</div>'
    +'<div style="font-family:\'Tiro Devanagari Hindi\',serif;font-size:16px;color:#FFE9B8;line-height:1.35;margin-bottom:3px;">🕉️ '+(s.mantra||s.title||'')+'</div>'
@@ -4203,14 +4228,14 @@ function renderSadhanaCard(){
    +'<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:5px;">'
    +'<div style="font-size:13.5px;color:#fff;font-weight:600;">'+fmt(t2('दिन {n} / {total}','Day {n} / {total}'), {n:dayNum, total:s.totalDays})+'</div>'
    +'<div style="margin-left:auto;font-size:11.5px;color:'+(done?'rgba(120,220,150,0.90)':'rgba(212,168,67,0.85)')+';">'
-   +(done?(H?'✨ आज पूर्ण':'✨ Done today'):fmt(plural(todayCount, t2('{n} / {t} जप आज','{n} / {t} chants today'), t2('{n} / {t} जप आज','{n} / {t} chants today')), {n:todayCount, t:target}))+'</div></div>'
+   +(done?(A('dashbo.done_today')):fmt(plural(todayCount, t2('{n} / {t} जप आज','{n} / {t} chants today'), t2('{n} / {t} जप आज','{n} / {t} chants today')), {n:todayCount, t:target}))+'</div></div>'
    +'<div style="height:5px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;margin-bottom:4px;">'
    +'<div style="height:100%;width:'+Math.max(3,pct)+'%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:99px;"></div></div>'
    +'<div style="height:4px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;margin-bottom:11px;">'
    +'<div style="height:100%;width:'+tPct+'%;background:linear-gradient(90deg,#4A7C59,#69b08a);border-radius:99px;"></div></div>'
    +'<div style="text-align:center;background:linear-gradient(135deg,var(--saffron),var(--deep-gold));border-radius:11px;'
    +'padding:10px;font-size:13.5px;font-weight:600;color:#fff;">'
-   +(done?(H?'🙏 और जप करें →':'🙏 Chant More →'):(H?'🙏 साधना जारी रखें →':'🙏 Continue Sadhana →'))+'</div>'
+   +(done?(A('dashbo.chant_more')):(A('dashbo.continue_sadhana_2')))+'</div>'
    +'</div>';
 }
 // Single entry into the EXISTING full experience — used by the card and by Explore.
@@ -4230,7 +4255,7 @@ function renderSadhana(){
   const todayPct = Math.round((s.todayCount/(s.targetCount||28))*100);
   const isDone = s.daysDone.includes(today);
 
-  document.getElementById('sadPurpose').textContent = s.title || (H?'मेरी साधना':'My Sadhana');
+  document.getElementById('sadPurpose').textContent = s.title || (A('dashbo.my_sadhana_3'));
   document.getElementById('sadMantra').textContent = s.mantra;
   document.getElementById('sadDayNum').textContent = 'Day ' + Math.min(dayNum, s.totalDays);
   document.getElementById('sadDayOf').textContent = '/ ' + s.totalDays;
@@ -4285,7 +4310,7 @@ function completeSadhanaDay(){
 }
 
 function resetSadhana(){
-  if(!confirm(H?'साधना रीसेट करें?':'Reset sadhana?')) return;
+  if(!confirm(A('dashbo.reset_sadhana'))) return;
   localStorage.removeItem('shubhdin_sadhana');
   renderSadhana();
   updateSadhanaTab();
@@ -4460,7 +4485,7 @@ function continueSadhana(){
   }, 2000);
   // Show it again for next entry
   const f=document.getElementById('sadJFocus');
-  if(f){ f.style.opacity='1'; f.textContent=H?'✨ ध्यान से जप करें':'✨ Chant with focus'; }
+  if(f){ f.style.opacity='1'; f.textContent=A('dashbo.chant_with_focus'); }
 }
 
 function sadJTap(){
@@ -4560,9 +4585,9 @@ function sadJTap(){
       const sd1=document.getElementById('sdLine1');if(sd1)sd1.textContent=H?'✨ साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
       const sd2=document.getElementById('sdLine2');if(sd2)sd2.textContent=H?((window._sadTarget||28)+' जप पूरे हुए'):((window._sadTarget||28)+' Chants Completed');
       const sd3=document.getElementById('sdLine3');if(sd3)sd3.textContent=H?'आपने आज का संकल्प पूरा किया 🙏':"You completed today's chanting goal 🙏";
-      const sdSt=document.getElementById('sadJStreakShow');if(sdSt)sdSt.textContent=H?'🔥 साधना जारी है':'🔥 Practice Continues';
-      const sdMr=document.getElementById('sdBtnMore');if(sdMr)sdMr.textContent=H?'🔁 अधिक जप करें':'🔁 Chant More';
-      const sdBk=document.getElementById('sdBtnBack');if(sdBk)sdBk.textContent=H?'🏠 साधना पर लौटें':'🏠 Return to Sadhana';
+      const sdSt=document.getElementById('sadJStreakShow');if(sdSt)sdSt.textContent=A('dashbo.practice_continues');
+      const sdMr=document.getElementById('sdBtnMore');if(sdMr)sdMr.textContent=A('dashbo.chant_more_2');
+      const sdBk=document.getElementById('sdBtnBack');if(sdBk)sdBk.textContent=A('dashbo.return_to_sadhana');
       completeSadhanaDay();
       const sk=getSadhana();
       const strEl=document.getElementById('sadJDoneStreak');
@@ -4571,19 +4596,19 @@ function sadJTap(){
       document.getElementById('sdLine1')?.textContent==='';if(document.getElementById('sdLine1'))document.getElementById('sdLine1').textContent=H?'✨ साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
       if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=H?((window._sadTarget||28)+' जप पूरे हुए'):((window._sadTarget||28)+' Chants Completed');
       if(document.getElementById('sdLine3'))document.getElementById('sdLine3').textContent=H?"आपने आज का संकल्प पूरा किया 🙏":"You completed today's chanting goal 🙏";
-      if(document.getElementById('sadJStreakShow'))document.getElementById('sadJStreakShow').textContent=H?'🔥 साधना जारी है':'🔥 Practice Continues';
-      if(document.getElementById('sdBtnMore'))document.getElementById('sdBtnMore').textContent=H?'🔁 अधिक जप करें':'🔁 Chant More';
-      if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=H?'🏠 साधना पर लौटें':'🏠 Return to Sadhana';
+      if(document.getElementById('sadJStreakShow'))document.getElementById('sadJStreakShow').textContent=A('dashbo.practice_continues');
+      if(document.getElementById('sdBtnMore'))document.getElementById('sdBtnMore').textContent=A('dashbo.chant_more_2');
+      if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=A('dashbo.return_to_sadhana');
       const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=H?'✨ आपकी साधना पूर्ण हुई ✨':'✨ Sadhana Complete ✨';
       const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?('आपने '+(window._sadTarget||28)+' जप पूरे किए 🙏'):('You completed '+(window._sadTarget||28)+' chants 🙏');
-      const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=H?'आज का जप':'Today\'s chants';
+      const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=A('dashbo.today_s_chants_2');
       /* sadDoneBackBtn was removed from the markup; this line set text on a node
          that never exists. Harmless at runtime, but it put a second Hindi value
          ("साधना सहेजें और लौटें" — save AND return) against the same English as the
          live button ("साधना पर लौटें" — just return), which surfaced in the
          extraction as a conflict and would have been paid to translate into
          seven languages. Dead code, deleted. */
-      const dmtl=document.getElementById('sadDoneMainTitle');if(dmtl)dmtl.textContent=H?'आज का जप पूर्ण हुआ':'Sadhana Complete';
+      const dmtl=document.getElementById('sadDoneMainTitle');if(dmtl)dmtl.textContent=A('dashbo.sadhana_complete_2');
       /* The sadhana "done" screen was removed; these labels set text on
          elements that no longer exist — sadDoneStreakLbl, sadDoneJrnLbl and
          sadDoneMoreBtn were each referenced exactly once, here. Dead at
@@ -4592,7 +4617,7 @@ function sadJTap(){
          screen they belonged to. */
       const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=H?((window._sadTarget||28)+' जप पूरे हुए 🔥'):((window._sadTarget||28)+' Chants Completed 🔥');
       const dvow=document.getElementById('sadDoneVow');if(dvow)dvow.textContent=H?"आज का संकल्प सफल हुआ 🕉️":"You completed today's spiritual goal 🕉️";
-      const dbl=document.getElementById('sadDoneBlessing');if(dbl)dbl.textContent=H?'ईश्वर की कृपा आप पर बनी रहे 🙏':'May divine grace be with you 🙏';
+      const dbl=document.getElementById('sadDoneBlessing');if(dbl)dbl.textContent=A('dashbo.may_divine_grace_be_with_you');
       const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
     },900);
   }
@@ -4799,7 +4824,7 @@ function buildPayload(q){
   return {
     v:2, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
     tithi:(H?q.tithi.hi:q.tithi.en),
-    tithi_paksha:(q.tithi.paksha==='Krishna'?(H?'कृष्ण पक्ष':'Krishna Paksha'):(H?'शुक्ल पक्ष':'Shukla Paksha')),
+    tithi_paksha:(q.tithi.paksha==='Krishna'?(A('dashbo.krishna_paksha')):(A('dashbo.shukla_paksha'))),
     tithi_end:pgFmt(q.tithi.end),
     nakshatra:(H?q.nakshatra.hi:q.nakshatra.en),
     nakshatra_ruler:(q.nakshatra.lord?(H?q.nakshatra.lord.hi:q.nakshatra.lord.en):''),
@@ -4908,8 +4933,8 @@ function applyPanchang(p){
       // Classical practice takes no Abhijit on a Wednesday, and the engine
       // returns none. Say that rather than leaving a bare dash.
       var _ab=document.getElementById('abTime'), _abs=document.getElementById('abSub');
-      if(_ab) _ab.textContent=H?'आज नहीं':'None today';
-      if(_abs) _abs.textContent=(new Date().getDay()===3)?(H?'बुधवार':'Wednesday'):'';
+      if(_ab) _ab.textContent=A('dashbo.none_today');
+      if(_abs) _abs.textContent=(new Date().getDay()===3)?(A('dashbo.wednesday')):'';
     }
     if(p.abhijit_muhurta){
       document.getElementById('goodTime').textContent=p.abhijit_muhurta;
@@ -4930,7 +4955,7 @@ function applyPanchang(p){
             const warn=document.createElement('div');
             warn.id='abhijitWarn';
             warn.style.cssText='font-size:10px;color:rgba(255,180,50,0.75);margin-top:4px;letter-spacing:0.3px;';
-            warn.textContent=H?'⚠️ राहु काल से प्रभावित':'⚠️ Overlaps with Rahu Kaal';
+            warn.textContent=A('dashbo.overlaps_with_rahu_kaal');
             const existing=document.getElementById('abhijitWarn');
             if(!existing){
               const gt=document.getElementById('goodTime');
@@ -4938,7 +4963,7 @@ function applyPanchang(p){
             }
             // Also update abhijit card description
             const abDesc=document.getElementById('abDesc');
-            if(abDesc) abDesc.innerHTML=(H?'⚠️ अभिजित मुहूर्त राहु काल से प्रभावित है':'⚠️ Abhijit Muhurta overlaps with Rahu Kaal')+'<br><small style="opacity:0.6">'+(H?'सावधानी से उपयोग करें':'Use with caution')+'</small>';
+            if(abDesc) abDesc.innerHTML=(A('dashbo.abhijit_muhurta_overlaps_with_rahu'))+'<br><small style="opacity:0.6">'+(A('dashbo.use_with_caution'))+'</small>';
           }
         }catch(e){}
       }
@@ -5036,8 +5061,8 @@ function wpStubAd(){
   return new Promise(function(resolve){
     var host=document.getElementById('wpAd'), cEl=document.getElementById('wpAdCount');
     if(!host) return resolve(false);
-    document.getElementById('wpAdLbl').textContent=H?'विज्ञापन':'ADVERTISEMENT';
-    document.getElementById('wpAdBoxTxt').textContent=H?'विज्ञापन चल रहा है':'Ad playing';
+    document.getElementById('wpAdLbl').textContent=A('dashbo.advertisement');
+    document.getElementById('wpAdBoxTxt').textContent=A('dashbo.ad_playing');
     var left=WP_AD_SECONDS, done=false;
     host.classList.add('on');
     function finish(ok){
@@ -5048,7 +5073,7 @@ function wpStubAd(){
     window._wpAdAbort=function(){ finish(false); };   // ✕ = dismissed, no reward
     cEl.textContent=left;
     var iv=setInterval(function(){
-      left--; cEl.textContent=left>0?left:(H?'धन्यवाद 🙏':'Thank you 🙏');
+      left--; cEl.textContent=left>0?left:(A('dashbo.thank_you'));
       if(left<=0){ setTimeout(function(){finish(true);},700); }
     },1000);
   });
@@ -5075,15 +5100,15 @@ function renderWallpaperCard(){
   m.innerHTML=
    '<div class="wpc'+(open?'':' locked')+'" onclick="'+(open?'wpUse()':'wpUnlock()')+'">'
    +'<div class="wpc-img" style="background-image:url(\''+w.img+'\')"></div><div class="wpc-sh"></div>'
-   +(open?'':'<div class="wpc-lock">🔒 '+(H?'बंद':'LOCKED')+'</div>')
+   +(open?'':'<div class="wpc-lock">🔒 '+(A('dashbo.locked'))+'</div>')
    +'<div class="wpc-b">'
-   +'<div class="wpc-tag">🖼️ '+(H?'आज का वॉलपेपर':'WALLPAPER OF THE DAY')+'</div>'
+   +'<div class="wpc-tag">🖼️ '+(A('dashbo.wallpaper_of_the_day'))+'</div>'
    +'<div class="wpc-t dev">'+w.deity+'</div>'
    +'<div class="wpc-s">'+w.day+'</div>'
    +'<div class="wpc-btn'+(open?' open':'')+'">'
-     +(open?('⬇️ '+(H?'सेव करें / साझा करें':'Save or Share'))
-           :('▶ '+(H?'छोटा विज्ञापन देखकर अनलॉक करें':'Watch a short ad to unlock')))+'</div>'
-   +(open?'':'<div class="wpc-why">'+(H?'विज्ञापन से शुभ दिन मुफ़्त रहता है 🙏':'Ads keep Shubh Din free for everyone 🙏')+'</div>')
+     +(open?('⬇️ '+(A('dashbo.save_or_share')))
+           :('▶ '+(A('dashbo.watch_a_short_ad_to_unlock'))))+'</div>'
+   +(open?'':'<div class="wpc-why">'+(A('dashbo.ads_keep_shubh_din_free_for_everyo'))+'</div>')
    +'</div></div>'
    + wpGalleryHTML();
 }
@@ -5098,7 +5123,7 @@ function wpGalleryHTML(){
       +(ok?'onclick="wpUse(\''+w.key+'\')"':'')+'>'
       +'<div class="wpg-d">'+d.getDate()+'</div></div>';
   }).join('');
-  return '<div class="wpg-h">'+(H?'पिछले वॉलपेपर':'Past Wallpapers')+'</div><div class="wpg">'+cells+'</div>';
+  return '<div class="wpg-h">'+(A('dashbo.past_wallpapers'))+'</div><div class="wpg">'+cells+'</div>';
 }
 
 /* ── unlock: UI never mentions a provider ── */
@@ -5107,14 +5132,14 @@ function wpUnlock(){
   if(wpIsUnlocked(w.key)) return wpUse();
   showRewardedAd().then(function(earned){
     if(!earned){
-      showShareToast(H?'वॉलपेपर अनलॉक नहीं हुआ':'Wallpaper not unlocked');
+      showShareToast(A('dashbo.wallpaper_not_unlocked'));
       return;
     }
     wpMarkUnlocked(w.key);
     renderWallpaperCard();
-    showShareToast(H?'🖼️ वॉलपेपर अनलॉक हो गया':'🖼️ Wallpaper unlocked');
+    showShareToast(A('dashbo.wallpaper_unlocked'));
   }).catch(function(){
-    showShareToast(H?'अभी विज्ञापन उपलब्ध नहीं':'No ad available right now');
+    showShareToast(A('dashbo.no_ad_available_right_now'));
   });
 }
 /* ── save / share the unlocked image ── */
@@ -5131,7 +5156,7 @@ function wpUse(key){
     var u=URL.createObjectURL(b), a=document.createElement('a');
     a.href=u; a.download='shubhdin-'+w.key+'.jpg'; document.body.appendChild(a); a.click();
     a.remove(); setTimeout(function(){URL.revokeObjectURL(u);},4000);
-    showShareToast(H?'✅ सेव हो गया':'✅ Saved');
+    showShareToast(A('dashbo.saved'));
   }).catch(function(){
     window.open(w.img,'_blank');   // last resort: long-press to save
   });
@@ -5377,7 +5402,7 @@ async function fetchBirthChart(){
 // Say it where it shows, rather than presenting a guess as a fact.
 function tobIsUnknown(){ try{return !!JSON.parse(localStorage.getItem('shubhdin_user')||'{}').tobUnknown;}catch(e){return false;} }
 function approxNote(){ return tobIsUnknown()
-  ? ' <span style="font-size:9px;color:rgba(212,168,67,0.72);">'+(H?'≈ समय अनुमानित':'≈ time assumed')+'</span>' : ''; }
+  ? ' <span style="font-size:9px;color:rgba(212,168,67,0.72);">'+(A('dashbo.time_assumed'))+'</span>' : ''; }
 function updateBirthChips(data){
   // Home chips
   const rv = document.getElementById('rv');
@@ -5481,7 +5506,7 @@ function startContinuousJap(){
   document.getElementById('jContStop').style.display='block';
 
   const fl=document.getElementById('jFocusLine');
-  if(fl){fl.textContent=H?'🔁 निरंतर जाप — मन को लगाएं':'🔁 Continuous Chant — focus your mind';fl.style.opacity='1';}
+  if(fl){fl.textContent=A('dashbo.continuous_chant_focus_your_mind');fl.style.opacity='1';}
 
   // Simply start normal jap — reuses all existing audio + highlight logic
   if(!jPlay) toggleJap();
@@ -5503,7 +5528,7 @@ function stopContinuousJap(){
   resetJap();
 
   const fl=document.getElementById('jFocusLine');
-  if(fl){fl.textContent=H?'मन को शांत करें… श्रद्धा से जाप करें':'Focus your mind… chant with devotion';fl.style.opacity='1';}
+  if(fl){fl.textContent=A('dashbo.focus_your_mind_chant_with_devotio');fl.style.opacity='1';}
 }
 
 
@@ -5514,7 +5539,7 @@ function doShare(title, text){
   } else {
     // Fallback: copy to clipboard
     navigator.clipboard?.writeText(text+'\n\nhttps://www.shubhdin.app').then(()=>{
-      showShareToast(H?'✅ कॉपी हो गया':'✅ Copied!');
+      showShareToast(A('dashbo.copied'));
     }).catch(()=>{
       window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
     });
@@ -5537,7 +5562,7 @@ function shareSadhana(){
   const text=H
     ?`🔥 मेरी साधना जारी है — Day ${dayNum}/${s.totalDays}\n\n${s.title||'साधना'}\n${s.mantra||''}\n\nश्रद्धा और निरंतरता 🙏`
     :`🔥 My sadhana continues — Day ${dayNum}/${s.totalDays}\n\n${(p.title_en||s.title||'Sadhana')}\n${s.mantra||''}\n\nFaith and consistency 🙏`;
-  doShare(H?'शुभ दिन':'Shubh Din', text);
+  doShare(A('dashbo.shubh_din'), text);
 }
 
 
@@ -5595,11 +5620,11 @@ async function submitFeedback(){
   const btn = document.getElementById('fbBtn');
   const btnTxt = document.getElementById('fbBtnTxt');
   if(msg.length < 3){
-    btnTxt.textContent = H ? '❗ कुछ लिखें' : '❗ Write something';
-    setTimeout(()=>btnTxt.textContent=H?'भेजें':'Send', 2000);
+    btnTxt.textContent = A('dashbo.write_something');
+    setTimeout(()=>btnTxt.textContent=A('dashbo.send'), 2000);
     return;
   }
-  btnTxt.textContent = H ? '⏳ भेज रहे हैं...' : '⏳ Sending...';
+  btnTxt.textContent = A('dashbo.sending');
   btn.disabled = true;
   try{
     const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
@@ -5615,15 +5640,15 @@ async function submitFeedback(){
       })
     });
     if(r.ok){
-      btnTxt.textContent = H ? '✅ भेज दिया गया!' : '✅ Sent!';
+      btnTxt.textContent = A('dashbo.sent');
       document.getElementById('fbText').value = '';
       setFbRating(0);
-      setTimeout(()=>{ btn.disabled=false; btnTxt.textContent=H?'भेजें':'Send'; }, 3000);
+      setTimeout(()=>{ btn.disabled=false; btnTxt.textContent=A('dashbo.send'); }, 3000);
     } else {
       throw new Error('Failed');
     }
   } catch(e){
-    btnTxt.textContent = H ? '❌ फिर कोशिश करें' : '❌ Try again';
+    btnTxt.textContent = A('dashbo.try_again');
     btn.disabled = false;
   }
 }
@@ -5697,13 +5722,13 @@ function calTithi(phase,date){
   // Engine first — the mean-lunation index below is only a pre-load stand-in.
   var e = date ? calEngine(date) : null;
   if(e){
-    const paksha = e.paksha==='Krishna' ? (H?'कृष्ण':'Krishna') : (H?'शुक्ल':'Shukla');
+    const paksha = e.paksha==='Krishna' ? (A('dashbo.krishna')) : (A('dashbo.shukla'));
     return {hi:e.hi, en:e.en, paksha:paksha, engine:true};
   }
   const idx = Math.floor(phase / _SYNODIC * 30) % 30;
   const TITHI_HI=['प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','पूर्णिमा','प्रतिपदा','द्वितीया','तृतीया','चतुर्थी','पंचमी','षष्ठी','सप्तमी','अष्टमी','नवमी','दशमी','एकादशी','द्वादशी','त्रयोदशी','चतुर्दशी','अमावस्या'];
   const TITHI_EN=['Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Purnima','Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi','Amavasya'];
-  const paksha = idx < 15 ? (H?'शुक्ल':'Shukla') : (H?'कृष्ण':'Krishna');
+  const paksha = idx < 15 ? (A('dashbo.shukla')) : (A('dashbo.krishna'));
   return {hi:TITHI_HI[idx], en:TITHI_EN[idx], paksha};
 }
 
@@ -5743,7 +5768,7 @@ function calHinduMonth(month, year){
   if(!spanning.length) spanning.push(HM[0]);
   const names = spanning.map(e => H ? e[1] : e[2]).join(' – ');
   const samvat = spanning[spanning.length-1][3];
-  const label = H ? 'विक्रम संवत्' : 'Vikram Samvat';
+  const label = A('dashbo.vikram_samvat');
   return `${names} | ${label} ${samvat}`;
 }
 
@@ -5992,8 +6017,8 @@ function openCalendar(){
   // Translate button
   const bt=document.getElementById('calBtnTitle');
   const bs=document.getElementById('calBtnSub');
-  if(bt) bt.textContent=H?'पंचांग कैलेंडर':'Panchang Calendar';
-  if(bs) bs.textContent=H?'त्योहार • चंद्र • पंचांग':'Festivals • Moon • Panchang';
+  if(bt) bt.textContent=A('dashbo.panchang_calendar');
+  if(bs) bs.textContent=A('dashbo.festivals_moon_panchang');
 }
 
 function closeCalendar(){
@@ -6023,10 +6048,10 @@ function renderCalendar(){
     const labels = H ? dh_hi : dh_en;
     const _lg=document.getElementById('calLegend');
     if(_lg) _lg.innerHTML=[
-      ['#E8BE5A', H?'आज':'today'],
-      ['rgba(232,222,255,0.85)', H?'चुना हुआ':'selected'],
-      ['rgba(255,154,60,0.9)', H?'पर्व / व्रत':'festival / vrat'],
-      ['rgba(127,179,245,0.9)', H?'अवकाश':'holiday']
+      ['#E8BE5A', A('dashbo.today')],
+      ['rgba(232,222,255,0.85)', A('dashbo.selected')],
+      ['rgba(255,154,60,0.9)', A('dashbo.festival_vrat')],
+      ['rgba(127,179,245,0.9)', A('dashbo.holiday')]
     ].map(c=>`<span style="display:inline-flex;align-items:center;gap:4px;margin-right:11px;font-size:9px;color:rgba(255,244,222,0.55);">
         <span style="width:8px;height:8px;border-radius:2px;border:1.5px solid ${c[0]};"></span>${c[1]}</span>`).join('');
     DAY_HDR.innerHTML = labels.map((d,i)=>
@@ -6126,12 +6151,11 @@ function renderMonthEvents(){
   const DEN=['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const title=(H?MHI[_calMonth]:MEN[_calMonth])+' '+_calYear;
   const today=new Date();
-  const head='<div class="cev-hd"><div class="cev-t">'+(H?'इस माह':'This Month')+' · '+title+'</div>'
+  const head='<div class="cev-hd"><div class="cev-t">'+(A('dashbo.this_month'))+' · '+title+'</div>'
     +'<div class="cev-n">'+(evs.length?(evs.length+' '+(H?'विशेष दिन':(evs.length===1?'important day':'important days'))):'')+'</div></div>';
   if(!evs.length)
     return '<div class="cev-wrap">'+head+'<div class="cev-empty">'
-      +(H?'इस माह कोई विशेष पर्व नहीं — रोज़ का पंचांग देखने के लिए किसी भी तारीख़ पर टैप करें'
-         :'No major observances this month — tap any date for its daily panchang')+'</div></div>';
+      +(A('dashbo.no_major_observances_this_month_ta'))+'</div></div>';
   let rows='';
   evs.forEach(function(e){
     const m=CEV_META[e.cat]||CEV_META.festival;
@@ -6157,10 +6181,10 @@ function selectCalDate(d){
 
 
 function calSpiritualNote(phase, festival, date){
-  if(isAmavasya(phase,date)) return H?'🌑 पितरों का स्मरण करें':'🌑 Offer prayers to ancestors';
-  if(isPurnima(phase,date)) return H?'🌕 सत्यनारायण व्रत का दिन':'🌕 Auspicious for Satyanarayan Vrat';
-  if(isEkadashi(phase,date)) return H?'🙏 एकादशी व्रत — हरि का नाम लें':'🙏 Ekadashi — chant Hari Nam';
-  if(festival && festival.t==='major') return H?'✨ आज विशेष पूजा का दिन है':'✨ Auspicious for special prayers';
+  if(isAmavasya(phase,date)) return A('dashbo.offer_prayers_to_ancestors');
+  if(isPurnima(phase,date)) return A('dashbo.auspicious_for_satyanarayan_vrat');
+  if(isEkadashi(phase,date)) return A('dashbo.ekadashi_chant_hari_nam');
+  if(festival && festival.t==='major') return A('dashbo.auspicious_for_special_prayers');
   const d = new Date().getDay();
   const hi=['☀️ सूर्यदेव की पूजा करें','🕉️ शिव की आराधना करें','🙏 हनुमान चालीसा पढ़ें','📿 गणेश मंत्र जप करें','🌸 विष्णु सहस्रनाम पाठ करें','🌺 माँ लक्ष्मी का ध्यान करें','🪔 शनिदेव को तेल चढ़ाएं'];
   const en=['☀️ Offer prayers to Surya Dev','🕉️ Ideal day to worship Shiva','🙏 Recite Hanuman Chalisa','📿 Chant Ganesh mantra','🌸 Read Vishnu Sahasranama','🌺 Worship Maa Lakshmi','🪔 Offer oil to Shani Dev'];
@@ -6265,7 +6289,7 @@ function showCalDetail(date){
                  : f.cat==='vrat' ? 'rgba(201,160,255,0.90)' : 'rgba(212,168,67,0.75)';
     return {i:f.i, name:(H?f.hi:f.en), label:(H?meta.hi:meta.en), color:fColor};
   });
-  if(bankSat) drows.push({i:'🏦', name:(H?'बैंक अवकाश':'Bank Holiday'),
+  if(bankSat) drows.push({i:'🏦', name:(A('dashbo.bank_holiday')),
     label:(H?bankSat.h:bankSat.e), color:'rgba(175,195,220,0.88)'});
   if(drows.length){
     festHtml = drows.map(function(r){
@@ -6279,9 +6303,9 @@ function showCalDetail(date){
     }).join('');
   }
 
-  const specialNote = isAmavasya(phase,date)?(H?'🌑 अमावस्या — पितृ तर्पण का दिन':'🌑 Amavasya — Day of ancestral worship'):
-    isPurnima(phase,date)?(H?'🌕 पूर्णिमा — व्रत का विशेष दिन':'🌕 Purnima — Auspicious for fasting'):
-    isEkadashi(phase,date)?(H?'🙏 एकादशी — व्रत एवं विष्णु पूजा':'🙏 Ekadashi — Fast & Vishnu Puja'):'';
+  const specialNote = isAmavasya(phase,date)?(A('dashbo.amavasya_day_of_ancestral_worship')):
+    isPurnima(phase,date)?(A('dashbo.purnima_auspicious_for_fasting')):
+    isEkadashi(phase,date)?(A('dashbo.ekadashi_fast_vishnu_puja')):'';
 
   /* Any date, not just today. The engine computes 1700–2200, so restricting
      taps to today threw away the app's own advantage — people want to know
@@ -6301,8 +6325,8 @@ function showCalDetail(date){
       const S=segArr||[];
       if(!S.length) return orowCal(label,fallback);
       const cur=S[0], nxt=S[1];
-      const upto = cur.end ? `<span style="color:rgba(212,168,67,0.72);"> ${H?'तक':'until'} ${cur.end}</span>` : '';
-      const then = (nxt&&nxt.n) ? `<div style="font-size:11px;color:rgba(255,244,222,0.55);margin-top:1px;">${H?'फिर':'then'} ${nxt.n}${nxt.end?` <span style="color:rgba(212,168,67,0.55);">${H?'तक':'until'} ${nxt.end}</span>`:''}</div>` : '';
+      const upto = cur.end ? `<span style="color:rgba(212,168,67,0.72);"> ${A('dashbo.until')} ${cur.end}</span>` : '';
+      const then = (nxt&&nxt.n) ? `<div style="font-size:11px;color:rgba(255,244,222,0.55);margin-top:1px;">${A('dashbo.then')} ${nxt.n}${nxt.end?` <span style="color:rgba(212,168,67,0.55);">${A('dashbo.until')} ${nxt.end}</span>`:''}</div>` : '';
       return `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);">
         <div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>
         <div style="font-size:12.5px;color:rgba(255,240,220,0.92);">${cur.n}${upto}</div>${then}</div>`;
@@ -6315,54 +6339,54 @@ function showCalDetail(date){
     const wl=(ico,name,arr)=>(arr||[]).map(x=>w(ico,name,x)).join('');
 
     const shubh=grp('✅ '+(H?'शुभ समय':'Auspicious'),[
-      p.shubh&&p.shubh.abhijit ? w('⭐',(H?'अभिजित':'Abhijit'),p.shubh.abhijit)
+      p.shubh&&p.shubh.abhijit ? w('⭐',(A('dashbo.abhijit')),p.shubh.abhijit)
         : `<div style="font-size:11.5px;padding:3px 0;color:rgba(255,244,222,0.45);">⭐ ${date.getDay()===3
-        ? fmt(t2('अभिजित — आज नहीं ({day})','Abhijit — none ({day})'), {day:t2('बुधवार','Wednesday')})
-        : t2('अभिजित — आज नहीं','Abhijit — none')}</div>`,
-      p.shubh?wl('🍯',(H?'अमृत काल':'Amrit Kaal'),p.shubh.amrit):'',
-      p.shubh?w('🌄',(H?'ब्रह्म मुहूर्त':'Brahma Muhurta'),p.shubh.brahma):'',
+        ? fmt(t2('अभिजित — आज नहीं ({day})','Abhijit — none ({day})'), {day:A('dashbo.wednesday')})
+        : A('dashbo.abhijit_none')}</div>`,
+      p.shubh?wl('🍯',(A('dashbo.amrit_kaal')),p.shubh.amrit):'',
+      p.shubh?w('🌄',(A('dashbo.brahma_muhurta')),p.shubh.brahma):'',
       p.clean?`<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;">
-        <span style="color:rgba(150,220,170,0.90);">✅ ${H?'पहला साफ़ समय':'First clean window'}</span>
+        <span style="color:rgba(150,220,170,0.90);">✅ ${A('dashbo.first_clean_window')}</span>
         <span style="color:rgba(150,220,170,0.95);font-weight:600;">${p.clean.n} ${p.clean.s}–${p.clean.e}</span></div>`:''
     ]);
     const ashubh=grp('⚠️ '+(H?'वर्ज्य समय':'Avoid'),[
-      p.ashubh?w('🚫',(H?'राहु काल':'Rahu Kaal'),p.ashubh.rahu):'',
-      p.ashubh?w('⛔',(H?'यमगंड':'Yamaganda'),p.ashubh.yama):'',
-      p.ashubh?w('⛔',(H?'गुलिक काल':'Gulika'),p.ashubh.gulika):'',
-      p.ashubh?wl('△',(H?'दुर्मुहूर्त':'Dur Muhurtam'),p.ashubh.dur):'',
-      p.ashubh?wl('△',(H?'वर्ज्यम्':'Varjyam'),p.ashubh.varjyam):''
+      p.ashubh?w('🚫',(A('dashbo.rahu_kaal')),p.ashubh.rahu):'',
+      p.ashubh?w('⛔',(A('dashbo.yamaganda')),p.ashubh.yama):'',
+      p.ashubh?w('⛔',(A('dashbo.gulika')),p.ashubh.gulika):'',
+      p.ashubh?wl('△',(A('dashbo.dur_muhurtam')),p.ashubh.dur):'',
+      p.ashubh?wl('△',(A('dashbo.varjyam')),p.ashubh.varjyam):''
     ]);
-    const mine=p.mine?grp('⭐ '+(H?'आपके लिए':'For you'),[
+    const mine=p.mine?grp('⭐ '+(A('dashbo.for_you')),[
       p.mine.tara?`<div style="font-size:11.5px;padding:3px 0;color:${p.mine.taraGood?'rgba(150,220,170,0.90)':'rgba(240,150,130,0.88)'};">
-         ${p.mine.taraGood?'✓':'△'} ${H?'ताराबल':'Tarabala'}: ${p.mine.tara}${p.mine.verdict?' · '+p.mine.verdict:''}</div>`:'',
+         ${p.mine.taraGood?'✓':'△'} ${A('dashbo.tarabala')}: ${p.mine.tara}${p.mine.verdict?' · '+p.mine.verdict:''}</div>`:'',
       (p.mine.chandraGood!==undefined)?`<div style="font-size:11.5px;padding:3px 0;color:${p.mine.chandraGood?'rgba(150,220,170,0.90)':'rgba(255,244,222,0.60)'};">
-         ${p.mine.chandraGood?'✓':'—'} ${H?'चंद्रबल':'Chandrabala'}${p.mine.moonIn?' · '+fmt(t2('चंद्र {rashi}','Moon in {rashi}'), {rashi:p.mine.moonIn}):''}</div>`:''
+         ${p.mine.chandraGood?'✓':'—'} ${A('dashbo.chandrabala')}${p.mine.moonIn?' · '+fmt(t2('चंद्र {rashi}','Moon in {rashi}'), {rashi:p.mine.moonIn}):''}</div>`:''
     ]):'';
-    const extras=grp((H?'अन्य':'Also'),[
+    const extras=grp((A('dashbo.also')),[
       p.disha?`<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;">
-        <span style="color:rgba(255,244,222,0.72);">🧭 ${H?'दिशा शूल':'Disha Shool'}</span>
+        <span style="color:rgba(255,244,222,0.72);">🧭 ${A('dashbo.disha_shool')}</span>
         <span style="color:rgba(255,240,220,0.92);">${p.disha}</span></div>`:'',
       p.panchaka?`<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;">
-        <span style="color:rgba(255,244,222,0.72);">🔢 ${H?'पंचक':'Panchaka'}</span>
+        <span style="color:rgba(255,244,222,0.72);">🔢 ${A('dashbo.panchaka')}</span>
         <span style="color:rgba(255,240,220,0.92);">${p.panchaka}</span></div>`:''
     ]);
 
     fullData=`<div style="margin-top:12px;">
-      ${line(H?'तिथि':'Tithi',p.seg.tithi,p.tithi)}
-      ${line(H?'नक्षत्र':'Nakshatra',p.seg.nak,p.nakshatra)}
-      ${line(H?'योग':'Yoga',p.seg.yoga,p.yoga)}
-      ${line(H?'करण':'Karana',p.seg.karana,p.karana)}
-      ${orowCal(H?'वार':'Weekday',p.weekday)}
+      ${line(A('dashbo.tithi'),p.seg.tithi,p.tithi)}
+      ${line(A('dashbo.nakshatra'),p.seg.nak,p.nakshatra)}
+      ${line(A('dashbo.yoga'),p.seg.yoga,p.yoga)}
+      ${line(A('dashbo.karana'),p.seg.karana,p.karana)}
+      ${orowCal(A('dashbo.weekday'),p.weekday)}
       <div style="margin-top:8px;">
-        ${w('🌅',(H?'सूर्योदय / सूर्यास्त':'Sunrise / Sunset'),{s:p.sunrise,e:p.sunset})}
-        ${w('🌙',(H?'चंद्रोदय / चंद्रास्त':'Moonrise / Moonset'),{s:p.moonrise,e:p.moonset})}
+        ${w('🌅',(A('dashbo.sunrise_sunset')),{s:p.sunrise,e:p.sunset})}
+        ${w('🌙',(A('dashbo.moonrise_moonset')),{s:p.moonrise,e:p.moonset})}
       </div>
       ${shubh}${ashubh}${mine}${extras}
     </div>`;
   } else if(p){
     const fmtT = (iso)=>{ if(!iso) return ''; try{ const d=new Date(iso); if(isNaN(d.getTime())) return ''; return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}); }catch(e){ return ''; } };
-    const upto = H?'तक':'upto';
-    const after = t2('के बाद','after');   /* used as a token value, kept as a word */
+    const upto = A('dashbo.upto');
+    const after = A('dashbo.after');   /* used as a token value, kept as a word */
 
     // Build a panchang element block: current upto TIME, then next after TIME
     const block = (label, cur, endIso, next) => {
@@ -6391,24 +6415,24 @@ function showCalDetail(date){
     };
 
     let blocks = '';
-    blocks += block(H?'तिथि':'Tithi', p.tithi || (H?tithi.hi:tithi.en), p.tithi_end, p.tithi2||'');
-    blocks += block(H?'नक्षत्र':'Nakshatra', p.nakshatra, p.nakshatra_end, p.nakshatra2||'');
-    blocks += block(H?'योग':'Yoga', p.yoga, p.yoga_end, p.yoga2||'');
-    blocks += block(H?'करण':'Karana', p.karana, p.karana_end, p.karana2||'');
-    if(p.weekday) blocks += `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);"><div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${H?'वार':'Weekday'}</div><div style="font-size:12px;color:rgba(255,240,220,0.92);">${p.weekday}</div></div>`;
+    blocks += block(A('dashbo.tithi'), p.tithi || (H?tithi.hi:tithi.en), p.tithi_end, p.tithi2||'');
+    blocks += block(A('dashbo.nakshatra'), p.nakshatra, p.nakshatra_end, p.nakshatra2||'');
+    blocks += block(A('dashbo.yoga'), p.yoga, p.yoga_end, p.yoga2||'');
+    blocks += block(A('dashbo.karana'), p.karana, p.karana_end, p.karana2||'');
+    if(p.weekday) blocks += `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);"><div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${A('dashbo.weekday')}</div><div style="font-size:12px;color:rgba(255,240,220,0.92);">${p.weekday}</div></div>`;
 
     // Sun/Moon times
     let sunmoon = '';
-    sunmoon += timeRow('☀️ '+(H?'सूर्योदय':'Sunrise'), fmtT(p.sunrise) || p.sunrise);
-    sunmoon += timeRow('🌇 '+(H?'सूर्यास्त':'Sunset'), fmtT(p.sunset) || p.sunset);
-    sunmoon += timeRow('🌙 '+(H?'चंद्रोदय':'Moonrise'), fmtT(p.moonrise) || p.moonrise);
-    if(p.moonset) sunmoon += timeRow('🌘 '+(H?'चंद्रास्त':'Moonset'), fmtT(p.moonset) || p.moonset);
+    sunmoon += timeRow('☀️ '+(A('dashbo.sunrise')), fmtT(p.sunrise) || p.sunrise);
+    sunmoon += timeRow('🌇 '+(A('dashbo.sunset')), fmtT(p.sunset) || p.sunset);
+    sunmoon += timeRow('🌙 '+(A('dashbo.moonrise')), fmtT(p.moonrise) || p.moonrise);
+    if(p.moonset) sunmoon += timeRow('🌘 '+(A('dashbo.moonset')), fmtT(p.moonset) || p.moonset);
 
     // Auspicious/inauspicious
     let timings = '';
-    timings += timeRow('⭐ '+(H?'अभिजित मुहूर्त':'Abhijit Muhurta'), p.abhijit_muhurta);
-    timings += timeRow('⚠️ '+(H?'राहु काल':'Rahu Kaal'), p.rahu_kaal);
-    timings += timeRow((H?'गुलिक काल':'Gulika Kaal'), p.gulika);
+    timings += timeRow('⭐ '+(A('dashbo.abhijit_muhurta')), p.abhijit_muhurta);
+    timings += timeRow('⚠️ '+(A('dashbo.rahu_kaal')), p.rahu_kaal);
+    timings += timeRow((A('dashbo.gulika_kaal')), p.gulika);
 
     fullData = `<div style="margin-top:12px;">
       ${blocks}
@@ -6422,9 +6446,9 @@ function showCalDetail(date){
     ? `<div onclick="calGoTimings()" style="margin-top:12px;text-align:center;padding:10px;
          background:linear-gradient(135deg,rgba(212,168,67,0.12),rgba(255,140,30,0.08));
          border:1px solid rgba(212,168,67,0.25);border-radius:10px;cursor:pointer;
-         font-size:12px;font-weight:600;color:var(--gold);">🕐 ${H?'चौघड़िया और होरा':'Choghadiya & Hora'} ›</div>`
+         font-size:12px;font-weight:600;color:var(--gold);">🕐 ${A('dashbo.choghadiya_hora')} ›</div>`
     : `<div style="margin-top:12px;text-align:center;font-size:10.5px;color:rgba(255,244,222,0.42);line-height:1.6;">
-         ${H?'चौघड़िया और होरा केवल आज के लिए':'Choghadiya and hora are shown for today only'}</div>`;
+         ${A('dashbo.choghadiya_and_hora_are_shown_for_')}</div>`;
 
   document.getElementById('calDetail').innerHTML = `
     <div style="font-size:11px;color:rgba(212,168,67,0.72);letter-spacing:0.5px;margin-bottom:6px;">${dateStr}${isToday?(H?' • आज':' • Today'):''}</div>
@@ -6432,7 +6456,7 @@ function showCalDetail(date){
       <span style="font-size:36px;line-height:1;">${moon.e}</span>
       <div>
         <div style="font-size:15px;font-weight:600;color:var(--gold);">${p&&p.tithi?p.tithi:(H?tithi.hi:tithi.en)}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${tithi.paksha} ${H?'पक्ष':'Paksha'} • ${H?moon.h:moon.n}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${tithi.paksha} ${A('dashbo.paksha')} • ${H?moon.h:moon.n}</div>
       </div>
     </div>
     ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.85);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
@@ -6544,7 +6568,7 @@ function renderChoghadiya(sunrise, sunset){
     return `<div style="${bg}border-radius:10px;padding:8px 6px;text-align:center;">
       <div style="font-size:9px;color:${nameColor};font-weight:700;letter-spacing:0.3px;">${dot} ${H?c.name_hi:c.name_en}</div>
       <div style="font-size:8px;color:rgba(255,255,255,0.90);margin-top:3px;font-family:'Poppins',sans-serif;">${c.time}</div>
-      ${c.current?`<div style="font-size:7px;color:${c.color};margin-top:2px;font-weight:600;">${H?'अभी':'NOW'}</div>`:''}
+      ${c.current?`<div style="font-size:7px;color:${c.color};margin-top:2px;font-weight:600;">${A('dashbo.now')}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -6590,7 +6614,7 @@ function getVratsThisWeek(){
     if(dayVrats.length > 0){
       const DAYS_HI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
       const DAYS_EN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      const label = i===0 ? (H?'आज':'Today') : i===1 ? (H?'कल':'Tomorrow') : (H?DAYS_HI[dow]:DAYS_EN[dow]);
+      const label = i===0 ? (A('dashbo.today_3')) : i===1 ? (A('dashbo.tomorrow')) : (H?DAYS_HI[dow]:DAYS_EN[dow]);
       vrats.push({label, date:d.getDate(), dayVrats, isToday:i===0});
     }
   }
@@ -6601,7 +6625,7 @@ function renderVrats(){
   const list = document.getElementById('vratList');
   if(!list) return;
   const vrats = getVratsThisWeek();
-  if(!vrats.length){ list.innerHTML=`<div style="font-size:12px;color:rgba(255,255,255,0.88);padding:8px;">${H?'इस सप्ताह कोई विशेष व्रत नहीं':'No special fasts this week'}</div>`; return; }
+  if(!vrats.length){ list.innerHTML=`<div style="font-size:12px;color:rgba(255,255,255,0.88);padding:8px;">${A('dashbo.no_special_fasts_this_week')}</div>`; return; }
 
   list.innerHTML = vrats.map(v => `
     <div style="${v.isToday?'background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.25);':'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);'}border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
@@ -6685,7 +6709,7 @@ function renderMuhurat(){
   muh.innerHTML = items.map(m => {
     const st = muhuratStatus(m.key, phase, dow);
     const next = getNextGoodDates(m.key, 3); // always show upcoming good dates
-    const nextHtml = next.length ? `<div style="font-size:9px;color:rgba(255,255,255,0.90);margin-top:5px;">${H?'\u0905\u0917\u0932\u0947:':'Next:'} <span style="color:rgba(212,168,67,0.78);">${next.join(' \u2022 ')}</span></div>` : '';
+    const nextHtml = next.length ? `<div style="font-size:9px;color:rgba(255,255,255,0.90);margin-top:5px;">${A('dashbo.next')} <span style="color:rgba(212,168,67,0.78);">${next.join(' \u2022 ')}</span></div>` : '';
     return `<div style="background:${BG[st.s]};border:1px solid ${BR[st.s]};border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
       <div style="font-size:20px;margin-bottom:4px;">${m.i}</div>
       <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${H?m.h:m.e}</div>
@@ -6703,10 +6727,10 @@ function showMuhuratDetail(key){
   const abhijit = document.getElementById('goodTime')?.textContent||'';
   const nextLine = next.length ? (H?'\u0905\u0917\u0932\u0940 \u0936\u0941\u092d \u0924\u093e\u0930\u0940\u0916\u0947\u0902: ':'Next good dates: ')+next.join(' \u2022 ') : '';
   const advice={
-    griha:    H?'\u0936\u0941\u092d \u0935\u093e\u0930: \u0938\u094b\u092e, \u092c\u0941\u0927, \u0917\u0941\u0930\u0941, \u0936\u0941\u0915\u094d\u0930\u0964 \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u0909\u0924\u094d\u0924\u092e\u0964':'Best days: Mon, Wed, Thu, Fri. Shukla Paksha preferred.',
-    vehicle:  H?'\u092e\u0902\u0917\u0932, \u092c\u0941\u0927\u0935\u093e\u0930 \u0914\u0930 \u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0909\u0924\u094d\u0924\u092e\u0964 \u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902\u0964':'Tue & Wed ideal. Uttara/Hasta best. Avoid Rahu Kaal.',
-    business: H?'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u0938\u0930\u094d\u0935\u0936\u094d\u0930\u0947\u0937\u094d\u0920\u0964 \u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902\u0964':'Wed + Shukla Paksha is best. Start in Abhijit Muhurta.',
-    newstart: H?'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u0915\u093e \u0938\u092a\u094d\u0924\u093e\u0939 \u0915\u093e \u0926\u093f\u0928 \u0936\u0941\u092d\u0964 \u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u0914\u0930 \u090f\u0915\u093e\u0926\u0936\u0940 \u0938\u0947 \u092c\u091a\u0947\u0902\u0964':'Shukla Paksha weekday is ideal. Avoid Amavasya & Ekadashi.',
+    griha:    A('dashbo.best_days_mon_wed_thu_fri_shukla_p'),
+    vehicle:  A('dashbo.tue_wed_ideal_uttara_hasta_best_av'),
+    business: A('dashbo.wed_shukla_paksha_is_best_start_in'),
+    newstart: A('dashbo.shukla_paksha_weekday_is_ideal_avo'),
   };
   const lines = [
     fmt(t2('\u0906\u091c: {v}','Today: {v}'), {v:(H?st.lh:st.le)}),
@@ -6973,7 +6997,7 @@ function mlGrid(){
      +'<div class="sh"></div><div class="nm"><div class="d">'+(H?x.god_hi:x.god_en)+'</div>'
      +'<div class="c">'+x.mantras.length+' '+(H?'मंत्र':(x.mantras.length>1?'mantras':'mantra'))+'</div></div></div>';
   });
-  mlBody().innerHTML=mlHead(H?'मंत्र':'Mantras',H?'देवता चुनें — मंत्र सुनें':'Choose a deity — listen to mantras','')
+  mlBody().innerHTML=mlHead(A('dashbo.mantras'),A('dashbo.choose_a_deity_listen_to_mantras'),'')
    +'<div class="ml-grid">'+g+'</div>';
 }
 function mlList(gi){
@@ -6985,8 +7009,8 @@ function mlList(gi){
      +'<div class="t2">'+m.words.join(' ').slice(0,44)+'…</div></div><div class="go">▶</div></div>';
   });
   r+='<div class="ml-row" style="opacity:0.55;cursor:default;border-style:dashed;" onclick="event.stopPropagation()">'
-   +'<div class="ic">✨</div><div class="tt"><div class="t1">'+(H?'और शक्तिशाली मंत्र जल्द आ रहे हैं':'More powerful mantras coming soon')+'</div></div></div>';
-  mlBody().innerHTML=mlHead(H?x.god_hi:x.god_en,H?'मंत्र चुनें':'Choose a mantra','mlGrid()')+r;
+   +'<div class="ic">✨</div><div class="tt"><div class="t1">'+(A('dashbo.more_powerful_mantras_coming_soon'))+'</div></div></div>';
+  mlBody().innerHTML=mlHead(H?x.god_hi:x.god_en,A('dashbo.choose_a_mantra'),'mlGrid()')+r;
 }
 function mlPlayer(gi,mi){
   window.mlStop&&mlStop(true); mlView='player';
@@ -6996,9 +7020,9 @@ function mlPlayer(gi,mi){
   mlBody().innerHTML=mlHead(H?m.t1:m.t1en,H?x.god_hi:x.god_en,'mlList('+gi+')')
    +'<div class="mlp" id="mlpBox"><div class="mlp-bg" style="background-image:url(\''+x.img+'\')"></div>'
    +'<div class="mlp-in"><div class="mlp-god">'+(H?x.god_hi:x.god_en)+'</div>'
-   +'<div class="mlp-mt">'+(H?'सुनें और साथ बोलें':'LISTEN & CHANT ALONG')+'</div>'
+   +'<div class="mlp-mt">'+(A('dashbo.listen_chant_along'))+'</div>'
    +'<div class="mlp-words">'+w+'</div></div>'
-   +'<button class="mlp-btn" id="mlpBtn" onclick="mlToggle('+gi+','+mi+')">▶ '+(H?'शुरू करें':'Start')+'</button>'
+   +'<button class="mlp-btn" id="mlpBtn" onclick="mlToggle('+gi+','+mi+')">▶ '+(A('dashbo.start'))+'</button>'
    +'</div>';
   mlToggle(gi,mi); // auto-start — the tap that opened the mantra is the play gesture
 }
@@ -7028,7 +7052,7 @@ function mlToggle(gi,mi){
   mlAudio.play().catch(function(){});
   mlPlaying=true;
   const b=document.getElementById('mlpBtn'),box=document.getElementById('mlpBox');
-  if(b){b.textContent=(H?'⏸ रोकें':'⏸ Stop');b.classList.add('stop');}
+  if(b){b.textContent=(A('dashbo.stop'));b.classList.add('stop');}
   if(box)box.classList.add('playing');
 }
 function mlStop(silent){
@@ -7036,7 +7060,7 @@ function mlStop(silent){
   mlPlaying=false;
   if(!silent&&mlView==='player'){
     const b=document.getElementById('mlpBtn'),box=document.getElementById('mlpBox');
-    if(b){b.textContent='▶ '+(H?'शुरू करें':'Start');b.classList.remove('stop');}
+    if(b){b.textContent='▶ '+(A('dashbo.start'));b.classList.remove('stop');}
     if(box)box.classList.remove('playing');
     document.querySelectorAll('.mlw.on').forEach(function(e){e.classList.remove('on');});
   }
