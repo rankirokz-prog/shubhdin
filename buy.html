@@ -90,7 +90,7 @@ input:focus{outline:none;border-color:var(--gold);}
 <!-- build tag: the only reliable way to confirm which build a phone is running
      once a service worker is caching pages. Tap it to read the boot log. -->
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;cursor:pointer;"
-     onclick="var w=document.getElementById('bdbgWrap');var l='';try{l=(JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]')).join('\n');}catch(e){}document.getElementById('bdbgTxt').textContent=l||'(empty)';w.style.display='block';">build C2 · tap for debug</div>
+     onclick="var w=document.getElementById('bdbgWrap');var l='';try{l=(JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]')).join('\n');}catch(e){}document.getElementById('bdbgTxt').textContent=l||'(empty)';w.style.display='block';">build C3 · tap for debug</div>
 <div id="bdbgWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">buy debug · tap anywhere to close</div>
@@ -150,7 +150,7 @@ if(!R){try{R=(localStorage.getItem('sd_buy_last')||'').toLowerCase();}catch(e){}
 if(CFG[R]){try{localStorage.setItem('sd_buy_last',R);}catch(e){}}
 /* Small rolling log — the only reliable way to tell which build a phone is
    actually running once a service worker is in play. Tap the build tag. */
-var SD_BUILD='C2';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
+var SD_BUILD='C3';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
 function bdlog(m){
   try{var a=JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]');
     a.push(new Date().toISOString().slice(11,19)+' '+m);
@@ -175,6 +175,11 @@ async function apiJson(r){
   }
 }
 bdlog('boot '+SD_BUILD+' r='+R+' q='+location.search.slice(0,40)+(location.hash.indexOf('access_token=')>-1?' hash=token':'')+(location.search.indexOf('razorpay_payment_id')>-1?' PAYID-IN-URL':''));
+/* Capture Razorpay's receipt IMMEDIATELY. afterAuth() tidies the address bar
+   with history.replaceState, which strips razorpay_payment_id — so reading it
+   later found nothing and the buyer was shown Pay after paying. Persist first,
+   rewrite after. */
+try{ if(location.search.indexOf('razorpay_payment_id')>-1) payProof(); }catch(e){}
 var WITHDRAWN=['muhurta']; /* sold previously; links must not resolve to checkout */
 if(!CFG[R]){
   /* a stale sd_buy_last for a withdrawn report would otherwise bounce the buyer
@@ -537,6 +542,7 @@ function absorbHash(){
 var SESSION=null;
 function afterAuth(sess){
   SESSION=sess;
+  var proof=payProof();          /* MUST read the URL before we rewrite it */
   try{history.replaceState(null,'',location.pathname+'?r='+R);}catch(e){}
   /* heal the local ownership record from the orders table — one call, all
      reports. Fire-and-forget: the purchase flow below must not wait on it. */
@@ -552,7 +558,7 @@ function afterAuth(sess){
      rather than showing the payment screen to someone who has just paid. */
   /* proof counts as much as the marker — a buyer who reloads, or whose rzp=1 is
      stripped by a redirect, must still land in confirmation and not on Pay. */
-  var backFromRzp=(location.search.indexOf('rzp=1')>-1)||!!payProof();
+  var backFromRzp=(location.search.indexOf('rzp=1')>-1)||!!proof;
   fetch('/api/order?check=1&uid='+sess.user.id+'&report='+R+'&access_token='+encodeURIComponent(sess.access_token))
    .then(apiJson).then(function(j){
      if(j&&j.paid){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();}
