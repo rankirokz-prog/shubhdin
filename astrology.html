@@ -213,6 +213,8 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 .cta-b{display:inline-block;margin-top:11px;background:linear-gradient(120deg,#D4A843,#B8892F);
  color:#1A0D00;font-size:13.5px;font-weight:600;padding:10px 18px;border-radius:11px;}
 </style>
+<script src="font-loader.js"></script>
+<script>try{sdLoadFonts();}catch(e){}</script>
 </head>
 <body>
 <div id="app"></div>
@@ -249,10 +251,43 @@ function L(v,depth){
 var SD_BUILD='astro A8';
 function t(hi,en){return H?hi:en;}
 
+/* ══════════════════════════════════════════════════════════════════
+   fmt() — string templates with tokens, for translation.
+
+   The app used to build sentences by concatenation:
+       [old]  "Moon today in " + rashiName + " rashi"      (three fragments)
+   The extractor faithfully captured those fragments, and they cannot be
+   translated. English puts "in" BEFORE the noun; Telugu, Kannada, Tamil,
+   Bengali and Assamese suffix it ONTO the noun — కన్యలో, கன்னியில். There is
+   no standalone Telugu word for "Moon today in ", so a translator can only
+   return something wrong or return the English back.
+
+   With a token the whole sentence is one translatable unit and word order
+   becomes the translator's decision, which is the only place it can be made:
+       [new]  "Moon today in {rashi}"  →  Telugu renders it {rashi}-first,
+              with the postposition attached to the noun, verb last.
+
+   Same for trailing fragments — "3" + " day streak" — where the number
+   inflects the noun in several of these languages.
+   ══════════════════════════════════════════════════════════════════ */
+/* Counted nouns need one/other forms, not just a token: Telugu, Kannada and
+   Tamil inflect the unit with the count (1 → రోజు, 3 → రోజులు). Hindi does not,
+   so both slots hold the same string today — the slot is what matters, so the
+   form can be supplied later without touching code. */
+function plural(n, one, other){ return fmt(Number(n) === 1 ? one : other, {n:n}); }
+
+function fmt(tpl, vals){
+  return String(tpl).replace(/\{(\w+)\}/g, function(_, k){
+    return (vals && vals[k] !== undefined && vals[k] !== null) ? vals[k] : '';
+  });
+}
+
+
 /* ── time helpers (IST display always) ───────────────────── */
 function fT(d){if(!d)return '—';return new Date(d).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false,hour:'2-digit',minute:'2-digit'});}
 function fR(a,b){return fT(a)+'–'+fT(b);}
-function mins(ms){var m=Math.max(0,Math.round(ms/60000));var h=Math.floor(m/60);m%=60;return h?(h+t(' घं ',' h ')+m+t(' मि',' m')):(m+t(' मिनट',' min'));}
+function mins(ms){var m=Math.max(0,Math.round(ms/60000));var h=Math.floor(m/60);m%=60;return h ? fmt(t('{h} घं {m} मि','{h} h {m} m'), {h:h, m:m})
+           : fmt(plural(m, t('{n} मिनट','{n} min'), t('{n} मिनट','{n} min')), {n:m});}
 
 /* ── today's panchang (one engine call, cached) ──────────── */
 var P=null;
@@ -462,14 +497,18 @@ function vHub(){
    +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
    +ribbonHTML()
    +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+t('नया काम टालें — यह वर्ज्य काल है','Hold new work — this is a forbidden period')+'</div>':'')
-   +(ng?'<div class="d-next">'+t('अगला साफ़ शुभ समय: ','Next clean window: ')+'<b class="dev">'+(H?ng.hi:ng.en)+'</b> '+fR(ng.start,ng.end)
+   +(ng?'<div class="d-next">'+fmt(t('अगला साफ़ शुभ समय: <b class="dev">{name}</b> {range}',
+          'Next clean window: <b class="dev">{name}</b> {range}'),
+        {name:(H?ng.hi:ng.en), range:fR(ng.start,ng.end)})
         +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+t('(छाँटा हुआ)','(trimmed)')+'</small>':'')+'</div>'
       :'<div class="d-next">'+t('आज आगे कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</div>')
    +tara
    +'</div>'
 
    +'<div class="grid">'
-   +sec('🐏',t('राशिफल','Rashifal'),t('चंद्रमा आज ','Moon today in ')+'<b class="dev">'+(H?p.moonSign.hi:p.moonSign.en)+'</b>'+t(' राशि में — अपनी राशि देखें',' — check your rashi'),'#rashifal')
+   +sec('🐏',t('राशिफल','Rashifal'),fmt(t('चंद्रमा आज <b class="dev">{rashi}</b> राशि में — अपनी राशि देखें',
+          'Moon today in <b class="dev">{rashi}</b> — check your rashi'),
+        {rashi:(H?p.moonSign.hi:p.moonSign.en)}),'#rashifal')
    +sec('📿',t('पंचांग','Panchang'),'<b class="dev">'+(H?p.tithi.hi:p.tithi.en)+'</b> • <span class="dev">'+(H?p.nakshatra.hi:p.nakshatra.en)+'</span> • <span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>','#panchang')
    +sec('⏰',t('शुभ-अशुभ समय','Shubh & Ashubh Times'),timesTeaser(p),'#times')
    +'</div>'
@@ -510,9 +549,10 @@ function miniLimb(k,v){return '<div class="limb"><div class="l-k">'+k+'</div><di
 function timesTeaser(p){
   var now=Date.now(),rk=p.rahuKaal;
   if(rk&&now<new Date(rk.start).getTime())
-    return t('राहु काल ','Rahu Kaal ')+'<b>'+fR(rk.start,rk.end)+'</b> — '+mins(new Date(rk.start).getTime()-now)+t(' में',' from now');
+    return fmt(t('राहु काल <b>{range}</b> — {mins} में','Rahu Kaal <b>{range}</b> — {mins} from now'),
+        {range:fR(rk.start,rk.end), mins:mins(new Date(rk.start).getTime()-now)});
   if(rk&&now>=new Date(rk.start).getTime()&&now<new Date(rk.end).getTime())
-    return '<span class="bad">'+t('अभी राहु काल — ','Rahu Kaal now — ')+fT(rk.end)+t(' तक',' until')+'</span>';
+    return '<span class="bad">'+fmt(t('अभी राहु काल — {end} तक','Rahu Kaal now — until {end}'), {end:fT(rk.end)})+'</span>';
   return t('राहु काल समाप्त — पूरा दिन देखें','Rahu Kaal over — see the full day');
 }
 
@@ -527,7 +567,7 @@ function vRashiGrid(){
      +'<div class="dot '+(goodSet[i]?'g':'b')+'"></div>'
      +'<div class="em">'+RASHI[i][3]+'</div><div class="nm dev">'+(H?RASHI[i][0]:RASHI[i][1])+'</div></div>';
   }
-  app.innerHTML=pgHead(t('राशिफल','Rashifal'),t('चंद्रमा आज ','Moon today in ')+(H?p.moonSign.hi:p.moonSign.en),'hub')
+  app.innerHTML=pgHead(t('राशिफल','Rashifal'),fmt(t('चंद्रमा आज {rashi} राशि में','Moon today in {rashi}'), {rashi:(H?p.moonSign.hi:p.moonSign.en)}),'hub')
    +(mine>=0?tobUnknownNote():needBirth(t('तब आपकी राशि यहाँ अपने आप चुनी रहेगी','Then your own rashi will be marked here automatically')))
    +'<div style="display:flex;align-items:center;gap:14px;padding:2px 4px 9px;flex-wrap:wrap;">'
    +'<span style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:rgba(255,244,222,0.70);">'
@@ -551,7 +591,8 @@ function vRashi(i){
   var verdict=cb?t('आज चंद्रबल आपके साथ है','Chandrabala is with you today')
                :t('आज सामान्य दिन — बड़े निर्णय शुभ समय में लें','A neutral day — keep big decisions to good windows');
   var ds=p.dishaShool;
-  app.innerHTML=pgHead(t('राशिफल','Rashifal'),t('आज • ','Today • ')+new Date().toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short'}),'rashifal')
+  app.innerHTML=pgHead(t('राशिफल','Rashifal'),fmt(t('आज • {date}','Today • {date}'),
+        {date:new Date().toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short'})}),'rashifal')
    +'<div class="card"><div class="verdict">'
    +'<div class="v-em">'+RASHI[i][3]+'</div>'
    +'<div class="v-name dev">'+(H?RASHI[i][0]:RASHI[i][1])+(i===mine?' <span class="tag g">'+t('आपकी राशि','your rashi')+'</span>':'')+'</div>'
@@ -559,13 +600,19 @@ function vRashi(i){
    +'<div class="v-line '+(cb?'good':'')+' dev">'+verdict+'</div>'
    +'</div></div>'
    +'<div class="card">'
-   +factor('🌙',t('<b>चंद्रमा</b> आज आपसे ','<b>Moon</b> today is in your ')+'<b>'+(house+1)+t('वें भाव','')+(H?'':ordinal(house+1)+' house')+'</b>'+t(' में — ',' — ')+'<span class="dev">'+HOUSE[house][H?0:1]+'</span>')
-   +factor(cb?'✅':'⚠️',t('<b>चंद्रबल:</b> ','<b>Chandrabala:</b> ')+(cb?t('अनुकूल — शुभ कार्यों के लिए अच्छा दिन','favourable — a good day for auspicious work'):t('प्रतिकूल — नई शुरुआत शुभ मुहूर्त में ही करें','unfavourable — start new things only in a good muhurta')))
-   +factor('🧭',t('<b>दिशाशूल:</b> आज ','<b>Disha Shool:</b> avoid starting travel toward the ')+'<b class="dev">'+(H?ds.hi:ds.en)+'</b>'+t(' दिशा की यात्रा टालें',' today'))
+   +factor('🌙',fmt(t('<b>चंद्रमा</b> आज आपसे <b>{n}वें भाव</b> में — <span class="dev">{theme}</span>',
+          '<b>Moon</b> today is in your <b>{n}{ord} house</b> — <span class="dev">{theme}</span>'),
+        {n:(house+1), ord:ordinal(house+1), theme:HOUSE[house][H?0:1]}))
+   +factor(cb?'✅':'⚠️',fmt(t('<b>चंद्रबल:</b> {verdict}','<b>Chandrabala:</b> {verdict}'),
+        {verdict: cb?t('अनुकूल — शुभ कार्यों के लिए अच्छा दिन','favourable — a good day for auspicious work')
+                    :t('प्रतिकूल — नई शुरुआत शुभ मुहूर्त में ही करें','unfavourable — start new things only in a good muhurta')}))
+   +factor('🧭',fmt(t('<b>दिशाशूल:</b> आज <b class="dev">{dir}</b> दिशा की यात्रा टालें',
+          '<b>Disha Shool:</b> avoid starting travel toward the <b class="dev">{dir}</b> today'),
+        {dir:(H?ds.hi:ds.en)}))
    +'</div>'
    +'<div class="sec" onclick="location.hash=\'#times\'"><div class="s-ico">⏰</div><div class="s-b">'
    +'<div class="s-t dev">'+t('आज के शुभ समय देखें','See today\'s good windows')+'</div>'
-   +'<div class="s-live">'+t('चौघड़िया • अभिजीत • राहु काल','Choghadiya • Abhijit • Rahu Kaal')+'</div></div><div class="s-go">›</div></div>'
+   +'<div class="s-live">'+t('चौघड़िया • अभिजित • राहु काल','Choghadiya • Abhijit • Rahu Kaal')+'</div></div><div class="s-go">›</div></div>'
    +'<div class="ad">'+t('विज्ञापन','AD')+'</div>'
    +'<div class="brandline">'+t('गणना से, अनुमान से नहीं','COMPUTED, NOT GUESSED')+'</div>';
 }
@@ -591,8 +638,8 @@ function vPanchang(){
    +prow(t('वार','Vara'),'<span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>')
    +'</div>'
    +'<div class="card">'
-   +prow(t('विक्रम संवत','Vikram Samvat'),hc.vikramSamvat||'—')
-   +prow(t('शक संवत','Shaka Samvat'),hc.shakaSamvat||'—')
+   +prow(t('विक्रम संवत्','Vikram Samvat'),hc.vikramSamvat||'—')
+   +prow(t('शक संवत्','Shaka Samvat'),hc.shakaSamvat||'—')
    +prow(t('माह (पूर्णिमांत)','Month (Purnimanta)'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
    +prow(t('माह (अमांत)','Month (Amanta)'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+(hc.amantaMonth.adhik?' <span class="tag b">'+t('अधिक','Adhik')+'</span>':'')+'</span>')
    +prow(t('पक्ष','Paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha)+'</span>')
@@ -605,10 +652,11 @@ function vPanchang(){
 function prow(k,v){return '<div class="row"><span class="r-k">'+k+'</span><span class="r-v">'+v+'</span></div>';}
 function limbRow(key,label,limb){
   var segs=limb.segments||[];
-  var next=segs.length>1?('<small>'+t('फिर ','then ')+'<span class="dev">'+(H?segs[1].hi:segs[1].en)+'</span></small>'):'';
+  var next=segs.length>1?('<small>'+fmt(t('फिर <span class="dev">{next}</span></small>','then <span class="dev">{next}</span></small>'),
+        {next:(H?segs[1].hi:segs[1].en)})):'';
   return '<div class="row" style="cursor:pointer" onclick="location.hash=\'#panchang/'+key+'\'">'
    +'<span class="r-k">'+label+' ›</span>'
-   +'<span class="r-v"><span class="dev">'+(H?limb.hi:limb.en)+'</span> <small>'+t('… ','until ')+fT(segs[0]&&segs[0].end)+(H?' तक':'')+'</small>'+next+'</span></div>';
+   +'<span class="r-v"><span class="dev">'+(H?limb.hi:limb.en)+'</span> <small>'+fmt(t('{time} तक','until {time}'), {time:fT(segs[0]&&segs[0].end)})+'</small>'+next+'</span></div>';
 }
 
 function vLimb(key){
@@ -620,7 +668,7 @@ function vLimb(key){
   var extra='';
   if(key==='nakshatra')extra='<div class="card">'+prow(t('स्वामी ग्रह','Lord'),limb.lord||'—')+prow(t('पाद','Pada'),limb.pada||'—')+'</div>';
   var segs=(limb.segments||[]).map(function(s){
-    return '<div class="seg"><span class="sv dev">'+(H?s.hi:s.en)+'</span><span class="st">'+t('समाप्ति ','ends ')+fT(s.end)+'</span></div>';}).join('');
+    return '<div class="seg"><span class="sv dev">'+(H?s.hi:s.en)+'</span><span class="st">'+fmt(t('समाप्ति {time}','ends {time}'), {time:fT(s.end)})+'</span></div>';}).join('');
   app.innerHTML=pgHead(label,t('आज का पूरा क्रम','Today\'s full sequence'),'panchang')
    +'<div class="card"><div style="text-align:center;padding:8px 0 12px;">'
    +'<div class="v-name dev">'+(H?limb.hi:limb.en)+'</div>'
@@ -656,7 +704,7 @@ function vTimes(){
         +(w.trimmed?' <small style="color:rgba(212,168,67,0.62);">'+t('(छाँटा हुआ)','(trimmed)')+'</small>':'')
         +'</span><span class="r-v good">'+fR(w.start,w.end)+'</span></div>';
      }).join('')
-   : '<div class="row"><span class="r-k">'+t('आज कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</span></div>';
+   : '<div class="row"><span class="r-k">'+t('आज आगे कोई साफ़ शुभ खंड नहीं बचा','No clean window left today')+'</span></div>';
   app.innerHTML=pgHead(t('शुभ-अशुभ समय','Shubh & Ashubh Times'),CITY,'hub')
    +'<div class="dial">'
    +'<div class="d-now-lbl">'+t('आज का पूरा दिन','THE WHOLE DAY')+'</div>'
@@ -669,14 +717,14 @@ function vTimes(){
    +'<div class="subh">'+t('सभी मुहूर्त','All Muhurtas')+'</div>'
    +'<div class="card">'
    +tr(t('ब्रह्म मुहूर्त','Brahma Muhurta'),p.brahmaMuhurta,true)
-   +tr(t('अभिजीत मुहूर्त','Abhijit Muhurta'),p.abhijit,true)
+   +tr(t('अभिजित मुहूर्त','Abhijit Muhurta'),p.abhijit,true)
    +tr(t('अमृत काल','Amrit Kaal'),p.amritKaal,true)
    +(p.muhurtas&&p.muhurtas.vijaya?tr(t('विजय मुहूर्त','Vijaya Muhurta'),p.muhurtas.vijaya,true):'')
    +(p.muhurtas&&p.muhurtas.godhuli?tr(t('गोधूलि मुहूर्त','Godhuli Muhurta'),p.muhurtas.godhuli,true):'')
    +'</div>'
    +'<div class="card">'
    +tr(t('राहु काल','Rahu Kaal'),p.rahuKaal,false)
-   +tr(t('यमगण्ड','Yamaganda'),p.yamaganda,false)
+   +tr(t('यमगंड','Yamaganda'),p.yamaganda,false)
    +tr(t('गुलिक काल','Gulika Kaal'),p.gulikaKaal,false)
    +tr(t('वर्ज्यम्','Varjyam'),p.varjyam,false)
    +(p.durMuhurtam||[]).map(function(w,i){return tr(t('दुर्मुहूर्त','Dur Muhurtam')+(i?' '+(i+1):''),w,false);}).join('')
@@ -983,7 +1031,7 @@ function vPick(iso){
      +prow('🌅 '+t('सूर्योदय / सूर्यास्त','Sunrise / Sunset'),fT(q.sunrise)+' – '+fT(q.sunset))
      +prow('⭐ '+t('अभिजित','Abhijit'),q.abhijit?fR(q.abhijit.start,q.abhijit.end):t('आज नहीं','none'))
      +prow('🚫 '+t('राहु काल','Rahu Kaal'),q.rahuKaal?fR(q.rahuKaal.start,q.rahuKaal.end):'—')
-     +prow('📜 '+t('मास','Masa'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span> · '+t('वि.सं. ','V.S. ')+hc.vikramSamvat)
+     +prow('📜 '+t('मास','Masa'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span> · '+fmt(t('वि.सं. {y}','V.S. {y}'), {y:hc.vikramSamvat}))
      +'</div>';
   }
   app.innerHTML=pgHead(t('किसी भी दिन का पंचांग','Panchang for Any Day'),CITY,'#explore')
@@ -1085,8 +1133,8 @@ function vMuhurtaRun(key){
       +'<div class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);margin-bottom:5px;">'
       +(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</div>'
       +plus+minus
-      +window_(r,'abhijit','⭐',t('अभिजित ','Abhijit '))
-      +window_(r,'amritKaal','🍯',t('अमृत काल ','Amrit Kaal '))
+      +window_(r,'abhijit','⭐',t('अभिजित','Abhijit'))
+      +window_(r,'amritKaal','🍯',t('अमृत काल','Amrit Kaal'))
       +'</div>';
   }
 
@@ -1169,7 +1217,7 @@ function segList(arr,label,bads){
     h+='<div class="sgrow '+(ok?'g':'b')+(live?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(ok?'#5ABE78':(sg.good?'#E8A317':'#E66E5A'))+'"></div>'
       +'<div class="sg-n dev">'+(H?sg.hi:sg.en)+(live?' <span class="sg-now">'+t('अभी','NOW')+'</span>':'')
-      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+(H?hit[0].hi:hit[0].en)+t(' से टकराता है',' overlaps')+'</div>':'')+'</div>'
+      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+fmt(t('{what} से टकराता है','overlaps {what}'), {what:(H?hit[0].hi:hit[0].en)})+'</div>':'')+'</div>'
       +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
   });
   return '<div class="subh">'+label+'</div><div class="seglist">'+h+'</div>';
@@ -1201,7 +1249,8 @@ function vTara(){
       +'<div class="sg-n dev">'+(H?n.hi:n.en)+(me?' <span class="sg-now">'+t('आपका','YOURS')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+n.taraEn+' · '+n.verdict+'</div></div>';
   }).join('');
-  app.innerHTML=pgHead(t('ताराबल','Tarabala'),t('आज का नक्षत्र ','Day nakshatra ')+'<span class="dev">'+(H?tb.dayNakshatra.hi:tb.dayNakshatra.en)+'</span>','#explore')
+  app.innerHTML=pgHead(t('ताराबल','Tarabala'),fmt(t('आज का नक्षत्र <span class="dev">{nak}</span>','Day nakshatra <span class="dev">{nak}</span>'),
+        {nak:(H?tb.dayNakshatra.hi:tb.dayNakshatra.en)}),'#explore')
    +(mine?tobUnknownNote():needBirth(t('तब पता चलेगा कि इनमें से कौन सी पंक्ति आपकी है','Then we can show which of these rows is yours')))
    +'<div class="subh">'+t('सभी 27 नक्षत्रों के लिए फल','Verdict for all 27 nakshatras')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
@@ -1219,7 +1268,8 @@ function vChandra(){
       +'<div class="sg-n dev">'+(H?RASHI[i][0]:RASHI[i][1])+(me?' <span class="sg-now">'+t('आपकी','YOURS')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+(g?t('अनुकूल','Favourable'):t('सामान्य','Neutral'))+'</div></div>';
   }
-  app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),t('चंद्रमा आज ','Moon today in ')+'<span class="dev">'+(H?cb.dayRashi.hi:cb.dayRashi.en)+'</span>','#explore')
+  app.innerHTML=pgHead(t('चंद्रबल','Chandrabala'),fmt(t('चंद्रमा आज <span class="dev">{rashi}</span> राशि में','Moon today in <span class="dev">{rashi}</span>'),
+        {rashi:(H?cb.dayRashi.hi:cb.dayRashi.en)}),'#explore')
    +(mineIdx>=0?tobUnknownNote():needBirth(t('तब पता चलेगा कि इनमें से कौन सी राशि आपकी है','Then we can show which of these rashis is yours')))
    +'<div class="subh">'+t('सभी 12 राशियों के लिए','For all 12 rashis')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
@@ -1301,7 +1351,7 @@ function obsList(list,icon,emptyMsg){
     var d=new Date(x.date+'T00:00:00');
     var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short'});
     var days=Math.round((d-today)/86400000);
-    var rel=days===0?t('आज','Today'):days===1?t('कल','Tomorrow'):(days+t(' दिन में',' days'));
+    var rel=days===0?t('आज','Today'):days===1?t('कल','Tomorrow'):plural(days, t('{n} दिन में','in {n} day'), t('{n} दिन में','in {n} days'));
     return '<div class="sgrow'+(days===0?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
       +'<div class="sg-n dev">'+icon+' '+(H?x.hi:x.en)+'</div>'
       +'<div class="sg-t">'+when+' · '+rel+'</div></div>';
