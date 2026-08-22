@@ -46,6 +46,32 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 </style>
 <script src="font-loader.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
+<script>
+/* Language tables must load BEFORE the page's own script runs. A dynamically
+   appended <script> does not block the parser, so the chosen-language file
+   arrived after the page had already painted and every A() call fell through
+   to Hindi — verified by snapshotting all 46 screens, where every English
+   screen came back in Hindi. document.write during initial parse IS parser-
+   blocking, which is the ordering guarantee needed here.
+   Hindi always loads as the fallback; the chosen language loads beside it. */
+window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
+if(window.SD_LANG&&window.SD_LANG!=='hi')
+  document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
+/* If app-strings-loader.js itself fails to arrive, A() is undefined and EVERY
+   call site throws — the page half-renders and stops. Verified by blocking the
+   file: "A is not defined", and the screen died partway. This shim defines the
+   minimum so the page completes; the real loader overwrites it when it lands. */
+window.addEventListener('DOMContentLoaded',function(){},false);
+if(typeof window.A!=='function'){
+  window.A=function(k){return String(k).replace(/^[a-z]+\./,'').replace(/_/g,' ')
+                        .replace(/^./,function(c){return c.toUpperCase();});};
+  window.AF=function(k,v){return String(window.A(k)).replace(/\{(\w+)\}/g,function(_,n){
+                        return (v&&v[n]!=null)?v[n]:'';});};
+  window.AP=function(k,n,v){var o={};if(v)for(var p in v)o[p]=v[p];o.n=n;return window.AF(k,o);};
+}
+</script>
 </head>
 <body>
 <div class="hdr">
@@ -108,10 +134,9 @@ function t(hi,en){return H?hi:en;}
 async function apiJson(r){
   var txt='';
   try{txt=await r.text();}catch(e){}
-  if(!txt) throw new Error(t('सर्वर से संपर्क नहीं हो सका। इंटरनेट जाँचकर दोबारा कोशिश करें।',
-                             'Could not reach the server. Check your connection and try again.'));
+  if(!txt) throw new Error(A('report.could_not_reach_the_server_check_y'));
   try{return JSON.parse(txt);}
-  catch(e){ throw new Error(t('सर्वर से अप्रत्याशित उत्तर मिला।','Unexpected response from the server.')); }
+  catch(e){ throw new Error(A('report.unexpected_response_from_the_serve')); }
 }
 
 /* Merge semantics per the contract: never overwrite an existing pdf_url. */
@@ -158,8 +183,8 @@ function fmtDate(d){
 function render(){
   var owned=sdOwnedRead().filter(function(o){return reportById(o.report);});
   var root=$('root');
-  $('hTitle').textContent=t('मेरी रिपोर्ट्स','My Reports');
-  $('hSub').textContent=t('आपकी खरीदी हुई रिपोर्ट्स','Reports you own');
+  $('hTitle').textContent=A('report.my_reports');
+  $('hSub').textContent=A('report.reports_you_own');
 
   if(!owned.length){ root.innerHTML=emptyHTML(); return; }
 
@@ -178,30 +203,29 @@ function render(){
          invisible. A buyer (and Ram, over WhatsApp) can now read the state
          instead of guessing why one report opens and another does not. */
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
-       +chip(!!o.pdf_url, t('PDF तैयार','PDF ready'), t('PDF अभी नहीं','PDF not made yet'))
-       +chip(canView,     t('विवरण इस फ़ोन में','details on this phone'),
-                          t('विवरण इस फ़ोन में नहीं','details not on this phone'))
+       +chip(!!o.pdf_url, A('report.pdf_ready'), A('report.pdf_not_made_yet'))
+       +chip(canView,     A('report.details_on_this_phone'),
+                          A('report.details_not_on_this_phone'))
       +'</div>'
       +'<button class="btn" id="open-'+r.id+'" onclick="openReport(\''+r.id+'\')">'
-      +'📄 '+t('रिपोर्ट खोलें','Open your report')+'</button>'
+      +'📄 '+A('report.open_your_report')+'</button>'
       /* Bonus only. On a cleared or different phone the stored inputs are gone
          and this would land on an empty form, so it is hidden there. */
       +(canView
         ? '<button class="btn sec" onclick="viewOnScreen(\''+r.id+'\')">👁️ '
-          +t('स्क्रीन पर देखें','View on screen')+'</button>'
+          +A('report.view_on_screen')+'</button>'
         /* Hidden because the on-screen view replays sd_buy_<report>, which is
            local-only and is not restored from the server. Saying so beats an
            absent button, which reads as a missing feature. */
         : '<div style="font-size:10px;color:rgba(255,244,222,0.38);margin-top:9px;line-height:1.55;">'
-          +t('👁️ स्क्रीन पर देखना उसी फ़ोन पर मिलेगा जहाँ जन्म विवरण भरा था — PDF हर जगह खुलेगी।',
-             '👁️ On-screen view is available on the phone where the birth details were entered — the PDF opens anywhere.')
+          +A('report.on_screen_view_is_available_on_the_2')
           +'</div>')
       +'<div id="manual-'+r.id+'" style="display:none;"></div>'
       +'<div class="err" id="err-'+r.id+'" style="display:none;"></div>'
       /* Shown only after the above fires. Safe: it re-reads the server list,
          which is where a pdf_url will appear once one exists. No buy flow. */
       +'<button class="btn sec retry" id="again-'+r.id+'" style="display:none;" onclick="checkAgain(\''+r.id+'\')">'
-      +'🔄 '+t('दोबारा जाँचें','Check again')+'</button>'
+      +'🔄 '+A('report.check_again')+'</button>'
       /* NO "re-enter details to rebuild" button here, deliberately.
          It would let one purchase produce unlimited reports: type a different
          name and birth date, get another chart, repeat. The report is sold for
@@ -210,8 +234,7 @@ function render(){
          support case; unlimited free reports would not be rare at all. */
       +'</div>';
   }).join('')
-  + '<div class="note">'+t('रिपोर्ट्स आपके खाते से जुड़ी हैं — कभी भी दोबारा खोल सकते हैं।',
-                           'Your reports stay linked to your account — reopen them any time.')+'</div>';
+  + '<div class="note">'+A('report.your_reports_stay_linked_to_your_a')+'</div>';
 
   if(location.hash){
     var el=document.getElementById('row-'+location.hash.slice(1));
@@ -226,19 +249,17 @@ function chip(ok,yes,no){
 }
 function emptyHTML(){
   return '<div class="empty"><div class="big">📁</div>'
-   +'<div class="t dev">'+t('अभी कोई रिपोर्ट नहीं','No reports yet')+'</div>'
-   +'<div class="s">'+t('यहाँ आपकी खरीदी हुई रिपोर्ट्स दिखेंगी — कभी भी खोल सकते हैं।',
-                        'Reports you buy will appear here, ready to open any time.')+'</div>'
+   +'<div class="t dev">'+A('report.no_reports_yet')+'</div>'
+   +'<div class="s">'+A('report.reports_you_buy_will_appear_here_r')+'</div>'
    /* The record can be empty simply because this is a new phone. Signing in
       restores it from the orders table, so offer that before offering to sell. */
    +(SESSION
-      ? '<div class="s" id="syncMsg">'+t('आपके खाते में कोई खरीदी हुई रिपोर्ट नहीं मिली।',
-                                         'No purchases found on your account.')+'</div>'
+      ? '<div class="s" id="syncMsg">'+A('report.no_purchases_found_on_your_account')+'</div>'
       : '<button class="btn gbtn" onclick="signIn()" style="margin-top:22px;">'
         +'<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">'
-        +'<span>'+t('रिपोर्ट वापस पाने के लिए साइन इन करें','Bought a report? Sign in to restore')+'</span></button>')
+        +'<span>'+A('report.bought_a_report_sign_in_to_restore')+'</span></button>')
    +'<button class="btn sec" onclick="location.href=\'premium.html\'" style="margin-top:10px;">'
-   +t('रिपोर्ट्स देखें','Browse reports')+'</button>'
+   +A('report.browse_reports')+'</button>'
    +'<div class="err" id="errTop" style="display:none;"></div></div>';
 }
 
@@ -266,9 +287,9 @@ async function openReport(id){
      for a fresh one before telling them anything is wrong — the PDF almost
      certainly still exists, only the signed link expired. */
   if(!rec.pdf_url && SESSION){
-    btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+t('जाँच रहे हैं…','Checking…');
+    btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+A('report.checking');
     await restoreFromServer();
-    btn.disabled=false; btn.innerHTML='📄 '+t('रिपोर्ट खोलें','Open your report');
+    btn.disabled=false; btn.innerHTML='📄 '+A('report.open_your_report');
     var fresh=sdOwnedRead().filter(function(o){return o.report===id;})[0];
     if(fresh&&fresh.pdf_url){ openPdf(id,fresh.pdf_url); return; }
   }
@@ -292,12 +313,12 @@ async function openReport(id){
     return;
   }
   if(!SESSION){
-    showErr(err,t('रिपोर्ट बनाने के लिए साइन इन करें।','Please sign in to prepare this report.'));
+    showErr(err,A('report.please_sign_in_to_prepare_this_rep'));
     return;
   }
   var label=btn.textContent;
   btn.disabled=true;
-  btn.innerHTML='<span class="spin">⏳</span> '+t('रिपोर्ट तैयार हो रही है…','Preparing your report…');
+  btn.innerHTML='<span class="spin">⏳</span> '+A('report.preparing_your_report');
   try{
     var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({report:id,uid:SESSION.user.id,access_token:SESSION.access_token,
@@ -310,11 +331,11 @@ async function openReport(id){
       openPdf(id,j.url);
       return;
     }else{
-      btn.disabled=false; btn.textContent=t('फिर कोशिश करें →','Try again →');
-      showErr(err,(j&&(j.detail||j.error))||t('रिपोर्ट नहीं बन सकी।','Could not prepare the report.'));
+      btn.disabled=false; btn.textContent=A('report.try_again');
+      showErr(err,(j&&(j.detail||j.error))||A('report.could_not_prepare_the_report'));
     }
   }catch(e){
-    btn.disabled=false; btn.textContent=t('फिर कोशिश करें →','Try again →');
+    btn.disabled=false; btn.textContent=A('report.try_again');
     showErr(err,e.message);
   }
 }
@@ -352,16 +373,15 @@ function openPdf(id,url){
 function showManualLink(id,url){
   var box=$('manual-'+id); if(!box) return;
   box.innerHTML='<div style="font-size:10.5px;color:rgba(255,244,222,0.55);line-height:1.6;margin-top:9px;">'
-    +t('डाउनलोड शुरू न हुआ हो तो यहाँ दबाएँ:','If the download did not start, tap here:')+'</div>'
+    +A('kundli.if_the_download_did_not_start_tap_')+'</div>'
     +'<a href="'+url+'" target="_blank" rel="noopener" '
     +'style="display:block;margin-top:6px;padding:10px;border-radius:11px;text-align:center;'
     +'text-decoration:none;font-size:13px;font-weight:600;color:#BFEFD0;'
     +'background:rgba(74,124,89,0.18);border:1px solid rgba(120,200,150,0.35);">'
-    +'📥 '+t('PDF ब्राउज़र में खोलें','Open the PDF in your browser')+'</a>'
+    +'📥 '+A('kundli.open_the_pdf_in_your_browser')+'</a>'
     +(isStandalone()
       ? '<div style="font-size:10px;color:rgba(255,244,222,0.40);margin-top:7px;line-height:1.55;">'
-        +t('ऐप के अंदर से डाउनलोड कभी-कभी नहीं चलता — ऊपर वाला लिंक ब्राउज़र में खुलेगा।',
-           'Downloads sometimes do not run from inside an installed app — the link above opens in your browser.')+'</div>' : '');
+        +A('kundli.downloads_sometimes_do_not_run_fro')+'</div>' : '');
   box.style.display='block';
 }
 function viewOnScreen(id){ location.href=id+'-report.html?autoview=1'; }
@@ -372,24 +392,22 @@ async function checkAgain(id){
   if(!SESSION){
     // Nothing to ask the server without a session. Offer the step that helps
     // rather than an instruction the buyer then has to act on themselves.
-    showErr(err,t('रिपोर्ट वापस पाने के लिए साइन इन करें।','Sign in to restore your report.'));
+    showErr(err,A('report.sign_in_to_restore_your_report'));
     if(sb) signIn();
     return;
   }
-  btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+t('जाँच रहे हैं…','Checking…');
+  btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+A('report.checking');
   await restoreFromServer();
   var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
   if(rec&&rec.pdf_url){ openPdf(id,rec.pdf_url); return; }
-  btn.disabled=false; btn.innerHTML='🔄 '+t('दोबारा जाँचें','Check again');
-  showErr(err,t('अभी तक PDF तैयार नहीं है। जिस फ़ोन से खरीदा था वहाँ एक बार खोलें।',
-                'No PDF is ready yet. Open it once on the phone you bought from.'));
+  btn.disabled=false; btn.innerHTML='🔄 '+A('report.check_again');
+  showErr(err,A('report.no_pdf_is_ready_yet_open_it_once_o'));
 }
 function showErr(el,msg){ if(!el)return; el.textContent=msg; el.style.display='block'; }
 
 /* ── sign-in and server restore ── */
 function signIn(){
-  if(!sb){ showErr($('errTop'),t('साइन इन अभी उपलब्ध नहीं — इंटरनेट जाँचें।',
-                                 'Sign-in is unavailable right now — check your connection.')); return; }
+  if(!sb){ showErr($('errTop'),A('report.sign_in_is_unavailable_right_now_c')); return; }
   var rto=location.origin+location.pathname;
   sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:rto}})
    .then(function(r){ if(r.error) showErr($('errTop'),r.error.message); });
@@ -433,8 +451,7 @@ async function restoreFromServer(){
        what still works: their reports are safe, this device just could not
        reach the account this minute. */
     var m=$('syncMsg');
-    if(m) m.textContent=t('अभी आपके खाते से जुड़ नहीं पाए — इंटरनेट जाँचकर फिर देखें।',
-                          'Could not reach your account just now — check your connection and try again.');
+    if(m) m.textContent=A('report.could_not_reach_your_account_just_');
   }
 }
 /* Exactly what this device holds, per report. Turns "it isn't downloading"
