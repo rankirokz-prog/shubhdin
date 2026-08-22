@@ -550,7 +550,9 @@ function afterAuth(sess){
   /* already paid? skip payment */
   /* returning from Razorpay? the webhook may lag the buyer by seconds — poll
      rather than showing the payment screen to someone who has just paid. */
-  var backFromRzp=(location.search.indexOf('rzp=1')>-1);
+  /* proof counts as much as the marker — a buyer who reloads, or whose rzp=1 is
+     stripped by a redirect, must still land in confirmation and not on Pay. */
+  var backFromRzp=(location.search.indexOf('rzp=1')>-1)||!!payProof();
   fetch('/api/order?check=1&uid='+sess.user.id+'&report='+R+'&access_token='+encodeURIComponent(sess.access_token))
    .then(apiJson).then(function(j){
      if(j&&j.paid){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();}
@@ -565,7 +567,26 @@ function showPay(){
   show('stPay');
 }
 var ORDER_CODE=null;
+/* ── proof of payment ─────────────────────────────────────────────────────────
+   Razorpay appends razorpay_payment_id to callback_url on success. That is hard
+   evidence the buyer's money moved, independent of whether our webhook has
+   arrived. Once we hold it, this page must NEVER offer to start another
+   payment — the buyer has already paid. Persisted so a reload cannot lose it. */
+function payProof(){
+  try{
+    var q=new URLSearchParams(location.search);
+    var pid=q.get('razorpay_payment_id');
+    if(pid){localStorage.setItem('sd_paid_'+R,pid);bdlog('payment id seen: '+pid.slice(0,14));return pid;}
+    return localStorage.getItem('sd_paid_'+R)||'';
+  }catch(e){return '';}
+}
+function clearProof(){try{localStorage.removeItem('sd_paid_'+R);}catch(e){}}
+
 function doPay(){
+  /* Guard: never mint a second link for a buyer who already paid once. This is
+     the double-charge path — the button used to say "Check again" while still
+     wired to doPay, so a worried buyer tapping it paid twice. */
+  if(payProof()){bdlog('pay blocked — proof of payment already held');confirmAfterPay();return;}
   $('btPay').textContent='⏳';$('errP').style.display='none';
   /* Ask the server to mint a payment link for THIS buyer. We send no amount —
      the server owns the price. If payments aren't configured yet it answers
@@ -608,7 +629,8 @@ function confirmAfterPay(){
     fetch('/api/order?check=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
      .then(apiJson).then(function(j){
        if(j&&j.paid){clearInterval(iv);btn.disabled=false;ORDER_CODE=j.order_code;
-         sdOwnedWrite(R,j.order_code);bdlog('payment confirmed after '+tries+' polls');showDone();return;}
+         sdOwnedWrite(R,j.order_code);clearProof();
+         bdlog('payment confirmed after '+tries+' polls');showDone();return;}
        if(tries>=15){clearInterval(iv);btn.disabled=false;payPending();}
      }).catch(function(){ if(tries>=15){clearInterval(iv);btn.disabled=false;payPending();} });
   },2000);
@@ -616,8 +638,14 @@ function confirmAfterPay(){
 /* webhook hasn't arrived after ~30s — never leave them wondering */
 function payPending(){
   bdlog('payment still unconfirmed after 15 polls');
-  $('btPay').textContent=H?'फिर से जाँचें →':'Check again →';
-  var oc=ORDER_CODE?(' ('+(H?'ऑर्डर कोड: ':'Order code: ')+ORDER_CODE+')'):'';
+  var b=$('btPay');
+  b.textContent=H?'फिर से जाँचें →':'Check again →';
+  /* rebind: this button must re-check, never re-charge */
+  b.onclick=function(){confirmAfterPay();};
+  b.setAttribute('onclick','confirmAfterPay()');
+  var pid=payProof();
+  var oc=(ORDER_CODE?(' · '+(H?'ऑर्डर कोड: ':'Order code: ')+ORDER_CODE):'')
+        +(pid?(' · '+(H?'भुगतान आईडी: ':'Payment ID: ')+pid):'');
   $('errP').textContent=(H
     ?'आपका भुगतान मिल गया है, पुष्टि में थोड़ा समय लग रहा है। रिपोर्ट कुछ ही मिनटों में आपके खाते में आ जाएगी'
     :'Your payment has gone through; confirmation is taking a moment. The report will appear in your account within a few minutes')+oc+'.';
