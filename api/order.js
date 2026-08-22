@@ -133,19 +133,54 @@ module.exports = async function handler(req, res) {
   // ── Razorpay webhook ──
   if (req.method === 'POST') {
     const secret = process.env.RZP_WEBHOOK_SECRET;
-    if (!secret) return res.status(503).json({ error: 'webhook not configured yet' });
-    const body = JSON.stringify(req.body || {});
+    if (!secret) return res.status(503).json({ error: 'webhook not configured yet', why: 'RZP_WEBHOOK_SECRET missing on this deployment' });
+
+    // Razorpay signs the RAW bytes it sent. Vercel hands us a parsed object, and
+    // re-serialising it is not guaranteed to reproduce those bytes. Try the raw
+    // body when the runtime exposes it, and accept either match.
     const sig = req.headers['x-razorpay-signature'] || '';
-    const expect = crypto.createHmac('sha256', secret).update(body).digest('hex');
-    if (sig !== expect) return res.status(401).json({ error: 'bad signature' });
+    const raw = (typeof req.rawBody === 'string') ? req.rawBody
+              : Buffer.isBuffer(req.rawBody) ? req.rawBody.toString('utf8') : null;
+    const reser = JSON.stringify(req.body || {});
+    const hmac = (s) => crypto.createHmac('sha256', secret).update(s).digest('hex');
+    const okSig = (raw && hmac(raw) === sig) || hmac(reser) === sig;
+    if (!okSig) return res.status(401).json({ error: 'bad signature',
+      why: raw ? 'raw and re-serialised body both mismatched — check the secret matches Razorpay'
+               : 'no raw body available; re-serialised body mismatched — check the secret matches Razorpay' });
+
     try {
-      const ev = req.body;
-      const ent = (ev.payload && (ev.payload.payment_link ? ev.payload.payment_link.entity
-                 : ev.payload.payment ? ev.payload.payment.entity : null)) || {};
-      const notes = ent.notes || {};
-      if (!notes.uid || !notes.report) return res.status(200).json({ ok: true, ignored: 'no notes' });
+      const ev = req.body || {};
+      const P = ev.payload || {};
+      // payment_link.paid carries notes on the link. payment.captured often does
+      // NOT — Razorpay does not always copy link notes onto the payment. If both
+      // events are enabled, the captured one can arrive first with empty notes,
+      // which is why a payment can look "ignored" while the money has moved.
+      const linkEnt = P.payment_link && P.payment_link.entity;
+      const payEnt  = P.payment && P.payment.entity;
+      const ent = linkEnt || payEnt || {};
+      let notes = (linkEnt && linkEnt.notes) || (payEnt && payEnt.notes) || {};
+
+      // Recover notes from the payment link when the payment alone lacks them.
+      if ((!notes.uid || !notes.report) && payEnt) {
+        const linkId = payEnt.payment_link_id || (linkEnt && linkEnt.id);
+        const keyId = process.env.RZP_KEY_ID, keySecret = process.env.RZP_KEY_SECRET;
+        if (linkId && keyId && keySecret) {
+          try {
+            const auth = 'Basic ' + Buffer.from(keyId + ':' + keySecret).toString('base64');
+            const pl = await fetch('https://api.razorpay.com/v1/payment_links/' + linkId,
+              { headers: { Authorization: auth } }).then(r => r.json());
+            if (pl && pl.notes && pl.notes.uid) notes = pl.notes;
+          } catch (e) { /* fall through to the ignored response below */ }
+        }
+      }
+
+      if (!notes.uid || !notes.report) {
+        return res.status(200).json({ ok: true, ignored: 'no notes',
+          why: 'event ' + (ev.event || '?') + ' carried no uid/report and the link could not be read',
+          event: ev.event || null, has_link: !!linkEnt, has_payment: !!payEnt });
+      }
       await upsertPaid(notes.uid, notes.report, Math.round((ent.amount || 0) / 100), ent.id);
-      return res.status(200).json({ ok: true });
+      return res.status(200).json({ ok: true, marked: notes.report, event: ev.event || null });
     } catch (e) { return res.status(500).json({ error: String(e.message).slice(0, 150) }); }
   }
 
