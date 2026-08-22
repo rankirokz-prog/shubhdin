@@ -98,8 +98,13 @@ module.exports = async function handler(req, res) {
       }
     } catch (e) { /* fall through and let them pay rather than blocking a sale */ }
 
-    const keyId = process.env.RZP_KEY_ID, keySecret = process.env.RZP_KEY_SECRET;
+    // .trim(): pasted env values very often carry a trailing space or newline,
+    // which breaks Basic auth with an opaque 401 from Razorpay.
+    const keyId = (process.env.RZP_KEY_ID || '').trim();
+    const keySecret = (process.env.RZP_KEY_SECRET || '').trim();
     if (!keyId || !keySecret) return res.status(503).json({ error: 'payments not configured yet' });
+    // key_id tells us which Razorpay mode this deployment is actually in
+    const mode = keyId.indexOf('rzp_live') === 0 ? 'live' : keyId.indexOf('rzp_test') === 0 ? 'test' : 'unknown';
 
     const site = 'https://' + (req.headers['x-forwarded-host'] || req.headers.host);
     const auth = 'Basic ' + Buffer.from(keyId + ':' + keySecret).toString('base64');
@@ -121,8 +126,12 @@ module.exports = async function handler(req, res) {
       });
       const j = await rr.json();
       if (!rr.ok || !j.short_url) {
+        // surface Razorpay's own words plus the mode — an "authentication
+        // failed" here almost always means the keys were changed without a
+        // redeploy, or were pasted with stray whitespace.
         return res.status(502).json({ error: 'payment link failed',
-          detail: String((j && j.error && j.error.description) || rr.status).slice(0, 150) });
+          detail: String((j && j.error && j.error.description) || ('HTTP ' + rr.status)).slice(0, 160),
+          rzp_status: rr.status, mode: mode, key_prefix: keyId.slice(0, 8) });
       }
       return res.status(200).json({ ok: true, url: j.short_url, order_code: code(q0.uid, q0.report) });
     } catch (e) {
