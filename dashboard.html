@@ -1607,6 +1607,7 @@ if(typeof window.A!=='function'){
 </script>
 <script src="ui-strings.js"></script>
 <script src="panchang-terms.js"></script>
+<script src="vrat-names.js"></script>
 <script src="panchang-terms-bridge.js"></script>
 </head>
 <body>
@@ -2250,6 +2251,28 @@ if(!U.setupDone){window.location.href='index.html';}
 
 const lang=U.lang||'hi';
 const H=lang==='hi';
+/* Date locale follows the reader. dashboard.html hardcoded 'en', so a Telugu
+   reader saw "Aug 23" on an otherwise Telugu Home screen. The browser already
+   formats Telugu dates — the app only had to ask. Defined after a COMPLETE
+   statement, not spliced into one. */
+function sdLocale(){
+  var l = (typeof window!=='undefined' && window.SD_LANG) || 'hi';
+  return { hi:'hi-IN', en:'en-IN', te:'te-IN', kn:'kn-IN', ta:'ta-IN',
+           bn:'bn-IN', mr:'mr-IN', gu:'gu-IN', as:'as-IN' }[l] || 'hi-IN';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   sdDev() — the deity/devotional content, which exists only in Hindi and
+   English. Every call site read H ? x_hi : x_en, and H is false for ANY
+   language that is not Hindi — so a Telugu reader got ENGLISH devotional
+   text, not Hindi. That is the opposite of the agreed behaviour: this block
+   ships as HINDI until it is authored per language, because a Telugu devotee
+   reading Hindi prayer text is ordinary and reading English is not.
+   English readers still get English. */
+function sdDev(hiVal, enVal){
+  return (window.SD_LANG === 'en') ? enVal : hiVal;
+}
+
 
 /* ══════════════════════════════════════════════════════════════════
    fmt() / plural() / t2() — templates for translation.
@@ -2393,19 +2416,16 @@ const R_KNOWN=!!getRashi(U.dob);
 
 // ── Greeting ──
 function greetMsg(){
+  /* FIFTH SHAPE: the pair split across BRANCHES — Hindi inside if(H), English
+     in the fall-through. Neither half sits beside the other, so no scanner
+     matching adjacent literals could pair them, and every non-Hindi reader got
+     the English branch. This is the first thing on the Home screen. */
   const h=new Date().getHours();
-  if(H){
-    if(h<5)return'🌙 शुभ रात्रि';
-    if(h<12)return'🌅 शुभ प्रभात';
-    if(h<17)return'☀️ शुभ दोपहर';
-    if(h<20)return'🌆 शुभ संध्या';
-    return'🌙 शुभ रात्रि';
-  }
-  if(h<5)return'🌙 Good Night';
-  if(h<12)return'🌅 Good Morning';
-  if(h<17)return'☀️ Good Afternoon';
-  if(h<20)return'🌆 Good Evening';
-  return'🌙 Good Night';
+  if(h<5)  return A('dashbo.greet_night');
+  if(h<12) return A('dashbo.greet_morning');
+  if(h<17) return A('dashbo.greet_afternoon');
+  if(h<20) return A('dashbo.greet_evening');
+  return A('dashbo.greet_night');
 }
 
 // ── Streak ──
@@ -2429,13 +2449,13 @@ function getScript(){
 // ── Set wallpaper ──
 function setWallpaper(){
   document.getElementById('wpBg').className=T.bg;
-  document.getElementById('wpDeity').textContent=H?T.d_hi:T.d_en;
-  document.getElementById('wpDay').textContent='🙏 '+(H?T.day_hi:T.day_en);
+  document.getElementById('wpDeity').textContent=sdDev(T.d_hi,T.d_en);
+  document.getElementById('wpDay').textContent='🙏 '+(sdDev(T.day_hi,T.day_en));
   // Deity image on wallpaper
   const wpImg=document.getElementById('wpImg');
   if(wpImg&&T.img) wpImg.style.backgroundImage="url('"+T.img+"')";
   var wpH=document.getElementById('wpHint');
-  if(wpH) wpH.textContent=H?'आज का वॉलपेपर सेव करें →':"Save today's wallpaper →";
+  if(wpH) wpH.textContent=A('dashbo.save_today_s_wallpaper');
 }
 
 // ── Personalise ──
@@ -2444,13 +2464,13 @@ function personalise(){
   const dn_h=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
   const dn_e=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const df_h=['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'];
-  const df_e=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const df_e=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(function(w){return (typeof sdVara==='function')?sdVara(w):w;});
 
   // Nav
   const months_hi=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
   document.getElementById('datePill').textContent=H
     ? dn_h[dow]+' • '+now.getDate()+' '+months_hi[now.getMonth()]
-    : dn_e[dow]+' • '+now.toLocaleDateString('en',{day:'numeric',month:'short'});
+    : dn_e[dow]+' • '+now.toLocaleDateString(sdLocale(),{day:'numeric',month:'short'});
   // Greeting
   document.getElementById('greetTime').textContent=greetMsg();
   const rawName = name.charAt(0).toUpperCase() + name.slice(1);
@@ -2490,9 +2510,9 @@ function personalise(){
   const KH_LABEL=(typeof kundliPages==='function')?kundliPages(H,'label')
                  :(A('dashbo.250_page_detailed_kundli_pdf'));
   const KH_SHORT=(typeof kundliPages==='function')?kundliPages(H,'short')
-                 :(H?'250+ पन्ने':'250+ pages');
+                 :(A('dashbo.250_pages'));
   const KH_OF   =(typeof kundliPages==='function')?kundliPages(H,'of')
-                 :(H?'250+ पन्नों':'250+ pages');
+                 :(A('dashbo.250_pages'));
   _t('khTitle', AF('home.17_chapters_label', {label:KH_LABEL}));
   /* Every item named here is a chapter the report actually prints, checked
      against the 17-chapter TOC and the engine calls kundli-report.html makes
@@ -2523,7 +2543,7 @@ function personalise(){
   _t('agSub',A('dashbo.panchang_muhurat_rashi_nakshatra'));
   // nv updated by fetchPanchang from API (today's nakshatra)
   // Listen hero
-  document.getElementById('lhTag').textContent=H?'✨ आज का पंचांग — आपके लिए':"✨ Today's Panchang — For you";
+  document.getElementById('lhTag').textContent=A('dashbo.today_s_panchang_for_you');
   document.getElementById('lhTitle').textContent=A('dashbo.listen_to_daily_panchang');
   document.getElementById('lhSub').textContent=R_KNOWN
     ? (H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English'))
@@ -2543,7 +2563,7 @@ function personalise(){
   const _prev=document.getElementById('preview');
   if(_prev){
     _prev.innerHTML = AF('dashbo.today_deity_favorable_time_time',
-      {deity: (H?T.d_hi:T.d_en), time: _pvTime});
+      {deity: (sdDev(T.d_hi,T.d_en)), time: _pvTime});
   }
   // Times
   document.getElementById('goodLbl').textContent=A('dashbo.good_time');
@@ -2566,7 +2586,7 @@ function personalise(){
     ?(A('dashbo.shravana_jap_lakshmi_ashtottara'))
     :(A('dashbo.today_s_jap'));
   // jtBg: keep dark gradient only, no deity image (deity shown on right via jtDeityImg)
-  document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
+  document.getElementById('jtHook').textContent=sdDev(T.hook_hi,T.hook_en);
   document.getElementById('jtBenefit').textContent=isShravan()
     ?(A('dashbo.108_names_4_minutes'))
     :(A('dashbo.28_times_4_minutes'));
@@ -2579,8 +2599,8 @@ function personalise(){
   document.getElementById('skUnit').textContent=isShravan()?(A('dashbo.108_names')):(A('dashbo.28_chants'));
   // Listen screen
   // Panchang
-  document.getElementById('phTitle').innerHTML=H?'पूरा पंचांग<small>Full Panchang</small>':'Full Panchang<small>पूरा पंचांग</small>';
-  document.getElementById('phDate').textContent=H?(now.getDate()+' '+months_hi[now.getMonth()]):now.toLocaleDateString('en',{day:'numeric',month:'short'});
+  document.getElementById('phTitle').innerHTML=A('dashbo.full_panchang');
+  document.getElementById('phDate').textContent=H?(now.getDate()+' '+months_hi[now.getMonth()]):now.toLocaleDateString(sdLocale(),{day:'numeric',month:'short'});
   // आज का सार — yoga + tithi + day based dynamic logic
   const saarTitle=document.getElementById('asTitle');
   const saarSub=document.getElementById('asSub');
@@ -2669,7 +2689,7 @@ function personalise(){
   const jImgBg = document.getElementById('jImgBg');
   if(jImgBg && T.img) jImgBg.style.backgroundImage = "url('"+T.img+"')";
   const jdn = document.getElementById('jDeityName');
-  if(jdn) jdn.innerHTML = (H?T.d_hi:T.d_en)+'<em>'+(H?T.day_hi:T.day_en)+'</em>';
+  if(jdn) jdn.innerHTML = (sdDev(T.d_hi,T.d_en))+'<em>'+(sdDev(T.day_hi,T.day_en))+'</em>';
   const jpill = document.getElementById('jPill');
   if(jpill) jpill.textContent = H?df_h[dow]:df_e[dow];
   const jgl2 = document.getElementById('jGoalLine');
@@ -2741,7 +2761,7 @@ function renderStreakCard(){
     if(ico)ico.textContent='✨';
     ti.textContent=A('dashbo.start_today');
     sub.textContent=A('dashbo.one_day_of_jap_the_journey_starts_');
-    if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
+    if(num)num.textContent=A('dashbo.today_s_goal');
   } else if(s.state==='done'){
     if(ico)ico.textContent='🔥';
     ti.textContent=(H?'🔥 '+s.count+' दिन लगातार':'🔥 '+s.count+' day streak');
@@ -2752,14 +2772,14 @@ function renderStreakCard(){
     if(ico)ico.textContent='🔥';
     ti.textContent=(H?'🔥 '+s.count+' दिन लगातार':'🔥 '+s.count+' day streak');
     sub.textContent=A('dashbo.today_is_pending_keep_it_going');
-    if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
+    if(num)num.textContent=A('dashbo.today_s_goal');
   } else {
     if(ico)ico.textContent='🪔';
     ti.textContent=A('dashbo.begin_again');
     sub.textContent=plural(s.count,
       A('dashbo.your_last_streak_reached_n_day_sta'),
       A('dashbo.your_last_streak_reached_n_days_st'));
-    if(num)num.textContent=H?'आज का लक्ष्य:':"Today's goal:";
+    if(num)num.textContent=A('dashbo.today_s_goal');
   }
   if(unit)unit.textContent=goal;
 }
@@ -3016,7 +3036,7 @@ function updateJ(){
       // Update overlay content
       const isFriNow=isShravan();
       document.getElementById('jdTitle').textContent=H?(isFriNow?'🙏 आज लक्ष्मी अष्टोत्तर जप पूर्ण हुआ':'🙏 आज का जप पूर्ण हुआ'):'28 Chants Complete! 🙏';
-      document.getElementById('jdSub').textContent=H?'मन शांत हो, बुद्धि प्रसन्न हो':"May your mind be at peace";
+      document.getElementById('jdSub').textContent=A('dashbo.may_your_mind_be_at_peace');
       document.getElementById('jdStreakLbl').textContent=A('dashbo.your_sadhana_continues');
       document.getElementById('jdBtn').textContent=A('dashbo.one_more_mala');
       // Share card
@@ -3039,7 +3059,7 @@ function updateJ(){
       // Delay home card update by 1s
       setTimeout(()=>{
         document.getElementById('skTitle').textContent=sk>0?(H?'🔥 '+sk+' दिन लगातार':'🔥 '+sk+' day streak'):(A('dashbo.start_your_streak'));
-        document.getElementById('skNum').textContent=H?'आज का लक्ष्य':"Today's goal";
+        document.getElementById('skNum').textContent=A('dashbo.today_s_goal_2');
         document.getElementById('skUnit').textContent=A('dashbo.completed');
       },1000);
     },450); // 450ms silence/dim pause
@@ -4137,8 +4157,8 @@ async function playPowerOfChant(){
   pocAudio.play().catch(()=>{pocPlaying=false;btn.textContent='▶';});
 }
 function personaliseMarg(){
-  document.getElementById('margTitle').innerHTML=H?'मार्गदर्शन<small>MARGADARSHAN</small>':'Guidance';
-  document.getElementById('margSub').textContent=H?'शिव की शरण में — हर समस्या का हल':"In Mahadev grace — solution to every problem";
+  document.getElementById('margTitle').innerHTML=A('dashbo.guidance');
+  document.getElementById('margSub').textContent=A('dashbo.in_mahadev_grace_solution_to_every');
   document.getElementById('pocTitle').textContent=A('dashbo.power_of_chanting_a_motivational_s');
   document.getElementById('pocSub').textContent=A('dashbo.listen_for_2_minutes_your_mind_wil');
   document.getElementById('pocStory').textContent=A('dashbo.chanting_has_the_power_to_transfor');
@@ -4151,10 +4171,10 @@ function personaliseMarg(){
   }
   const _t2=document.getElementById('tl2');if(_t2)_t2.textContent=A('dashbo.guidance');
   const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=A('dashbo.sadhana');
-  const stt=document.getElementById('sadTitle');if(stt)stt.innerHTML=H?'साधना<small>MY SADHANA</small>':'My Sadhana<small>साधना</small>';
+  const stt=document.getElementById('sadTitle');if(stt)stt.innerHTML=A('dashbo.my_sadhana');
   // Named explicitly so nobody thinks the app lost their jap streak.
   const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=plural(1, A('dashbo.n_day_sadhana_streak'), A('dashbo.day_sadhana_streak'));
-  const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=H?'आज का लक्ष्य':"Today's Goal";
+  const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=A('dashbo.today_s_goal_2');
   const stu=document.getElementById('sadTodayUnit');if(stu)stu.textContent=A('dashbo.chants');
   const sth=document.getElementById('sadJTapHint');if(sth)sth.textContent=A('dashbo.tap_for_every_jap');
   const slj=document.getElementById('sadLblJap');if(slj)slj.textContent=A('dashbo.total_chants');
@@ -4165,7 +4185,7 @@ function personaliseMarg(){
   const snt=document.getElementById('sadNoneTitle');if(snt)snt.textContent=A('dashbo.no_active_sadhana');
   const snd=document.getElementById('sadNoneDesc');if(snd)snd.textContent=A('dashbo.visit_guidance_to_choose_your_prac');
   const snb=document.getElementById('sadNoneBtn');if(snb)snb.textContent=A('dashbo.choose_sadhana');
-  const spt=document.getElementById('sadPageTitle');if(spt)spt.innerHTML=H?'साधना<small>MY SADHANA</small>':'My Sadhana<small>साधना</small>';
+  const spt=document.getElementById('sadPageTitle');if(spt)spt.innerHTML=A('dashbo.my_sadhana');
 }
 
 // ── Wallpaper share ──
@@ -4599,7 +4619,7 @@ function sadJTap(){
       // Translate completion page NOW
       const sd1=document.getElementById('sdLine1');if(sd1)sd1.textContent=A('dashbo.sadhana_complete');
       const sd2=document.getElementById('sdLine2');if(sd2)sd2.textContent=H?((window._sadTarget||28)+' जप पूरे हुए'):((window._sadTarget||28)+' Chants Completed');
-      const sd3=document.getElementById('sdLine3');if(sd3)sd3.textContent=H?'आपने आज का संकल्प पूरा किया 🙏':"You completed today's chanting goal 🙏";
+      const sd3=document.getElementById('sdLine3');if(sd3)sd3.textContent=A('dashbo.you_completed_today_s_chanting_goa');
       const sdSt=document.getElementById('sadJStreakShow');if(sdSt)sdSt.textContent=A('dashbo.practice_continues');
       const sdMr=document.getElementById('sdBtnMore');if(sdMr)sdMr.textContent=A('dashbo.chant_more_2');
       const sdBk=document.getElementById('sdBtnBack');if(sdBk)sdBk.textContent=A('dashbo.return_to_sadhana');
@@ -4610,7 +4630,7 @@ function sadJTap(){
       // Translate completion page
       document.getElementById('sdLine1')?.textContent==='';if(document.getElementById('sdLine1'))document.getElementById('sdLine1').textContent=A('dashbo.sadhana_complete');
       if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=H?((window._sadTarget||28)+' जप पूरे हुए'):((window._sadTarget||28)+' Chants Completed');
-      if(document.getElementById('sdLine3'))document.getElementById('sdLine3').textContent=H?"आपने आज का संकल्प पूरा किया 🙏":"You completed today's chanting goal 🙏";
+      if(document.getElementById('sdLine3'))document.getElementById('sdLine3').textContent=A('dashbo.you_completed_today_s_chanting_goa');
       if(document.getElementById('sadJStreakShow'))document.getElementById('sadJStreakShow').textContent=A('dashbo.practice_continues');
       if(document.getElementById('sdBtnMore'))document.getElementById('sdBtnMore').textContent=A('dashbo.chant_more_2');
       if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=A('dashbo.return_to_sadhana');
@@ -4631,7 +4651,7 @@ function sadJTap(){
          string and showed up as a translation conflict. Deleted with the
          screen they belonged to. */
       const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=H?((window._sadTarget||28)+' जप पूरे हुए 🔥'):((window._sadTarget||28)+' Chants Completed 🔥');
-      const dvow=document.getElementById('sadDoneVow');if(dvow)dvow.textContent=H?"आज का संकल्प सफल हुआ 🕉️":"You completed today's spiritual goal 🕉️";
+      const dvow=document.getElementById('sadDoneVow');if(dvow)dvow.textContent=A('dashbo.you_completed_today_s_spiritual_go');
       const dbl=document.getElementById('sadDoneBlessing');if(dbl)dbl.textContent=A('dashbo.may_divine_grace_be_with_you');
       const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
     },900);
@@ -4833,19 +4853,19 @@ function buildPayload(q){
     }
     if(myRas&&cb&&cb.good){
       var ok=cb.good.some(function(r){return (r.en||'').toLowerCase()===myRas;});
-      mine=mine||{}; mine.chandraGood=ok; mine.moonIn=(H?cb.dayRashi.hi:cb.dayRashi.en);
+      mine=mine||{}; mine.chandraGood=ok; mine.moonIn=(sdRashi(cb.dayRashi));
     }
   }catch(e){}
   return {
     v:2, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
-    tithi:(H?q.tithi.hi:q.tithi.en),
+    tithi:(sdTithi(q.tithi)),
     tithi_paksha:(q.tithi.paksha==='Krishna'?(A('dashbo.krishna_paksha')):(A('dashbo.shukla_paksha'))),
     tithi_end:pgFmt(q.tithi.end),
-    nakshatra:(H?q.nakshatra.hi:q.nakshatra.en),
-    nakshatra_ruler:(q.nakshatra.lord?(H?q.nakshatra.lord.hi:q.nakshatra.lord.en):''),
+    nakshatra:(sdNak(q.nakshatra)),
+    nakshatra_ruler:(q.nakshatra.lord?(sdTerm("planet",q.nakshatra.lord)):''),
     nakshatra_end:pgFmt(q.nakshatra.end),
-    yoga:(H?q.yoga.hi:q.yoga.en), karana:(H?q.karana.hi:q.karana.en),
-    weekday:(H?q.vara.hi:q.vara.en),
+    yoga:(sdYoga(q.yoga)), karana:(sdKarana(q.karana)),
+    weekday:(sdVara(q.vara)),
     sunrise:pgFmt(q.sunrise), sunset:pgFmt(q.sunset),
     moonrise:pgFmt(q.moonrise), moonset:pgFmt(q.moonset),
     rahu_kaal:pgRange(q.rahuKaal), gulika:pgRange(q.gulikaKaal),
@@ -4856,7 +4876,7 @@ function buildPayload(q){
             dur:wins(q.durMuhurtam), varjyam:wins(q.varjyamAll||(q.varjyam?[q.varjyam]:[]))},
     shubh:{abhijit:win(q.abhijit), amrit:wins(q.amritKaalAll||(q.amritKaal?[q.amritKaal]:[])),
            brahma:win(q.brahmaMuhurta)},
-    disha:(q.dishaShool?(H?q.dishaShool.hi:q.dishaShool.en):''),
+    disha:(q.dishaShool?(sdTerm("disha",q.dishaShool)):''),
     panchaka:(q.panchaka?(H?(q.panchaka.hi||''):(q.panchaka.en||'')):''),
     mine:mine, clean:cleanWindowOf(q), choghadiya:q.choghadiya||null
   };
@@ -5105,7 +5125,7 @@ function wpMarkUnlocked(k){ var st=wpState(); st[k]={at:Date.now()}; wpSaveState
 function wpOfDay(d){
   var cfg=D[d.getDay()]||D[0];
   return {key:wpKeyOf(d), img:cfg.img, bg:cfg.bg,
-          deity:H?cfg.d_hi:cfg.d_en, day:H?cfg.day_hi:cfg.day_en};
+          deity:sdDev(cfg.d_hi,cfg.d_en), day:sdDev(cfg.day_hi,cfg.day_en)};
 }
 
 /* ── card ── */
@@ -5227,37 +5247,44 @@ function openSettings(){
   renderSettLangs();
   // Translate labels
   const H2 = _settLang==='hi';
-  document.getElementById('settTitle').textContent   = H2?'सेटिंग्स':'Settings';
+  document.getElementById('settTitle').textContent   = A('settin.settings');
   /* The legal links rendered in English on every screen in every language.
      The leak gate found them on the HINDI baseline — a language that was
      supposedly complete. They were my own additions and I never localised
      them. The pages behind them are English for now; the labels should still
      be in the reader's language. */
+  var _lgKeys={vivah:'settin.marriage_problem',dhan:'settin.money_career',swasthya:'settin.health_problem',vidya:'settin.study_focus',ghar:'settin.family_peace',vivah:'settin.remove_marriage_obstacles',dhan:'settin.improve_finances_career',swasthya:'settin.heal_body_and_mind',vidya:'settin.improve_focus_memory',ghar:'settin.bring_peace_positivity_home',lgAbout:'settin.about',lgPrivacy:'settin.privacy',lgTerms:'settin.terms',lgRefund:'settin.refund',lgContact:'settin.contact',0:'settin.surya_mantra',1:'settin.maha_mrityunjaya_mantra',2:'settin.hanuman_mantra',3:'settin.ganesh_mantra',4:'settin.ram_naam',5:'settin.lakshmi_mantra',6:'settin.shani_gayatri'};
   var _lg={lgAbout:['हमारे बारे में','About'],lgPrivacy:['निजता','Privacy'],
            lgTerms:['शर्तें','Terms'],lgRefund:['रिफ़ंड','Refund'],
            lgContact:['संपर्क','Contact']};
   Object.keys(_lg).forEach(function(k){
-    var el=document.getElementById(k); if(el) el.textContent = H2?_lg[k][0]:_lg[k][1];
+    var el=document.getElementById(k); if(!el) return;
+    /* [hi,en] array selected by index rendered English to every reader who
+       chose neither. Ask the string tables; the array stays as fallback. */
+    var key=_lgKeys[k];
+    el.textContent = (key && typeof A==='function' && typeof sdHas==='function' && sdHas(key))
+      ? A(key) : (H2?_lg[k][0]:_lg[k][1]);
   });
-  document.getElementById('settSaveBtn').textContent = H2?'💾 सहेजें':'💾 Save';
-  document.getElementById('settNameLbl').textContent = H2?'👤 नाम':'👤 Name';
-  document.getElementById('settCityLbl').textContent = H2?'📍 शहर':'📍 City';
-  document.getElementById('settDobNote').textContent = H2?'राशि की सटीक जानकारी के लिए':'For accurate Rashi calculation';
-  document.getElementById('settDobLbl').textContent  = H2?'🗓️ जन्म तिथि':'🗓️ Date of Birth';
-  document.getElementById('settTobLbl').textContent  = H2?'🕐 जन्म समय':'🕐 Time of Birth';
-  document.getElementById('settFbLbl').textContent  = H2?'💬 फीडबैक':'💬 Feedback';
+  document.getElementById('settSaveBtn').textContent = A('settin.save_2');
+  document.getElementById('settNameLbl').textContent = A('settin.name');
+  document.getElementById('settCityLbl').textContent = A('settin.city');
+  document.getElementById('settDobNote').textContent = A('settin.for_accurate_rashi_calculation');
+  document.getElementById('settDobLbl').textContent  = A('settin.date_of_birth');
+  document.getElementById('settTobLbl').textContent  = A('settin.time_of_birth');
+  (function(){var e=document.getElementById('settLangLbl');
+    if(e&&typeof A==='function') e.textContent='🌐 '+A('settin.language');})();
+  document.getElementById('settFbLbl').textContent  = A('settin.feedback');
   var _srt=document.getElementById('settRepTitle');
-  if(_srt) _srt.textContent = H2?'मेरी रिपोर्ट्स':'My Reports';
+  if(_srt) _srt.textContent = A('report.my_reports');
   var _srs=document.getElementById('settRepSub');
-  if(_srs) _srs.textContent = H2?'खरीदी हुई रिपोर्ट्स खोलें':'Open the reports you own';
-  document.getElementById('fbBtnTxt').textContent   = H2?'भेजें':'Send';
+  if(_srs) _srs.textContent = A('settin.open_the_reports_you_own');
+  document.getElementById('fbBtnTxt').textContent   = A('dashbo.send');
   const fbPh=document.getElementById('fbText');if(fbPh)fbPh.placeholder=H2?'आपका अनुभव लिखें...':'Share your experience...';
-  document.getElementById('settTobNote').textContent = H2?'लग्न की सटीक जानकारी के लिए':'For accurate Lagna calculation';
+  document.getElementById('settTobNote').textContent = A('settin.for_accurate_lagna_calculation');
   var _tu=document.getElementById('settTobUnknown');
   if(_tu){ _tu.checked=!!u.tobUnknown; settTobUnknown(true); }
   var _tul=document.getElementById('settTobUnkLabel');
-  if(_tul) _tul.textContent = H2?'मुझे जन्म समय नहीं पता — सूर्योदय से गणना करें'
-                                :"I don't know my birth time — use sunrise";
+  if(_tul) _tul.textContent = A('settin.i_don_t_know_my_birth_time_use_sun');
   // Show overlay
   const ov = document.getElementById('settingsOverlay');
   ov.style.display='flex';
@@ -5295,8 +5322,28 @@ function renderSettLangs(){
   var host=document.getElementById('settLangGrid'); if(!host) return;
   var html='';
   Object.keys(SD_LANG_NAMES).forEach(function(l){
-    var cov = (l==='hi'||l==='en') ? 1 : sdLangCoverage(l);
-    if(cov<=0) return;                       /* not shipped — do not offer it */
+    /* A language is offered only when it is FINISHED. Telugu was made
+       selectable at 81% with two wiring layers unfinished, and the result on a
+       real phone was four languages on one screen — Telugu UI, Hindi panchang
+       values, English choghadiya, English rashi names. A percentage label is
+       honest about the number and dishonest about the experience: nobody reads
+       "81%" and expects that.
+
+       So the bar is not a percentage. It is: every string translated AND the
+       panchang rendering in that language. Until then the language does not
+       appear at all — the same honest-ceiling rule that withdrew the Muhurta
+       report. Do not claim what is not ready. Flip SD_LANG_READY when the leak
+       gate returns zero for it. */
+    /* Telugu enabled on 23 Aug 2026 because the leak gate returned ZERO English
+       across all fourteen screens — measured on rendered pages, not declared
+       from a sheet percentage. The sheet said 100% three times while the app
+       was still English; only the gate was ever right.
+       The 34 Hindi fallbacks that remain are the deity block, which ships as
+       Hindi by decision: a Telugu devotee reading Hindi prayer text is ordinary,
+       machine-shaped Telugu is not. */
+    var READY = { hi:1, en:1, te:1 };
+    var cov = READY[l] ? 1 : 0;
+    if(cov<=0) return;
     var on = (_settLang===l);
     var partial = cov<0.9;
     html+='<button onclick="settSelectLang(\''+l+'\')" '
@@ -5389,10 +5436,10 @@ function computeBirthLocal(u){
     var bc=PE.getBirthChart(d,lat,lng);
     var moon=bc.grahas.filter(function(g){return g.key==='moon';})[0];
     if(!moon) return null;
-    return {rashi:(H?moon.rashi.hi:moon.rashi.en),
-            nakshatra:(H?moon.nakshatra.hi:moon.nakshatra.en),
+    return {rashi:(sdRashi(moon.rashi)),
+            nakshatra:(sdNak(moon.nakshatra)),
             nakshatra_pada:moon.nakshatra.pada,
-            lagna:(H?bc.lagna.hi:bc.lagna.en),
+            lagna:(sdRashi(bc.lagna)),
             source:'engine'};
   }catch(e){ return null; }
 }
@@ -6168,7 +6215,7 @@ function renderCalendar(){
       </div>
       <div style="font-size:${(H?tithi.hi:calShortTithi(tithi.en)).length>9?'6.5px':'7.5px'};color:var(--cal-tithi);margin-top:3px;line-height:1.15;
            overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-           word-break:keep-all;overflow-wrap:normal;hyphens:none;">${calShortTithi(H?tithi.hi:tithi.en)}</div>
+           word-break:keep-all;overflow-wrap:normal;hyphens:none;">${calShortTithi(sdTithi(tithi))}</div>
       ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}${fests.length>1?`<span style="font-size:8px;color:rgba(212,168,67,0.62);vertical-align:top;">+${fests.length-1}</span>`:''}</div>`:(bankSat?`<div style="font-size:12px;margin-top:3px;line-height:1;opacity:0.75;">🏦</div>`:'')}
 
     </div>`;
@@ -6212,7 +6259,7 @@ function renderMonthEvents(){
   evs.forEach(function(e){
     const m=CEV_META[e.cat]||CEV_META.festival;
     const isToday=e.d===today.getDate()&&_calMonth===today.getMonth()&&_calYear===today.getFullYear();
-    const sub=(e.cat==='bank')?(H?e.sub_hi:e.sub_en):'';
+    const sub=(e.cat==='bank')?(sdDev(e.sub_hi,e.sub_en)):'';
     rows+='<div class="cev'+(e.d===_calSelected?' sel':'')+(isToday?' today':'')+'" onclick="selectCalDate('+e.d+')">'
       +'<div class="cev-dt"><div class="cev-dd">'+e.d+'</div>'
       +'<div class="cev-dw">'+(H?DHI[e.date.getDay()]:DEN[e.date.getDay()])+'</div></div>'
@@ -6467,7 +6514,7 @@ function showCalDetail(date){
     };
 
     let blocks = '';
-    blocks += block(A('dashbo.tithi'), p.tithi || (H?tithi.hi:tithi.en), p.tithi_end, p.tithi2||'');
+    blocks += block(A('dashbo.tithi'), p.tithi || (sdTithi(tithi)), p.tithi_end, p.tithi2||'');
     blocks += block(A('dashbo.nakshatra'), p.nakshatra, p.nakshatra_end, p.nakshatra2||'');
     blocks += block(A('dashbo.yoga'), p.yoga, p.yoga_end, p.yoga2||'');
     blocks += block(A('dashbo.karana'), p.karana, p.karana_end, p.karana2||'');
@@ -6507,7 +6554,7 @@ function showCalDetail(date){
     <div style="display:flex;gap:16px;align-items:center;">
       <span style="font-size:36px;line-height:1;">${moon.e}</span>
       <div>
-        <div style="font-size:15px;font-weight:600;color:var(--gold);">${p&&p.tithi?p.tithi:(H?tithi.hi:tithi.en)}</div>
+        <div style="font-size:15px;font-weight:600;color:var(--gold);">${p&&p.tithi?p.tithi:(sdTithi(tithi))}</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${tithi.paksha} ${A('dashbo.paksha')} • ${H?moon.h:moon.n}</div>
       </div>
     </div>
@@ -6618,7 +6665,7 @@ function renderChoghadiya(sunrise, sunset){
     const nameColor = c.current ? c.color : (c.q >= 1 ? 'rgba(74,222,128,0.80)' : c.q === 0 ? 'rgba(147,197,253,0.70)' : 'rgba(248,113,113,0.70)');
     const dot = c.q >= 1 ? '✦' : c.q === 0 ? '◆' : '✕';
     return `<div style="${bg}border-radius:10px;padding:8px 6px;text-align:center;">
-      <div style="font-size:9px;color:${nameColor};font-weight:700;letter-spacing:0.3px;">${dot} ${H?c.name_hi:c.name_en}</div>
+      <div style="font-size:9px;color:${nameColor};font-weight:700;letter-spacing:0.3px;">${dot} ${sdDev(c.name_hi,c.name_en)}</div>
       <div style="font-size:8px;color:rgba(255,255,255,0.90);margin-top:3px;font-family:'Poppins',sans-serif;">${c.time}</div>
       ${c.current?`<div style="font-size:7px;color:${c.color};margin-top:2px;font-weight:600;">${A('dashbo.now')}</div>`:''}
     </div>`;
@@ -6920,7 +6967,7 @@ if('serviceWorker' in navigator){
 
     <!-- Language -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.14);border-radius:16px;padding:12px 14px;">
-      <div id="settLangLbl" style="font-size:10px;color:rgba(212,168,67,0.72);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">🌐 भाषा / Language</div>
+      <div id="settLangLbl" style="font-size:10px;color:rgba(212,168,67,0.72);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;" data-i18n="settin.language">🌐 भाषा</div>
       <div style="display:flex;gap:10px;">
         <div id="settLangGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
       </div>
@@ -7045,8 +7092,8 @@ function mlGrid(){
   let g='';
   ML_LIB.forEach(function(x,i){
     g+='<div class="ml-god" onclick="mlList('+i+')"><img src="'+x.img+'" alt="" loading="lazy">'
-     +'<div class="sh"></div><div class="nm"><div class="d">'+(H?x.god_hi:x.god_en)+'</div>'
-     +'<div class="c">'+x.mantras.length+' '+(H?'मंत्र':(x.mantras.length>1?'mantras':'mantra'))+'</div></div></div>';
+     +'<div class="sh"></div><div class="nm"><div class="d">'+(sdDev(x.god_hi,x.god_en))+'</div>'
+     +'<div class="c">'+AF(x.mantras.length>1?'dashbo.n_mantras':'dashbo.n_mantra',{n:x.mantras.length})+'</div></div></div>';
   });
   mlBody().innerHTML=mlHead(A('dashbo.mantras'),A('dashbo.choose_a_deity_listen_to_mantras'),'')
    +'<div class="ml-grid">'+g+'</div>';
@@ -7061,16 +7108,16 @@ function mlList(gi){
   });
   r+='<div class="ml-row" style="opacity:0.55;cursor:default;border-style:dashed;" onclick="event.stopPropagation()">'
    +'<div class="ic">✨</div><div class="tt"><div class="t1">'+(A('dashbo.more_powerful_mantras_coming_soon'))+'</div></div></div>';
-  mlBody().innerHTML=mlHead(H?x.god_hi:x.god_en,A('dashbo.choose_a_mantra'),'mlGrid()')+r;
+  mlBody().innerHTML=mlHead(sdDev(x.god_hi,x.god_en),A('dashbo.choose_a_mantra'),'mlGrid()')+r;
 }
 function mlPlayer(gi,mi){
   window.mlStop&&mlStop(true); mlView='player';
   const x=ML_LIB[gi], m=x.mantras[mi];
   let w='';
   m.words.forEach(function(word,i){w+='<span class="mlw" id="mlw'+i+'">'+word+'</span>';});
-  mlBody().innerHTML=mlHead(H?m.t1:m.t1en,H?x.god_hi:x.god_en,'mlList('+gi+')')
+  mlBody().innerHTML=mlHead(H?m.t1:m.t1en,sdDev(x.god_hi,x.god_en),'mlList('+gi+')')
    +'<div class="mlp" id="mlpBox"><div class="mlp-bg" style="background-image:url(\''+x.img+'\')"></div>'
-   +'<div class="mlp-in"><div class="mlp-god">'+(H?x.god_hi:x.god_en)+'</div>'
+   +'<div class="mlp-in"><div class="mlp-god">'+(sdDev(x.god_hi,x.god_en))+'</div>'
    +'<div class="mlp-mt">'+(A('dashbo.listen_chant_along'))+'</div>'
    +'<div class="mlp-words">'+w+'</div></div>'
    +'<button class="mlp-btn" id="mlpBtn" onclick="mlToggle('+gi+','+mi+')">▶ '+(A('dashbo.start'))+'</button>'
