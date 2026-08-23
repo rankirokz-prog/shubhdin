@@ -243,6 +243,7 @@ if(typeof window.A!=='function'){
 </script>
 <script src="ui-strings.js"></script>
 <script src="panchang-terms.js"></script>
+<script src="vrat-names.js"></script>
 <script src="panchang-terms-bridge.js"></script>
 </head>
 <body>
@@ -255,7 +256,19 @@ if(typeof window.A!=='function'){
 'use strict';
 /* ── user context ─────────────────────────────────────────── */
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
-var H=(U.lang||'hi')==='hi';
+var H=
+(U.lang||'hi')==='hi';
+/* Date locale follows the reader's language. Every call passed H?'hi-IN':'en-IN',
+   so a Telugu reader saw "Sun, 23 Aug" in English on a fully Telugu screen.
+   Inserted after the H STATEMENT — an earlier attempt anchored on "var H=" and
+   spliced itself between the equals sign and the value, which broke the whole
+   script. Anchor on a complete statement, never a fragment. */
+function sdLocale(){
+  var l = (typeof window!=='undefined' && window.SD_LANG) || 'hi';
+  return { hi:'hi-IN', en:'en-IN', te:'te-IN', kn:'kn-IN', ta:'ta-IN',
+           bn:'bn-IN', mr:'mr-IN', gu:'gu-IN', as:'as-IN' }[l] || 'hi-IN';
+}
+
 var LAT=parseFloat(U.city_lat)||23.1793, LNG=parseFloat(U.city_lon)||75.7849; // fallback: Ujjain
 var CITY=U.city||(A('astrol.ujjain'));
 var PE=window.PanchangEngine;
@@ -323,6 +336,9 @@ var P=null;
 function panchang(){if(!P)P=PE.getPanchang(new Date(),LAT,LNG);return P;}
 
 /* ── rashi table (display labels) ────────────────────────── */
+/* Column 1 is the Sanskrit name — Mesha, Vrishabha — which is exactly the key
+   ui-strings.js uses, so sdRashi() resolves it into all nine languages. The
+   Hindi in column 0 is now only a fallback for a chart the table misses. */
 var RASHI=[
  ['मेष','Mesha','Aries','♈'],['वृषभ','Vrishabha','Taurus','♉'],['मिथुन','Mithuna','Gemini','♊'],
  ['कर्क','Karka','Cancer','♋'],['सिंह','Simha','Leo','♌'],['कन्या','Kanya','Virgo','♍'],
@@ -422,12 +438,12 @@ var GW_MIN_MINUTES = 12;   // a slice shorter than this is not worth naming
 
 function badWindows(p){
   var out=[];
-  function add(w,hi,en){ if(w&&w.start&&w.end) out.push({s:+new Date(w.start),e:+new Date(w.end),hi:hi,en:en}); }
-  add(p.rahuKaal,   'राहु काल','Rahu Kaal');
-  add(p.gulikaKaal, 'गुलिक काल','Gulika Kaal');
-  add(p.yamaganda,  'यमगंड','Yamaganda');
-  (p.durMuhurtam||[]).forEach(function(w){ add(w,'दुर्मुहूर्त','Dur Muhurtam'); });
-  (p.varjyamAll||(p.varjyam?[p.varjyam]:[])).forEach(function(w){ add(w,'वर्ज्यम्','Varjyam'); });
+  function add(w, lbl){var hi=lbl,en=lbl; if(w&&w.start&&w.end) out.push({s:+new Date(w.start),e:+new Date(w.end),hi:hi,en:en}); }
+  add(p.rahuKaal, A('dashbo.rahu_kaal'));
+  add(p.gulikaKaal, A('dashbo.gulika_kaal'));
+  add(p.yamaganda, A('dashbo.yamaganda'));
+  (p.durMuhurtam||[]).forEach(function(w){ add(w, A('dashbo.dur_muhurtam')); });
+  (p.varjyamAll||(p.varjyam?[p.varjyam]:[])).forEach(function(w){ add(w, A('dashbo.varjyam')); });
   return out.sort(function(a,b){return a.s-b.s;});
 }
 /* Cut every bad window out of one span; returns the surviving pieces. */
@@ -482,7 +498,7 @@ function vHub(){
   var p=panchang();
   var hc=p.hinduCalendar, cur=currentSeg(), ng=nextGood();
   var d=new Date();
-  var greg=d.toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'});
+  var greg=d.toLocaleDateString(sdLocale(),{timeZone:'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'});
   var hindu=(sdMasa(hc.purnimantaMonth))+' • '+sdPaksha(p.tithi.paksha)+' '+(sdTithi(p.tithi));
 
   /* personal tara chip (moat teaser) */
@@ -499,10 +515,10 @@ function vHub(){
   // The headline reads the SAME rule as everything else. A choghadiya slot
   // flagged good is not good if a forbidden period is running inside it —
   // showing green "Shubh" above an amber "hold new work" contradicted itself.
-  var segName = nb ? L(nb) : (cur.s?(H?cur.s.hi:cur.s.en):'—');
+  var segName = nb ? L(nb) : (cur.s?sdChog(cur.s):'—');
   var segCls = nb ? 'b' : (cur.s?(cur.s.good?'g':'b'):'');
   var segEnd = nb ? new Date(nb.e) : (cur.s?new Date(cur.s.end):null);
-  var until  = segEnd?t('… '+fT(segEnd)+' तक','until '+fT(segEnd)):'';
+  var until  = segEnd?('… '+AF('astrol.until_time',{time:fT(segEnd)})):'';
   var cd     = segEnd?mins(+segEnd-Date.now()):'';
 
   app.innerHTML=
@@ -529,7 +545,7 @@ function vHub(){
    +ribbonHTML()
    +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+A('astrol.hold_new_work_this_is_a_forbidden_')+'</div>':'')
    +(ng?'<div class="d-next">'+AF('astrol.next_clean_window_name_range',
-        {name:(H?ng.hi:ng.en), range:fR(ng.start,ng.end)})
+        {name:sdChog(ng), range:fR(ng.start,ng.end)})
         +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+A('astrol.trimmed')+'</small>':'')+'</div>'
       :'<div class="d-next">'+A('astrol.no_clean_window_left_today')+'</div>')
    +tara
@@ -594,7 +610,7 @@ function vRashiGrid(){
     g+='<div class="rt'+(i===mine?' mine':'')+'" onclick="location.hash=\'#rashifal/'+i+'\'">'
      +(i===mine?'<span class="you">'+A('astrol.you')+'</span>':'')
      +'<div class="dot '+(goodSet[i]?'g':'b')+'"></div>'
-     +'<div class="em">'+RASHI[i][3]+'</div><div class="nm dev">'+(H?RASHI[i][0]:RASHI[i][1])+'</div></div>';
+     +'<div class="em">'+RASHI[i][3]+'</div><div class="nm dev">'+sdRashi(RASHI[i][1])+'</div></div>';
   }
   app.innerHTML=pgHead(A('astrol.rashifal'),AF('astrol.moon_today_in_rashi', {rashi:(sdRashi(p.moonSign))}),'hub')
    +(mine>=0?tobUnknownNote():needBirth(A('astrol.then_your_own_rashi_will_be_marked')))
@@ -621,10 +637,10 @@ function vRashi(i){
                :A('astrol.a_neutral_day_keep_big_decisions_t');
   var ds=p.dishaShool;
   app.innerHTML=pgHead(A('astrol.rashifal'),AF('astrol.today_date',
-        {date:new Date().toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short'})}),'rashifal')
+        {date:new Date().toLocaleDateString(sdLocale(),{timeZone:'Asia/Kolkata',day:'numeric',month:'short'})}),'rashifal')
    +'<div class="card"><div class="verdict">'
    +'<div class="v-em">'+RASHI[i][3]+'</div>'
-   +'<div class="v-name dev">'+(H?RASHI[i][0]:RASHI[i][1])+(i===mine?' <span class="tag g">'+A('astrol.your_rashi')+'</span>':'')+'</div>'
+   +'<div class="v-name dev">'+sdRashi(RASHI[i][1])+(i===mine?' <span class="tag g">'+A('astrol.your_rashi')+'</span>':'')+'</div>'
    +'<div class="v-stars">'+stars+'</div>'
    +'<div class="v-line '+(cb?'good':'')+' dev">'+verdict+'</div>'
    +'</div></div>'
@@ -718,7 +734,7 @@ function vTimes(){
   var chog=p.choghadiya.day.concat(p.choghadiya.night).map(function(s,i){
     var live=(now>=new Date(s.start).getTime()&&now<new Date(s.end).getTime());
     var hit=s.good?clashesWith(+new Date(s.start),+new Date(s.end),_bads):[];
-    return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+(H?s.hi:s.en)
+    return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+sdChog(s)
      +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
      +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(sdTerm("bad",hit[0]))+'</small>':'')+'</span>'
      +'<span class="r-v '+(s.good&&!hit.length?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
@@ -726,7 +742,7 @@ function vTimes(){
   var recHtml = cw.length
    ? cw.map(function(w){
        var live=(now>=+w.start&&now<+w.end);
-       return '<div class="row"><span class="r-k dev">'+(H?w.hi:w.en)
+       return '<div class="row"><span class="r-k dev">'+sdChog(w)
         +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
         +(w.trimmed?' <small style="color:rgba(212,168,67,0.62);">'+A('astrol.trimmed')+'</small>':'')
         +'</span><span class="r-v good">'+fR(w.start,w.end)+'</span></div>';
@@ -749,7 +765,7 @@ function vTimes(){
    +(p.muhurtas&&p.muhurtas.godhuli?tr(A('explor.godhuli_muhurta'),p.muhurtas.godhuli,true):'')
    +'</div>'
    +'<div class="card">'
-   +tr(t('राहु काल','Rahu Kaal'),p.rahuKaal,false)
+   +tr(A('dashbo.rahu_kaal'),p.rahuKaal,false)
    +tr(A('dashbo.yamaganda'),p.yamaganda,false)
    +tr(A('dashbo.gulika_kaal'),p.gulikaKaal,false)
    +tr(A('dashbo.varjyam'),p.varjyam,false)
@@ -776,13 +792,13 @@ function xt(ico,name,sub,href){
 function todayObservance(){
   var d=new Date(), key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   var hits=[];
-  try{ PE.getVrats(d.getFullYear(),LAT,LNG,5.5).forEach(function(v){ if(v.date===key) hits.push({i:'🙏',n:H?v.hi:v.en}); }); }catch(e){}
-  try{ PE.getFestivals(d.getFullYear(),LAT,LNG,5.5).forEach(function(f){ if(f.date===key) hits.push({i:'🪔',n:H?f.hi:f.en}); }); }catch(e){}
+  try{ PE.getVrats(d.getFullYear(),LAT,LNG,5.5).forEach(function(v){ if(v.date===key) hits.push({i:'🙏',n:sdVrat(v)}); }); }catch(e){}
+  try{ PE.getFestivals(d.getFullYear(),LAT,LNG,5.5).forEach(function(f){ if(f.date===key) hits.push({i:'🪔',n:sdVrat(f)}); }); }catch(e){}
   if(!hits.length) return '';
   return '<div class="grid">'+hits.map(function(x){
     return '<div class="sec" onclick="location.hash=\'#vrats\'"><div class="s-ico">'+x.i+'</div>'
       +'<div class="s-b"><div class="s-t dev">'+x.n+'</div>'
-      +'<div class="s-live">'+t('आज का व्रत / पर्व',"Today's observance")+'</div></div>'
+      +'<div class="s-live">'+A('astrol.today_s_observance')+'</div></div>'
       +'<div class="s-go">›</div></div>';
   }).join('')+'</div>';
 }
@@ -794,9 +810,9 @@ function vExplore(){
    +'</div>'
 
    +'<div class="xgrp">'+A('astrol.find_a_muhurta')+'</div><div class="xgrid">'
-   +xt('🏠',t('गृह प्रवेश','Griha Pravesh'),A('explor.find_good_dates'),'#muhurta/griha_pravesh')
+   +xt('🏠',A('explor.griha_pravesh'),A('explor.find_good_dates'),'#muhurta/griha_pravesh')
    +xt('💼',A('explor.new_business'),A('explor.find_good_dates'),'#muhurta/business')
-   +xt('🚗',t('वाहन खरीद','Vehicle'),A('explor.find_good_dates'),'#muhurta/vehicle')
+   +xt('🚗',A('explor.vehicle'),A('explor.find_good_dates'),'#muhurta/vehicle')
    +'</div>'
    +'<div class="note" style="margin:6px 2px 0;cursor:pointer;" onclick="location.hash=\'#match\'">'
    +A('matchk.marriage_dates_need_both_charts_ma')+' ›</div>'
@@ -811,7 +827,7 @@ function vExplore(){
       disagreeing with the dashboard, which says 250+. */
    +xt('📜',A('home.my_kundli'),
         (typeof kundliPages==='function')
-          ? t('17 अध्याय · '+kundliPages(true,'short')+' · मुफ़्त','17 chapters · '+kundliPages(false,'short')+' · free')
+          ? AF('astrol.n_chapters_pages_free',{pages:kundliPages(H,'short')})
           : A('astrol.17_chapters_250_pages_free'),'@kundli')
    +'</div>'
 
@@ -866,7 +882,7 @@ function bpDate(pr){ return pr? new Date(pr.dob+'T'+(pr.tob||'12:00')+':00+05:30
 function bpLine(pr){
   if(!pr) return '';
   var d=new Date(pr.dob+'T00:00:00');
-  return d.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short',year:'numeric'})
+  return d.toLocaleDateString(sdLocale(),{day:'numeric',month:'short',year:'numeric'})
    +' · '+(pr.tob||'')+(pr.place?' · '+pr.place:'');
 }
 var BP_RET='#explore', BP_PICK={}, BP_SLOT='self', _bpTimer=null;
@@ -1018,12 +1034,11 @@ function vMatchResult(){
       +'<div class="kt-d">'+st+'</div></div></div>';
   });
   if(!flags) flags='<div class="kt"><div class="kt-n">'+A('astrol.no_major_dosha')+'</div></div>';
-  app.innerHTML=pgHead(t('गुण मिलान','Guna Milan'),(boy.name||A('matchk.groom'))+' · '+(girl.name||A('matchk.bride')),'#match')
+  app.innerHTML=pgHead(A('matchk.guna_milan'),(boy.name||A('matchk.groom'))+' · '+(girl.name||A('matchk.bride')),'#match')
    +'<div class="score"><div><span class="sc-n">'+eff+'</span><span class="sc-m">/'+g.max+'</span></div>'
    +'<div class="sc-v dev">'+(H?(g.effectiveVerdict||g.verdict):(g.effectiveVerdict||g.verdict))+' · '+pct+'%</div>'
    +(g.effectiveTotal!=null&&g.effectiveTotal!==g.total
-      ? '<div class="sc-e">'+t('कच्चा योग '+g.total+'/'+g.max+' — परिहार लगाने के बाद '+eff,
-          'Raw score '+g.total+'/'+g.max+' — '+eff+' after parihara applied')+'</div>' : '')
+      ? '<div class="sc-e">'+AF('astrol.raw_yoga_total_max_after_parihara',{total:g.total,max:g.max,eff:eff})+'</div>' : '')
    +'</div>'
    +'<div class="subh">'+A('matchk.ashtakoota_all_eight')+'</div>'+kt
    +'<div class="subh">'+A('astrol.dosha_check')+'</div>'+flags
@@ -1043,13 +1058,13 @@ function vPick(iso){
     var hc=q.hinduCalendar;
     body='<div class="card">'
      +prow(A('dashbo.vara'),'<span class="dev">'+(sdVara(q.vara))+'</span>')
-     +prow(t('तिथि','Tithi'),'<span class="dev">'+(sdTithi(q.tithi))+'</span> · '+t(q.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',q.tithi.paksha))
-     +prow(t('नक्षत्र','Nakshatra'),'<span class="dev">'+(sdNak(q.nakshatra))+'</span>')
-     +prow(t('योग','Yoga'),'<span class="dev">'+(sdYoga(q.yoga))+'</span>')
-     +prow(t('करण','Karana'),'<span class="dev">'+(sdKarana(q.karana))+'</span>')
+     +prow(A('dashbo.tithi'),'<span class="dev">'+(sdTithi(q.tithi))+'</span> · '+t(q.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',q.tithi.paksha))
+     +prow(A('dashbo.nakshatra'),'<span class="dev">'+(sdNak(q.nakshatra))+'</span>')
+     +prow(A('dashbo.yoga'),'<span class="dev">'+(sdYoga(q.yoga))+'</span>')
+     +prow(A('dashbo.karana'),'<span class="dev">'+(sdKarana(q.karana))+'</span>')
      +prow('🌅 '+A('dashbo.sunrise_sunset'),fT(q.sunrise)+' – '+fT(q.sunset))
      +prow('⭐ '+A('dashbo.abhijit'),q.abhijit?fR(q.abhijit.start,q.abhijit.end):A('astrol.none'))
-     +prow('🚫 '+t('राहु काल','Rahu Kaal'),q.rahuKaal?fR(q.rahuKaal.start,q.rahuKaal.end):'—')
+     +prow('🚫 '+A('dashbo.rahu_kaal'),q.rahuKaal?fR(q.rahuKaal.start,q.rahuKaal.end):'—')
      +prow('📜 '+A('astrol.masa'),'<span class="dev">'+(sdMasa(hc.amantaMonth))+'</span> · '+AF('astrol.v_s_y', {y:hc.vikramSamvat}))
      +'</div>';
   }
@@ -1107,7 +1122,7 @@ function vMuhurtaRun(key){
    +'<div class="xgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:9px;">'
    +[30,90,180].map(function(d){
       return '<div class="xt" style="padding:9px 6px;'+(d===days?'border-color:rgba(232,190,90,0.9);background:#4A3114;':'')+'" '
-       +'onclick="MUH_DAYS[\''+key+'\']='+d+';route();"><div class="xt-n">'+d+' '+t('दिन','days')+'</div></div>';
+       +'onclick="MUH_DAYS[\''+key+'\']='+d+';route();"><div class="xt-n">'+d+' '+A('explor.days')+'</div></div>';
     }).join('')+'</div>'
    +'<div class="pcard" onclick="goBp(\'self\',\'#muhurta/'+key+'\')"><div class="pc-i">🎂</div>'
    +'<div><div class="pc-n dev">'+(pr.name||A('astrol.your_details'))+'</div>'
@@ -1136,7 +1151,7 @@ function vMuhurtaRun(key){
 
   function card(r,rank){
     var d=new Date(r.date), flawed=!!(r.minus||[]).length, tr=tier(r.score,flawed);
-    var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{weekday:'short',day:'numeric',month:'short'});
+    var when=d.toLocaleDateString(sdLocale(),{weekday:'short',day:'numeric',month:'short'});
     var stars='★'.repeat(tr.n)+'☆'.repeat(3-tr.n);
     var plus=(r.plus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(150,220,170,0.88);line-height:1.6;">✓ '+(H?x.hi:x.en)+'</div>';}).join('');
     var minus=(r.minus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(240,150,130,0.88);line-height:1.6;">⚠ '+(H?x.hi:x.en)+'</div>';}).join('');
@@ -1147,7 +1162,7 @@ function vMuhurtaRun(key){
       +'<span style="margin-left:auto;font-size:11px;color:'+(tr.n===3?'#8FE0A8':tr.n===2?'#E8BE5A':'rgba(255,244,222,0.55)')+';">'
       +stars+' '+(H?tr.hi:tr.en)+'</span></div>'
       +'<div class="dev" style="font-size:12px;color:rgba(212,168,67,0.85);margin-bottom:5px;">'
-      +(H?r.nakshatra.hi:r.nakshatra.en)+' · '+(H?r.tithi.hi:r.tithi.en)+'</div>'
+      +sdNak(r.nakshatra)+' · '+sdTithi(r.tithi)+'</div>'
       +plus+minus
       +window_(r,'abhijit','⭐',A('dashbo.abhijit'))
       +window_(r,'amritKaal','🍯',A('dashbo.amrit_kaal'))
@@ -1175,8 +1190,7 @@ function vMuhurtaRun(key){
 
   app.innerHTML=head+controls
    +'<div class="note" style="margin:2px 2px 4px;">'
-   +t(days+' दिनों में ','Across '+days+' days ')+'<b>'+(res.totalFound||list.length)+'</b>'
-   +t(' शुभ दिन मिले — सबसे अच्छे '+list.length+' नीचे',' auspicious days found — best '+list.length+' shown')+'</div>'
+   +AF('astrol.across_n_days_found_best_shown',{days:days,found:(res.totalFound||list.length),shown:list.length})+'</div>'
    +sortBar+body
    +'<div class="note">'+A('astrol.tithi_nakshatra_weekday_tarabala_a')+'</div>';
 }
@@ -1259,7 +1273,7 @@ function vTara(){
     var me=n.en.toLowerCase()===mine;
     return '<div class="sgrow '+(n.good?'g':'b')+(me?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(n.good?'#5ABE78':'#E66E5A')+'"></div>'
-      +'<div class="sg-n dev">'+(sdNak(n))+(me?' <span class="sg-now">'+t('आपका','YOURS')+'</span>':'')+'</div>'
+      +'<div class="sg-n dev">'+(sdNak(n))+(me?' <span class="sg-now">'+A('astrol.yours')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+n.taraEn+' · '+n.verdict+'</div></div>';
   }).join('');
   app.innerHTML=pgHead(A('dashbo.tarabala'),AF('astrol.day_nakshatra_nak',
@@ -1278,7 +1292,7 @@ function vChandra(){
     var g=!!goodSet[i], me=(i===mineIdx);
     rows+='<div class="sgrow '+(g?'g':'b')+(me?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(g?'#5ABE78':'#E66E5A')+'"></div>'
-      +'<div class="sg-n dev">'+(H?RASHI[i][0]:RASHI[i][1])+(me?' <span class="sg-now">'+t('आपकी','YOURS')+'</span>':'')+'</div>'
+      +'<div class="sg-n dev">'+sdRashi(RASHI[i][1])+(me?' <span class="sg-now">'+A('astrol.you')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+(g?A('astrol.favourable'):A('astrol.neutral'))+'</div></div>';
   }
   app.innerHTML=pgHead(A('dashbo.chandrabala'),AF('astrol.moon_today_in_rashi_2',
@@ -1300,7 +1314,7 @@ function vHcal(){
    +prow(A('dashbo.vikram_samvat'),hc.vikramSamvat)
    +prow(A('astrol.shaka_samvat'),hc.shakaSamvat)
    +(hc.gujaratiSamvat?prow(A('astrol.gujarati_samvat'),hc.gujaratiSamvat):'')
-   +orow(A('astrol.samvatsara'),L(hc.samvatsara))
+   +orow(A('astrol.samvatsara'),sdTerm('samvatsara',(hc.samvatsara&&hc.samvatsara.drik)||hc.samvatsara))
    +orow(A('astrol.ritu'),sdRitu((hc.ritu&&hc.ritu.drik)||hc.ritu))
    +orow(A('astrol.ayana'),sdAyana((hc.ayana&&hc.ayana.drik)||hc.ayana))
    +'</div>';
@@ -1361,11 +1375,11 @@ function obsList(list,icon,emptyMsg){
   if(!up.length) return '<div class="note">'+emptyMsg+'</div>';
   return '<div class="seglist">'+up.map(function(x){
     var d=new Date(x.date+'T00:00:00');
-    var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short'});
+    var when=d.toLocaleDateString(sdLocale(),{day:'numeric',month:'short'});
     var days=Math.round((d-today)/86400000);
     var rel=days===0?A('dashbo.today_3'):days===1?A('dashbo.tomorrow'):plural(days, A('astrol.in_n_day'), A('astrol.in_n_days'));
     return '<div class="sgrow'+(days===0?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
-      +'<div class="sg-n dev">'+icon+' '+(H?x.hi:x.en)+'</div>'
+      +'<div class="sg-n dev">'+icon+' '+sdVrat(x)+'</div>'
       +'<div class="sg-t">'+when+' · '+rel+'</div></div>';
   }).join('')+'</div>';
 }
