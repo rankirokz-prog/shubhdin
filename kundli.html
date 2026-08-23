@@ -264,7 +264,7 @@ function kDetectLoc(){
    equal to the English keeps the hi===en gate red, and a gate that is always
    red stops being read. Deliberately-equal and accidentally-equal must look
    different in the source. */
-    t.textContent=fmt(t2('✓ {city}','✓ {city}'), {city:city});}
+    t.textContent=AF('kundli.city', {city:city});}
       else t.textContent=A('kundli.city_not_found_search_instead');
     }).catch(function(){t.textContent=A('kundli.failed_search_instead');});
   },function(){t.textContent=A('kundli.permission_denied_search_instead');});
@@ -335,7 +335,7 @@ function startPrep(user){
 }
 function finishPrep(email){
   localStorage.setItem('shubhdin_kundli_ready','1');
-  if(email)$('rdMail').textContent=fmt(H?'खाता: {email}':'Account: {email}', {email:email});
+  if(email)$('rdMail').textContent=AF('kundli.account_email', {email:email});
   show('stReady');
 }
 
@@ -455,7 +455,7 @@ absorbHashTokens().then(function(){
 
   if(ready){ dlog('boot: ready state'); updateDlBtn(); requestServerPdf(); sbAuth().getSession().then(function(r){
       var u=r.data&&r.data.session&&r.data.session.user;
-      if(u&&u.email)$('rdMail').textContent=fmt(H?'खाता: {email}':'Account: {email}', {email:u.email});});
+      if(u&&u.email)$('rdMail').textContent=AF('kundli.account_email', {email:u.email});});
     show('stReady'); return; }
 
   if(det&&hasAuthParams){ dlog('boot: det+authParams → waiting for exchange');
