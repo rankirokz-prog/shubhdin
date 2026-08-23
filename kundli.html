@@ -473,7 +473,7 @@ absorbHashTokens().then(function(){
           $('ppT').textContent=A('kundli.preparing_your_kundli');
           proceed(r.data.session.user);}
         else if(tries>16){clearInterval(pv); dlog('exchange TIMEOUT after 8s'); show('stAuth'); renderDbgAuto();
-          $('errAuth').textContent=A('kundli.sign_in_didn_t_complete_please_try_2');
+          $('errAuth').textContent=A('kundli.sign_in_didn_t_complete_please_try');
           $('errAuth').style.display='block';}
       });
     },500);
