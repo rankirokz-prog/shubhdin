@@ -119,7 +119,19 @@ var sb=null;
 try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SB_URL,SB_ANON); }
 catch(e){ sb=null; }
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
-var H=(U.lang||'hi')==='hi';
+var H=
+(U.lang||'hi')==='hi';
+/* Date locale follows the reader's language. Every call passed H?'hi-IN':'en-IN',
+   so a Telugu reader saw "Sun, 23 Aug" in English on a fully Telugu screen.
+   Inserted after the H STATEMENT — an earlier attempt anchored on "var H=" and
+   spliced itself between the equals sign and the value, which broke the whole
+   script. Anchor on a complete statement, never a fragment. */
+function sdLocale(){
+  var l = (typeof window!=='undefined' && window.SD_LANG) || 'hi';
+  return { hi:'hi-IN', en:'en-IN', te:'te-IN', kn:'kn-IN', ta:'ta-IN',
+           bn:'bn-IN', mr:'mr-IN', gu:'gu-IN', as:'as-IN' }[l] || 'hi-IN';
+}
+
 var SESSION=null;
 function $(id){return document.getElementById(id);}
 /* A label glued to a value cannot be translated: the label precedes the value
@@ -175,7 +187,7 @@ function fmtDate(d){
   if(!d) return '';
   try{ var x=new Date(d+(d.length===10?'T00:00:00':''));
        if(isNaN(x)) return d;
-       return x.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short',year:'numeric'});
+       return x.toLocaleDateString(sdLocale(),{day:'numeric',month:'short',year:'numeric'});
   }catch(e){ return d; }
 }
 
