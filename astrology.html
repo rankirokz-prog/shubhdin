@@ -241,6 +241,9 @@ if(typeof window.A!=='function'){
   window.AP=function(k,n,v){var o={};if(v)for(var p in v)o[p]=v[p];o.n=n;return window.AF(k,o);};
 }
 </script>
+<script src="ui-strings.js"></script>
+<script src="panchang-terms.js"></script>
+<script src="panchang-terms-bridge.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -312,8 +315,8 @@ function fmt(tpl, vals){
 /* ── time helpers (IST display always) ───────────────────── */
 function fT(d){if(!d)return '—';return new Date(d).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false,hour:'2-digit',minute:'2-digit'});}
 function fR(a,b){return fT(a)+'–'+fT(b);}
-function mins(ms){var m=Math.max(0,Math.round(ms/60000));var h=Math.floor(m/60);m%=60;return h ? fmt(t('{h} घं {m} मि','{h} h {m} m'), {h:h, m:m})
-           : fmt(plural(m, t('{n} मिनट','{n} min'), t('{n} मिनट','{n} min')), {n:m});}
+function mins(ms){var m=Math.max(0,Math.round(ms/60000));var h=Math.floor(m/60);m%=60;return h ? AF('astrol.h_h_m_m', {h:h, m:m})
+           : fmt(plural(m, A('astrol.n_min'), A('astrol.n_min')), {n:m});}
 
 /* ── today's panchang (one engine call, cached) ──────────── */
 var P=null;
@@ -480,7 +483,7 @@ function vHub(){
   var hc=p.hinduCalendar, cur=currentSeg(), ng=nextGood();
   var d=new Date();
   var greg=d.toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'});
-  var hindu=(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+' • '+t(p.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',p.tithi.paksha)+' '+(H?p.tithi.hi:p.tithi.en);
+  var hindu=(sdMasa(hc.purnimantaMonth))+' • '+sdPaksha(p.tithi.paksha)+' '+(sdTithi(p.tithi));
 
   /* personal tara chip (moat teaser) */
   var tara='';
@@ -513,9 +516,9 @@ function vHub(){
    +'<div class="d-now-lbl">'+A('astrol.right_now')+'</div>'
    +'<div style="display:flex;align-items:center;gap:12px;margin:7px 0 2px;flex-wrap:wrap;">'
    +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
-   +'<span style="width:14px;height:5px;border-radius:3px;background:#5ABE78;"></span>'+t('शुभ','Auspicious')+'</span>'
+   +'<span style="width:14px;height:5px;border-radius:3px;background:#5ABE78;"></span>'+A('dashbo.auspicious_alt')+'</span>'
    +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
-   +'<span style="width:14px;height:5px;border-radius:3px;background:#E66E5A;"></span>'+t('वर्ज्य','Avoid')+'</span>'
+   +'<span style="width:14px;height:5px;border-radius:3px;background:#E66E5A;"></span>'+A('dashbo.avoid_alt')+'</span>'
    +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
    +'<span style="width:2px;height:11px;background:#FFE9B8;"></span>'+A('astrol.now')+'</span>'
    +'<span style="font-size:9.5px;color:rgba(255,244,222,0.40);">'+A('astrol.sunrise_to_sunrise')+'</span></div>'
@@ -523,8 +526,7 @@ function vHub(){
    +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
    +ribbonHTML()
    +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+A('astrol.hold_new_work_this_is_a_forbidden_')+'</div>':'')
-   +(ng?'<div class="d-next">'+fmt(t('अगला साफ़ शुभ समय: <b class="dev">{name}</b> {range}',
-          'Next clean window: <b class="dev">{name}</b> {range}'),
+   +(ng?'<div class="d-next">'+AF('astrol.next_clean_window_name_range',
         {name:(H?ng.hi:ng.en), range:fR(ng.start,ng.end)})
         +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+A('astrol.trimmed')+'</small>':'')+'</div>'
       :'<div class="d-next">'+A('astrol.no_clean_window_left_today')+'</div>')
@@ -532,18 +534,17 @@ function vHub(){
    +'</div>'
 
    +'<div class="grid">'
-   +sec('🐏',A('astrol.rashifal'),fmt(t('चंद्रमा आज <b class="dev">{rashi}</b> राशि में — अपनी राशि देखें',
-          'Moon today in <b class="dev">{rashi}</b> — check your rashi'),
-        {rashi:(H?p.moonSign.hi:p.moonSign.en)}),'#rashifal')
-   +sec('📿',A('astrol.panchang'),'<b class="dev">'+(H?p.tithi.hi:p.tithi.en)+'</b> • <span class="dev">'+(H?p.nakshatra.hi:p.nakshatra.en)+'</span> • <span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>','#panchang')
+   +sec('🐏',A('astrol.rashifal'),AF('astrol.moon_today_in_rashi_check_your_ras',
+        {rashi:(sdRashi(p.moonSign))}),'#rashifal')
+   +sec('📿',A('astrol.panchang'),'<b class="dev">'+(sdTithi(p.tithi))+'</b> • <span class="dev">'+(sdNak(p.nakshatra))+'</span> • <span class="dev">'+(sdVara(p.vara))+'</span>','#panchang')
    +sec('⏰',A('astrol.shubh_ashubh_times'),timesTeaser(p),'#times')
    +'</div>'
 
-   +'<div class="limbs">'+miniLimb(A('astrol.tithi'),H?p.tithi.hi:p.tithi.en)
-   +miniLimb(A('astrol.nakshatra'),H?p.nakshatra.hi:p.nakshatra.en)
-   +miniLimb(A('astrol.yoga'),H?p.yoga.hi:p.yoga.en)
-   +miniLimb(A('astrol.karana'),H?p.karana.hi:p.karana.en)
-   +miniLimb(A('astrol.vara'),H?p.vara.hi:p.vara.en)+'</div>'
+   +'<div class="limbs">'+miniLimb(A('astrol.tithi'),sdTithi(p.tithi))
+   +miniLimb(A('astrol.nakshatra'),sdNak(p.nakshatra))
+   +miniLimb(A('astrol.yoga'),sdYoga(p.yoga))
+   +miniLimb(A('astrol.karana'),sdKarana(p.karana))
+   +miniLimb(A('astrol.vara'),sdVara(p.vara))+'</div>'
 
    +todayObservance()
    +'<div class="xcard" onclick="location.hash=\'#explore\'">'
@@ -575,10 +576,10 @@ function miniLimb(k,v){return '<div class="limb"><div class="l-k">'+k+'</div><di
 function timesTeaser(p){
   var now=Date.now(),rk=p.rahuKaal;
   if(rk&&now<new Date(rk.start).getTime())
-    return fmt(t('राहु काल <b>{range}</b> — {mins} में','Rahu Kaal <b>{range}</b> — {mins} from now'),
+    return AF('astrol.rahu_kaal_range_mins_from_now',
         {range:fR(rk.start,rk.end), mins:mins(new Date(rk.start).getTime()-now)});
   if(rk&&now>=new Date(rk.start).getTime()&&now<new Date(rk.end).getTime())
-    return '<span class="bad">'+fmt(t('अभी राहु काल — {end} तक','Rahu Kaal now — until {end}'), {end:fT(rk.end)})+'</span>';
+    return '<span class="bad">'+AF('astrol.rahu_kaal_now_until_end', {end:fT(rk.end)})+'</span>';
   return A('astrol.rahu_kaal_over_see_the_full_day');
 }
 
@@ -593,7 +594,7 @@ function vRashiGrid(){
      +'<div class="dot '+(goodSet[i]?'g':'b')+'"></div>'
      +'<div class="em">'+RASHI[i][3]+'</div><div class="nm dev">'+(H?RASHI[i][0]:RASHI[i][1])+'</div></div>';
   }
-  app.innerHTML=pgHead(A('astrol.rashifal'),fmt(t('चंद्रमा आज {rashi} राशि में','Moon today in {rashi}'), {rashi:(H?p.moonSign.hi:p.moonSign.en)}),'hub')
+  app.innerHTML=pgHead(A('astrol.rashifal'),AF('astrol.moon_today_in_rashi', {rashi:(sdRashi(p.moonSign))}),'hub')
    +(mine>=0?tobUnknownNote():needBirth(A('astrol.then_your_own_rashi_will_be_marked')))
    +'<div style="display:flex;align-items:center;gap:14px;padding:2px 4px 9px;flex-wrap:wrap;">'
    +'<span style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:rgba(255,244,222,0.70);">'
@@ -617,7 +618,7 @@ function vRashi(i){
   var verdict=cb?A('astrol.chandrabala_is_with_you_today')
                :A('astrol.a_neutral_day_keep_big_decisions_t');
   var ds=p.dishaShool;
-  app.innerHTML=pgHead(A('astrol.rashifal'),fmt(t('आज • {date}','Today • {date}'),
+  app.innerHTML=pgHead(A('astrol.rashifal'),AF('astrol.today_date',
         {date:new Date().toLocaleDateString(H?'hi-IN':'en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short'})}),'rashifal')
    +'<div class="card"><div class="verdict">'
    +'<div class="v-em">'+RASHI[i][3]+'</div>'
@@ -626,15 +627,13 @@ function vRashi(i){
    +'<div class="v-line '+(cb?'good':'')+' dev">'+verdict+'</div>'
    +'</div></div>'
    +'<div class="card">'
-   +factor('🌙',fmt(t('<b>चंद्रमा</b> आज आपसे <b>{n}वें भाव</b> में — <span class="dev">{theme}</span>',
-          '<b>Moon</b> today is in your <b>{n}{ord} house</b> — <span class="dev">{theme}</span>'),
+   +factor('🌙',AF('astrol.moon_today_is_in_your_n_ord_house_',
         {n:(house+1), ord:ordinal(house+1), theme:HOUSE[house][H?0:1]}))
-   +factor(cb?'✅':'⚠️',fmt(t('<b>चंद्रबल:</b> {verdict}','<b>Chandrabala:</b> {verdict}'),
+   +factor(cb?'✅':'⚠️',AF('astrol.chandrabala_verdict',
         {verdict: cb?A('astrol.favourable_a_good_day_for_auspicio')
                     :A('explor.unfavourable_start_new_things_only')}))
-   +factor('🧭',fmt(t('<b>दिशाशूल:</b> आज <b class="dev">{dir}</b> दिशा की यात्रा टालें',
-          '<b>Disha Shool:</b> avoid starting travel toward the <b class="dev">{dir}</b> today'),
-        {dir:(H?ds.hi:ds.en)}))
+   +factor('🧭',AF('explor.disha_shool_avoid_starting_travel_',
+        {dir:(sdTerm("disha",ds))}))
    +'</div>'
    +'<div class="sec" onclick="location.hash=\'#times\'"><div class="s-ico">⏰</div><div class="s-b">'
    +'<div class="s-t dev">'+A('astrol.see_today_s_good_windows_2')+'</div>'
@@ -653,24 +652,24 @@ function vPanchang(){
    +prow('🌅 '+A('dashbo.sunrise_sunset'),fT(p.sunrise)+' / '+fT(p.sunset))
    +prow('🌙 '+A('dashbo.moonrise_moonset'),fT(p.moonrise)+' / '+fT(p.moonset))
    +prow('🌄 '+A('dashbo.brahma_muhurta'),p.brahmaMuhurta?fR(p.brahmaMuhurta.start,p.brahmaMuhurta.end):'—')
-   +prow('☀️ '+A('astrol.sun_moon_sign'),'<span class="dev">'+(H?p.sunSign.hi:p.sunSign.en)+' / '+(H?p.moonSign.hi:p.moonSign.en)+'</span>')
-   +prow('🧭 '+A('dashbo.disha_shool'),'<span class="dev">'+(H?p.dishaShool.hi:p.dishaShool.en)+'</span>')
+   +prow('☀️ '+A('astrol.sun_moon_sign'),'<span class="dev">'+(sdRashi(p.sunSign))+' / '+(sdRashi(p.moonSign))+'</span>')
+   +prow('🧭 '+A('dashbo.disha_shool'),'<span class="dev">'+(sdTerm("disha",p.dishaShool))+'</span>')
    +'</div>'
    +'<div class="card">'
-   +limbRow('tithi',t('तिथि','Tithi'),p.tithi)
-   +limbRow('nakshatra',t('नक्षत्र','Nakshatra'),p.nakshatra)
-   +limbRow('yoga',t('योग','Yoga'),p.yoga)
-   +limbRow('karana',t('करण','Karana'),p.karana)
-   +prow(A('dashbo.vara'),'<span class="dev">'+(H?p.vara.hi:p.vara.en)+'</span>')
+   +limbRow('tithi',A('astrol.tithi'),p.tithi)
+   +limbRow('nakshatra',A('astrol.nakshatra'),p.nakshatra)
+   +limbRow('yoga',A('astrol.yoga'),p.yoga)
+   +limbRow('karana',A('astrol.karana'),p.karana)
+   +prow(A('dashbo.vara'),'<span class="dev">'+(sdVara(p.vara))+'</span>')
    +'</div>'
    +'<div class="card">'
    +prow(A('dashbo.vikram_samvat'),hc.vikramSamvat||'—')
    +prow(A('astrol.shaka_samvat'),hc.shakaSamvat||'—')
-   +prow(A('astrol.month_purnimanta'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
-   +prow(A('astrol.month_amanta'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+(hc.amantaMonth.adhik?' <span class="tag b">'+A('astrol.adhik')+'</span>':'')+'</span>')
-   +prow(A('dashbo.paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha)+'</span>')
-   +orow(A('astrol.ritu'),L(hc.ritu))
-   +orow(A('astrol.ayana'),L(hc.ayana))
+   +prow(A('astrol.month_purnimanta'),'<span class="dev">'+(sdMasa(hc.purnimantaMonth))+'</span>')
+   +prow(A('astrol.month_amanta'),'<span class="dev">'+(sdMasa(hc.amantaMonth))+(hc.amantaMonth.adhik?' <span class="tag b">'+A('astrol.adhik')+'</span>':'')+'</span>')
+   +prow(A('dashbo.paksha'),'<span class="dev">'+sdPaksha(p.tithi.paksha)+'</span>')
+   +orow(A('astrol.ritu'),sdRitu((hc.ritu&&hc.ritu.drik)||hc.ritu))
+   +orow(A('astrol.ayana'),sdAyana((hc.ayana&&hc.ayana.drik)||hc.ayana))
    +'</div>'
    +'<div class="ad">'+A('astrol.ad')+'</div>'
    +'<div class="note">'+A('astrol.tap_any_limb_for_today_s_full_time_2')+'</div>';
@@ -678,26 +677,26 @@ function vPanchang(){
 function prow(k,v){return '<div class="row"><span class="r-k">'+k+'</span><span class="r-v">'+v+'</span></div>';}
 function limbRow(key,label,limb){
   var segs=limb.segments||[];
-  var next=segs.length>1?('<small>'+fmt(t('फिर <span class="dev">{next}</span></small>','then <span class="dev">{next}</span></small>'),
-        {next:(H?segs[1].hi:segs[1].en)})):'';
+  var next=segs.length>1?('<small>'+AF('astrol.then_next',
+        {next:sdTerm(key,segs[1])})):'';
   return '<div class="row" style="cursor:pointer" onclick="location.hash=\'#panchang/'+key+'\'">'
    +'<span class="r-k">'+label+' ›</span>'
-   +'<span class="r-v"><span class="dev">'+(H?limb.hi:limb.en)+'</span> <small>'+fmt(t('{time} तक','until {time}'), {time:fT(segs[0]&&segs[0].end)})+'</small>'+next+'</span></div>';
+   +'<span class="r-v"><span class="dev">'+sdTerm(key,limb)+'</span> <small>'+AF('astrol.until_time', {time:fT(segs[0]&&segs[0].end)})+'</small>'+next+'</span></div>';
 }
 
 function vLimb(key){
   var p=panchang();
-  var map={tithi:[p.tithi,t('तिथि','Tithi')],nakshatra:[p.nakshatra,t('नक्षत्र','Nakshatra')],
-           yoga:[p.yoga,t('योग','Yoga')],karana:[p.karana,t('करण','Karana')]};
+  var map={tithi:[p.tithi,A('astrol.tithi')],nakshatra:[p.nakshatra,A('astrol.nakshatra')],
+           yoga:[p.yoga,A('astrol.yoga')],karana:[p.karana,A('astrol.karana')]};
   if(!map[key])return vPanchang();
   var limb=map[key][0],label=map[key][1];
   var extra='';
   if(key==='nakshatra')extra='<div class="card">'+prow(A('astrol.lord'),limb.lord||'—')+prow(A('astrol.pada'),limb.pada||'—')+'</div>';
   var segs=(limb.segments||[]).map(function(s){
-    return '<div class="seg"><span class="sv dev">'+(H?s.hi:s.en)+'</span><span class="st">'+fmt(t('समाप्ति {time}','ends {time}'), {time:fT(s.end)})+'</span></div>';}).join('');
+    return '<div class="seg"><span class="sv dev">'+sdTerm(key,s)+'</span><span class="st">'+AF('astrol.ends_time', {time:fT(s.end)})+'</span></div>';}).join('');
   app.innerHTML=pgHead(label,A('astrol.today_s_full_sequence_2'),'panchang')
    +'<div class="card"><div style="text-align:center;padding:8px 0 12px;">'
-   +'<div class="v-name dev">'+(H?limb.hi:limb.en)+'</div>'
+   +'<div class="v-name dev">'+sdTerm(key,limb)+'</div>'
    +'<div class="pg-s" style="margin-top:4px;">'+A('astrol.running_now')+'</div></div>'
    +segs+'</div>'+extra
    +'<div class="ad">'+A('astrol.ad')+'</div>';
@@ -719,7 +718,7 @@ function vTimes(){
     var hit=s.good?clashesWith(+new Date(s.start),+new Date(s.end),_bads):[];
     return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+(H?s.hi:s.en)
      +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
-     +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(H?hit[0].hi:hit[0].en)+'</small>':'')+'</span>'
+     +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(sdTerm("bad",hit[0]))+'</small>':'')+'</span>'
      +'<span class="r-v '+(s.good&&!hit.length?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
   var cw=cleanWindows();
   var recHtml = cw.length
@@ -1041,15 +1040,15 @@ function vPick(iso){
   if(q){
     var hc=q.hinduCalendar;
     body='<div class="card">'
-     +prow(A('dashbo.vara'),'<span class="dev">'+(H?q.vara.hi:q.vara.en)+'</span>')
-     +prow(t('तिथि','Tithi'),'<span class="dev">'+(H?q.tithi.hi:q.tithi.en)+'</span> · '+t(q.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',q.tithi.paksha))
-     +prow(t('नक्षत्र','Nakshatra'),'<span class="dev">'+(H?q.nakshatra.hi:q.nakshatra.en)+'</span>')
-     +prow(t('योग','Yoga'),'<span class="dev">'+(H?q.yoga.hi:q.yoga.en)+'</span>')
-     +prow(t('करण','Karana'),'<span class="dev">'+(H?q.karana.hi:q.karana.en)+'</span>')
+     +prow(A('dashbo.vara'),'<span class="dev">'+(sdVara(q.vara))+'</span>')
+     +prow(t('तिथि','Tithi'),'<span class="dev">'+(sdTithi(q.tithi))+'</span> · '+t(q.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',q.tithi.paksha))
+     +prow(t('नक्षत्र','Nakshatra'),'<span class="dev">'+(sdNak(q.nakshatra))+'</span>')
+     +prow(t('योग','Yoga'),'<span class="dev">'+(sdYoga(q.yoga))+'</span>')
+     +prow(t('करण','Karana'),'<span class="dev">'+(sdKarana(q.karana))+'</span>')
      +prow('🌅 '+A('dashbo.sunrise_sunset'),fT(q.sunrise)+' – '+fT(q.sunset))
      +prow('⭐ '+A('dashbo.abhijit'),q.abhijit?fR(q.abhijit.start,q.abhijit.end):A('astrol.none'))
      +prow('🚫 '+t('राहु काल','Rahu Kaal'),q.rahuKaal?fR(q.rahuKaal.start,q.rahuKaal.end):'—')
-     +prow('📜 '+A('astrol.masa'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span> · '+fmt(t('वि.सं. {y}','V.S. {y}'), {y:hc.vikramSamvat}))
+     +prow('📜 '+A('astrol.masa'),'<span class="dev">'+(sdMasa(hc.amantaMonth))+'</span> · '+AF('astrol.v_s_y', {y:hc.vikramSamvat}))
      +'</div>';
   }
   app.innerHTML=pgHead(A('astrol.panchang_for_any_day'),CITY,'#explore')
@@ -1229,8 +1228,8 @@ function segList(arr,label,bads){
     var ok=sg.good&&!hit.length;
     h+='<div class="sgrow '+(ok?'g':'b')+(live?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(ok?'#5ABE78':(sg.good?'#E8A317':'#E66E5A'))+'"></div>'
-      +'<div class="sg-n dev">'+(H?sg.hi:sg.en)+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
-      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+fmt(t('{what} से टकराता है','overlaps {what}'), {what:(H?hit[0].hi:hit[0].en)})+'</div>':'')+'</div>'
+      +'<div class="sg-n dev">'+(sdChog(sg))+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
+      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+AF('astrol.overlaps_what', {what:(sdTerm("bad",hit[0]))})+'</div>':'')+'</div>'
       +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
   });
   return '<div class="subh">'+label+'</div><div class="seglist">'+h+'</div>';
@@ -1258,11 +1257,11 @@ function vTara(){
     var me=n.en.toLowerCase()===mine;
     return '<div class="sgrow '+(n.good?'g':'b')+(me?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(n.good?'#5ABE78':'#E66E5A')+'"></div>'
-      +'<div class="sg-n dev">'+(H?n.hi:n.en)+(me?' <span class="sg-now">'+t('आपका','YOURS')+'</span>':'')+'</div>'
+      +'<div class="sg-n dev">'+(sdNak(n))+(me?' <span class="sg-now">'+t('आपका','YOURS')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+n.taraEn+' · '+n.verdict+'</div></div>';
   }).join('');
-  app.innerHTML=pgHead(A('dashbo.tarabala'),fmt(t('आज का नक्षत्र <span class="dev">{nak}</span>','Day nakshatra <span class="dev">{nak}</span>'),
-        {nak:(H?tb.dayNakshatra.hi:tb.dayNakshatra.en)}),'#explore')
+  app.innerHTML=pgHead(A('dashbo.tarabala'),AF('astrol.day_nakshatra_nak',
+        {nak:(sdNak(tb.dayNakshatra))}),'#explore')
    +(mine?tobUnknownNote():needBirth(A('astrol.then_we_can_show_which_of_these_ro')))
    +'<div class="subh">'+A('astrol.verdict_for_all_27_nakshatras')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
@@ -1280,8 +1279,8 @@ function vChandra(){
       +'<div class="sg-n dev">'+(H?RASHI[i][0]:RASHI[i][1])+(me?' <span class="sg-now">'+t('आपकी','YOURS')+'</span>':'')+'</div>'
       +'<div class="sg-t">'+(g?A('astrol.favourable'):A('astrol.neutral'))+'</div></div>';
   }
-  app.innerHTML=pgHead(A('dashbo.chandrabala'),fmt(t('चंद्रमा आज <span class="dev">{rashi}</span> राशि में','Moon today in <span class="dev">{rashi}</span>'),
-        {rashi:(H?cb.dayRashi.hi:cb.dayRashi.en)}),'#explore')
+  app.innerHTML=pgHead(A('dashbo.chandrabala'),AF('astrol.moon_today_in_rashi_2',
+        {rashi:(sdRashi(cb.dayRashi))}),'#explore')
    +(mineIdx>=0?tobUnknownNote():needBirth(A('astrol.then_we_can_show_which_of_these_ra')))
    +'<div class="subh">'+A('astrol.for_all_12_rashis')+'</div>'
    +'<div class="seglist">'+rows+'</div>'
@@ -1293,15 +1292,15 @@ function vHcal(){
   var p=panchang(), hc=p.hinduCalendar;
   app.innerHTML=pgHead(A('astrol.hindu_calendar_2'),A('astrol.samvat_masa_ritu_and_ayana'),'#explore')
    +'<div class="card">'
-   +prow(A('astrol.amanta_month'),'<span class="dev">'+(H?hc.amantaMonth.hi:hc.amantaMonth.en)+'</span>')
-   +prow(A('astrol.purnimanta_month'),'<span class="dev">'+(H?hc.purnimantaMonth.hi:hc.purnimantaMonth.en)+'</span>')
-   +prow(A('dashbo.paksha'),'<span class="dev">'+t(p.tithi.paksha==='Krishna'?'कृष्ण पक्ष':'शुक्ल पक्ष',p.tithi.paksha+' Paksha')+'</span>')
+   +prow(A('astrol.amanta_month'),'<span class="dev">'+(sdMasa(hc.amantaMonth))+'</span>')
+   +prow(A('astrol.purnimanta_month'),'<span class="dev">'+(sdMasa(hc.purnimantaMonth))+'</span>')
+   +prow(A('dashbo.paksha'),'<span class="dev">'+sdPaksha(p.tithi.paksha)+'</span>')
    +prow(A('dashbo.vikram_samvat'),hc.vikramSamvat)
    +prow(A('astrol.shaka_samvat'),hc.shakaSamvat)
    +(hc.gujaratiSamvat?prow(A('astrol.gujarati_samvat'),hc.gujaratiSamvat):'')
    +orow(A('astrol.samvatsara'),L(hc.samvatsara))
-   +orow(A('astrol.ritu'),L(hc.ritu))
-   +orow(A('astrol.ayana'),L(hc.ayana))
+   +orow(A('astrol.ritu'),sdRitu((hc.ritu&&hc.ritu.drik)||hc.ritu))
+   +orow(A('astrol.ayana'),sdAyana((hc.ayana&&hc.ayana.drik)||hc.ayana))
    +'</div>';
 }
 /* Every dot used to be the same gold, which told the reader nothing. The one
@@ -1362,7 +1361,7 @@ function obsList(list,icon,emptyMsg){
     var d=new Date(x.date+'T00:00:00');
     var when=d.toLocaleDateString(H?'hi-IN':'en-IN',{day:'numeric',month:'short'});
     var days=Math.round((d-today)/86400000);
-    var rel=days===0?A('dashbo.today_3'):days===1?A('dashbo.tomorrow'):plural(days, t('{n} दिन में','in {n} day'), t('{n} दिन में','in {n} days'));
+    var rel=days===0?A('dashbo.today_3'):days===1?A('dashbo.tomorrow'):plural(days, A('astrol.in_n_day'), A('astrol.in_n_days'));
     return '<div class="sgrow'+(days===0?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
       +'<div class="sg-n dev">'+icon+' '+(H?x.hi:x.en)+'</div>'
       +'<div class="sg-t">'+when+' · '+rel+'</div></div>';
