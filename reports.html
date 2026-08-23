@@ -196,7 +196,7 @@ function render(){
       +'<div><div class="c-t1 dev">'+(H?r.hi:r.en)+'</div>'
       +'<div class="c-t2">'+(H?r.en:r.hi)+'</div></div></div>'
       +'<div class="c-meta">'
-        +(o.date?sdFmt(t('खरीदा: {date}','Purchased: {date}'), {date:fmtDate(o.date)}):'')
+        +(o.date?sdFmt(A('report.purchased_date'), {date:fmtDate(o.date)}):'')
         +(o.order_code?' · '+o.order_code:'')
       +'</div>'
       /* Two independent things decide what this row can do, and they were
