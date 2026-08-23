@@ -186,31 +186,33 @@ function fmt(tpl,vals){return String(tpl).replace(/\{(\w+)\}/g,function(_,k){
 function show(id){document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');}
 
 /* i18n */
-if(!H){
-  $('hTitle').textContent='Free Kundli';
-  $('ldDetails').textContent='Fill your birth details — your detailed Kundli is built from these.';
-  $('lbName').textContent='Full name';$('lbGender').textContent='Gender';$('lbDob').textContent='Date of birth';
-  $('lbTime').textContent='Time of birth';$('lbPlace').textContent='Place of birth';
-  $('btDetails').textContent='Create my Kundli →';$('errDetails').textContent='Please fill all details';
-  $('auT').textContent='Protect your Kundli';
-  $('auL').textContent='Sign in with Google — your Kundli will be linked to your account, so you can open it anytime, on any phone.';
-  $('auB').textContent='Continue with Google';
-  $('ppT').textContent='Preparing your Kundli…';
-  $('ppNote').textContent='Please stay on this screen — just a few moments';
+/* runs for every language now: these labels used to be set only when H
+   was false, so the Hindi markup default was left in place for Telugu. */
+if(true){
+  $('hTitle').textContent=A('onboar.free_kundli');
+  $('ldDetails').textContent=A('kundli.fill_your_birth_details_your_detai');
+  $('lbName').textContent=A('buy.full_name');$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
+  $('lbTime').textContent=A('kundli.time_of_birth');$('lbPlace').textContent=A('kundli.place_of_birth');
+  $('btDetails').textContent=A('kundli.create_my_kundli');$('errDetails').textContent=A('buy.please_fill_all_details');
+  $('auT').textContent=A('kundli.protect_your_kundli');
+  $('auL').textContent=A('kundli.sign_in_with_google_your_kundli_wi');
+  $('auB').textContent=A('kundli.continue_with_google');
+  $('ppT').textContent=A('kundli.preparing_your_kundli');
+  $('ppNote').textContent=A('kundli.please_stay_on_this_screen_just_a_');
   /* No page figure in this line. The live copy read "Your 260-page Kundli is
      ready!" — a number hardcoded at the exact moment the reader is about to
      open the PDF and can count it. The download button below states the count,
      once, from the catalog. */
-  $('rdT').textContent='🎉 Your detailed Kundli is ready!';
+  $('rdT').textContent=A('kundli.your_detailed_kundli_is_ready');
   /* Same claim as the Kundli card on the dashboard and the Explore tile, so a
      reader meets one description of this report, not three. Each item is a
      chapter that actually prints — checked against the 17-chapter TOC and the
      engine calls kundli-report.html makes. "Predictions" is dropped: it was
      the one word here promising nothing a reader could check. */
-  $('rdS').textContent='Ashtakavarga • Yogas • Doshas • Dasha to pratyantar • Remedies — 17 chapters, from your birth details.';
-  $('rdBtn').textContent='⬇️ Click here to download PDF';
-  $('rdView').textContent='or view on screen →';
-  $('rdTease').textContent='💍 Want deeper insight on marriage, career and the years ahead? See Premium Reports →';
+  $('rdS').textContent=A('kundli.ashtakavarga_yogas_doshas_dasha_to');
+  $('rdBtn').textContent=A('kundli.click_here_to_download_pdf');
+  $('rdView').textContent=A('kundli.or_view_on_screen');
+  $('rdTease').textContent=A('kundli.want_deeper_insight_on_marriage_ca');
 }
 
 /* prefill from app profile */
@@ -362,7 +364,7 @@ function requestServerPdf(){
 function updateDlBtn(){var b=$('rdBtn');if(!b||!PDF_URL)return;
   /* Page count from report-catalog.js — see FREE_KUNDLI there for why it is
      "250+" and not an exact figure. */
-  var pg=(typeof kundliPages==='function')?kundliPages(H,'short'):(H?'250+ पन्ने':'250+ pages');
+  var pg=(typeof kundliPages==='function')?kundliPages(H,'short'):(A('dashbo.250_pages'));
   b.textContent=H?('⬇️ PDF डाउनलोड करें ('+pg+')'):('⬇️ Download PDF ('+pg+')');}
 /* ══════════════════════════════════════════════════════════════════
    OPENING THE PDF FROM AN INSTALLED PWA
