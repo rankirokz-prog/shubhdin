@@ -67,6 +67,18 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
 .r-buy .cta{padding:8px 13px;font-size:11.5px;}
 .note{text-align:center;font-size:10px;color:rgba(255,244,222,0.3);margin-top:24px;line-height:1.7;}
 </style>
+<script>
+/* The string tables must be in place before the inline render script runs,
+   and before report-catalog.js so its helpers can see A() and sdHas().
+   document.write during initial parse is parser-blocking; a dynamically
+   appended script is not, and that race already shipped once. */
+window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
+if(window.SD_LANG&&window.SD_LANG!=='hi')
+  document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-langs.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
+</script>
 <script src="report-catalog.js"></script>
 <script src="font-loader.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
@@ -74,14 +86,14 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
 <body>
 <div class="hdr">
   <button class="back" onclick="sdBack('dashboard.html')">←</button>
-  <div class="htitle">प्रीमियम रिपोर्ट्स<small>PREMIUM REPORTS</small></div>
+  <div class="htitle"><span id="premTitle">प्रीमियम रिपोर्ट्स</span><small id="premGloss" data-gloss>PREMIUM REPORTS</small></div>
   <div class="crown">👑</div>
 </div>
-<div class="lead">Deeper, personalized astrology insights — every report prepared from your own Kundli.</div>
+<div class="lead" id="premLead">Deeper, personalized astrology insights — every report prepared from your own Kundli.</div>
 
 <div id="pageRoot"></div>
 
-<div class="note">© शुभ दिन · Prices are introductory offers</div>
+<div class="note" id="premNote">© शुभ दिन</div>
 
 <script>
 // ─────────────────────────────────────────────────────────────
@@ -124,41 +136,49 @@ if(ownedCount>0){
 
 REPORTS.forEach(function(r){
   var owned=!!OWNED[r.id];
-  var chips=r.chips.map(function(c){return '<span class="chip">'+c+'</span>';}).join('');
+  var chips=r.chips.map(function(c){return '<span class="chip">'+reportChip(c)+'</span>';}).join('');
   // An owned card must never look buyable again: no price, no discount, and a
   // link into the report rather than into the buy flow.
   var href = owned ? 'reports.html#'+r.id : ('buy.html?r='+r.id);
   var priceBlock = owned
-    ? '<span class="cta" style="background:linear-gradient(120deg,#4A7C59,#2E7D46);color:#EAFFEF;">Open your report →</span>'
+    ? '<span class="cta" style="background:linear-gradient(120deg,#4A7C59,#2E7D46);color:#EAFFEF;">'+A('prem.openYourReport')+'</span>'
     : '<span class="was">₹'+r.was+'</span><span class="now">₹'+r.now+'</span>'
       +'<span class="off">'+reportDiscount(r.id)+'</span>'
-      +'<span class="cta">'+(r.hero?'Get My Report →':'View →')+'</span>';
+      +'<span class="cta">'+(r.hero?A('prem.getMyReport'):A('prem.view'))+'</span>';
   var ownedTag = owned
-    ? '<div style="position:absolute;top:12px;right:12px;background:rgba(74,124,89,0.90);color:#EAFFEF;'
-      +'font-size:9.5px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:20px;">OWNED</div>' : '';
+    ? '<div data-owned-badge style="position:absolute;top:12px;right:12px;background:rgba(74,124,89,0.90);color:#EAFFEF;'
+      +'font-size:9.5px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:20px;">'+A('prem.owned')+'</div>' : '';
   if(r.hero){
     h+='<a class="hero" id="'+r.anchor+'" href="'+href+'" style="position:relative;">'
-      +(owned?ownedTag:'<div class="ribbon">🔥 MOST POPULAR</div>')
+      +(owned?ownedTag:'<div class="ribbon">'+A('prem.mostPopular')+'</div>')
       +'<div class="h-row"><div class="h-ico">'+r.ico+'</div><div>'
-      +'<div class="h-title">'+r.hi+'</div><div class="h-en">'+r.en+'</div></div></div>'
-      +'<div class="hook">'+r.hook+'</div>'
+      +'<div class="h-title">'+reportTitle(r)+'</div><div class="h-en" data-en-subtitle>'+r.en+'</div></div></div>'
+      +'<div class="hook">'+reportHook(r)+'</div>'
       +'<div class="chips">'+chips+'</div>'
       +'<div class="buy">'+priceBlock+'</div>'
-      +'<div class="vline">'+(owned?'✅ Already yours — open it any time'
-                                    :'✨ Personalized analysis from your own birth chart')+'</div>'
+      +'<div class="vline">'+(owned?A('prem.alreadyYours')
+                                    :A('prem.personalisedLine'))+'</div>'
       +'</a>';
   } else {
     h+='<a class="rep" id="'+r.anchor+'" href="'+href+'" style="position:relative;">'
       +ownedTag
       +'<div class="r-top"><div class="r-ico">'+r.ico+'</div><div>'
-      +'<div class="r-title">'+r.hi+'</div><div class="r-en">'+r.en+'</div></div></div>'
-      +'<div class="hook r-hook">'+r.hook+'</div>'
+      +'<div class="r-title">'+reportTitle(r)+'</div><div class="r-en" data-en-subtitle>'+r.en+'</div></div></div>'
+      +'<div class="hook r-hook">'+reportHook(r)+'</div>'
       +'<div class="r-chips">'+chips+'</div>'
       +'<div class="r-buy">'+priceBlock+'</div>'
       +'</a>';
   }
 });
 root.innerHTML=h;
+/* page chrome — set after render so A() is certainly resolved */
+(function(){
+  var set=function(id,k){var e=document.getElementById(id); if(e&&typeof A==='function') e.textContent=A(k);};
+  set('premTitle','prem.pageTitle'); set('premGloss','prem.pageTitleGloss');
+  set('premLead','prem.lead');
+  var n=document.getElementById('premNote');
+  if(n&&typeof A==='function') n.textContent='© शुभ दिन · '+A('prem.introPrices');
+})();
 </script>
 <script src="nav-history.js"></script>
 </body>
