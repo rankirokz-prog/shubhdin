@@ -1590,6 +1590,7 @@ window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_
 document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
 if(window.SD_LANG&&window.SD_LANG!=='hi')
   document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-langs.js"></scr'+'ipt>');
 document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
 /* If app-strings-loader.js itself fails to arrive, A() is undefined and EVERY
    call site throws — the page half-renders and stops. Verified by blocking the
@@ -2563,7 +2564,7 @@ function personalise(){
   // daily deity jap that feeds the HOME streak — two different things.
   document.getElementById('jtTag').textContent=isShravan()
     ?(A('dashbo.shravana_jap_lakshmi_ashtottara'))
-    :(A('dashbo.today_s_jap_2'));
+    :(A('dashbo.today_s_jap'));
   // jtBg: keep dark gradient only, no deity image (deity shown on right via jtDeityImg)
   document.getElementById('jtHook').textContent=H?T.hook_hi:T.hook_en;
   document.getElementById('jtBenefit').textContent=isShravan()
@@ -2672,7 +2673,7 @@ function personalise(){
   const jpill = document.getElementById('jPill');
   if(jpill) jpill.textContent = H?df_h[dow]:df_e[dow];
   const jgl2 = document.getElementById('jGoalLine');
-  if(jgl2) jgl2.textContent = isShravan()?(A('dashbo.today_s_goal_108_names_2')):(A('dashbo.today_s_goal_28_chants_2'));
+  if(jgl2) jgl2.textContent = isShravan()?(A('dashbo.today_s_goal_108_names')):(A('dashbo.today_s_goal_28_chants'));
   document.getElementById('jdTitle').textContent = A('dashbo.28_chants_complete');
   document.getElementById('jdSub').textContent = H?T.d_hi+' की कृपा आप पर सदा बनी रहे 🌸':'May '+T.d_en+'\'s blessings always be with you 🌸';
   document.getElementById('jdStreakLbl').textContent = A('dashbo.your_sadhana_journey');
@@ -4160,7 +4161,7 @@ function personaliseMarg(){
   const sld=document.getElementById('sadLblDays');if(sld)sld.textContent=A('dashbo.total_days');
   const slb=document.getElementById('sadLblBest');if(slb)slb.textContent=A('dashbo.best_streak');
   const scb=document.getElementById('sadContinueBtn');if(scb)scb.textContent=A('dashbo.continue_sadhana');
-  const sdb=document.getElementById('sadDoneBadge');if(sdb)sdb.textContent=A('dashbo.today_s_sadhana_complete_2');
+  const sdb=document.getElementById('sadDoneBadge');if(sdb)sdb.textContent=A('dashbo.today_s_sadhana_complete');
   const snt=document.getElementById('sadNoneTitle');if(snt)snt.textContent=A('dashbo.no_active_sadhana');
   const snd=document.getElementById('sadNoneDesc');if(snd)snd.textContent=A('dashbo.visit_guidance_to_choose_your_prac');
   const snb=document.getElementById('sadNoneBtn');if(snb)snb.textContent=A('dashbo.choose_sadhana');
@@ -4615,7 +4616,7 @@ function sadJTap(){
       if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=A('dashbo.return_to_sadhana');
       const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=A('dashbo.sadhana_complete_alt');
       const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?('आपने '+(window._sadTarget||28)+' जप पूरे किए 🙏'):('You completed '+(window._sadTarget||28)+' chants 🙏');
-      const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=A('dashbo.today_s_chants_2');
+      const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=A('dashbo.today_s_chants');
       /* sadDoneBackBtn was removed from the markup; this line set text on a node
          that never exists. Harmless at runtime, but it put a second Hindi value
          ("साधना सहेजें और लौटें" — save AND return) against the same English as the
@@ -5223,6 +5224,7 @@ function openSettings(){
   if(cityInput) cityInput.value = u.city || '';
   document.getElementById('settCity').value = city;
   settSelectLang(_settLang);
+  renderSettLangs();
   // Translate labels
   const H2 = _settLang==='hi';
   document.getElementById('settTitle').textContent   = H2?'सेटिंग्स':'Settings';
@@ -5266,17 +5268,53 @@ function closeSettings(){
   document.getElementById('settingsOverlay').style.display='none';
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   Settings offered only हिंदी and English — two buttons — while onboarding
+   offered nine. So a Telugu reader who chose Telugu at signup could switch
+   away but never back, and an existing user could not reach Telugu at all.
+   Every translated string was unreachable from inside the app.
+
+   The grid is built from what is ACTUALLY present: a language appears only if
+   its string file has loaded. And a language that is partly done says so,
+   rather than being offered as if it were finished — the same rule as the
+   Muhurta withdrawal, the claim has to match what ships. */
+var SD_LANG_NAMES={hi:'हिंदी',en:'English',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',
+                   bn:'বাংলা',mr:'मराठी',gu:'ગુજરાતી',as:'অসমীয়া'};
+
+/* Read the MANIFEST, not the loaded tables. Only the chosen language and Hindi
+   are ever loaded, so asking the tables made Telugu invisible unless you were
+   already using Telugu — a picker you cannot reach from where you are. */
+function sdLangCoverage(l){
+  try{
+    var m=(window.SD_APP_LANGS_AVAIL||{})[l];
+    return m ? (m.pct/100) : 0;
+  }catch(e){ return 0; }
+}
+
+function renderSettLangs(){
+  var host=document.getElementById('settLangGrid'); if(!host) return;
+  var html='';
+  Object.keys(SD_LANG_NAMES).forEach(function(l){
+    var cov = (l==='hi'||l==='en') ? 1 : sdLangCoverage(l);
+    if(cov<=0) return;                       /* not shipped — do not offer it */
+    var on = (_settLang===l);
+    var partial = cov<0.9;
+    html+='<button onclick="settSelectLang(\''+l+'\')" '
+      +'style="padding:9px 4px;border-radius:10px;cursor:pointer;font-size:14px;'
+      +'border:1.5px solid '+(on?'var(--gold)':'rgba(212,168,67,0.30)')+';'
+      +'background:rgba(212,168,67,'+(on?'0.25':'0.08')+');color:var(--gold);'
+      +'font-family:'+(l==='en'?"'Poppins',sans-serif":"'Tiro Devanagari Hindi',serif")+';">'
+      +SD_LANG_NAMES[l]
+      +(partial?'<div style="font-size:8.5px;opacity:0.62;font-family:Poppins,sans-serif;">'
+                 +Math.round(cov*100)+'%</div>':'')
+      +'</button>';
+  });
+  host.innerHTML=html;
+}
+
 function settSelectLang(l){
   _settLang = l;
-  const btnH = document.getElementById('btnHindi');
-  const btnE = document.getElementById('btnEnglish');
-  if(l==='hi'){
-    btnH.style.background='rgba(212,168,67,0.25)';btnH.style.borderColor='var(--gold)';
-    btnE.style.background='rgba(212,168,67,0.06)';btnE.style.borderColor='rgba(212,168,67,0.25)';
-  } else {
-    btnE.style.background='rgba(212,168,67,0.25)';btnE.style.borderColor='var(--gold)';
-    btnH.style.background='rgba(212,168,67,0.06)';btnH.style.borderColor='rgba(212,168,67,0.25)';
-  }
+  renderSettLangs();
 }
 
 function saveSettings(){
@@ -6884,8 +6922,7 @@ if('serviceWorker' in navigator){
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.14);border-radius:16px;padding:12px 14px;">
       <div id="settLangLbl" style="font-size:10px;color:rgba(212,168,67,0.72);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:12px;">🌐 भाषा / Language</div>
       <div style="display:flex;gap:10px;">
-        <button id="btnHindi" onclick="settSelectLang('hi')" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid rgba(212,168,67,0.30);background:rgba(212,168,67,0.08);color:var(--gold);font-family:'Tiro Devanagari Hindi',serif;font-size:15px;cursor:pointer;">हिंदी</button>
-        <button id="btnEnglish" onclick="settSelectLang('en')" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid rgba(212,168,67,0.30);background:rgba(212,168,67,0.08);color:var(--gold);font-family:'Poppins',sans-serif;font-size:14px;cursor:pointer;">English</button>
+        <div id="settLangGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
       </div>
     </div>
 
