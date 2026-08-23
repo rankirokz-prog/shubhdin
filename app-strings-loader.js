@@ -9,6 +9,7 @@
    awaiting translation renders in Hindi, never blank and never "undefined".
    ══════════════════════════════════════════════════════════════════════ */
 (function (g) {
+  function lang() { return g.SD_LANG || 'hi'; }
   function table(lang) { return g['SD_APP_' + String(lang || '').toUpperCase()] || null; }
 
   /* A(key) — the string in the current language. */
@@ -46,6 +47,25 @@
     o.n = n;
     return g.AF(k, o, lang);
   };
+
+  /* A missing table is invisible until someone reads a humanised key off a
+     screenshot and works backwards. Say it once, loudly, in the console —
+     the difference between "the translations are broken" and "a file did not
+     upload" is one line of output. */
+  (function () {
+    setTimeout(function () {
+      var have = ['en','hi','te','kn','ta','bn','mr','gu','as'].filter(function (l) { return !!table(l); });
+      if (!have.length) {
+        console.error('[shubhdin] NO STRING TABLE LOADED. Every label is falling back to a '
+          + 'humanised key. Check that app-strings-hi.js and app-strings-' + lang()
+          + '.js are on the server and not 404ing, and that the service worker is not '
+          + 'serving a stale asset list.');
+      } else if (have.indexOf(lang()) < 0 && lang() !== 'en') {
+        console.warn('[shubhdin] app-strings-' + lang() + '.js did not load — showing '
+          + (have.indexOf('hi') >= 0 ? 'Hindi' : have[0]) + ' instead. Loaded: ' + have.join(','));
+      }
+    }, 1500);
+  })();
 
   /* Which languages actually arrived — for the leak gate and for Settings,
      so a half-translated language is not offered as if it were finished. */
