@@ -21,6 +21,7 @@
       route: 'buy.html?r=marriage',
       page: 'marriage-report.html',
       hook: 'Will your charts align? What your two kundlis say about compatibility, doshas and the right time to marry.',
+      _hookKey: 'report.will_your_charts_align_what_your_t',
       chips: ['Guna Milan', 'Manglik Dosha', 'Marriage timing', 'Shubh dates']
       // 'Spouse nature' REMOVED. Marriage is a TWO-CHART report and never calls
       // getLoveProfile; its six domain scores are compatibility BETWEEN two people,
@@ -37,6 +38,7 @@
       route: 'buy.html?r=love',
       page: 'love-report.html',
       hook: 'Your relationship patterns, partner nature and the periods that matter most in love.',
+      _hookKey: 'report.your_relationship_patterns_partner',
       chips: ['Love life', 'Partner nature', 'Compatibility', 'Relationship timing']
     },
     {
@@ -47,6 +49,7 @@
       route: 'buy.html?r=career',
       page: 'career-report.html',
       hook: 'Which path actually suits you — and when do the growth periods arrive?',
+      _hookKey: 'report.which_path_actually_suits_you_and_',
       chips: ['Career strengths', 'Right fields', 'Job vs business', 'Growth periods']
     },
     {
@@ -57,6 +60,7 @@
       route: 'buy.html?r=child',
       page: 'child-report.html',
       hook: 'Santaan yog in your chart, favourable timing and auspicious naming letters.',
+      _hookKey: 'report.santaan_yog_in_your_chart_favourab',
       chips: ['Santaan Yog', 'Right timing', 'Family prospects', 'Naming letters']
     },
     {
@@ -93,6 +97,7 @@
       route: 'buy.html?r=muhurta',
       page: 'muhurta-report.html',
       hook: 'Shubh dates computed for your chart — marriage, griha pravesh, new business and more.',
+      _hookKey: 'explor.shubh_dates_computed_for_your_char',
       chips: ['Marriage', 'Griha Pravesh', 'Business start', 'Vehicle', 'Your shubh dates']
     },
     {
@@ -103,6 +108,7 @@
       route: 'buy.html?r=annual',
       page: 'annual-report.html',
       hook: 'Your coming year, month by month — the strong periods, the careful ones, and remedies.',
+      _hookKey: 'report.your_coming_year_month_by_month_th',
       chips: ['Year ahead', 'Month-by-month', 'Major periods', 'Remedies']
     },
     {
@@ -113,6 +119,7 @@
       route: 'buy.html?r=forecast',
       page: 'forecast-report.html',
       hook: 'A decade mapped from your dasha and transits — the turning points worth planning around.',
+      _hookKey: 'report.a_decade_mapped_from_your_dasha_an',
       chips: ['Dasha periods', 'Transits', 'Turning points', '10-year timeline']
     }
   ];
@@ -177,11 +184,81 @@
   /* Every surface must call this rather than hardcoding a number again. */
   root.kundliPages = function (hindi, form) {
     var k = root.FREE_KUNDLI;
+    /* The page-count label existed only in hi/en, so a Telugu reader saw
+       "250+ pages" on an otherwise Telugu screen. The sheet carries it in
+       every language; ask there first and keep hi/en as the fallback. */
+    var key = { short: 'dashbo.250_pages', of: 'dashbo.250_pages',
+                label: 'dashbo.250_page_detailed_kundli_pdf' }[form];
+    if (key) { var v = tr(key, null); if (v) return v; }
     if (form === 'short') return hindi ? k.pagesShort.hi : k.pagesShort.en;
     if (form === 'of')    return hindi ? k.pagesOf.hi    : k.pagesOf.en;
     if (form === 'label') return hindi ? k.pagesLabel.hi : k.pagesLabel.en;
     return k.pages;
   };
+
+  /* ── translation lookup ──────────────────────────────────────────────
+     This catalogue is loaded by premium.html, reports.html AND buy.html, so
+     it must NOT hold translations: nine languages here means every one of
+     those pages downloads seven it cannot read, and creates a second
+     translation store that drifts from app-strings-*.js. That is exactly the
+     fault that produced a duplicate choghadiya table with the wrong Tamil.
+
+     So the catalogue keeps hi/en as the fallback and asks the string tables
+     when they are present. It must never throw — a catalogue that throws
+     renders no cards at all. */
+  function tr(key, fallback) {
+    try {
+      /* sdHas() is a real not-found signal. Do NOT infer it from the returned
+         string: A() humanises an unknown key, and the humaniser replaces
+         underscores with spaces, so "reportTitle.marriage" comes back as
+         "ReportTitle.marriage" — which passes any underscore test and would
+         render a key to a buyer as if it were a title. */
+      if (typeof A === 'function' && typeof sdHas === 'function' && key && sdHas(key)) {
+        var v = A(key);
+        if (v) return v;
+      }
+    } catch (e) {}
+    return fallback;
+  }
+
+  /* English text -> key, for the hooks and chips that were extracted by their
+     English string. A chip added later without a key simply falls back. */
+  /* chip text -> key, built from the sheet. A chip with no key falls back. */
+  root.CHIP_KEYS = {
+    "10-year timeline": "report.10_year_timeline",
+    "Business start": "explor.business_start",
+    "Career strengths": "report.career_strengths",
+    "Compatibility": "report.compatibility",
+    "Dasha periods": "report.dasha_periods",
+    "Family prospects": "report.family_prospects",
+    "Griha Pravesh": "explor.griha_pravesh",
+    "Growth periods": "report.growth_periods",
+    "Guna Milan": "matchk.guna_milan",
+    "Job vs business": "report.job_vs_business",
+    "Love life": "report.love_life",
+    "Major periods": "report.major_periods",
+    "Manglik Dosha": "report.manglik_dosha",
+    "Marriage": "explor.marriage",
+    "Marriage timing": "report.marriage_timing",
+    "Month-by-month": "report.month_by_month",
+    "Naming letters": "report.naming_letters",
+    "Partner nature": "report.partner_nature",
+    "Relationship timing": "report.relationship_timing",
+    "Remedies": "report.remedies",
+    "Right fields": "report.right_fields",
+    "Right timing": "report.right_timing",
+    "Santaan Yog": "report.santaan_yog",
+    "Shubh dates": "report.shubh_dates",
+    "Transits": "report.transits",
+    "Turning points": "report.turning_points",
+    "Vehicle": "explor.vehicle",
+    "Year ahead": "report.year_ahead",
+    "Your shubh dates": "explor.your_shubh_dates"
+  };
+
+  root.reportTitle = function (r) { return tr('reportTitle.' + r.id, r.hi || r.en); };
+  root.reportHook  = function (r) { return tr(r._hookKey || '', r.hook); };
+  root.reportChip  = function (c) { return tr(root.CHIP_KEYS[c] || '', c); };
 
   var byId = {};
   CATALOG.forEach(function (r) { byId[r.id] = r; });
@@ -200,7 +277,11 @@
   };
   root.reportDiscount = function (id) {
     var r = byId[id];
-    return r ? Math.round((1 - r.now / r.was) * 100) + '% OFF' : '';
+    /* "50% OFF" was composed in English for every reader. The number is
+       computed; only the word needs a language. */
+    if (!r) return '';
+    var pct = Math.round((1 - r.now / r.was) * 100);
+    return tr('report.pct_off', pct + '% OFF').replace('{pct}', pct);
   };
   /* ── ownership, per owned-contract.md ──
      Copied VERBATIM from the contract. Do not re-interpret this key: it
