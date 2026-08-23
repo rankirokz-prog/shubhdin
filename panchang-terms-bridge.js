@@ -37,6 +37,15 @@
        list named only choghadiya and ritu — a list that has to be edited every
        time a table is added is a list that will be forgotten. */
     if (P[kind]) return P[kind];
+    /* the report layer names it 'chogh'; the engine and the app call the
+       concept choghadiya. One word, one table — theirs. */
+    if (kind === 'choghadiya') return U.chogh || null;
+    /* vrat and festival names — the only panchang vocabulary with no table
+       anywhere until now. Note these are NOT pure transliterations: a festival
+       someone actually observes takes their own word (Makar Sankranti is
+       సంక్రాంతి, பொங்கல், মাঘ বিহু), which is why the lookup is by the engine's
+       English key rather than by transliterating the Hindi. */
+    if (kind === 'vrat' || kind === 'festival') return g.SD_VRAT_NAMES || null;
     if (kind === 'hora') return U.planet || null;      // hora lords are planets
     return U[kind] || null;
   }
@@ -83,4 +92,5 @@
   g.sdMasa    = function (v, l) { return g.sdTerm('masa', v, l); };
   g.sdPaksha  = function (v, l) { return g.sdTerm('paksha', v, l); };
   g.sdAyana   = function (v, l) { return g.sdTerm('ayana', v, l); };
+  g.sdVrat    = function (v, l) { return g.sdTerm('vrat', v, l); };
 })(typeof window !== 'undefined' ? window : global);
