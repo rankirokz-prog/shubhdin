@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v104';
+const CACHE_NAME = 'shubhdin-v105';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -18,6 +18,17 @@ const CORE_FILES = [
   '/panchang-engine.js',
   '/birthdate-guard.js',
   '/nav-history.js',
+  /* Localisation. These were fetched from the network on every load and were
+     absent offline — on a devotional app that is opened first thing in the
+     morning, often on a weak connection, that is the difference between a
+     Telugu screen and a screen of humanised keys. */
+  '/app-strings-loader.js',
+  '/app-strings-hi.js',
+  '/app-strings-en.js',
+  '/ui-strings.js',
+  '/panchang-terms.js',
+  '/panchang-terms-bridge.js',
+  '/font-loader.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -26,10 +37,37 @@ const CORE_FILES = [
 // Install — cache core files
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_FILES))
+    /* addAll() is all-or-nothing: one 404 rejects the whole install and the
+       app silently loses its entire offline cache. Cache each file on its own
+       and NAME the ones that failed, so a file that never made it onto the
+       server announces itself instead of being inferred from a screenshot
+       three days later. */
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.all(CORE_FILES.map(f =>
+        cache.add(f).catch(err => {
+          console.error('[shubhdin sw] could not cache ' + f + ' — is it on the server?');
+          return null;
+        })
+      ))
+    )
   );
   self.skipWaiting();
 });
+
+/* The chosen language file is named at runtime (app-strings-te.js and so on),
+   so it cannot sit in CORE_FILES. Cache it the first time it is fetched. */
+self.addEventListener('fetch', event => {
+  const u = event.request.url;
+  if (/\/app-strings-[a-z]{2}\.js$/.test(u)) {
+    event.respondWith(
+      caches.match(event.request).then(hit => hit || fetch(event.request).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(event.request, copy)).catch(() => {});
+        return res;
+      }))
+    );
+  }
+}, { capture: true });
 
 // Activate — delete old caches
 self.addEventListener('activate', event => {
