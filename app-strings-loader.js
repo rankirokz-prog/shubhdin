@@ -67,6 +67,19 @@
     }, 1500);
   })();
 
+  /* sdHas(key) — a real "is this translated" signal.
+
+     Without one, callers have to guess from the returned string. The proposed
+     test was "no underscore means it resolved", but the humaniser REPLACES
+     underscores with spaces, so an unknown key comes back as
+     "ReportTitle.marriage" — no underscore — and would have been rendered as a
+     translation. A guess about a fallback is not a signal; this is. */
+  g.sdHas = function (key, lang) {
+    lang = lang || g.SD_LANG || 'hi';
+    var t = table(lang), h = table('hi'), e = table('en');
+    return !!((t && t[key]) || (h && h[key]) || (e && e[key]));
+  };
+
   /* Which languages actually arrived — for the leak gate and for Settings,
      so a half-translated language is not offered as if it were finished. */
   g.sdLoadedLangs = function () {
