@@ -1,19 +1,14 @@
-/* Choghadiya and ritu in nine languages — the two panchang tables the report
-   layer never needed, keyed by the exact strings the engine emits
-   (CHOG_CYCLE_EN, RITU_EN), verified against panchang-engine.js.
-   Transliterated, not translated: లాభ is what a Telugu reader looks for, not a
-   descriptive word for "gain". Same ruling as tithi and nakshatra. */
+/* ritu and ayana in nine languages — the ONLY two panchang tables that exist
+   nowhere else. Keyed by exactly what the engine emits (RITU_EN, ayanaFromLong).
+
+   CHOGHADIYA IS NOT HERE, DELIBERATELY. I wrote one, then found ui-strings.js
+   already carried SD_UI.chogh — and the two disagreed in seven Tamil entries:
+   I had bare stems (சர, லாப), the report layer has the nominal form
+   (சரம், லாபம்). The reports have shipped with those words. Two tables for one
+   term is exactly the drift this project keeps fighting, so mine is deleted
+   and the bridge reads the report layer's. One source, one word, everywhere. */
 (function (g) {
   g.SD_PANCHANG_TERMS = {
-    choghadiya: {
-      "Udveg": { en: "Udveg", hi: "उद्वेग", te: "ఉద్వేగ", kn: "ಉದ್ವೇಗ", ta: "உத்வேக", bn: "উদ্বেগ", mr: "उद्वेग", gu: "ઉદ્વેગ", as: "উদ্বেগ" },
-      "Char":  { en: "Char",  hi: "चर",     te: "చర",     kn: "ಚರ",     ta: "சர",     bn: "চর",     mr: "चर",     gu: "ચર",     as: "চৰ" },
-      "Labh":  { en: "Labh",  hi: "लाभ",    te: "లాభ",    kn: "ಲಾಭ",    ta: "லாப",    bn: "লাভ",    mr: "लाभ",    gu: "લાભ",    as: "লাভ" },
-      "Amrit": { en: "Amrit", hi: "अमृत",   te: "అమృత",   kn: "ಅಮೃತ",   ta: "அமிர்த", bn: "অমৃত",   mr: "अमृत",   gu: "અમૃત",   as: "অমৃত" },
-      "Kaal":  { en: "Kaal",  hi: "काल",    te: "కాల",    kn: "ಕಾಲ",    ta: "கால",    bn: "কাল",    mr: "काल",    gu: "કાળ",    as: "কাল" },
-      "Shubh": { en: "Shubh", hi: "शुभ",    te: "శుభ",    kn: "ಶುಭ",    ta: "சுப",    bn: "শুভ",    mr: "शुभ",    gu: "શુભ",    as: "শুভ" },
-      "Rog":   { en: "Rog",   hi: "रोग",    te: "రోగ",    kn: "ರೋಗ",    ta: "ரோக",    bn: "রোগ",    mr: "रोग",    gu: "રોગ",    as: "ৰোগ" }
-    },
     /* ayana — the last panchang term with no entry anywhere. Keyed by exactly
        what ayanaFromLong() returns. Transliterated like choghadiya and ritu:
        a Telugu reader looks for ఉత్తరాయణం, not a phrase about northward motion. */
