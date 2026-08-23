@@ -277,7 +277,7 @@ function L(v,depth){
   if(v.hi)     return L(v.hi,depth+1);
   return '';
 }
-var SD_BUILD='astro A8';
+var SD_BUILD='astro A8';   /* console only — never rendered */
 function t(hi,en){return H?hi:en;}
 
 /* ══════════════════════════════════════════════════════════════════
@@ -491,8 +491,8 @@ function vHub(){
     var mine=(U.nakshatra||'').toLowerCase();
     var ok=p.tarabalam[0].good.some(function(n){return n.en.toLowerCase()===mine;});
     tara='<div class="d-tara '+(ok?'ok':'no')+'">'+(ok
-      ? A('astrol.today_s_nakshatra_is_favourable_fo_2')
-      : A('astrol.today_s_nakshatra_is_neutral_for_y_2'))+'</div>';
+      ? A('astrol.today_s_nakshatra_is_favourable_fo')
+      : A('astrol.today_s_nakshatra_is_neutral_for_y'))+'</div>';
   }
 
   var nb=nowBad();   // is right now inside a forbidden period?
@@ -506,7 +506,9 @@ function vHub(){
   var cd     = segEnd?mins(+segEnd-Date.now()):'';
 
   app.innerHTML=
-   '<div style="position:fixed;left:7px;bottom:3px;z-index:99;font-size:8.5px;font-family:monospace;color:rgba(255,255,255,0.22);">'+SD_BUILD+'</div>'
+   /* build marker removed — it painted "astro A8" in the corner for every
+      devotee. Read SD_BUILD from devtools instead. */
+   ''
    +'<div class="hdr"><button class="back" onclick="location.href=\'dashboard.html\'">←</button>'
    +'<div><div class="h-t dev">'+A('dashbo.astrology_today')+'</div>'
    +'<div class="h-s">'+greg+' · <span class="dev">'+hindu+'</span></div></div>'
@@ -636,7 +638,7 @@ function vRashi(i){
         {dir:(sdTerm("disha",ds))}))
    +'</div>'
    +'<div class="sec" onclick="location.hash=\'#times\'"><div class="s-ico">⏰</div><div class="s-b">'
-   +'<div class="s-t dev">'+A('astrol.see_today_s_good_windows_2')+'</div>'
+   +'<div class="s-t dev">'+A('astrol.see_today_s_good_windows')+'</div>'
    +'<div class="s-live">'+A('astrol.choghadiya_abhijit_rahu_kaal')+'</div></div><div class="s-go">›</div></div>'
    +'<div class="ad">'+A('astrol.ad')+'</div>'
    +'<div class="brandline">'+A('astrol.computed_not_guessed')+'</div>';
@@ -672,7 +674,7 @@ function vPanchang(){
    +orow(A('astrol.ayana'),sdAyana((hc.ayana&&hc.ayana.drik)||hc.ayana))
    +'</div>'
    +'<div class="ad">'+A('astrol.ad')+'</div>'
-   +'<div class="note">'+A('astrol.tap_any_limb_for_today_s_full_time_2')+'</div>';
+   +'<div class="note">'+A('astrol.tap_any_limb_for_today_s_full_time')+'</div>';
 }
 function prow(k,v){return '<div class="row"><span class="r-k">'+k+'</span><span class="r-v">'+v+'</span></div>';}
 function limbRow(key,label,limb){
@@ -694,7 +696,7 @@ function vLimb(key){
   if(key==='nakshatra')extra='<div class="card">'+prow(A('astrol.lord'),limb.lord||'—')+prow(A('astrol.pada'),limb.pada||'—')+'</div>';
   var segs=(limb.segments||[]).map(function(s){
     return '<div class="seg"><span class="sv dev">'+sdTerm(key,s)+'</span><span class="st">'+AF('astrol.ends_time', {time:fT(s.end)})+'</span></div>';}).join('');
-  app.innerHTML=pgHead(label,A('astrol.today_s_full_sequence_2'),'panchang')
+  app.innerHTML=pgHead(label,A('astrol.today_s_full_sequence'),'panchang')
    +'<div class="card"><div style="text-align:center;padding:8px 0 12px;">'
    +'<div class="v-name dev">'+sdTerm(key,limb)+'</div>'
    +'<div class="pg-s" style="margin-top:4px;">'+A('astrol.running_now')+'</div></div>'
@@ -831,7 +833,7 @@ function vExplore(){
    +xt('📜',A('astrol.samvat_masa'),A('astrol.hindu_calendar'),'#hcal')
    +'</div>'
 
-   +'<div class="note">'+A('astrol.today_s_panchang_rashifal_and_timi_2')+'</div>';
+   +'<div class="note">'+A('astrol.today_s_panchang_rashifal_and_timi')+'</div>';
 }
 
 /* ═════════ SHARED BIRTH-PROFILE SYSTEM ═════════
@@ -1057,7 +1059,7 @@ function vPick(iso){
    +'style="width:100%;background:#2A1912;border:1px solid rgba(212,168,67,0.3);border-radius:10px;'
    +'padding:11px 12px;color:#F7EED8;font-size:15px;font-family:inherit;color-scheme:dark;"></div>'
    +body
-   +'<div class="note">'+A('astrol.computed_for_your_city_s_coordinat_2')+'</div>';
+   +'<div class="note">'+A('astrol.computed_for_your_city_s_coordinat')+'</div>';
 }
 /* ── Muhurta finder: scores real dates against YOUR birth chart ── */
 // Marriage is deliberately NOT here. A marriage muhurta needs both charts —
@@ -1075,7 +1077,7 @@ function vMuhurtaPick(){
   app.innerHTML=pgHead(A('astrol.find_a_muhurta'),A('astrol.dates_scored_against_your_chart'),'#explore')
    +'<div class="xgrid">'+g+'</div>'
    +'<div class="note" style="cursor:pointer;" onclick="location.hash=\'#match\'">'
-   +A('matchk.marriage_is_not_here_a_marriage_da_2')+' ›</div>';
+   +A('matchk.marriage_is_not_here_a_marriage_da')+' ›</div>';
 }
 function birthDT(){
   if(!U.dob) return null;
