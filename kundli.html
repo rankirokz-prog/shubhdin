@@ -97,7 +97,7 @@ if(typeof window.A!=='function'){
     <input id="fPlace" type="text" placeholder="शहर खोजें… / Search city" autocomplete="off" oninput="kSearchCity(this.value)">
     <div id="kCityResults" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:200px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div>
   </div>
-  <button type="button" id="kGpsBtn" onclick="kDetectLoc()" style="margin-top:9px;width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;">📍 <span id="kGpsTxt">मेरी वर्तमान लोकेशन इस्तेमाल करें</span></button>
+  <button type="button" id="kGpsBtn" onclick="kDetectLoc()" style="margin-top:9px;width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;">📍 <span id="kGpsTxt" data-i18n="buy.use_my_current_location">मेरी वर्तमान लोकेशन इस्तेमाल करें</span></button>
   <button class="btn" id="btDetails" onclick="submitDetails()">कुंडली बनाएँ →</button>
   <div class="err" id="errDetails">कृपया सभी विवरण भरें</div>
 </div>
@@ -191,6 +191,7 @@ function show(id){document.querySelectorAll('.stage').forEach(function(s){s.clas
 if(true){
   $('hTitle').textContent=A('onboar.free_kundli');
   $('ldDetails').textContent=A('kundli.fill_your_birth_details_your_detai');
+  (function(){var e=document.getElementById('kGpsTxt');if(e&&typeof A==='function')e.textContent=A('buy.use_my_current_location');})();
   $('lbName').textContent=A('buy.full_name');$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
   $('lbTime').textContent=A('kundli.time_of_birth');$('lbPlace').textContent=A('kundli.place_of_birth');
   $('btDetails').textContent=A('kundli.create_my_kundli');$('errDetails').textContent=A('buy.please_fill_all_details');
