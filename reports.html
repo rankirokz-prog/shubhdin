@@ -319,8 +319,7 @@ async function openReport(id){
        chart, and that button would have let a single purchase generate charts
        for anyone whose birth details the buyer chose to type. A rare stranded
        buyer is a support case; unlimited free reports would not be rare. */
-    showErr(err,t('इस रिपोर्ट की PDF अभी बनी नहीं है, और जन्म विवरण इस फ़ोन में नहीं है। जिस फ़ोन से खरीदा था वहाँ एक बार खोल लें — उसके बाद यह हर जगह खुलेगी।',
-                  "This report's PDF hasn't been created yet, and the birth details aren't on this phone. Open it once on the phone you bought from — after that it opens anywhere."));
+    showErr(err,A('report.no_pdf_and_no_details_on_this_phone'));
     var again=$('again-'+id); if(again) again.style.display='block';
     return;
   }
