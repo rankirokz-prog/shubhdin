@@ -76,6 +76,7 @@
     var en = (typeof value === 'object') ? (value.en || '') : String(value);
     var e = findEntry(table(kind), en);
     if (e && e[l]) return e[l];
+    if (e && l === 'en') return en;        /* the key IS the English name */
     if (e && e.hi && l !== 'en') return e.hi;
     /* A MISS IS A DEFECT, NOT A FALLBACK.
 
