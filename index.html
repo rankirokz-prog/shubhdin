@@ -442,6 +442,7 @@
   const cMap = {
     hi:  {1:'', 2:'चरण 2 / 4', 3:'चरण 3 / 4', 4:'चरण 4 / 4', 5:''},
     en:  {1:'', 2:'Step 2 of 4', 3:'Step 3 of 4', 4:'Step 4 of 4', 5:''},
+    te:  {1:'', 2:'అడుగు 2 / 4', 3:'అడుగు 3 / 4', 4:'అడుగు 4 / 4', 5:''},
   };
 
   // ── Text ──
@@ -479,6 +480,8 @@
    new user sees. Values below come from the shared sheet, so they cannot
    drift from the same strings elsewhere. */
       te:{
+      v3s:'నేటి దేవుడు, జప సంఖ్యతో', s2title:'మీ పేరు ఏమిటి?', s2desc:'ప్రతి ఉదయం మీ పేరుతో పలకరిస్తాం', tiLbl:'నేడు మీ కోసం',
+
       hookTitle:'మీ రోజు, మీ సొంత జాతకం నుండి',
       hookSub:'పంచాంగం, ముహూర్తం, రోజువారీ జపం — మీ జాతకానికి, మీ నగరానికి లెక్కించినవి',
       v1:'ఉచిత జాతకం',
@@ -651,7 +654,7 @@
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById('step'+n).classList.add('active');
     document.getElementById('pFill').style.width = (pMap[n]||0) + '%';
-    document.getElementById('stepCtr').textContent = cMap[lang][n] || '';
+    document.getElementById('stepCtr').textContent = ((cMap[lang]||cMap.hi)[n]) || '';
   }
 
   async function goStep(n) {
@@ -693,7 +696,7 @@
     const greet = document.getElementById('nameGreet');
     if (name.length >= 2) {
       const dN=name.charAt(0).toUpperCase()+name.slice(1);
-      document.getElementById('ngText').textContent=(T[lang]||T.hi).greeting+' '+dN+(lang==='hi'?' जी! 🙏':'! 🙏');
+      document.getElementById('ngText').textContent=(T[lang]||T.hi).greeting+' '+dN+(lang==='hi'?' जी! 🙏':lang==='te'?' గారు! 🙏':'! 🙏');
       greet.classList.add('show');
     } else { greet.classList.remove('show'); }
     document.getElementById('btn2').disabled = name.length < 2;
