@@ -473,6 +473,49 @@
       tiLbl:'आज आपके लिए',
       enterTxt:'शुभ दिन खोलें',
     },
+    /* Telugu. index.html was never wired to the shared tables: it carries this
+   private T[lang] table and loads no string files, so it stayed Hindi/English
+   while the rest of the app went to nine languages — on the FIRST screen a
+   new user sees. Values below come from the shared sheet, so they cannot
+   drift from the same strings elsewhere. */
+      te:{
+      hookTitle:'మీ రోజు, మీ సొంత జాతకం నుండి',
+      hookSub:'పంచాంగం, ముహూర్తం, రోజువారీ జపం — మీ జాతకానికి, మీ నగరానికి లెక్కించినవి',
+      v1:'ఉచిత జాతకం',
+      v1s:'మీ జన్మ జాతకం నుండి వివరమైన నివేదిక',
+      v2:'రోజువారీ పంచాంగం',
+      v2s:'మీ నగరానికి సమయాలు',
+      v3:'రోజువారీ జపం',
+      trust:'🙏 ఉచితంగా వాడుకోండి • మీ వివరాలు మీ ఫోన్‌లోనే ఉంటాయి',
+      cta1:'నా ప్రయాణాన్ని మొదలుపెట్టండి',
+      greeting:'🙏 స్వాగతం,',
+      nameLabel:'మీ పేరు',
+      namePH:'ఉదా. రవి, ప్రియ...',
+      cta2:'నా రాశిని చూడండి',
+      s3title:'జనన తేదీ',
+      s3desc:'కచ్చితమైన రాశి కోసం — దీన్ని ప్రస్తుతానికి వదిలేయవచ్చు',
+      dobLabel:'జనన తేదీ',
+      dobOpt:'ఐచ్ఛికం',
+      dobHint:'💡 కచ్చితమైన రాశి కోసం అవసరం',
+      tobLabel:'జనన సమయం',
+      tobOpt:'ఐచ్ఛికం',
+      tobHint:'💡 మీ నక్షత్రాన్ని తెలుసుకోవడానికి ఉపయోగపడుతుంది',
+      tobUnkLabel:'నా జనన సమయం నాకు తెలియదు',
+      tobUnkNote:'మీ పుట్టిన రోజు సూర్యోదయం నుండి లెక్కిస్తాము — సమయం తెలియనప్పుడు ఇదే శాస్త్రీయ పద్ధతి. మీ రాశి, నక్షత్రం సరిగ్గానే ఉంటాయి; లగ్నం, పాదం సుమారుగా ఉంటాయి, అది ముఖ్యమైన చోట యాప్ అలా చెబుతుంది.',
+      cta3:'కొనసాగండి',
+      skip3:'వదిలేయండి → తర్వాత నింపండి',
+      s4title:'మీరు ఎక్కడ ఉంటున్నారు?',
+      s4desc:'రాహు కాల సమయం మీ నగరంపై ఆధారపడి ఉంటుంది',
+      gpsTxt:'నా ప్రాంతాన్ని ఆటోమేటిక్‌గా గుర్తించండి',
+      orDiv:'లేదా మీరే నమోదు చేయండి',
+      cityLabel:'నగరం',
+      cityPH:'ఉదా. ఢిల్లీ, ముంబై, ఏలూరు...',
+      stateLabel:'రాష్ట్రం',
+      stateOpt:'రాష్ట్రాన్ని ఎంచుకోండి',
+      cta4:'నా ప్రయాణాన్ని మొదలుపెట్టండి',
+      rcLbl:'మీ రాశి & నక్షత్రం',
+      enterTxt:'శుభ దిన్ తెరవండి',
+    },
     en:{
       hookTitle:'Your day, from your own chart',
       hookSub:'Panchang, muhurat and daily jap — calculated for your chart and your city',
@@ -560,7 +603,7 @@
   var LANGMETA = {
     en:{brand:'Shubh Din', ask:'Choose your language',            go:'Continue →'},
     hi:{brand:'शुभ दिन',  ask:'अपनी भाषा चुनें',                 go:'आगे बढ़ें →'},
-    te:{brand:'శుభ్ దిన్', ask:'మీ భాషను ఎంచుకోండి',              go:'కొనసాగించండి →'},
+    te:{brand:'శుభ దిన్', ask:'మీ భాషను ఎంచుకోండి',              go:'కొనసాగించండి →'},
     ta:{brand:'சுப் தின்', ask:'உங்கள் மொழியைத் தேர்வு செய்யவும்', go:'தொடரவும் →'},
     kn:{brand:'ಶುಭ್ ದಿನ್', ask:'ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆರಿಸಿ',           go:'ಮುಂದುವರಿಸಿ →'},
     bn:{brand:'শুভ দিন',  ask:'আপনার ভাষা বেছে নিন',              go:'এগিয়ে যান →'},
@@ -630,7 +673,9 @@
     user.state = document.getElementById('userState')?.value         || user.state || '';
 
     // Personalise step titles
-    const t = T[lang];
+    const t = T[lang] || T.hi;   /* six of the nine offered languages have no
+     T entry yet; without this fallback every read off T[lang] throws on the
+     first screen a new user sees. Hindi until they are written. */
     const cn=(user.name||'').charAt(0).toUpperCase()+(user.name||'').slice(1);
     if(n===3&&user.name) document.getElementById('s3title').textContent=lang==='hi'?cn+' जी, जन्म तिथि?':'Birth details, '+cn+'?';
     if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':'Almost done, '+cn+'!';
@@ -648,7 +693,7 @@
     const greet = document.getElementById('nameGreet');
     if (name.length >= 2) {
       const dN=name.charAt(0).toUpperCase()+name.slice(1);
-      document.getElementById('ngText').textContent=T[lang].greeting+' '+dN+(lang==='hi'?' जी! 🙏':'! 🙏');
+      document.getElementById('ngText').textContent=(T[lang]||T.hi).greeting+' '+dN+(lang==='hi'?' जी! 🙏':'! 🙏');
       greet.classList.add('show');
     } else { greet.classList.remove('show'); }
     document.getElementById('btn2').disabled = name.length < 2;
@@ -707,7 +752,7 @@
       { enableHighAccuracy:true, timeout:10000, maximumAge:60000 }
     );
   }
-  function resetGPS() { document.getElementById('gpsTxt').textContent = T[lang].gpsTxt; }
+  function resetGPS() { document.getElementById('gpsTxt').textContent = (T[lang]||T.hi).gpsTxt; }
   // ── Cities by state ──
   const citiesMap = {
     AP: ['Visakhapatnam','Vijayawada','Guntur','Nellore','Kurnool','Rajahmundry','Eluru','Kakinada','Tirupati','Anantapur','Kadapa','Ongole','Srikakulam','Vizianagaram','Bhimavaram','Nandyal','Chittoor','Proddatur'],
