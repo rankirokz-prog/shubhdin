@@ -15,7 +15,7 @@
   var CATALOG = [
     {
       id: 'marriage', hero: true, ico: '💍',
-      hi: 'विवाह मिलान', en: 'Marriage Compatibility Report',
+      key: 'reportTitle.marriage', hi: 'विवाह मिलान', en: 'Marriage Compatibility Report',
       was: 799, now: 399,
       anchor: 'card-marriage',
       route: 'buy.html?r=marriage',
@@ -32,7 +32,7 @@
     },
     {
       id: 'love', ico: '❤️',
-      hi: 'प्रेम रिपोर्ट', en: 'Love & Relationship',
+      key: 'reportTitle.love', hi: 'प्रेम रिपोर्ट', en: 'Love & Relationship',
       was: 499, now: 199,
       anchor: 'card-love',
       route: 'buy.html?r=love',
@@ -43,7 +43,7 @@
     },
     {
       id: 'career', ico: '💼',
-      hi: 'करियर रिपोर्ट', en: 'Career & Wealth',
+      key: 'reportTitle.career', hi: 'करियर रिपोर्ट', en: 'Career & Wealth',
       was: 499, now: 199,
       anchor: 'card-career',
       route: 'buy.html?r=career',
@@ -54,7 +54,7 @@
     },
     {
       id: 'child', ico: '👶',
-      hi: 'संतान रिपोर्ट', en: 'Child & Family',
+      key: 'reportTitle.child', hi: 'संतान रिपोर्ट', en: 'Child & Family',
       was: 499, now: 199,
       anchor: 'card-child',
       route: 'buy.html?r=child',
@@ -91,7 +91,7 @@
          changes nothing in the current report, so asking where the house is
          only earns its place once those bands are printed. */
       unlisted: true,
-      hi: 'मुहूर्त रिपोर्ट', en: 'Personal Muhurta',
+      key: 'reportTitle.muhurta', hi: 'मुहूर्त रिपोर्ट', en: 'Personal Muhurta',
       was: 499, now: 199,
       anchor: 'card-muhurta',
       route: 'buy.html?r=muhurta',
@@ -102,7 +102,7 @@
     },
     {
       id: 'annual', ico: '🗓️',
-      hi: 'वार्षिक फल', en: 'Annual Varshaphal',
+      key: 'reportTitle.annual', hi: 'वार्षिक फल', en: 'Annual Varshaphal',
       was: 499, now: 199,
       anchor: 'card-annual',
       route: 'buy.html?r=annual',
@@ -113,7 +113,7 @@
     },
     {
       id: 'forecast', ico: '🔮',
-      hi: '10 वर्ष का रोडमैप', en: '10-Year Forecast',
+      key: 'reportTitle.forecast', hi: '10 वर्ष का रोडमैप', en: '10-Year Forecast',
       was: 599, now: 299,
       anchor: 'card-forecast',
       route: 'buy.html?r=forecast',
@@ -156,29 +156,28 @@
      count and Sade Sati passage count all vary per chart — a young chart may
      have had one Saturn passage, an older one three — so those are named
      without numbers. Same rule that removed the 'Spouse nature' chip. */
+  /* Read a keyed hi/en object in the reader's language. The catalogue keeps the
+   pair as its fallback, so a page that loads no string tables still renders. */
+  root.kundliText = function (o, hindi) {
+    if (!o) return '';
+    return tr(o.key, hindi ? (o.hi || o.en) : (o.en || o.hi));
+  };
   root.FREE_KUNDLI = {
     pages: '250+',
-    pagesLabel: { hi: '250+ पन्नों की विस्तृत कुंडली PDF', en: '250+ Page Detailed Kundli PDF' },
-    pagesShort: { hi: '250+ पन्ने', en: '250+ pages' },
+    pagesLabel: { key: 'dashbo.250_page_detailed_kundli_pdf', hi: '250+ पन्नों की विस्तृत कुंडली PDF', en: '250+ Page Detailed Kundli PDF' },
+    pagesShort: { key: 'dashbo.250_pages', hi: '250+ पन्ने', en: '250+ pages' },
     /* Hindi needs the oblique form before a postposition: "250+ पन्ने की" is
        ungrammatical, "250+ पन्नों की" is correct. pagesShort stands alone
        ("PDF डाउनलोड करें (250+ पन्ने)"), pagesOf is for "… की विस्तृत कुंडली". */
-    pagesOf:    { hi: '250+ पन्नों', en: '250+ pages' },
-    tagline:    { hi: 'आपके जन्म क्षण से गणना — कोई टेम्पलेट नहीं',
-                  en: 'Computed from your birth moment, not a template' },
+    pagesOf:    { key: 'kundli.250_pages', hi: '250+ पन्नों', en: '250+ pages' },
+    tagline:    { key: 'kundli.computed_from_your_birth_moment_no', hi: 'आपके जन्म क्षण से गणना — कोई टेम्पलेट नहीं', en: 'Computed from your birth moment, not a template' },
     features: [
-      { hi: 'पूरे जीवन की विंशोत्तरी दशा — अंतर्दशा तक',
-        en: 'Full lifetime Vimshottari dasha, down to antardasha' },
-      { hi: '30 वर्ष का वार्षिक फल — 2026 से 2055 तक',
-        en: '30 years of yearly outlook, 2026 → 2055' },
-      { hi: 'संपूर्ण अष्टकवर्ग — सर्वाष्टकवर्ग और सातों भिन्नाष्टकवर्ग',
-        en: 'Complete Ashtakavarga — Sarvashtakavarga and all 7 Bhinnashtakavargas' },
-      { hi: 'साढ़े साती के काल, तिथियों सहित',
-        en: 'Sade Sati periods, dated' },
-      { hi: 'योग और दोष — ईमानदार संदर्भ के साथ',
-        en: 'Yogas and doshas, with honest context' },
-      { hi: 'गुरु, शनि और राहु का गोचर — अगले 10 वर्ष',
-        en: 'Jupiter, Saturn and Rahu transits for the next 10 years' }
+      { key: 'kundli.full_lifetime_vimshottari_dasha_do', hi: 'पूरे जीवन की विंशोत्तरी दशा — अंतर्दशा तक', en: 'Full lifetime Vimshottari dasha, down to antardasha' },
+      { key: 'kundli.30_years_of_yearly_outlook_2026_20', hi: '30 वर्ष का वार्षिक फल — 2026 से 2055 तक', en: '30 years of yearly outlook, 2026 → 2055' },
+      { key: 'kundli.complete_ashtakavarga_sarvashtakav', hi: 'संपूर्ण अष्टकवर्ग — सर्वाष्टकवर्ग और सातों भिन्नाष्टकवर्ग', en: 'Complete Ashtakavarga — Sarvashtakavarga and all 7 Bhinnashtakavargas' },
+      { key: 'kundli.sade_sati_periods_dated', hi: 'साढ़े साती के काल, तिथियों सहित', en: 'Sade Sati periods, dated' },
+      { key: 'kundli.yogas_and_doshas_with_honest_conte', hi: 'योग और दोष — ईमानदार संदर्भ के साथ', en: 'Yogas and doshas, with honest context' },
+      { key: 'kundli.jupiter_saturn_and_rahu_transits_f', hi: 'गुरु, शनि और राहु का गोचर — अगले 10 वर्ष', en: 'Jupiter, Saturn and Rahu transits for the next 10 years' }
     ]
   };
   /* Every surface must call this rather than hardcoding a number again. */
@@ -190,9 +189,9 @@
     var key = { short: 'dashbo.250_pages', of: 'dashbo.250_pages',
                 label: 'dashbo.250_page_detailed_kundli_pdf' }[form];
     if (key) { var v = tr(key, null); if (v) return v; }
-    if (form === 'short') return hindi ? k.pagesShort.hi : k.pagesShort.en;
-    if (form === 'of')    return hindi ? k.pagesOf.hi    : k.pagesOf.en;
-    if (form === 'label') return hindi ? k.pagesLabel.hi : k.pagesLabel.en;
+    if (form === 'short') return tr(k.pagesShort.key, hindi ? k.pagesShort.hi : k.pagesShort.en);
+    if (form === 'of')    return tr(k.pagesOf.key,    hindi ? k.pagesOf.hi    : k.pagesOf.en);
+    if (form === 'label') return tr(k.pagesLabel.key, hindi ? k.pagesLabel.hi : k.pagesLabel.en);
     return k.pages;
   };
 
