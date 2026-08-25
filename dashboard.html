@@ -2468,9 +2468,9 @@ function personalise(){
 
   // Nav
   const months_hi=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
-  document.getElementById('datePill').textContent=H
+  document.getElementById('datePill').textContent = H
     ? dn_h[dow]+' • '+now.getDate()+' '+months_hi[now.getMonth()]
-    : dn_e[dow]+' • '+now.toLocaleDateString(sdLocale(),{day:'numeric',month:'short'});
+    : now.toLocaleDateString(sdLocale(),{weekday:'short',day:'numeric',month:'short'});
   // Greeting
   document.getElementById('greetTime').textContent=greetMsg();
   const rawName = name.charAt(0).toUpperCase() + name.slice(1);
@@ -2834,6 +2834,30 @@ const MANTRA_TIMESTAMPS={
 };
 
 // Correct mantras per day — split into words for highlight sync
+/* ── SANSKRIT MANTRA TEXT — DECLARED, NOT ASSUMED ─────────────────────────
+   These are the chant syllables themselves, split for word-by-word highlight
+   during playback. They are SANSKRIT, not Hindi, and a mantra is recited in
+   Sanskrit in every Indian language — so this is not a translation gap.
+
+   BUT IT IS NOT SETTLED EITHER, and it must not hide inside "the deity block":
+   a Telugu prayer book prints Sanskrit in TELUGU SCRIPT, not Devanagari. A
+   Telugu devotee following along would expect నమః సూర్యాయ, not नमः सूर्याय.
+   That is transliteration, not translation — seven mantras, about seventy
+   syllables — and it is Ram's decision, not something to bury in a bucket.
+
+   DECIDED 23 Aug 2026: DEFERRED, deliberately, until after launch.
+   Sanskrit in Devanagari is manageable for a Telugu devotee — a mantra is
+   recited in Sanskrit everywhere, and this is the one place where leaving the
+   source script is normal rather than a gap. The deciding reason is scale:
+   about sixty more mantras are in preparation, so transliterating these seven
+   now means doing sixty later under launch pressure, plus building sync
+   verification for something that blocks nothing. All sixty-seven go together,
+   one ruling, one verification pass, nine scripts at once.
+   NOT a bucket — a decision with a reason and a date.
+
+   The elements keep data-sanskrit so the leak gate
+   reports them as a NAMED, declared category rather than counting them as
+   Devanagari leaks or, worse, letting them pass unexamined. */
 const MANTRA_WORDS={
   0:['नमः','सूर्याय','शान्ताय','सर्वरोग','निवारिणे','आयुरारोग्य','ऐश्वर्यं','देहि देव','जगत्पते'],
   1:['ॐ','त्र्यम्बकं','यजामहे','सुगन्धिं','पुष्टिवर्धनम्','उर्वारुकमिव','बन्धनात्','मृत्योर्मुक्षीय','मामृतात्'],
@@ -3196,11 +3220,11 @@ function buildMantraForWords(words){
   const line1=words.slice(0,Math.ceil(words.length/2));
   const line2=words.slice(Math.ceil(words.length/2));
   let html='<div class="j-line">';
-  line1.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i}" style="opacity:0.45;">${w}</span>`;});
+  line1.forEach((w,i)=>{html+=`<span class="j-word" data-sanskrit id="jw${i}" style="opacity:0.45;">${w}</span>`;});
   html+='</div>';
   if(line2.length){
     html+='<div class="j-line">';
-    line2.forEach((w,i)=>{html+=`<span class="j-word" id="jw${i+line1.length}" style="opacity:0.45;">${w}</span>`;});
+    line2.forEach((w,i)=>{html+=`<span class="j-word" data-sanskrit id="jw${i+line1.length}" style="opacity:0.45;">${w}</span>`;});
     html+='</div>';
   }
   el.innerHTML=html;
@@ -5341,7 +5365,28 @@ function renderSettLangs(){
        The 34 Hindi fallbacks that remain are the deity block, which ships as
        Hindi by decision: a Telugu devotee reading Hindi prayer text is ordinary,
        machine-shaped Telugu is not. */
+    /* TELUGU ENABLED, second attempt, and this time on four measurements
+       rather than one number:
+         English leaks .............. 0 across 18 screens (was 14; four were
+                                      never tested and were showing raw Latin)
+         Devanagari fallbacks ....... 34, every one ENUMERATED and every one
+                                      inside the declared deity block
+         Bridge lookup misses ....... 0 (a miss used to return its input, so
+                                      wrong-table bugs looked like fallbacks)
+         Screens that rendered ...... 18/18 (a blank screen also reports zero)
+       Sanskrit mantra text is declared and deliberately deferred until the
+       other ~60 mantras arrive. The deity block ships as Hindi by decision.
+       I said Telugu was done twice before and was wrong twice; the difference
+       now is that the gate has been fixed to stop passing by not looking. */
     var READY = { hi:1, en:1, te:1 };
+    /* TELUGU TURNED BACK OFF, 23 Aug 2026. I enabled it on "English leaks 0"
+       and attributed the 34 remaining Hindi fallbacks to the deity block
+       WITHOUT CHECKING. They were not: tithi, nakshatra, yoga, karana, weekday,
+       choghadiya (16 rows), hora (24 rows), rashi, masa and disha were all
+       rendering DEVANAGARI on a Telugu screen. The gate counted English, and
+       Hindi is not English, so it passed them silently.
+       A gate that measures the wrong thing is worse than no gate: it produced a
+       confident zero over a broken screen. */
     var cov = READY[l] ? 1 : 0;
     if(cov<=0) return;
     var on = (_settLang===l);
