@@ -349,18 +349,18 @@ function myRashiIdx(){var r=(U.rashi||'').toLowerCase();if(!r)return -1;
 
 /* moon-transit house themes (neutral, display copy) */
 var HOUSE=[
- ['मन ऊर्जावान — नई शुरुआत का दिन','an energetic mind — a day for beginnings'],
- ['धन-वाणी पर ध्यान — सोच-समझकर बोलें','focus on money and speech — choose words with care'],
- ['साहस और पहल का साथ — काम बनते हैं','courage and initiative are with you — things get done'],
- ['घर-परिवार मन में — भावुक क्षण संभव','home and family on the mind — an emotional day is possible'],
- ['रचनात्मक दिन — बच्चों/विद्या से जुड़े काम शुभ','a creative day — matters of children and learning are favoured'],
- ['काम का बोझ — सेहत का ध्यान रखें','a workload day — mind your health'],
- ['रिश्तों और साझेदारी का दिन','a day of relationships and partnerships'],
- ['धीमा दिन — जोखिम टालें','a slow day — avoid risks'],
- ['भाग्य साथ देता है — धर्म-यात्रा शुभ','fortune supports you — dharma and travel are favoured'],
- ['कार्यक्षेत्र में पहचान संभव','recognition possible at work'],
- ['लाभ का दिन — मित्रों का साथ','a day of gains — friends stand by you'],
- ['खर्च और थकान — विश्राम भी ज़रूरी','expenses and fatigue — rest matters too']];
+ {key:'astrol.an_energetic_mind_a_day_for_beginn',hi:'मन ऊर्जावान — नई शुरुआत का दिन',en:'an energetic mind — a day for beginnings'},
+ {key:'astrol.focus_on_money_and_speech_choose_w',hi:'धन-वाणी पर ध्यान — सोच-समझकर बोलें',en:'focus on money and speech — choose words with care'},
+ {key:'astrol.courage_and_initiative_are_with_yo',hi:'साहस और पहल का साथ — काम बनते हैं',en:'courage and initiative are with you — things get done'},
+ {key:'astrol.home_and_family_on_the_mind_an_emo',hi:'घर-परिवार मन में — भावुक क्षण संभव',en:'home and family on the mind — an emotional day is possible'},
+ {key:'astrol.a_creative_day_matters_of_children',hi:'रचनात्मक दिन — बच्चों/विद्या से जुड़े काम शुभ',en:'a creative day — matters of children and learning are favoured'},
+ {key:'astrol.a_workload_day_mind_your_health',hi:'काम का बोझ — सेहत का ध्यान रखें',en:'a workload day — mind your health'},
+ {key:'astrol.a_day_of_relationships_and_partner',hi:'रिश्तों और साझेदारी का दिन',en:'a day of relationships and partnerships'},
+ {key:'astrol.a_slow_day_avoid_risks',hi:'धीमा दिन — जोखिम टालें',en:'a slow day — avoid risks'},
+ {key:'astrol.fortune_supports_you_dharma_and_tr',hi:'भाग्य साथ देता है — धर्म-यात्रा शुभ',en:'fortune supports you — dharma and travel are favoured'},
+ {key:'astrol.recognition_possible_at_work',hi:'कार्यक्षेत्र में पहचान संभव',en:'recognition possible at work'},
+ {key:'astrol.a_day_of_gains_friends_stand_by_yo',hi:'लाभ का दिन — मित्रों का साथ',en:'a day of gains — friends stand by you'},
+ {key:'astrol.expenses_and_fatigue_rest_matters_',hi:'खर्च और थकान — विश्राम भी ज़रूरी',en:'expenses and fatigue — rest matters too'}];
 
 /* ── router ──────────────────────────────────────────────── */
 var app=document.getElementById('app');
@@ -646,7 +646,7 @@ function vRashi(i){
    +'</div></div>'
    +'<div class="card">'
    +factor('🌙',AF('astrol.moon_today_is_in_your_n_ord_house_',
-        {n:(house+1), ord:ordinal(house+1), theme:HOUSE[house][H?0:1]}))
+        {n:(house+1), ord:ordinal(house+1), theme:(function(r){return (r&&r.key&&typeof A==='function')?A(r.key):(r?(H?r.hi:r.en):'');})(HOUSE[house])}))
    +factor(cb?'✅':'⚠️',AF('astrol.chandrabala_verdict',
         {verdict: cb?A('astrol.favourable_a_good_day_for_auspicio')
                     :A('explor.unfavourable_start_new_things_only')}))
@@ -736,13 +736,13 @@ function vTimes(){
     var hit=s.good?clashesWith(+new Date(s.start),+new Date(s.end),_bads):[];
     return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+sdChog(s)
      +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
-     +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(sdTerm("bad",hit[0]))+'</small>':'')+'</span>'
+     +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(hit[0])+'</small>':'')+'</span>'
      +'<span class="r-v '+(s.good&&!hit.length?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
   var cw=cleanWindows();
   var recHtml = cw.length
    ? cw.map(function(w){
        var live=(now>=+w.start&&now<+w.end);
-       return '<div class="row"><span class="r-k dev">'+sdChog(w)
+       return '<div class="row"><span class="r-k dev">'+sdWindow(w)
         +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
         +(w.trimmed?' <small style="color:rgba(212,168,67,0.62);">'+A('astrol.trimmed')+'</small>':'')
         +'</span><span class="r-v good">'+fR(w.start,w.end)+'</span></div>';
@@ -1245,7 +1245,7 @@ function segList(arr,label,bads){
     h+='<div class="sgrow '+(ok?'g':'b')+(live?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(ok?'#5ABE78':(sg.good?'#E8A317':'#E66E5A'))+'"></div>'
       +'<div class="sg-n dev">'+(sdChog(sg))+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
-      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+AF('astrol.overlaps_what', {what:(sdTerm("bad",hit[0]))})+'</div>':'')+'</div>'
+      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+AF('astrol.overlaps_what', {what:(hit[0])})+'</div>':'')+'</div>'
       +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
   });
   return '<div class="subh">'+label+'</div><div class="seglist">'+h+'</div>';
@@ -1274,7 +1274,7 @@ function vTara(){
     return '<div class="sgrow '+(n.good?'g':'b')+(me?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(n.good?'#5ABE78':'#E66E5A')+'"></div>'
       +'<div class="sg-n dev">'+(sdNak(n))+(me?' <span class="sg-now">'+A('astrol.yours')+'</span>':'')+'</div>'
-      +'<div class="sg-t">'+n.taraEn+' · '+n.verdict+'</div></div>';
+      +'<div class="sg-t">'+sdTara(n.taraEn)+' · '+sdTaraV(n.verdict)+'</div></div>';
   }).join('');
   app.innerHTML=pgHead(A('dashbo.tarabala'),AF('astrol.day_nakshatra_nak',
         {nak:(sdNak(tb.dayNakshatra))}),'#explore')
@@ -1325,9 +1325,9 @@ function vHcal(){
    last — a house, a marriage — and dvisvabhava (dual) sits between. That is
    what the dot now encodes. Derived from rashiIndex % 3, the classical order. */
 var LAGNA_QUALITY=[
-  {hi:'चर',   en:'Movable', c:'#7FB3F5', use_hi:'यात्रा, वाहन, नई शुरुआत', use_en:'travel, vehicles, new starts'},
-  {hi:'स्थिर', en:'Fixed',   c:'#5ABE78', use_hi:'गृह प्रवेश, विवाह, स्थायी काम', use_en:'griha pravesh, marriage, lasting work'},
-  {hi:'द्विस्वभाव', en:'Dual', c:'#E8BE5A', use_hi:'बातचीत, पढ़ाई, दोहरे काम', use_en:'talks, study, mixed work'}
+  {useKey:'astrol.lagna_use_movable', hi:'चर',   en:'Movable', c:'#7FB3F5', use_hi:'यात्रा, वाहन, नई शुरुआत', use_en:'travel, vehicles, new starts'},
+  {useKey:'astrol.lagna_use_fixed', hi:'स्थिर', en:'Fixed',   c:'#5ABE78', use_hi:'गृह प्रवेश, विवाह, स्थायी काम', use_en:'griha pravesh, marriage, lasting work'},
+  {useKey:'astrol.lagna_use_dual', hi:'द्विस्वभाव', en:'Dual', c:'#E8BE5A', use_hi:'बातचीत, पढ़ाई, दोहरे काम', use_en:'talks, study, mixed work'}
 ];
 /* Personalised pages must say WHY they are impersonal. Without a birth
    nakshatra, Tarabala is just a list of 27 rows and the user has no idea a
@@ -1354,14 +1354,14 @@ function vLagna(){
     var q=LAGNA_QUALITY[(l.rashiIndex!=null?l.rashiIndex:0)%3];
     rows+='<div class="sgrow'+(live?' now':'')+'"><div class="sg-d" style="background:'+q.c+'"></div>'
       +'<div class="sg-n dev">'+(nm||'—')+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
-      +'<div style="font-size:9.5px;color:'+q.c+';opacity:0.85;margin-top:2px;">'+(H?q.hi:q.en)+'</div></div>'
+      +'<div style="font-size:9.5px;color:'+q.c+';opacity:0.85;margin-top:2px;">'+sdQuality(q.en)+'</div></div>'
       +'<div class="sg-t">'+fR(l.start,l.end)+'</div></div>';
   });
   var legend=LAGNA_QUALITY.map(function(q){
     return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">'
       +'<span style="width:8px;height:8px;border-radius:50%;background:'+q.c+';flex-shrink:0;"></span>'
-      +'<span style="font-size:10.5px;color:rgba(255,244,222,0.72);"><b style="color:'+q.c+';">'+(H?q.hi:q.en)+'</b> — '
-      +(H?q.use_hi:q.use_en)+'</span></div>';
+      +'<span style="font-size:10.5px;color:rgba(255,244,222,0.72);"><b style="color:'+q.c+';">'+sdQuality(q.en)+'</b> — '
+      +A(q.useKey)+'</span></div>';
   }).join('');
   app.innerHTML=pgHead(A('astrol.lagna_table'),A('astrol.ascendants_rising_through_today'),'#explore')
    +'<div class="subh">'+A('astrol.what_the_colours_mean')+'</div>'
