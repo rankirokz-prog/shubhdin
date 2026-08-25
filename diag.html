@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shubh Din — localisation check</title>
+<style>
+body{margin:0;padding:14px;background:#120b1c;color:#f1e6cc;font:14px/1.5 -apple-system,Roboto,sans-serif}
+h1{font-size:17px;margin:0 0 4px;color:#d4a843}p{margin:0 0 12px;opacity:.75;font-size:12.5px}
+table{width:100%;border-collapse:collapse;font-size:13px}td{padding:6px 4px;border-top:1px solid rgba(255,255,255,.08);vertical-align:top}
+td:first-child{opacity:.8;width:46%}.ok{color:#4ade80}.bad{color:#f87171;font-weight:700}.warn{color:#fbbf24}
+h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#d4a843;margin:18px 0 4px}
+button{margin-top:16px;width:100%;padding:12px;border:0;border-radius:10px;background:#d4a843;color:#120b1c;font-weight:700;font-size:14px}
+</style></head><body>
+<h1>Localisation check</h1>
+<p>Shows what THIS phone actually received from the server, in the order the app loads it. Language read from the app's saved settings.</p>
+<script>
+/* Exactly the app's loader block, so the result means what the app sees. */
+window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
+if(window.SD_LANG&&window.SD_LANG!=='hi') document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-langs.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
+</script>
+<script src="ui-strings.js"></script>
+<script src="panchang-terms.js"></script>
+<script src="vrat-names.js"></script>
+<script src="panchang-terms-bridge.js"></script>
+<h2>Files, as served to this phone</h2><table id="files"></table>
+<h2>What the bridge resolves (language: <span id="lg"></span>)</h2><table id="res"></table>
+<button onclick="location.reload(true)">Run again</button>
+<script>
+var L=window.SD_LANG; document.getElementById('lg').textContent=L;
+var FILES=['app-strings-hi.js','app-strings-'+L+'.js','app-langs.js','app-strings-loader.js','ui-strings.js','panchang-terms.js','vrat-names.js','panchang-terms-bridge.js','panchang-engine.js','astronomy.min.js','dashboard.html','astrology.html','service-worker.js'];
+var ft=document.getElementById('files');
+function row(t,k,v,cls){var r=t.insertRow();r.insertCell().textContent=k;var c=r.insertCell();c.textContent=v;if(cls)c.className=cls;}
+FILES.forEach(function(f){
+  fetch(f+'?nocache='+Date.now(),{cache:'no-store'}).then(function(r){return r.text().then(function(b){return{s:r.status,b:b}});}).then(function(x){
+    var tag='';
+    if(f==='ui-strings.js') tag=/SD_UI\s*=/.test(x.b)?(/"chogh"\s*:/.test(x.b)?' · has SD_UI.chogh':' · SD_UI but NO chogh table'):' · does not define SD_UI';
+    if(f==='service-worker.js'){var m=x.b.match(/CACHE_NAME\s*=\s*'([^']+)'/);tag=m?' · '+m[1]:'';}
+    if(f==='astrology.html'){var m2=x.b.match(/SD_BUILD='([^']+)'/);tag=m2?' · '+m2[1]:'';}
+    if(f==='dashboard.html'){tag=/sdChog\(/.test(x.b)?' · calls sdChog':' · does NOT call sdChog (old file)';}
+    var ok=x.s===200;
+    row(ft,f,(ok?'200':'HTTP '+x.s)+' · '+Math.round(x.b.length/1024)+' KB'+tag,ok&&!/NO |old file|does not define/.test(tag)?'ok':'bad');
+  }).catch(function(e){row(ft,f,'FAILED '+e.message,'bad');});
+});
+var rt=document.getElementById('res');
+function has(v){return !!v;}
+row(rt,'String tables loaded',(window.sdLoadedLangs?sdLoadedLangs().join(', '):'loader missing'),window.sdLoadedLangs&&sdLoadedLangs().indexOf(L)>-1?'ok':'bad');
+row(rt,'A("astrol.choghadiya")',window.A?A('astrol.choghadiya'):'A missing',window.A?'ok':'bad');
+row(rt,'SD_UI present',has(window.SD_UI),window.SD_UI?'ok':'bad');
+row(rt,'SD_UI.chogh present',has(window.SD_UI&&SD_UI.chogh),(window.SD_UI&&SD_UI.chogh)?'ok':'bad');
+row(rt,'SD_UI.planet (hora)',has(window.SD_UI&&SD_UI.planet),(window.SD_UI&&SD_UI.planet)?'ok':'bad');
+row(rt,'SD_PANCHANG_TERMS.tara',has(window.SD_PANCHANG_TERMS&&SD_PANCHANG_TERMS.tara),(window.SD_PANCHANG_TERMS&&SD_PANCHANG_TERMS.tara)?'ok':'bad');
+row(rt,'SD_VRAT_NAMES',has(window.SD_VRAT_NAMES),window.SD_VRAT_NAMES?'ok':'bad');
+function tryf(fn){try{return fn();}catch(e){return 'ERROR '+e.message;}}
+var chog=tryf(function(){return sdChog({en:'Labh',hi:'लाभ'});});
+row(rt,'sdChog(Labh)',chog,/[\u0C00-\u0C7F]/.test(chog)||L!=='te'?'ok':'bad');
+row(rt,'sdHora(sun)',tryf(function(){return sdHora({en:'sun',hi:'सूर्य'});}));
+row(rt,'sdTara(Janma)',tryf(function(){return sdTara({en:'Janma',hi:'जन्म'});}));
+row(rt,'sdTithi(Ekadashi)',tryf(function(){return sdTithi({en:'Ekadashi',hi:'एकादशी'});}));
+row(rt,'sdRashi(Simha)',tryf(function(){return sdRashi({en:'Simha',hi:'सिंह'});}));
+var m=window.SD_TERM_MISSES||[];
+row(rt,'Bridge misses on this page',m.length?m.length+' — '+m.slice(0,5).map(function(x){return x.kind+':'+x.value;}).join(', '):'0',m.length?'bad':'ok');
+row(rt,'Service worker',navigator.serviceWorker&&navigator.serviceWorker.controller?'controlling this page':'none (fresh/incognito)');
+</script>
+</body></html>
