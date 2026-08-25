@@ -736,7 +736,7 @@ function vTimes(){
     var hit=s.good?clashesWith(+new Date(s.start),+new Date(s.end),_bads):[];
     return '<div class="row"><span class="r-k dev">'+(i===0?'☀️ ':'')+(i===8?'🌙 ':'')+sdChog(s)
      +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
-     +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(hit[0])+'</small>':'')+'</span>'
+     +(hit.length?' <small style="color:rgba(240,150,130,0.9);">⚠ '+(hit[0].en)+'</small>':'')+'</span>'
      +'<span class="r-v '+(s.good&&!hit.length?'good':'bad')+'">'+fR(s.start,s.end)+'</span></div>';}).join('');
   var cw=cleanWindows();
   var recHtml = cw.length
@@ -1245,7 +1245,7 @@ function segList(arr,label,bads){
     h+='<div class="sgrow '+(ok?'g':'b')+(live?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(ok?'#5ABE78':(sg.good?'#E8A317':'#E66E5A'))+'"></div>'
       +'<div class="sg-n dev">'+(sdChog(sg))+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
-      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+AF('astrol.overlaps_what', {what:(hit[0])})+'</div>':'')+'</div>'
+      +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+AF('astrol.overlaps_what', {what:(hit[0].en)})+'</div>':'')+'</div>'
       +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
   });
   return '<div class="subh">'+label+'</div><div class="seglist">'+h+'</div>';
@@ -1350,7 +1350,7 @@ function vLagna(){
   var now=Date.now(),rows='';
   tbl.forEach(function(l){
     var a=new Date(l.start).getTime(), b=new Date(l.end).getTime(), live=now>=a&&now<b;
-    var nm=l.rashi?(H?l.rashi.hi:l.rashi.en):(H?l.hi:l.en);
+    var nm=l.rashi?sdRashi(l.rashi):sdRashi(l);
     var q=LAGNA_QUALITY[(l.rashiIndex!=null?l.rashiIndex:0)%3];
     rows+='<div class="sgrow'+(live?' now':'')+'"><div class="sg-d" style="background:'+q.c+'"></div>'
       +'<div class="sg-n dev">'+(nm||'—')+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
