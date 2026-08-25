@@ -46,6 +46,10 @@
        సంక్రాంతి, பொங்கல், মাঘ বিহু), which is why the lookup is by the engine's
        English key rather than by transliterating the Hindi. */
     if (kind === 'vrat' || kind === 'festival') return g.SD_VRAT_NAMES || null;
+    /* 'window' spans BOTH tables: cleanWindows() returns choghadiya segments
+       AND named muhurtas (Abhijit, Amrit, Brahma). Passing them all to the
+       choghadiya table missed on every muhurta and returned its Hindi. */
+    if (kind === 'window') return null;   // handled by sdWindow below
     if (kind === 'hora') return U.planet || null;      // hora lords are planets
     return U[kind] || null;
   }
@@ -73,7 +77,21 @@
     var e = findEntry(table(kind), en);
     if (e && e[l]) return e[l];
     if (e && e.hi && l !== 'en') return e.hi;
-    /* nothing in the table: fall back to what the engine itself carries */
+    /* A MISS IS A DEFECT, NOT A FALLBACK.
+
+       This used to return the input unchanged, so sdChog('उद्वेग') gave back
+       उद्वेग and sdChog(muhurtaWindow) gave back its Hindi — Devanagari on a
+       Telugu screen, with nothing logged and nothing thrown. Every wrong-table
+       and wrong-argument bug in this bridge was invisible for that reason: the
+       failure mode looked exactly like a deliberate fallback.
+
+       Now every miss is recorded. On a non-English language the fallback still
+       renders (a blank screen helps nobody), but the miss is counted, warned,
+       and the leak gate asserts the count is ZERO before a language can ship. */
+    g.SD_TERM_MISSES = g.SD_TERM_MISSES || [];
+    g.SD_TERM_MISSES.push({ kind: kind, value: en, lang: l });
+    if (g.console && g.console.warn)
+      g.console.warn('[sdTerm] MISS kind=' + kind + ' value=' + JSON.stringify(en) + ' lang=' + l);
     if (typeof value === 'object') return (l === 'en' ? value.en : (value.hi || value.en)) || '';
     return en;
   };
@@ -93,4 +111,18 @@
   g.sdPaksha  = function (v, l) { return g.sdTerm('paksha', v, l); };
   g.sdAyana   = function (v, l) { return g.sdTerm('ayana', v, l); };
   g.sdVrat    = function (v, l) { return g.sdTerm('vrat', v, l); };
+  g.sdTara    = function (v, l) { return g.sdTerm('tara', v, l); };
+  g.sdTaraV   = function (v, l) { return g.sdTerm('taraVerdict', v, l); };
+  g.sdQuality = function (v, l) { return g.sdTerm('rashiQuality', v, l); };
+  /* Try choghadiya, then the named muhurtas, then the app string table —
+     without recording a miss for simply being in the other table. */
+  g.sdWindow  = function (v, l) {
+    var en = (typeof v === 'object') ? (v.en || v.name || '') : String(v);
+    var U = g.SD_UI || {}, P = g.SD_PANCHANG_TERMS || {};
+    var e = findEntry(U.chogh, en) || findEntry(P.muhurtaName, en) || findEntry(P.ritu, en);
+    l = l || lang();
+    if (e && e[l]) return e[l];
+    if (e && e.hi && l !== 'en') return e.hi;
+    return g.sdTerm('choghadiya', v, l);   // records a miss if genuinely unknown
+  };
 })(typeof window !== 'undefined' ? window : global);
