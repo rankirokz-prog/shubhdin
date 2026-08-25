@@ -192,7 +192,7 @@ if(true){
   $('hTitle').textContent=A('onboar.free_kundli');
   $('ldDetails').textContent=A('kundli.fill_your_birth_details_your_detai');
   (function(){var e=document.getElementById('kGpsTxt');if(e&&typeof A==='function')e.textContent=A('buy.use_my_current_location');})();
-  $('lbName').textContent=A('buy.full_name');$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
+  $('lbName').textContent=A('buy.full_name');(function(){var g=$('fGender');if(g&&g.options.length>1){g.options[0].textContent=A('kundli.male');g.options[1].textContent=A('kundli.female');}var p=$('fPlace');if(p)p.placeholder=A('shared.search_city');})();$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
   $('lbTime').textContent=A('kundli.time_of_birth');$('lbPlace').textContent=A('kundli.place_of_birth');
   $('btDetails').textContent=A('kundli.create_my_kundli');$('errDetails').textContent=A('buy.please_fill_all_details');
   $('auT').textContent=A('kundli.protect_your_kundli');
