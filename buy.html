@@ -96,6 +96,14 @@ input:focus{outline:none;border-color:var(--gold);}
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">buy debug · tap anywhere to close</div>
   <pre id="bdbgTxt" style="font-size:10px;color:#fff;font-family:monospace;white-space:pre-wrap;word-break:break-all;"></pre>
 </div>
+<script>
+window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
+if(window.SD_LANG&&window.SD_LANG!=='hi')
+  document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-langs.js"></scr'+'ipt>');
+document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 'use strict';
@@ -119,8 +127,7 @@ catch(e){ sb=null; }
 function sbDown(){
   bdlog('supabase client unavailable');
   var e=$('errA');
-  if(e){e.textContent=H?'साइन-इन सेवा लोड नहीं हो सकी। इंटरनेट जाँचकर पेज दोबारा खोलें।'
-                       :'Sign-in service could not load. Check your connection and reload the page.';
+  if(e){e.textContent=A('buy.sign_in_service_could_not_load_che');
        e.style.display='block';}
 }
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
@@ -164,14 +171,12 @@ async function apiJson(r){
   try{t=await r.text();}catch(e){}
   if(!t){
     bdlog('api empty body, status '+r.status);
-    throw new Error(H?'सर्वर से संपर्क नहीं हो सका। इंटरनेट जाँचकर दोबारा कोशिश करें।'
-                     :'Could not reach the server. Check your connection and try again.');
+    throw new Error(A('report.could_not_reach_the_server_check_y'));
   }
   try{return JSON.parse(t);}
   catch(e){
     bdlog('api non-JSON, status '+r.status+': '+t.slice(0,60));
-    throw new Error(H?'सर्वर से अप्रत्याशित उत्तर मिला। कृपया दोबारा कोशिश करें।'
-                     :'Unexpected response from the server. Please try again.');
+    throw new Error(A('buy.unexpected_response_from_the_serve'));
   }
 }
 bdlog('boot '+SD_BUILD+' r='+R+' q='+location.search.slice(0,40)+(location.hash.indexOf('access_token=')>-1?' hash=token':'')+(location.search.indexOf('razorpay_payment_id')>-1?' PAYID-IN-URL':''));
@@ -194,8 +199,11 @@ if(!CFG[R]){
   throw new Error('shubhdin: no saleable report for "'+R+'" — redirecting');
 }
 var C=CFG[R]||{};
-$('hTitle').textContent=H?C.hi:C.en;
-$('sIco').textContent=C.ic; $('sT1').textContent=H?C.hi:C.en; $('sT2').textContent=H?C.en:C.hi;
+/* Title in the reader's language from the same key premium.html uses, so the
+   name on the sales card and the name at checkout are one word. */
+var RT=(typeof sdHas==='function'&&sdHas('reportTitle.'+R))?A('reportTitle.'+R):(H?C.hi:C.en);
+$('hTitle').textContent=RT;
+$('sIco').textContent=C.ic; $('sT1').textContent=RT; $('sT2').textContent=(window.SD_LANG==='en')?C.hi:C.en;
 $('sWas').textContent='₹'+C.was; $('sNow').textContent='₹'+C.now;
 
 /* ── details form per report ── */
@@ -217,69 +225,62 @@ function sdBadDate(v){
   return '';
 }
 function sdDateMsg(reason){
-  if(reason==='future')return H?'जन्म तिथि भविष्य की नहीं हो सकती। कृपया सही तिथि भरें।'
-                               :'A birth date cannot be in the future. Please check the date.';
-  return H?'जन्म तिथि सही नहीं लगती। कृपया दोबारा जाँचें।'
-          :'That birth date does not look right. Please check it.';
+  if(reason==='future')return A('buy.a_birth_date_cannot_be_in_the_futu');
+  return A('buy.that_birth_date_does_not_look_righ');
 }
 
 function person(prefix,label){
   var g=prefix==='p'; // primary naming: reports use pname or bname/gname
   return '<div class="sect dev">'+label+'</div>'
-   +'<label>'+(H?'पूरा नाम':'Full name')+'</label><input id="f_'+prefix+'name" type="text">'
-   +(C.gender&&prefix==='p'?'<label>'+(H?'लिंग':'Gender')+'</label><select id="f_pgender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>':'')
-   +'<div class="two"><div><label>'+(H?'जन्म तिथि':'Birth date')+'</label><input id="f_'+prefix+'date" type="date" max="'+SD_TODAY+'" min="1900-01-01"></div>'
-   +'<div><label>'+(H?'जन्म समय':'Birth time')+'</label><input id="f_'+prefix+'time" type="time"></div></div>'
+   +'<label>'+(A('buy.full_name'))+'</label><input id="f_'+prefix+'name" type="text">'
+   +(C.gender&&prefix==='p'?'<label>'+(A('buy.gender'))+'</label><select id="f_pgender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>':'')
+   +'<div class="two"><div><label>'+(A('buy.birth_date'))+'</label><input id="f_'+prefix+'date" type="date" max="'+SD_TODAY+'" min="1900-01-01"></div>'
+   +'<div><label>'+(A('buy.birth_time'))+'</label><input id="f_'+prefix+'time" type="time"></div></div>'
    /* Birth time is genuinely unknown for many buyers. We never block the sale for it,
       but we do not silently invent a clock time either: ticking this switches the
       chart to the classical sunrise (Surya lagna) convention and says so plainly. */
    +'<label style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;cursor:pointer;">'
      +'<input type="checkbox" id="f_'+prefix+'notime" onchange="noTime(\''+prefix+'\')" style="width:16px;height:16px;accent-color:#D4A843;">'
-     +(H?'मुझे जन्म समय नहीं पता':"I don't know my birth time")+'</label>'
+     +(A('buy.i_don_t_know_my_birth_time'))+'</label>'
    +'<div id="ntNote_'+prefix+'" style="display:none;margin-top:8px;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.4);background:rgba(212,168,67,0.06);font-size:11.5px;color:rgba(255,244,222,0.78);line-height:1.6;">'
      /* Marriage is decided on the Moon's nakshatra, which can change within a single
         day. A sunrise chart still yields a confident-looking guna score, so this
         report says plainly that only the real birth time gives an accurate match. */
      +(C.two
-       ?(H?'<b style="color:#E8BE5A;">विवाह मिलान के लिए जन्म समय ज़रूरी है।</b> गुण मिलान चंद्रमा के नक्षत्र से निकलता है, और चंद्रमा एक ही दिन में नक्षत्र बदल सकता है — समय के बिना नक्षत्र दूसरा भी हो सकता है। समय न होने पर हम सूर्योदय की कुंडली बनाएँगे और गुण अंक फिर भी आएँगे, पर सही मिलान केवल सटीक जन्म समय से ही आता है। विवाह जैसा निर्णय लेने से पहले घर के बड़ों से या अस्पताल के रिकॉर्ड से समय पूछ लेना उचित है।'
-          :'<b style="color:#E8BE5A;">A birth time is needed for an accurate match.</b> Guna milan is computed from the Moon\'s nakshatra, and the Moon can change nakshatra within a single day — so without the time it may land on a different one. We will cast the chart at sunrise and the guna score will still appear, but only the exact birth time gives an accurate match. Before making a marriage decision on it, it is worth asking family or checking the hospital record.')
-       :(H?'आपकी कुंडली सूर्योदय (सूर्य लग्न) पर बनाई जाएगी — समय अज्ञात होने पर यही शास्त्रीय परंपरा है। चंद्रराशि और नक्षत्र पर आधारित बातें भरोसेमंद रहेंगी; लग्न, भाव और दशा की सटीक तिथियाँ अनुमानित रहेंगी। समय मिल जाए तो दोबारा बनवाइए।'
-          :'Your chart will be cast at sunrise (Surya lagna) — the classical convention when the time is unknown. Moon-sign and nakshatra material stays reliable; the ascendant, the houses and exact dasha dates become approximate. If you later find the time, generate it again.'))+'</div>'
-   +(C.noplace?'':'<label>'+(H?'जन्म स्थान':'Birth place')+'</label>'
-     +'<div style="position:relative;"><input id="f_'+prefix+'place" type="text" placeholder="'+(H?'शहर खोजें…':'Search city…')+'" autocomplete="off" oninput="cSearch(\''+prefix+'\',this.value)">'
+       ?(A('buy.a_birth_time_is_needed_for_an_accu'))
+       :(A('buy.your_chart_will_be_cast_at_sunrise')))+'</div>'
+   +(C.noplace?'':'<label>'+(A('buy.birth_place'))+'</label>'
+     +'<div style="position:relative;"><input id="f_'+prefix+'place" type="text" placeholder="'+(A('shared.search_city'))+'" autocomplete="off" oninput="cSearch(\''+prefix+'\',this.value)">'
      +'<div id="cdd_'+prefix+'" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:190px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div></div>'
-     +(prefix==='p'?'<button type="button" onclick="cGps()" id="cGpsBtn" style="margin-top:8px;width:100%;padding:9px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:Poppins,sans-serif;cursor:pointer;">📍 <span id="cGpsTxt">'+(H?'मेरी वर्तमान लोकेशन इस्तेमाल करें':'Use my current location')+'</span></button>':'')
+     +(prefix==='p'?'<button type="button" onclick="cGps()" id="cGpsBtn" style="margin-top:8px;width:100%;padding:9px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:Poppins,sans-serif;cursor:pointer;">📍 <span id="cGpsTxt">'+(A('buy.use_my_current_location'))+'</span></button>':'')
      /* manual coordinate fallback — hidden until a lookup actually fails.
         We never guess coordinates; if Nominatim is down the buyer can type them. */
      +'<div id="man_'+prefix+'" style="display:none;margin-top:10px;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.4);background:rgba(212,168,67,0.05);">'
        +'<div style="font-size:11.5px;color:rgba(255,244,222,0.75);line-height:1.5;margin-bottom:8px;">'
-       +(H?'शहर खोज अभी उपलब्ध नहीं है। कृपया जन्म स्थान का अक्षांश/देशांतर डालें — गलत स्थान पर गणना करने से बेहतर है।'
-          :'City lookup is unavailable right now. Please enter the birth place coordinates — we will not compute your chart at a guessed location.')+'</div>'
-       +'<div class="two"><div><label>'+(H?'अक्षांश (Latitude)':'Latitude')+'</label><input id="f_'+prefix+'lat" type="number" step="0.0001" placeholder="16.4343"></div>'
-       +'<div><label>'+(H?'देशांतर (Longitude)':'Longitude')+'</label><input id="f_'+prefix+'lng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>');
+       +(A('buy.city_lookup_is_unavailable_right_n'))+'</div>'
+       +'<div class="two"><div><label>'+(A('buy.latitude'))+'</label><input id="f_'+prefix+'lat" type="number" step="0.0001" placeholder="16.4343"></div>'
+       +'<div><label>'+(A('buy.longitude'))+'</label><input id="f_'+prefix+'lng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>');
 }
 /* Varshaphal is cast for where the native is living when the year begins, so
    Annual needs a residence city as well as a birth place. It is prefilled from
    onboarding but shown and editable — the coordinate that shapes the whole
    chart must never be one the buyer can't see or correct. */
 function residenceBlock(){
-  return '<div class="sect dev">'+(H?'वर्तमान निवास':'Where you live now')+'</div>'
+  return '<div class="sect dev">'+(A('buy.where_you_live_now'))+'</div>'
    +'<div style="font-size:11.5px;color:rgba(255,244,222,0.6);line-height:1.6;margin-bottom:8px;">'
-   +(H?'वर्षफल कुंडली उसी नगर के लिए बनती है जहाँ आप वर्ष आरंभ के समय रह रहे हैं।'
-      :'Your Varshaphal chart is cast for the city you are living in when the year begins.')+'</div>'
-   +'<label>'+(H?'वर्तमान शहर':'Current city')+'</label>'
-   +'<div style="position:relative;"><input id="f_cplace" type="text" placeholder="'+(H?'शहर खोजें…':'Search city…')+'" autocomplete="off" oninput="cSearch(\'c\',this.value)">'
+   +(A('buy.your_varshaphal_chart_is_cast_for_'))+'</div>'
+   +'<label>'+(A('buy.current_city'))+'</label>'
+   +'<div style="position:relative;"><input id="f_cplace" type="text" placeholder="'+(A('shared.search_city'))+'" autocomplete="off" oninput="cSearch(\'c\',this.value)">'
    +'<div id="cdd_c" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:190px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div></div>'
    +'<div id="man_c" style="display:none;margin-top:10px;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.4);background:rgba(212,168,67,0.05);">'
      +'<div style="font-size:11.5px;color:rgba(255,244,222,0.75);line-height:1.5;margin-bottom:8px;">'
-     +(H?'शहर खोज अभी उपलब्ध नहीं है। कृपया वर्तमान स्थान का अक्षांश/देशांतर डालें।'
-        :'City lookup is unavailable right now. Please enter the coordinates of where you live.')+'</div>'
-     +'<div class="two"><div><label>'+(H?'अक्षांश (Latitude)':'Latitude')+'</label><input id="f_clat" type="number" step="0.0001" placeholder="16.4343"></div>'
-     +'<div><label>'+(H?'देशांतर (Longitude)':'Longitude')+'</label><input id="f_clng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>';
+     +(A('buy.city_lookup_is_unavailable_right_n_2'))+'</div>'
+     +'<div class="two"><div><label>'+(A('buy.latitude'))+'</label><input id="f_clat" type="number" step="0.0001" placeholder="16.4343"></div>'
+     +'<div><label>'+(A('buy.longitude'))+'</label><input id="f_clng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>';
 }
 $('formRoot').innerHTML = (C.two
- ? person('b',H?'वर का विवरण':'Groom details')+person('g',H?'वधू का विवरण':'Bride details')
- : person('p',H?'जन्म विवरण':'Birth details'))
+ ? person('b',A('buy.groom_details'))+person('g',A('buy.bride_details'))
+ : person('p',A('buy.birth_details')))
  + (C.residence?residenceBlock():'');
 /* prefill from profile */
 (function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
@@ -350,12 +351,12 @@ function cSearch(prefix,q){
   var dd=$('cdd_'+prefix); delete CPICK[prefix];
   if(!q||q.length<2){dd.style.display='none';return;}
   clearTimeout(_cT);
-  dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.4);font-size:13px;">'+(H?'खोज रहे हैं…':'Searching…')+'</div>';
+  dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.4);font-size:13px;">'+(A('astrol.searching'))+'</div>';
   dd.style.display='block';
   _cT=setTimeout(function(){
     fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&countrycodes=in&limit=6&format=json',{headers:{'Accept-Language':'en'}})
     .then(function(r){return r.json();}).then(function(rs){
-      if(!rs.length){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(H?'कोई परिणाम नहीं':'No results')+'</div>';return;}
+      if(!rs.length){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(A('astrol.no_results'))+'</div>';return;}
       dd.innerHTML=rs.map(function(r){
         var name=r.display_name.split(',')[0].trim().replace(/'/g,'');
         var sub=r.display_name.split(',').slice(1,3).join(',').trim();
@@ -363,7 +364,7 @@ function cSearch(prefix,q){
          +'<div style="font-size:14px;color:#fff;font-weight:600;">'+name+'</div>'
          +'<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">'+sub+'</div></div>';
       }).join('');
-    }).catch(function(){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(H?'खोज विफल':'Search failed')+'</div>';});
+    }).catch(function(){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(A('astrol.search_failed'))+'</div>';});
   },400);
 }
 function cPick(prefix,name,lat,lng){
@@ -371,16 +372,16 @@ function cPick(prefix,name,lat,lng){
   $('cdd_'+prefix).style.display='none';
 }
 function cGps(){
-  var t=$('cGpsTxt'); t.textContent=H?'⏳ ढूंढ रहे हैं…':'⏳ Detecting…';
-  if(!navigator.geolocation){t.textContent=H?'❌ GPS उपलब्ध नहीं':'❌ GPS not available';return;}
+  var t=$('cGpsTxt'); t.textContent=(A('kundli.detecting'));
+  if(!navigator.geolocation){t.textContent=(A('kundli.gps_not_available'));return;}
   navigator.geolocation.getCurrentPosition(function(pos){
     fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json')
     .then(function(r){return r.json();}).then(function(d){
       var a=d.address||{}; var city=a.city||a.town||a.village||a.county||'';
       if(city){$('f_pplace').value=city;CPICK['p']={lat:pos.coords.latitude,lng:pos.coords.longitude};t.textContent='✓ '+city;}
-      else t.textContent=H?'शहर नहीं मिला — खोजें':'City not found — search instead';
-    }).catch(function(){t.textContent=H?'विफल — खोजें':'Failed — search instead';});
-  },function(){t.textContent=H?'अनुमति नहीं मिली — खोजें':'Permission denied — search instead';});
+      else t.textContent=(A('kundli.city_not_found_search_instead'));
+    }).catch(function(){t.textContent=(A('kundli.failed_search_instead'));});
+  },function(){t.textContent=(A('kundli.permission_denied_search_instead'));});
 }
 async function geo(place){
   try{var a=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(place)+'&countrycodes=in&limit=1&format=json').then(r=>r.json());
@@ -391,10 +392,10 @@ async function geo(place){
    message never lingers over a missing-field error, or vice versa. */
 function badDate(reason){
   var e=$('errD');e.textContent=sdDateMsg(reason);e.style.display='block';
-  $('btNext').textContent=H?'आगे बढ़ें →':'Continue →';
+  $('btNext').textContent=A('buy.continue');
   bdlog('rejected birth date: '+reason);
 }
-function missD(){var e=$('errD');e.textContent=H?'कृपया सभी विवरण भरें':'Please fill all details';e.style.display='block';}
+function missD(){var e=$('errD');e.textContent=A('buy.please_fill_all_details');e.style.display='block';}
 async function submitDetails(){
   var d={};
   if(C.two){
@@ -412,7 +413,7 @@ async function submitDetails(){
     var pb=sdBadDate(d.bdate);
     if(pb){badDate(pb);return;}
   }
-  $('btNext').textContent=H?'⏳ स्थान खोज रहे हैं…':'⏳ Locating…';
+  $('btNext').textContent=A('buy.locating');
   /* ── coordinate guard ──────────────────────────────────────────────────────
      Every report's blat/blng inputs carry Eluru markup defaults (16.4343/81.6985).
      If we ship a payload without coordinates the report computes a plausible but
@@ -433,10 +434,9 @@ async function submitDetails(){
   function blockOn(prefixes){
     prefixes.forEach(function(p){var m=$('man_'+p); if(m)m.style.display='block';});
     var e=$('errD');
-    e.textContent=H?'जन्म स्थान की स्थिति नहीं मिली। नीचे अक्षांश/देशांतर डालें या दोबारा प्रयास करें।'
-                   :'Could not resolve the birth place. Enter coordinates below, or try again.';
+    e.textContent=(A('buy.could_not_resolve_the_birth_place_'));
     e.style.display='block';
-    $('btNext').textContent=H?'आगे बढ़ें →':'Continue →';
+    $('btNext').textContent=A('buy.continue');
   }
   if(C.two){
     var rb=await resolve('b',d.bplace), rg=await resolve('g',d.gplace);
@@ -467,10 +467,9 @@ async function submitDetails(){
   }
   if(srFail){
     var e2=$('errD');
-    e2.textContent=H?'सूर्योदय की गणना अभी नहीं हो सकी। कृपया दोबारा प्रयास करें, या जन्म समय भर दें।'
-                    :'Could not compute sunrise just now. Please try again, or enter the birth time.';
+    e2.textContent=A('buy.could_not_compute_sunrise_just_now');
     e2.style.display='block';
-    $('btNext').textContent=H?'आगे बढ़ें →':'Continue →';
+    $('btNext').textContent=A('buy.continue');
     return;
   }
   /* Annual is cast for where the buyer lives when the year begins, so clat/clng
@@ -567,8 +566,8 @@ function afterAuth(sess){
    }).catch(function(){ backFromRzp?confirmAfterPay():showPay(); });
 }
 function showPay(){
-  $('payS').textContent=(H?'राशि: ':'Amount: ')+'₹'+C.now+' · '+(H?C.hi:C.en);
-  $('btPay').textContent=H?'भुगतान करें →':'Pay →';
+  $('payS').textContent=(A('buy.amount_2'))+'₹'+C.now+' · '+RT;
+  $('btPay').textContent=A('buy.pay');
   $('btPay').disabled=false;
   show('stPay');
 }
@@ -609,10 +608,10 @@ function doPay(){
      if(j&&j.mode)why+=' ['+j.mode+' · '+(j.key_id||'?')+' · secret '+(j.secret_len||0)+' chars]';
      bdlog('pay failed: '+why);
      $('errP').textContent=why;$('errP').style.display='block';
-     $('btPay').textContent=H?'दोबारा कोशिश करें →':'Retry →';
+     $('btPay').textContent=A('buy.retry');
    }).catch(function(e){
      $('errP').textContent=e.message;$('errP').style.display='block';
-     $('btPay').textContent=H?'दोबारा कोशिश करें →':'Retry →';
+     $('btPay').textContent=A('buy.retry');
    });
 }
 /* ₹0 test path — only reachable while the server has no Razorpay keys */
@@ -620,7 +619,7 @@ function devPay(){
   fetch('/api/order?dev=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
    .then(apiJson).then(function(j){
      if(j&&j.ok){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code);showDone();}
-     else{$('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';$('btPay').textContent='Retry →';}
+     else{$('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';$('btPay').textContent=A('buy.retry');}
    }).catch(function(e){$('errP').textContent=e.message;$('errP').style.display='block';});
 }
 /* ── returning from Razorpay ──────────────────────────────────────────────────
@@ -634,7 +633,7 @@ function confirmAfterPay(){
   var btn=$('btPay'); btn.disabled=true;
   var tries=0;
   $('errP').style.display='none';
-  btn.textContent=H?'⏳ आपका भुगतान जाँचा जा रहा है…':'⏳ Confirming your payment…';
+  btn.textContent=A('buy.confirming_your_payment');
   /* Primary path: hand Razorpay's own payment id back to our server, which asks
      Razorpay directly whether it is real, captured, ours and the right amount.
      This does not depend on webhook delivery at all. The poll below stays as a
@@ -664,13 +663,13 @@ function confirmAfterPay(){
 function payPending(){
   bdlog('payment still unconfirmed after 15 polls');
   var b=$('btPay');
-  b.textContent=H?'फिर से जाँचें →':'Check again →';
+  b.textContent=A('buy.check_again');
   /* rebind: this button must re-check, never re-charge */
   b.onclick=function(){confirmAfterPay();};
   b.setAttribute('onclick','confirmAfterPay()');
   var pid=payProof();
-  var oc=(ORDER_CODE?(' · '+(H?'ऑर्डर कोड: ':'Order code: ')+ORDER_CODE):'')
-        +(pid?(' · '+(H?'भुगतान आईडी: ':'Payment ID: ')+pid):'');
+  var oc=(ORDER_CODE?(' · '+(A('buy.order_code_2'))+ORDER_CODE):'')
+        +(pid?(' · '+(A('buy.payment_id_2'))+pid):'');
   $('errP').textContent=(H
     ?'आपका भुगतान मिल गया है, पुष्टि में थोड़ा समय लग रहा है। रिपोर्ट कुछ ही मिनटों में आपके खाते में आ जाएगी'
     :'Your payment has gone through; confirmation is taking a moment. The report will appear in your account within a few minutes')+oc+'.';
@@ -690,7 +689,7 @@ function showDone(){
     var det=details();
     if(det&&SESSION&&SESSION.user){
       fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:det,lang:H?'hi':'en'})})
+        body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:det,lang:(window.SD_LANG||'hi')})})
       .then(apiJson).then(function(j){
         if(j&&j.ready&&j.url){PDF_URL=PDF_URL||j.url;sdOwnedWrite(R,ORDER_CODE,j.url);
           bdlog('prerender '+(j.cached?'cached':'rendered'));}
@@ -705,13 +704,13 @@ var PDF_URL=null;
 function doDownload(){
   if(PDF_URL){location.href=PDF_URL;return;}
   var d=details(); if(!d){show('stDetails');return;}
-  $('btDl').textContent=H?'⏳ रिपोर्ट बन रही है… (30-40 सेकंड)':'⏳ Preparing your report… (30-40s)';
+  $('btDl').textContent=A('buy.preparing_your_report_30_40s');
   fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:H?'hi':'en'})})
+    body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:(window.SD_LANG||'hi')})})
   .then(apiJson).then(function(j){
-    if(j&&j.ready&&j.url){PDF_URL=j.url;sdOwnedWrite(R,ORDER_CODE,j.url);$('btDl').textContent=H?'⬇️ PDF डाउनलोड करें':'⬇️ Download PDF';location.href=j.url;}
+    if(j&&j.ready&&j.url){PDF_URL=j.url;sdOwnedWrite(R,ORDER_CODE,j.url);$('btDl').textContent=A('buy.download_pdf');location.href=j.url;}
     else{$('errX').textContent=(j&&(j.detail||j.error))||'failed';$('errX').style.display='block';
-      $('btDl').textContent=H?'फिर कोशिश करें →':'Retry →';}
+      $('btDl').textContent=A('report.try_again');}
   }).catch(function(e){$('errX').textContent=e.message;$('errX').style.display='block';});
 }
 function doWhatsApp(){
@@ -730,14 +729,17 @@ absorbHash().then(function(){
   if(det){checkAuthThen();return;}
   show('stDetails');
 });
-if(!H){
-  $('btNext').textContent='Continue →';$('errD').textContent='Please fill all details';
-  $('payT').textContent='Payment';$('btPay').textContent='Pay →';
-  $('doneT').textContent='Your report is being prepared!';
-  $('doneS').textContent='Get your report below — it stays in your account forever.';
-  $('btDl').textContent='⬇️ Download PDF';$('btWa').textContent='💬 Get on WhatsApp';
-  document.querySelectorAll('.btn.sec')[0].textContent='👁️ View on screen';
-}
+/* Every static label, in the reader's language. This used to be an if(!H)
+   English block — which also ran for Telugu, Kannada, Tamil… and painted
+   English over them. Now it runs for everyone and reads the string tables. */
+(function(){
+  $('btNext').textContent=A('buy.continue');$('errD').textContent=A('buy.please_fill_all_details');
+  $('payT').textContent=A('buy.payment');$('btPay').textContent=A('buy.pay');
+  $('doneT').textContent=A('buy.your_report_is_being_prepared');
+  $('doneS').textContent=A('buy.get_your_report_below_it_stays_in');
+  $('btDl').textContent=A('buy.download_pdf');$('btWa').textContent=A('buy.get_on_whatsapp');
+  document.querySelectorAll('.btn.sec')[0].textContent=A('buy.view_on_screen');
+})();
 </script>
 </body>
 </html>
