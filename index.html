@@ -549,19 +549,21 @@
   };
 
   // ── Rashi ──
+  // te / nt / lt are copied verbatim from ui-strings.js (the report layer's
+  // SD_UI.rashi, .nakshatra, .planet) so the word here is the word in the PDF.
   const rashis = [
-    {hi:'मेष',en:'Mesha',w:'Aries',icon:'♈',nh:'अश्विनी',ne:'Ashwini',lh:'मंगल',le:'Mars'},
-    {hi:'वृषभ',en:'Vrishabha',w:'Taurus',icon:'♉',nh:'कृत्तिका',ne:'Krittika',lh:'शुक्र',le:'Venus'},
-    {hi:'मिथुन',en:'Mithuna',w:'Gemini',icon:'♊',nh:'मृगशिरा',ne:'Mrigashira',lh:'बुध',le:'Mercury'},
-    {hi:'कर्क',en:'Karka',w:'Cancer',icon:'♋',nh:'पुनर्वसु',ne:'Punarvasu',lh:'चंद्र',le:'Moon'},
-    {hi:'सिंह',en:'Simha',w:'Leo',icon:'♌',nh:'मघा',ne:'Magha',lh:'सूर्य',le:'Sun'},
-    {hi:'कन्या',en:'Kanya',w:'Virgo',icon:'♍',nh:'हस्त',ne:'Hasta',lh:'बुध',le:'Mercury'},
-    {hi:'तुला',en:'Tula',w:'Libra',icon:'♎',nh:'चित्रा',ne:'Chitra',lh:'शुक्र',le:'Venus'},
-    {hi:'वृश्चिक',en:'Vrishchika',w:'Scorpio',icon:'♏',nh:'अनुराधा',ne:'Anuradha',lh:'मंगल',le:'Mars'},
-    {hi:'धनु',en:'Dhanu',w:'Sagittarius',icon:'♐',nh:'मूल',ne:'Mula',lh:'गुरु',le:'Jupiter'},
-    {hi:'मकर',en:'Makara',w:'Capricorn',icon:'♑',nh:'श्रवण',ne:'Shravana',lh:'शनि',le:'Saturn'},
-    {hi:'कुंभ',en:'Kumbha',w:'Aquarius',icon:'♒',nh:'शतभिषा',ne:'Shatabhisha',lh:'शनि',le:'Saturn'},
-    {hi:'मीन',en:'Meena',w:'Pisces',icon:'♓',nh:'रेवती',ne:'Revati',lh:'गुरु',le:'Jupiter'},
+    {hi:'मेष',en:'Mesha',te:'మేషం',nt:'అశ్విని',lt:'కుజుడు',w:'Aries',icon:'♈',nh:'अश्विनी',ne:'Ashwini',lh:'मंगल',le:'Mars'},
+    {hi:'वृषभ',en:'Vrishabha',te:'వృషభం',nt:'కృత్తిక',lt:'శుక్రుడు',w:'Taurus',icon:'♉',nh:'कृत्तिका',ne:'Krittika',lh:'शुक्र',le:'Venus'},
+    {hi:'मिथुन',en:'Mithuna',te:'మిథునం',nt:'మృగశిర',lt:'బుధుడు',w:'Gemini',icon:'♊',nh:'मृगशिरा',ne:'Mrigashira',lh:'बुध',le:'Mercury'},
+    {hi:'कर्क',en:'Karka',te:'కర్కాటకం',nt:'పునర్వసు',lt:'చంద్రుడు',w:'Cancer',icon:'♋',nh:'पुनर्वसु',ne:'Punarvasu',lh:'चंद्र',le:'Moon'},
+    {hi:'सिंह',en:'Simha',te:'సింహం',nt:'మఖ',lt:'సూర్యుడు',w:'Leo',icon:'♌',nh:'मघा',ne:'Magha',lh:'सूर्य',le:'Sun'},
+    {hi:'कन्या',en:'Kanya',te:'కన్య',nt:'హస్త',lt:'బుధుడు',w:'Virgo',icon:'♍',nh:'हस्त',ne:'Hasta',lh:'बुध',le:'Mercury'},
+    {hi:'तुला',en:'Tula',te:'తుల',nt:'చిత్త',lt:'శుక్రుడు',w:'Libra',icon:'♎',nh:'चित्रा',ne:'Chitra',lh:'शुक्र',le:'Venus'},
+    {hi:'वृश्चिक',en:'Vrishchika',te:'వృశ్చికం',nt:'అనూరాధ',lt:'కుజుడు',w:'Scorpio',icon:'♏',nh:'अनुराधा',ne:'Anuradha',lh:'मंगल',le:'Mars'},
+    {hi:'धनु',en:'Dhanu',te:'ధనుస్సు',nt:'మూల',lt:'గురువు',w:'Sagittarius',icon:'♐',nh:'मूल',ne:'Mula',lh:'गुरु',le:'Jupiter'},
+    {hi:'मकर',en:'Makara',te:'మకరం',nt:'శ్రవణం',lt:'శని',w:'Capricorn',icon:'♑',nh:'श्रवण',ne:'Shravana',lh:'शनि',le:'Saturn'},
+    {hi:'कुंभ',en:'Kumbha',te:'కుంభం',nt:'శతభిషం',lt:'శని',w:'Aquarius',icon:'♒',nh:'शतभिषा',ne:'Shatabhisha',lh:'शनि',le:'Saturn'},
+    {hi:'मीन',en:'Meena',te:'మీనం',nt:'రేవతి',lt:'గురువు',w:'Pisces',icon:'♓',nh:'रेवती',ne:'Revati',lh:'गुरु',le:'Jupiter'},
   ];
 
   function getRashi(dob) {
@@ -586,7 +588,7 @@
     s('s2title',t.s2title); s('s2desc',t.s2desc);
     s('nameLabel',t.nameLabel); ph('userName',t.namePH); s('cta2',t.cta2);
     const ni=document.getElementById('userName');
-    if(ni) ni.lang=l==='hi'?'hi':'en';
+    if(ni) ni.lang=l;
     s('s3title',t.s3title); s('s3desc',t.s3desc);
     s('dobLabel',t.dobLabel); s('dobOpt',t.dobOpt); s('dobHint',t.dobHint);
     s('tobLabel',t.tobLabel); s('tobOpt',t.tobOpt); s('tobHint',t.tobHint);
@@ -595,7 +597,7 @@
     s('s4title',t.s4title); s('s4desc',t.s4desc);
     s('gpsTxt',t.gpsTxt);
     s('orDiv',`<span>${t.orDiv}</span>`);
-    s('cityLabel',t.cityLabel); ph('userCity',t.cityPH);
+    s('cityLabel',t.cityLabel); ph('userCity',t.cityPH); ph('userCityInput',t.cityPH);
     s('stateLabel',t.stateLabel); s('stateOpt',t.stateOpt);
     s('cta4',t.cta4);
     s('rcLbl',t.rcLbl); s('tiLbl',t.tiLbl); s('enterTxt',t.enterTxt);
@@ -619,7 +621,12 @@
     // App runs in en + hi today. Hindi → Hindi; every other choice runs in
     // English. The picked language is saved so each language can switch on
     // automatically as its translation ships.
-    var eff = (l === 'hi') ? 'hi' : 'en';
+    /* A language runs natively once its onboarding table (T) AND the app
+       (READY in dashboard.html) exist. Telugu used to be forced to English
+       here, so a devotee who tapped తెలుగు got an English onboarding and an
+       English app until they found Settings. */
+    var ONB_READY = {hi:1, en:1, te:1};
+    var eff = ONB_READY[l] ? l : 'en';
     lang = eff; user.lang = eff; user.pref_lang = l;
     try { localStorage.setItem('shubhdin_pref_lang', l); } catch(e) {}
 
@@ -660,11 +667,9 @@
   async function goStep(n) {
     // Save data
     const _rawName = document.getElementById('userName')?.value?.trim() || user.name || '';
-    if(lang==='hi'){
-      user.name = await romanToDevanagari(_rawName);
-    } else {
-      user.name = _rawName;
-    }
+    if(lang==='hi')      user.name = await romanToScript(_rawName,'hi');
+    else if(lang==='te') user.name = await romanToScript(_rawName,'te');
+    else                 user.name = _rawName;
     user.dob   = document.getElementById('userDOB')?.value           || user.dob   || '';
     var _unk = document.getElementById('tobUnknown');
     user.tobUnknown = !!(_unk && _unk.checked);
@@ -680,8 +685,8 @@
      T entry yet; without this fallback every read off T[lang] throws on the
      first screen a new user sees. Hindi until they are written. */
     const cn=(user.name||'').charAt(0).toUpperCase()+(user.name||'').slice(1);
-    if(n===3&&user.name) document.getElementById('s3title').textContent=lang==='hi'?cn+' जी, जन्म तिथि?':'Birth details, '+cn+'?';
-    if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':'Almost done, '+cn+'!';
+    if(n===3&&user.name) document.getElementById('s3title').textContent=lang==='hi'?cn+' जी, जन्म तिथि?':lang==='te'?cn+' గారు, జనన తేదీ?':'Birth details, '+cn+'?';
+    if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':lang==='te'?'దాదాపు అయిపోయింది, '+cn+' గారు!':'Almost done, '+cn+'!';
     if (n===5) buildWelcome();
 
     showStep(n);
@@ -800,7 +805,7 @@
     // Add default option
     const defOpt = document.createElement('option');
     defOpt.value = '';
-    defOpt.textContent = lang === 'hi' ? 'शहर चुनें' : 'Select city';
+    defOpt.textContent = lang === 'hi' ? 'शहर चुनें' : lang === 'te' ? 'నగరాన్ని ఎంచుకోండి' : 'Select city';
     citySelect.appendChild(defOpt);
 
     // Add cities for this state
@@ -829,20 +834,22 @@
     const r = getRashi(user.dob);
     const name = user.name || '';
     const cN=name.charAt(0).toUpperCase()+name.slice(1);
-    document.getElementById('wTitle').textContent=lang==='hi'?'स्वागत है, '+cN+' जी! 🙏':'Welcome, '+cN+'! 🙏';
-    document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : 'From '+user.city+' — your journey begins today 🌼';
+    document.getElementById('wTitle').textContent=lang==='hi'?'स्वागत है, '+cN+' जी! 🙏':lang==='te'?'స్వాగతం, '+cN+' గారు! 🙏':'Welcome, '+cN+'! 🙏';
+    document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : lang==='te' ? user.city+' నుండి — మీ ప్రయాణం నేడు మొదలవుతోంది 🌼' : 'From '+user.city+' — your journey begins today 🌼';
     document.getElementById('rIcon').textContent  = r.icon;
     // Vedic name leads; the Western label follows in brackets purely so a user
     // who only knows "Scorpio" recognises themselves. Never the other way round.
     document.getElementById('rName').textContent  = lang==='hi'
       ? r.hi+' राशि'
+      : lang==='te' ? r.te+' రాశి'
       : r.en+' Rashi'+(r.w?' ('+r.w+')':'');
-    document.getElementById('rSub').textContent   = lang==='hi' ? r.nh+' नक्षत्र • '+r.lh+' स्वामी' : r.ne+' Nakshatra • Lord: '+r.le;
+    document.getElementById('rSub').textContent   = lang==='hi' ? r.nh+' नक्षत्र • '+r.lh+' स्वामी' : lang==='te' ? r.nt+' నక్షత్రం • అధిపతి: '+r.lt : r.ne+' Nakshatra • Lord: '+r.le;
 
     const days = new Date().getDay();
     const ihi = ['आज सूर्य देवता की पूजा करें। शुभ समय <strong>7:00–8:30</strong>।','आज शिव जी का जल चढ़ाएं। शुभ समय <strong>6:30–8:00</strong>।','आज हनुमान जी का जप करें। शुभ समय <strong>9:00–10:30</strong>।','आज गणेश जी की पूजा करें। शुभ समय <strong>10:00–11:30</strong>।','आज विष्णु जी का स्मरण करें। शुभ समय <strong>8:00–9:30</strong>।','आज लक्ष्मी जी की आराधना करें। शुभ समय <strong>6:00–7:30</strong>।','आज शनि देव को तेल चढ़ाएं। शुभ समय <strong>8:30–10:00</strong>।'];
     const ien = ['Pray to Surya Dev. Auspicious time: <strong>7:00–8:30</strong>.','Offer water to Shiva Ji. Auspicious time: <strong>6:30–8:00</strong>.','Chant for Hanuman Ji. Auspicious time: <strong>9:00–10:30</strong>.','Worship Ganesh Ji. Auspicious time: <strong>10:00–11:30</strong>.','Remember Vishnu Ji. Auspicious time: <strong>8:00–9:30</strong>.','Pray to Lakshmi Ji. Auspicious time: <strong>6:00–7:30</strong>.','Offer oil to Shani Dev. Auspicious time: <strong>8:30–10:00</strong>.'];
-    document.getElementById('tiTxt').innerHTML = lang==='hi' ? ihi[days] : ien[days];
+        const ite = ['నేడు సూర్య భగవానుని పూజించండి. శుభ సమయం <strong>7:00–8:30</strong>.','నేడు శివునికి జలాభిషేకం చేయండి. శుభ సమయం <strong>6:30–8:00</strong>.','నేడు హనుమంతుని జపం చేయండి. శుభ సమయం <strong>9:00–10:30</strong>.','నేడు గణపతిని పూజించండి. శుభ సమయం <strong>10:00–11:30</strong>.','నేడు విష్ణువును స్మరించండి. శుభ సమయం <strong>8:00–9:30</strong>.','నేడు లక్ష్మీదేవిని ఆరాధించండి. శుభ సమయం <strong>6:00–7:30</strong>.','నేడు శనీశ్వరునికి నూనె సమర్పించండి. శుభ సమయం <strong>8:30–10:00</strong>.'];
+    document.getElementById('tiTxt').innerHTML = lang==='hi' ? ihi[days] : lang==='te' ? ite[days] : ien[days];
   }
 
   // ── Enter app ──
@@ -853,12 +860,13 @@
 
 
   // ── English name → Hindi (Google Input Tools) ──
-  async function romanToDevanagari(name){
+  async function romanToScript(name, l){
     if(!name) return name;
-    if(/[\u0900-\u097F]/.test(name)) return name; // already Hindi
+    if(/[\u0900-\u097F\u0C00-\u0C7F]/.test(name)) return name; // already in an Indic script
+    const itc = (l==='te') ? 'te-t-i0-und' : 'hi-t-i0-und';
     try {
       const res = await fetch(
-        `https://inputtools.google.com/request?text=${encodeURIComponent(name.toLowerCase())}&itc=hi-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`,
+        `https://inputtools.google.com/request?text=${encodeURIComponent(name.toLowerCase())}&itc=${itc}&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`,
         {headers:{'Content-Type':'application/json'}}
       );
       const data = await res.json();
