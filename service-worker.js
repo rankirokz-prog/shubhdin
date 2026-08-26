@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v114';
+const CACHE_NAME = 'shubhdin-v117';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -28,6 +28,8 @@ const CORE_FILES = [
   '/ui-strings.js',
   '/panchang-terms.js',
   '/panchang-terms-bridge.js',
+  '/vrat-names.js',
+  '/app-langs.js',
   '/font-loader.js',
   '/manifest.json',
   '/icons/icon-192.png',
