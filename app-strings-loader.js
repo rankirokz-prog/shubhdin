@@ -13,12 +13,21 @@
   function table(lang) { return g['SD_APP_' + String(lang || '').toUpperCase()] || null; }
 
   /* A(key) — the string in the current language. */
+  /* Which strings did NOT come from the chosen language's table. A script
+     counter cannot see a Hindi string on a Marathi screen, or Bengali on an
+     Assamese one — same letters. This can: every fallback is recorded with
+     the table that served it, and the leak gate asserts the list is empty. */
+  g.SD_FALLBACKS = g.SD_FALLBACKS || [];
+  function fell(key, served, lang) {
+    g.SD_FALLBACKS.push({ key: key, served: served, lang: lang });
+  }
   g.A = function (key, lang) {
     lang = lang || g.SD_LANG || 'hi';
     var t = table(lang), v = t && t[key];
     if (v) return v;
-    var h = table('hi'); if (h && h[key]) return h[key];
-    var e = table('en'); if (e && e[key]) return e[key];
+    var h = table('hi'); if (h && h[key]) { if (lang !== 'hi') fell(key, 'hi', lang); return h[key]; }
+    var e = table('en'); if (e && e[key]) { if (lang !== 'en') fell(key, 'en', lang); return e[key]; }
+    fell(key, 'humanised', lang);
     /* No table has the key — which in practice means no table LOADED, because
        a file failed to upload or a stale service-worker page is asking for one
        that isn't there yet. Returning the key painted "dashbo.astrology_today"
