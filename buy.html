@@ -75,7 +75,7 @@ input:focus{outline:none;border-color:var(--gold);}
  <div class="p-s" id="payS"></div></div>
  <button class="btn" id="btPay" onclick="doPay()">भुगतान करें →</button>
  <div class="err" id="errP"></div>
- <div class="note">🔒 सुरक्षित भुगतान · UPI / कार्ड</div></div>
+ <div class="note" id="payNote">🔒 सुरक्षित भुगतान · UPI / कार्ड</div></div>
 
 <!-- 4 · SUCCESS -->
 <div class="stage" id="stDone"><div class="center"><div class="big">🎉</div>
@@ -735,6 +735,7 @@ absorbHash().then(function(){
 (function(){
   $('btNext').textContent=A('buy.continue');$('errD').textContent=A('buy.please_fill_all_details');
   $('payT').textContent=A('buy.payment');$('btPay').textContent=A('buy.pay');
+  $('payNote').textContent='🔒 '+A('buy.secure_payment_upi_card');
   $('doneT').textContent=A('buy.your_report_is_being_prepared');
   $('doneS').textContent=A('buy.get_your_report_below_it_stays_in');
   $('btDl').textContent=A('buy.download_pdf');$('btWa').textContent=A('buy.get_on_whatsapp');
