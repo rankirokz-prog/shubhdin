@@ -2116,6 +2116,7 @@ if(typeof window.A!=='function'){
 
       <!-- Nav -->
       <div class="jnav">
+        <button class="j-pill j-back" onclick="japBackHome()" aria-label="Back" style="border:none;cursor:pointer;font-size:15px;padding:4px 10px;line-height:1;">←</button>
         <div class="j-pill" id="jPill">मंगलवार</div>
         <div class="j-deity-name" id="jDeityName">श्री हनुमान<em>शक्ति और भक्ति</em></div>
         <div class="j-pill" id="jCountPill">0/28</div>
@@ -2172,6 +2173,7 @@ if(typeof window.A!=='function'){
 
       <!-- Completion overlay -->
       <div class="jdone" id="jdone">
+        <button class="j-pill j-back" onclick="japBackHome()" aria-label="Back" style="position:absolute;top:14px;left:14px;z-index:60;border:none;cursor:pointer;font-size:15px;padding:4px 10px;line-height:1;">←</button>
         <!-- Particles -->
         <canvas id="jdCanvas" style="position:absolute;inset:0;pointer-events:none;opacity:0.7;"></canvas>
 
@@ -7002,6 +7004,15 @@ function showMuhuratDetail(key){
 
 
 
+/* Back from the jap screen or its completion overlay: stop the chant if it is
+   playing, hide the overlay, return Home. The count is kept — a devotee who
+   steps out mid-mala should not lose it. */
+function japBackHome(){
+  try{ if(typeof jPlay!=='undefined' && jPlay && typeof toggleJap==='function') toggleJap(); }catch(e){}
+  try{ if(typeof jChantAudio!=='undefined' && jChantAudio){ jChantAudio.pause(); } }catch(e){}
+  var d=document.getElementById('jdone'); if(d) d.classList.remove('show');
+  go('home');
+}
 function japAgain(){
   // Hide completion screen
   document.getElementById('jdone').classList.remove('show');
