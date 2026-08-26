@@ -304,8 +304,6 @@ var STEPS_HI=['ग्रहों की स्थिति की गणना 
  'दशा-अंतर्दशा की गणना…','योग और दोष की जाँच…','आपकी कुंडली लिखी जा रही है…'];
 var STEPS_EN=['Calculating planetary positions…','Building lagna and houses…','Preparing 16 varga charts…',
  'Computing dasha periods…','Checking yogas and doshas…','Writing your Kundli…'];
-var STEPS_TE=['గ్రహ స్థానాలు లెక్కిస్తున్నాం…','లగ్నం, భావాలు తయారవుతున్నాయి…','16 వర్గ చక్రాలు సిద్ధమవుతున్నాయి…',
- 'దశా కాలాలు లెక్కిస్తున్నాం…','యోగాలు, దోషాలు పరిశీలిస్తున్నాం…','మీ జాతకం రాస్తున్నాం…'];
 function startPrep(user){
   show('stPrep');
   /* geocode the birth place during the preparation window (Nominatim, free) */
@@ -325,7 +323,7 @@ function startPrep(user){
   if(email){try{var u2=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');u2.email=email;
     localStorage.setItem('shubhdin_user',JSON.stringify(u2));}catch(e){}}
   requestServerPdf();
-  var T=30000, steps=(window.SD_LANG==='te')?STEPS_TE:(H?STEPS_HI:STEPS_EN), t0=Date.now();
+  var T=30000, steps=(typeof sdHas==='function'&&sdHas('kundli.step_1'))?[1,2,3,4,5,6].map(function(n){return A('kundli.step_'+n);}):(H?STEPS_HI:STEPS_EN), t0=Date.now();
   var iv=setInterval(function(){
     var f=Math.min(1,(Date.now()-t0)/T);
     $('ppBar').style.width=(f*100).toFixed(0)+'%';
@@ -368,7 +366,7 @@ function updateDlBtn(){var b=$('rdBtn');if(!b||!PDF_URL)return;
   /* Page count from report-catalog.js — see FREE_KUNDLI there for why it is
      "250+" and not an exact figure. */
   var pg=(typeof kundliPages==='function')?kundliPages(H,'short'):(A('dashbo.250_pages'));
-  b.textContent=(window.SD_LANG==='te')?('⬇️ PDF డౌన్‌లోడ్ చేసుకోండి ('+pg+')'):H?('⬇️ PDF डाउनलोड करें ('+pg+')'):('⬇️ Download PDF ('+pg+')');}
+  b.textContent=(typeof sdHas==='function'&&sdHas('kundli.download_pdf_pages'))?AF('kundli.download_pdf_pages',{pages:pg}):H?('⬇️ PDF डाउनलोड करें ('+pg+')'):('⬇️ Download PDF ('+pg+')');}
 /* ══════════════════════════════════════════════════════════════════
    OPENING THE PDF FROM AN INSTALLED PWA
 
