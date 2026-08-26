@@ -2258,8 +2258,10 @@ const H=lang==='hi';
    (which already holds 61 names in nine languages), then the pair. */
 function sdCalName(e){
   if(!e) return '';
+  if(SD_IS_TE && e.en && SD_TE.cal[e.en]) return SD_TE.cal[e.en];
   if(e.key && typeof A==='function' && typeof sdHas==='function' && sdHas(e.key)) return A(e.key);
-  if(typeof sdVrat==='function' && e.en){
+  /* only ask the vrat table for names it holds — a civil holiday is not a miss */
+  if(typeof sdVrat==='function' && e.en && window.SD_VRAT_NAMES && SD_VRAT_NAMES[e.en]){
     var v=sdVrat(e.en);
     if(v && v!==e.en) return v;
   }
@@ -2334,15 +2336,50 @@ function fmt(tpl, vals){
 function plural(n, one, other){ return fmt(Number(n) === 1 ? one : other, {n:n}); }
 function t2(hi, en){ return H ? hi : en; }
 
+/* ═══ Telugu layer for the sites that still forked H ? hindi : english ═══
+   Dates, calendar categories, civil holidays and a handful of sentences that
+   never went through the string sheet. L3() picks Telugu when it is authored,
+   otherwise the old hi/en rule, so Hindi and English behave exactly as before. */
+var SD_IS_TE = (window.SD_LANG === 'te');
+function L3(hi, en, te){ return (SD_IS_TE && te != null) ? te : (H ? hi : en); }
+var SD_TE = {
+  mon:  ['జనవరి','ఫిబ్రవరి','మార్చి','ఏప్రిల్','మే','జూన్','జూలై','ఆగస్టు','సెప్టెంబర్','అక్టోబర్','నవంబర్','డిసెంబర్'],
+  monS: ['జన','ఫిబ్ర','మార్చి','ఏప్రి','మే','జూన్','జూలై','ఆగ','సెప్','అక్టో','నవ','డిసె'],
+  day:  ['ఆదివారం','సోమవారం','మంగళవారం','బుధవారం','గురువారం','శుక్రవారం','శనివారం'],
+  dayS: ['ఆది','సోమ','మంగళ','బుధ','గురు','శుక్ర','శని'],
+  cev:  {major:'ప్రధాన పండుగ', festival:'పండుగ', national:'ప్రభుత్వ సెలవు', bank:'బ్యాంకు సెలవు', vrat:'వ్రతం / ఉపవాసం', purnima:'పౌర్ణమి', amavasya:'అమావాస్య'},
+  moon: {'Amavasya':'అమావాస్య','Waxing Crescent':'శుక్ల పక్షం','First Quarter':'అష్టమి','Waxing Gibbous':'శుక్ల పక్షం','Purnima':'పౌర్ణమి','Waning Gibbous':'కృష్ణ పక్షం','Last Quarter':'అష్టమి','Waning Crescent':'కృష్ణ పక్షం'},
+  /* civil holidays and festival spellings the vrat table does not carry */
+  cal:  {'Gandhi Jayanti':'గాంధీ జయంతి','Navratri Begins':'నవరాత్రి ప్రారంభం','Dussehra':'దసరా','Valmiki Jayanti':'వాల్మీకి జయంతి','Diwali':'దీపావళి','Christmas':'క్రిస్మస్','Lohri':'లోహ్రీ','Pongal':'పొంగల్','Republic Day':'గణతంత్ర దినోత్సవం','Maha Shivratri':'మహా శివరాత్రి','Gudi Padwa':'గుడి పాడ్వా','Ugadi':'ఉగాది','Ram Navami':'శ్రీరామ నవమి','Dr. Ambedkar Jayanti':'అంబేద్కర్ జయంతి','Tamil New Year':'తమిళ నూతన సంవత్సరం','Labour Day':'కార్మిక దినోత్సవం','Buddha Purnima':'బుద్ధ పూర్ణిమ','Vat Savitri':'వట సావిత్రి వ్రతం','Rath Yatra':'రథయాత్ర','Independence Day':'స్వాతంత్ర్య దినోత్సవం','Janmashtami':'శ్రీకృష్ణ జన్మాష్టమి','Putrada Ekadashi':'పుత్రద ఏకాదశి','Papamochani Ekadashi':'పాపమోచనీ ఏకాదశి','Shravana Putrada':'శ్రావణ పుత్రద ఏకాదశి','Parsva Ekadashi':'పార్శ్వ ఏకాదశి','Haribodhini Ekadashi':'హరిబోధిని ఏకాదశి','Amavasya':'అమావాస్య','Purnima':'పౌర్ణమి','Bank Holiday':'బ్యాంకు సెలవు','2nd Saturday':'రెండో శనివారం','4th Saturday':'నాలుగో శనివారం'},
+  /* daily suggestion line under the calendar */
+  tip:  ['☀️ సూర్య భగవానుడిని పూజించండి','🕉️ శివుడిని ఆరాధించడానికి మంచి రోజు','🙏 హనుమాన్ చాలీసా చదవండి','📿 గణేశ మంత్రం జపించండి','🌸 విష్ణు సహస్రనామం చదవండి','🌺 లక్ష్మీ దేవిని పూజించండి','🪔 శనీశ్వరుడికి నూనె సమర్పించండి'],
+  motiv:['"శ్రద్ధ, నిలకడ — ఇదే సాధన శక్తి"','"రోజుకో అడుగు — గమ్యం దగ్గరవుతుంది"','"సాధనపై నమ్మకమే అతి పెద్ద బలం"','"క్రమం తప్పకపోవడమే సిద్ధికి దారి"'],
+  prog: {27:'మంచి ప్రారంభం 🙏',54:'సగం అయిపోయింది 🔥',81:'ఇంకొంచెమే ✨'}
+};
+function sdMon(i, short){ return L3((short?['जन','फर','मार्च','अप्रै','मई','जून','जुल','अग','सित','अक्टू','नव','दिस']:['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'])[i],
+  (short?['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']:['January','February','March','April','May','June','July','August','September','October','November','December'])[i],
+  (short?SD_TE.monS:SD_TE.mon)[i]); }
+function sdDow(i, short){ return L3((short?['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि']:['रविवार','सोमवार','मंगलवार','बुधवार','गुरुवार','शुक्रवार','शनिवार'])[i],
+  (short?['Sun','Mon','Tue','Wed','Thu','Fri','Sat']:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'])[i],
+  (short?SD_TE.dayS:SD_TE.day)[i]); }
+/* Any calendar or festival name: the sheet key, then the vrat table, then the civil list, then hi/en. */
+function sdCal(hi, en){
+  if(SD_IS_TE){ if(SD_TE.cal[en]) return SD_TE.cal[en];
+    if(typeof sdVrat==='function' && en && window.SD_VRAT_NAMES && SD_VRAT_NAMES[en]){ var v=sdVrat(en); if(v && v!==en && !/[A-Za-z]{3}/.test(v)) return v; } }
+  return H ? hi : en;
+}
+function sdCevByMeta(m){ for(var k in CEV_META){ if(CEV_META[k]===m) return SD_TE.cev[k]; } return null; }
+function sdCev(kind){ var m=CEV_META[kind]||CEV_META.festival; return L3(m.hi, m.en, SD_TE.cev[kind]); }
+
 
 // ── Panchang Translation Maps (Hindi → English) ──
-const TITHI_MAP={
+const TITHI_MAP={ _kind:'tithi',
   'प्रतिपदा':'Pratipada','द्वितीया':'Dwitiya','तृतीया':'Tritiya','चतुर्थी':'Chaturthi',
   'पंचमी':'Panchami','षष्ठी':'Shashthi','सप्तमी':'Saptami','अष्टमी':'Ashtami',
   'नवमी':'Navami','दशमी':'Dashami','एकादशी':'Ekadashi','द्वादशी':'Dwadashi',
   'त्रयोदशी':'Trayodashi','चतुर्दशी':'Chaturdashi','पूर्णिमा':'Purnima','अमावस्या':'Amavasya',
 };
-const NAK_MAP={
+const NAK_MAP={ _kind:'nakshatra',
   'अश्विनी':'Ashwini','भरणी':'Bharani','कृत्तिका':'Krittika','रोहिणी':'Rohini',
   'मृगशिरा':'Mrigashira','आर्द्रा':'Ardra','पुनर्वसु':'Punarvasu','पुष्य':'Pushya',
   'अश्लेषा':'Ashlesha','मघा':'Magha','पूर्वाफाल्गुनी':'Purva Phalguni',
@@ -2367,7 +2404,7 @@ const YOGA_EN_HI={
   
   'Brahma':'ब्रह्म','Indra':'इन्द्र','Vaidhrita':'वैधृति','Vaidhriti':'वैधृति'
 };
-const YOGA_MAP={
+const YOGA_MAP={ _kind:'yoga',
   'विष्कम्भ':'Vishkambha','प्रीति':'Preeti','आयुष्मान':'Ayushman','सौभाग्य':'Saubhagya',
   'शोभन':'Shobhana','अतिगण्ड':'Atiganda','सुकर्मा':'Sukarma','धृति':'Dhriti',
   'शूल':'Shula','गण्ड':'Ganda','वृद्धि':'Vriddhi','ध्रुव':'Dhruva','व्याघात':'Vyaghata',
@@ -2376,7 +2413,7 @@ const YOGA_MAP={
   'साध्य':'Sadhya','शुभ':'Shubha','शुक्ल':'Shukla','ब्रह्म':'Brahma',
   'इन्द्र':'Indra','वैधृति':'Vaidhrita',
 };
-const KAR_MAP={
+const KAR_MAP={ _kind:'karana',
   'बव':'Bava','बालव':'Balava','कौलव':'Kaulava','तैतिल':'Taitila','गर':'Gara',
   'वणिज':'Vanija','विष्टि':'Vishti','शकुनि':'Shakuni','चतुष्पाद':'Chatushpada',
   'नाग':'Naga','किंस्तुघ्न':'Kinstughna',
@@ -2390,6 +2427,12 @@ const KAR_RMAP=makeRevMap(KAR_MAP);
 
 function panTr(val, map){
   if(!val) return val;
+  if(SD_IS_TE && map && map._kind && typeof sdTerm==='function'){
+    if(/[\u0C00-\u0C7F]/.test(val)) return val;   /* the engine payload already localised it */
+    /* the value may be Hindi (from the API) or English; get the English name first */
+    var en = map[val] || val;
+    return sdTerm(map._kind, en);
+  }
   if(!H){
     // English mode: Hindi→English. If already English, return as-is
     return map[val] || val;
@@ -2521,7 +2564,7 @@ function personalise(){
   document.getElementById('rl').textContent=A('dashbo.rashi');
   const jsb=document.getElementById('jdShareBtn');if(jsb)jsb.textContent=A('dashbo.share_with_loved_ones');
   document.getElementById('ri').textContent=R_KNOWN?R.i:'✨';
-  document.getElementById('rv').textContent=R_KNOWN?(H?R.h:R.e):(A('dashbo.add'));
+  document.getElementById('rv').textContent=R_KNOWN?sdRashi({hi:R.h,en:R.e}):(A('dashbo.add'));
   var _rc=document.getElementById('rv');
   if(_rc&&!R_KNOWN){ _rc.parentElement.style.cursor='pointer';
     _rc.parentElement.onclick=function(){openSettings();}; }
@@ -2571,8 +2614,9 @@ function personalise(){
     _t('khBadge',A('dashbo.ready'));
     _t('khTag',A('home.your_kundli'));
     _t('khTitle',A('home.my_kundli'));
-    _t('khSub',H?(KH_OF+' की विस्तृत कुंडली — कभी भी देखें या डाउनलोड करें')
-                 :('Your detailed Kundli, '+KH_SHORT+' — view or download anytime'));
+    _t('khSub',L3(KH_OF+' की विस्तृत कुंडली — कभी भी देखें या डाउनलोड करें',
+                  'Your detailed Kundli, '+KH_SHORT+' — view or download anytime',
+                  'మీ పూర్తి జాతకం, '+KH_SHORT+' — ఎప్పుడైనా చూడండి లేదా డౌన్‌లోడ్ చేసుకోండి'));
     const kf=document.getElementById('khFree'); if(kf&&kf.parentElement)kf.parentElement.style.display='none';
     _t('khBtn',A('home.view_download'));
   }
@@ -2585,7 +2629,7 @@ function personalise(){
   document.getElementById('lhTag').textContent=A('dashbo.today_s_panchang_for_you');
   document.getElementById('lhTitle').textContent=A('dashbo.listen_to_daily_panchang');
   document.getElementById('lhSub').textContent=R_KNOWN
-    ? (H?(R.h+' • '+R.nh+' • हिंदी'):(R.e+' • '+R.ne+' • English'))
+    ? (sdRashi({hi:R.h,en:R.e})+' • '+sdNak({hi:R.nh,en:R.ne})+' • '+L3('हिंदी','English','తెలుగు'))
     : (A('dashbo.add_your_birth_details'));
   var _pv=document.getElementById('pvTime');
   /* Read the existing value BEFORE the line is re-rendered — replacing the
@@ -2639,7 +2683,7 @@ function personalise(){
   // Listen screen
   // Panchang
   document.getElementById('phTitle').innerHTML=A('dashbo.full_panchang');
-  document.getElementById('phDate').textContent=H?(now.getDate()+' '+months_hi[now.getMonth()]):now.toLocaleDateString(sdLocale(),{day:'numeric',month:'short'});
+  document.getElementById('phDate').textContent=(H||SD_IS_TE)?(now.getDate()+' '+sdMon(now.getMonth(),false)):now.toLocaleDateString(sdLocale(),{day:'numeric',month:'short'});
   // आज का सार — yoga + tithi + day based dynamic logic
   const saarTitle=document.getElementById('asTitle');
   const saarSub=document.getElementById('asSub');
@@ -2696,14 +2740,14 @@ function personalise(){
   document.getElementById('sl3').textContent=A('dashbo.sunset');
   document.getElementById('ps1').textContent=A('dashbo.pancha_tattva');
   document.getElementById('varLbl').textContent=A('dashbo.vara');
-  document.getElementById('varVal').textContent=H?df_h[dow]:df_e[dow];
-  document.getElementById('varSub').textContent=H?T.d_hi+' का दिन':T.d_en+" Day";
+  document.getElementById('varVal').textContent=sdDow(dow,false);
+  document.getElementById('varSub').textContent=L3(T.d_hi+' का दिन',T.d_en+" Day",T.d_te+' రోజు');
   document.getElementById('nakLbl2').textContent=A('dashbo.nakshatra');
   document.getElementById('tithiLbl').textContent=A('dashbo.tithi');
   document.getElementById('yogLbl').textContent=A('dashbo.yoga');
   document.getElementById('karLbl').textContent=A('dashbo.karana');
   document.getElementById('varLbl').textContent=A('dashbo.day');
-  document.getElementById('nakVal2').textContent=H?R.nh:R.ne;
+  document.getElementById('nakVal2').textContent=sdNak({hi:R.nh,en:R.ne});
   document.getElementById('ps2').textContent=A('dashbo.inauspicious_times');
   document.getElementById('rahuLbl').textContent=A('dashbo.rahu_kaal');
   if(!document.getElementById('rahuTime').textContent.match(/\d/))
@@ -2730,11 +2774,11 @@ function personalise(){
   const jdn = document.getElementById('jDeityName');
   if(jdn) jdn.innerHTML = (sdDev(T.d_hi,T.d_en,T.d_te))+'<em>'+(sdDev(T.day_hi,T.day_en,T.day_te))+'</em>';
   const jpill = document.getElementById('jPill');
-  if(jpill) jpill.textContent = H?df_h[dow]:df_e[dow];
+  if(jpill) jpill.textContent = sdDow(dow,false);
   const jgl2 = document.getElementById('jGoalLine');
   if(jgl2) jgl2.textContent = isShravan()?(A('dashbo.today_s_goal_108_names')):(A('dashbo.today_s_goal_28_chants'));
   document.getElementById('jdTitle').textContent = A('dashbo.28_chants_complete');
-  document.getElementById('jdSub').textContent = H?T.d_hi+' की कृपा आप पर सदा बनी रहे 🌸':'May '+T.d_en+'\'s blessings always be with you 🌸';
+  document.getElementById('jdSub').textContent = L3(T.d_hi+' की कृपा आप पर सदा बनी रहे 🌸','May '+T.d_en+'\'s blessings always be with you 🌸',T.d_te+' కృప మీపై ఎప్పుడూ ఉండాలి 🌸');
   document.getElementById('jdStreakLbl').textContent = A('dashbo.your_sadhana_journey');
   document.getElementById('jdBtn').textContent = A('dashbo.jap_again');
 
@@ -2786,7 +2830,7 @@ function renderCalIcon(){
   var mh=['जन','फर','मार्च','अप्रै','मई','जून','जुल','अग','सित','अक्टू','नव','दिस'];
   var me=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var m=document.getElementById('calIconM'), dd=document.getElementById('calIconD');
-  if(m) m.textContent=H?mh[d.getMonth()]:me[d.getMonth()];
+  if(m) m.textContent=SD_IS_TE?SD_TE.monS[d.getMonth()]:(H?mh[d.getMonth()]:me[d.getMonth()]);
   if(dd) dd.textContent=d.getDate();
 }
 function renderStreakCard(){
@@ -3098,7 +3142,7 @@ function updateJ(){
       const sk=getStreak();
       // Update overlay content
       const isFriNow=isShravan();
-      document.getElementById('jdTitle').textContent=H?(isFriNow?'🙏 आज लक्ष्मी अष्टोत्तर जप पूर्ण हुआ':'🙏 आज का जप पूर्ण हुआ'):'28 Chants Complete! 🙏';
+      document.getElementById('jdTitle').textContent=L3(isFriNow?'🙏 आज लक्ष्मी अष्टोत्तर जप पूर्ण हुआ':'🙏 आज का जप पूर्ण हुआ','28 Chants Complete! 🙏',isFriNow?'🙏 ఈ రోజు లక్ష్మీ అష్టోత్తర జపం పూర్తయింది':'🙏 ఈ రోజు జపం పూర్తయింది');
       document.getElementById('jdSub').textContent=A('dashbo.may_your_mind_be_at_peace');
       document.getElementById('jdStreakLbl').textContent=A('dashbo.your_sadhana_continues');
       document.getElementById('jdBtn').textContent=A('dashbo.one_more_mala');
@@ -3109,7 +3153,7 @@ function updateJ(){
       const scTop=document.getElementById('jdscTop');
       const scMan=document.getElementById('jdscMantra');
       const dtypes={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
-      if(scTop) scTop.textContent=H?(isFriNow?'🙏 आज मैंने लक्ष्मी अष्टोत्तर नामों का जप सुना':'🙏 आज 28 बार '+dtypes[dow]+' जप किया'):'🙏 28 chants completed today';
+      if(scTop) scTop.textContent=SD_IS_TE?(isFriNow?'🙏 ఈ రోజు లక్ష్మీ అష్టోత్తర నామాలు జపించి విన్నాను':'🙏 ఈ రోజు 28 సార్లు '+(ML_TITLES[dow]&&sdHas(ML_TITLES[dow].key)?A(ML_TITLES[dow].key):dtypes[dow])+' జపించాను'):H?(isFriNow?'🙏 आज मैंने लक्ष्मी अष्टोत्तर नामों का जप सुना':'🙏 आज 28 बार '+dtypes[dow]+' जप किया'):'🙏 28 chants completed today';
       if(scMan) scMan.textContent=mantras_display[dow]||'ॐ नमः';
       // Show overlay
       document.getElementById('jdone').classList.add('show');
@@ -4071,6 +4115,10 @@ const PROB_CONTENT = {
     count: 27, duration: '21 दिन', duration_en: '21 Days',
     why: 'यह मंत्र देवी पार्वती के योगिनी स्वरूप का आह्वान करता है, जो प्रेम, आकर्षण, भावनात्मक जुड़ाव और वैवाहिक सामंजस्य प्रदान करने में सहायक माना जाता है।',
     why_en: 'This mantra invokes Goddess Parvati in her divine Yogini form to bring attraction, emotional connection, harmony, and positive relationship energy.',
+     understand_te: 'పెళ్లి ఆలస్యం కావడానికి మనసులోని అడ్డంకులు, సమయం, లేదా బంధాల్లో పొంతన లేకపోవడం కారణం కావచ్చు. ప్రేమ, అనుకూలత, వైవాహిక సామరస్యం కోసం దైవానుగ్రహం పొందేందుకు ఈ పవిత్ర స్వయంవర పార్వతీ మంత్రాన్ని సంప్రదాయంగా జపిస్తారు.',
+     actions_te: ['పార్వతీ దేవికి తెల్లని పూలు సమర్పించండి', 'శుక్రవారం నెయ్యి దీపం వెలిగించండి', 'వీలైనప్పుడు శివ–పార్వతి ఆలయానికి వెళ్ళండి', 'ఓపికగా, మంచి ఆలోచనలతో ఉండండి'],
+     why_te: 'ఈ మంత్రం పార్వతీ దేవిని ఆమె యోగినీ రూపంలో ఆహ్వానిస్తుంది — ఆకర్షణ, మనసుల కలయిక, సామరస్యం, బంధంలో మంచి శక్తి కోసం.',
+     duration_te: '21 రోజులు',
   },
 
   dhan: {
@@ -4086,6 +4134,10 @@ const PROB_CONTENT = {
     count: 28, duration: '21 दिन', duration_en: '21 Days',
     why: 'यह मंत्र कुबेर और अष्टलक्ष्मी की कृपा से धन, स्थिरता और आर्थिक बाधाओं को दूर करने में सहायक है।',
     why_en: 'This mantra invokes Kubera and Ashta Lakshmi blessings for wealth, stability, success, and removal of financial obstacles.',
+     understand_te: 'ఆర్థిక ఇబ్బందులు, వృత్తిలో అడ్డంకులు ఆత్మవిశ్వాసాన్ని, ఎదుగుదలను దెబ్బతీస్తాయి. సంపద, సమృద్ధి, అవకాశాలు, మంచి ఆర్థిక శక్తి రావడానికి ఈ సాధన తోడ్పడుతుంది.',
+     actions_te: ['పని చేసే చోటు, ఇల్లు శుభ్రంగా ఉంచుకోండి', 'సాయంత్రం దీపం వెలిగించండి', 'జపానికి ముందు కృతజ్ఞత తలచుకోండి', 'డబ్బు గురించి ప్రతికూలంగా మాట్లాడకండి'],
+     why_te: 'ఈ మంత్రం కుబేరుడు, అష్టలక్ష్మి అనుగ్రహాన్ని ఆహ్వానిస్తుంది — సంపద, స్థిరత్వం, విజయం, ఆర్థిక అడ్డంకుల తొలగింపు కోసం.',
+     duration_te: '21 రోజులు',
   },
   swasthya: {
     titleKey:'dashbo.health_guidance', title_hi: 'स्वास्थ्य मार्गदर्शन', title_en: 'Health Guidance',
@@ -4100,6 +4152,10 @@ const PROB_CONTENT = {
     count: 11, duration: '40 दिन', duration_en: '40 Days',
     why: 'यह पवित्र शिव मंत्र भगवान रुद्र के रक्षक स्वरूप का आह्वान करता है और भय, नकारात्मकता, कमजोरी तथा बाधाओं को दूर कर मानसिक शांति और शक्ति प्रदान करने में सहायक माना जाता है।',
     why_en: 'This sacred Shiva mantra invokes Lord Rudra in his protective form and is believed to remove fear, negativity, weakness, and obstacles while bringing inner peace and strength.',
+     understand_te: 'ఆరోగ్య సమస్యలు శరీరాన్నీ, మనసునూ బాధిస్తాయి. రక్షణ, స్వస్థత శక్తి, అంతర్గత బలం, ప్రతికూలత–భయం తొలగడం కోసం ఈ శక్తివంతమైన అఘోర శివ మంత్రాన్ని సంప్రదాయంగా జపిస్తారు.',
+     actions_te: ['శివలింగానికి నీరు లేదా బిల్వ పత్రాలు సమర్పించండి', 'శుభ్రమైన, సాదా జీవనం పాటించండి', 'రోజూ కొన్ని నిమిషాలు మౌనంగా లేదా ధ్యానంలో ఉండండి', 'వీలైతే సోమవారం శివాలయానికి వెళ్ళండి'],
+     why_te: 'ఈ పవిత్ర శివ మంత్రం రుద్రుడిని ఆయన రక్షక రూపంలో ఆహ్వానిస్తుంది — భయం, ప్రతికూలత, బలహీనత, అడ్డంకులు తొలగి, మనశ్శాంతి, బలం లభిస్తాయని భావిస్తారు.',
+     duration_te: '40 రోజులు',
   },
 
   vidya: {
@@ -4115,6 +4171,10 @@ const PROB_CONTENT = {
     count: 21, duration: '21 दिन', duration_en: '21 Days',
     why: 'यह शक्तिशाली हनुमान मंत्र एकाग्रता, स्मरण शक्ति, साहस, अनुशासन और मानसिक शक्ति बढ़ाने में सहायक माना जाता है।',
     why_en: 'This powerful Hanuman mantra is believed to improve focus, memory, courage, discipline, and mental strength while reducing distractions and fear.',
+     understand_te: 'క్రమశిక్షణ, నిలకడైన సాధనతో ఏకాగ్రత, జ్ఞాపకశక్తి, ఆత్మవిశ్వాసం పెరుగుతాయి. బుద్ధి, ఏకాగ్రత, ధైర్యం, మనసు చెదరకుండా ఉండటం కోసం ఈ హనుమాన్ మంత్రాన్ని సంప్రదాయంగా జపిస్తారు.',
+     actions_te: ['పూర్తి ఏకాగ్రతతో చదవండి', 'చదివే సమయంలో అంతరాయాలకు దూరంగా ఉండండి', 'మంగళవారం లేదా శనివారం హనుమాన్ ఆలయానికి వెళ్ళండి', 'శ్రీ హనుమంతుడికి సింధూరం లేదా మల్లెపూలు సమర్పించండి'],
+     why_te: 'ఈ శక్తివంతమైన హనుమాన్ మంత్రం ఏకాగ్రత, జ్ఞాపకశక్తి, ధైర్యం, క్రమశిక్షణ, మానసిక బలం పెంచి, మనసు చెదరడం, భయం తగ్గిస్తుందని భావిస్తారు.',
+     duration_te: '21 రోజులు',
   },
 
   ghar: {
@@ -4130,6 +4190,10 @@ const PROB_CONTENT = {
     count: 28, duration: '21 दिन', duration_en: '21 Days',
     why: 'यह श्रीराम मंत्र घर और संबंधों में शांति, आध्यात्मिक शक्ति, मानसिक स्थिरता और सकारात्मक ऊर्जा लाने वाला माना जाता है।',
     why_en: 'This Rama mantra is believed to bring peace, spiritual strength, emotional calmness, and positive vibrations into the home and relationships.',
+     understand_te: 'ప్రేమ, ఓపిక, అర్థం చేసుకోవడం, భక్తితో ఇల్లు ప్రశాంతంగా ఉంటుంది. కుటుంబంలో సామరస్యం, మనసు నిలకడ, మంచి వాతావరణం, ప్రశాంతమైన బంధాలు ఏర్పడటానికి ఈ సాధన తోడ్పడుతుంది.',
+     actions_te: ['కుటుంబ సభ్యులతో మృదువుగా మాట్లాడండి', 'ఇల్లు శుభ్రంగా, ప్రశాంతంగా ఉంచుకోండి', 'సాయంత్రం దీపం వెలిగించండి', 'ఇంట్లో కోపం, ప్రతికూల మాటలకు దూరంగా ఉండండి'],
+     why_te: 'ఈ రామ మంత్రం ఇంటికీ, బంధాలకూ శాంతి, ఆధ్యాత్మిక బలం, మనసు నిలకడ, మంచి తరంగాలు తెస్తుందని భావిస్తారు.',
+     duration_te: '21 రోజులు',
   },
 };
 
@@ -4143,7 +4207,7 @@ function openProblem(key) {
   document.getElementById('poDeity').textContent = sdRow(p,'title');
 
   // Understanding
-  document.getElementById('poUnderstand').textContent = H ? p.understand : (p.understand_en||p.understand);
+  document.getElementById('poUnderstand').textContent = L3(p.understand, p.understand_en||p.understand, p.understand_te);
 
   // Mantra
   document.getElementById('poMantra').textContent = p.mantra;
@@ -4158,16 +4222,17 @@ function openProblem(key) {
   document.getElementById('poSteps').innerHTML = steps.map(s=>`<li>${s}</li>`).join('');
 
   // Actions
-  const actions = H ? p.actions : (p.actions_en||p.actions);
+  const actions = L3(p.actions, p.actions_en||p.actions, p.actions_te);
   document.getElementById('poActions').innerHTML = actions.map(a=>`<li>${a}</li>`).join('');
 
   // Duration
-  document.getElementById('poDuration').innerHTML = H
-    ? `⏱️ अवधि: <strong>${p.duration}</strong>`
+  document.getElementById('poDuration').innerHTML = SD_IS_TE
+    ? `⏱️ కాలం: <strong>${p.duration_te||p.duration_en}</strong>`
+    : H ? `⏱️ अवधि: <strong>${p.duration}</strong>`
     : `⏱️ Duration: <strong>${p.duration_en||p.duration}</strong>`;
   // microcopy set below
   const whyEl=document.getElementById('poWhy');
-  if(whyEl) whyEl.textContent=H?(p.why||'यह मंत्र मन को शांत कर समस्या के मूल तक पहुँचता है'):(p.why_en||'This mantra brings calm and clarity to the root of the challenge.');
+  if(whyEl) whyEl.textContent=L3(p.why||'यह मंत्र मन को शांत कर समस्या के मूल तक पहुँचता है', p.why_en||'This mantra brings calm and clarity to the root of the challenge.', p.why_te);
 
   // Scroll to top + show
   // Section labels
@@ -4175,7 +4240,7 @@ function openProblem(key) {
   const hl=document.getElementById('poHowLbl');if(hl)hl.textContent=A('dashbo.how_to_practice');
   const al=document.getElementById('poActionLbl');if(al)al.innerHTML=A('dashbo.supportive_practices');
   // Microcopy & button
-  const mc=document.getElementById('poMicrocopy');if(mc)mc.textContent=H?('यह एक '+p.duration+' की साधना है — रोज़ पूरा करना आवश्यक है'):('This is a '+(p.duration_en||p.duration)+' sadhana. Consistency is important.');
+  const mc=document.getElementById('poMicrocopy');if(mc)mc.textContent=L3('यह एक '+p.duration+' की साधना है — रोज़ पूरा करना आवश्यक है','This is a '+(p.duration_en||p.duration)+' sadhana. Consistency is important.','ఇది '+(p.duration_te||p.duration_en)+' సాధన — రోజూ తప్పకుండా చేయాలి');
   const sb=document.querySelector('.po-start-btn');if(sb)sb.textContent=A('dashbo.start_sadhana');
   document.querySelector('.po-body').scrollTop = 0;
   document.getElementById('probOverlay').classList.add('open');
@@ -4228,13 +4293,14 @@ function personaliseMarg(){
   document.getElementById('margSub').textContent=A('dashbo.in_mahadev_grace_solution_to_every');
   document.getElementById('pocTitle').textContent=A('dashbo.power_of_chanting_a_motivational_s');
   document.getElementById('pocSub').textContent=A('dashbo.listen_for_2_minutes_your_mind_wil');
+  (function(){var c=document.getElementById('pocChintan');if(c)c.textContent=A('dashbo.today_s_reflection');})();
   document.getElementById('pocStory').textContent=A('dashbo.chanting_has_the_power_to_transfor');
   document.getElementById('probLabel').textContent=A('dashbo.choose_your_concern');
   const tiles={vivah:{key:'settin.marriage_problem',hi:'विवाह समस्या',en:'Marriage Problem'},dhan:{key:'settin.money_career',hi:'धन और करियर',en:'Money & Career'},swasthya:{key:'settin.health_problem',hi:'स्वास्थ्य समस्या',en:'Health Problem'},vidya:{key:'settin.study_focus',hi:'पढ़ाई और एकाग्रता',en:'Study & Focus'},ghar:{key:'settin.family_peace',hi:'गृह शांति',en:'Family Peace'}};
   const subs={vivah:{key:'settin.remove_marriage_obstacles',hi:'शादी में रुकावट दूर करें',en:'Remove marriage obstacles'},dhan:{key:'settin.improve_finances_career',hi:'पैसे और नौकरी में सुधार लाएं',en:'Improve finances & career'},swasthya:{key:'settin.heal_body_and_mind',hi:'शरीर और मन को स्वस्थ करें',en:'Heal body and mind'},vidya:{key:'settin.improve_focus_memory',hi:'ध्यान और याददाश्त बढ़ाएं',en:'Improve focus & memory'},ghar:{key:'settin.bring_peace_positivity_home',hi:'घर में शांति और सकारात्मकता लाएं',en:'Bring peace & positivity home'}};
   for(const[k,v]of Object.entries(tiles)){
     const el=document.getElementById('pt-'+k+'-name');const es=document.getElementById('pt-'+k+'-sub');
-    if(el)el.textContent=H?v[0]:v[1];if(es)es.textContent=H?subs[k][0]:subs[k][1];
+    if(el)el.textContent=A(v.key);if(es)es.textContent=A(subs[k].key);
   }
   const _t2=document.getElementById('tl2');if(_t2)_t2.textContent=A('dashbo.guidance');
   const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=A('dashbo.sadhana');
@@ -4377,7 +4443,7 @@ function renderSadhana(){
   }
 
   // Motivation varies by day
-  const motivations = H ? [
+  const motivations = SD_IS_TE ? SD_TE.motiv : H ? [
     '"श्रद्धा और निरंतरता — यही साधना की शक्ति है"',
     '"हर दिन एक कदम — मंजिल पास आती है"',
     '"साधना में विश्वास ही सबसे बड़ा बल है"',
@@ -4685,7 +4751,7 @@ function sadJTap(){
       if(done)done.style.display='flex';
       // Translate completion page NOW
       const sd1=document.getElementById('sdLine1');if(sd1)sd1.textContent=A('dashbo.sadhana_complete');
-      const sd2=document.getElementById('sdLine2');if(sd2)sd2.textContent=H?((window._sadTarget||28)+' जप पूरे हुए'):((window._sadTarget||28)+' Chants Completed');
+      const sd2=document.getElementById('sdLine2');if(sd2)sd2.textContent=L3((window._sadTarget||28)+' जप पूरे हुए',(window._sadTarget||28)+' Chants Completed',(window._sadTarget||28)+' జపాలు పూర్తయ్యాయి');
       const sd3=document.getElementById('sdLine3');if(sd3)sd3.textContent=A('dashbo.you_completed_today_s_chanting_goa');
       const sdSt=document.getElementById('sadJStreakShow');if(sdSt)sdSt.textContent=A('dashbo.practice_continues');
       const sdMr=document.getElementById('sdBtnMore');if(sdMr)sdMr.textContent=A('dashbo.chant_more_2');
@@ -4696,13 +4762,13 @@ function sadJTap(){
       if(strEl&&sk)strEl.textContent='🔥 '+plural(sk.streak, A('dashbo.n_day'), A('dashbo.n_days'));
       // Translate completion page
       document.getElementById('sdLine1')?.textContent==='';if(document.getElementById('sdLine1'))document.getElementById('sdLine1').textContent=A('dashbo.sadhana_complete');
-      if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=H?((window._sadTarget||28)+' जप पूरे हुए'):((window._sadTarget||28)+' Chants Completed');
+      if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=L3((window._sadTarget||28)+' जप पूरे हुए',(window._sadTarget||28)+' Chants Completed',(window._sadTarget||28)+' జపాలు పూర్తయ్యాయి');
       if(document.getElementById('sdLine3'))document.getElementById('sdLine3').textContent=A('dashbo.you_completed_today_s_chanting_goa');
       if(document.getElementById('sadJStreakShow'))document.getElementById('sadJStreakShow').textContent=A('dashbo.practice_continues');
       if(document.getElementById('sdBtnMore'))document.getElementById('sdBtnMore').textContent=A('dashbo.chant_more_2');
       if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=A('dashbo.return_to_sadhana');
       const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=A('dashbo.sadhana_complete_alt');
-      const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=H?('आपने '+(window._sadTarget||28)+' जप पूरे किए 🙏'):('You completed '+(window._sadTarget||28)+' chants 🙏');
+      const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=L3('आपने '+(window._sadTarget||28)+' जप पूरे किए 🙏','You completed '+(window._sadTarget||28)+' chants 🙏','మీరు '+(window._sadTarget||28)+' జపాలు పూర్తి చేశారు 🙏');
       const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=A('dashbo.today_s_chants');
       /* sadDoneBackBtn was removed from the markup; this line set text on a node
          that never exists. Harmless at runtime, but it put a second Hindi value
@@ -4717,7 +4783,7 @@ function sadJTap(){
          runtime, but each carried a second Hindi value against a live English
          string and showed up as a translation conflict. Deleted with the
          screen they belonged to. */
-      const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=H?((window._sadTarget||28)+' जप पूरे हुए 🔥'):((window._sadTarget||28)+' Chants Completed 🔥');
+      const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=L3((window._sadTarget||28)+' जप पूरे हुए 🔥',(window._sadTarget||28)+' Chants Completed 🔥',(window._sadTarget||28)+' జపాలు పూర్తయ్యాయి 🔥');
       const dvow=document.getElementById('sadDoneVow');if(dvow)dvow.textContent=A('dashbo.you_completed_today_s_spiritual_go');
       const dbl=document.getElementById('sadDoneBlessing');if(dbl)dbl.textContent=A('dashbo.may_divine_grace_be_with_you');
       const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
@@ -4815,7 +4881,7 @@ function sadJUpdate(){
   }
 
   // Mid-progress motivation
-  const msgs=H?{27:'अच्छी शुरुआत 🙏',54:'आधा पूरा हो गया 🔥',81:'बस थोड़ा और ✨'}:{27:'Good start 🙏',54:'Halfway there 🔥',81:'Almost done ✨'};
+  const msgs=SD_IS_TE?SD_TE.prog:H?{27:'अच्छी शुरुआत 🙏',54:'आधा पूरा हो गया 🔥',81:'बस थोड़ा और ✨'}:{27:'Good start 🙏',54:'Halfway there 🔥',81:'Almost done ✨'};
   const motivEl=document.getElementById('sadJFocus');
   if(msgs[sadJCount]&&motivEl){motivEl.style.opacity='1';motivEl.textContent=msgs[sadJCount];setTimeout(()=>motivEl.style.opacity='0',2000);}
 }
@@ -4907,7 +4973,7 @@ function pgRange(w){ return w?(pgFmt(w.start)+'–'+pgFmt(w.end)):''; }
    Home wrote a thin object over the calendar's rich one under the same key. */
 function buildPayload(q){
   if(!q) return null;
-  function segs(arr){ return (arr||[]).map(function(s){ return {n:(H?s.hi:s.en), end:(s.end?pgFmt(s.end):'')}; }); }
+  function segs(arr,kind){ return (arr||[]).map(function(s){ return {n:(kind?sdTerm(kind,s):(H?s.hi:s.en)), end:(s.end?pgFmt(s.end):'')}; }); }
   function win(w){ return w?{s:pgFmt(w.start),e:pgFmt(w.end)}:null; }
   function wins(a){ return (a||[]).map(win).filter(Boolean); }
   var mine=null;
@@ -4937,14 +5003,14 @@ function buildPayload(q){
     moonrise:pgFmt(q.moonrise), moonset:pgFmt(q.moonset),
     rahu_kaal:pgRange(q.rahuKaal), gulika:pgRange(q.gulikaKaal),
     abhijit_muhurta:pgRange(q.abhijit),
-    seg:{tithi:segs(q.tithi.segments), nak:segs(q.nakshatra.segments),
-         yoga:segs(q.yoga.segments), karana:segs(q.karana.segments)},
+    seg:{tithi:segs(q.tithi.segments,'tithi'), nak:segs(q.nakshatra.segments,'nakshatra'),
+         yoga:segs(q.yoga.segments,'yoga'), karana:segs(q.karana.segments,'karana')},
     ashubh:{rahu:win(q.rahuKaal), gulika:win(q.gulikaKaal), yama:win(q.yamaganda),
             dur:wins(q.durMuhurtam), varjyam:wins(q.varjyamAll||(q.varjyam?[q.varjyam]:[]))},
     shubh:{abhijit:win(q.abhijit), amrit:wins(q.amritKaalAll||(q.amritKaal?[q.amritKaal]:[])),
            brahma:win(q.brahmaMuhurta)},
     disha:(q.dishaShool?(sdTerm("disha",q.dishaShool)):''),
-    panchaka:(q.panchaka?(H?(q.panchaka.hi||''):(q.panchaka.en||'')):''),
+    panchaka:(q.panchaka?L3(q.panchaka.hi||'',q.panchaka.en||'',A('dashbo.panchaka')):''),
     mine:mine, clean:cleanWindowOf(q), choghadiya:q.choghadiya||null
   };
 }
@@ -4984,8 +5050,8 @@ function applyPanchang(p){
       const _tithi=panTr(p.tithi,TITHI_MAP);
       document.getElementById('tithiVal').textContent=_tithi;
       document.getElementById('tv').textContent=_tithi;
-      const tp=document.getElementById('tithiPaksha');if(tp)tp.textContent=H?(PAKSHA_MAP[p.tithi_paksha]||p.tithi_paksha||''):(p.tithi_paksha||'');
-      const te=document.getElementById('tithiEnd');if(te)te.textContent=p.tithi_end?'Ends: '+p.tithi_end:'';
+      const tp=document.getElementById('tithiPaksha');if(tp){var _pk=p.tithi_paksha||'';tp.textContent=/^(Shukla|Krishna)/.test(_pk)?sdPaksha(_pk.replace(/ Paksha$/,'')):(H?(PAKSHA_MAP[_pk]||_pk):_pk);}
+      const te=document.getElementById('tithiEnd');if(te)te.textContent=p.tithi_end?AF('astrol.ends_time',{time:p.tithi_end}):'';
     }
     // ── Nakshatra ──
     if(p.nakshatra){
@@ -4994,8 +5060,8 @@ function applyPanchang(p){
       // nv (home chip) = birth nakshatra only — NOT overwritten here
       const PLANET_HI={'Sun':'सूर्य','Moon':'चन्द्र','Mars':'मंगल','Mercury':'बुध','Jupiter':'गुरु','Venus':'शुक्र','Saturn':'शनि','Rahu':'राहु','Ketu':'केतु'};
       const nr=document.getElementById('nakRuler');
-      if(nr) nr.textContent=H?(PLANET_HI[p.nakshatra_ruler]||p.nakshatra_ruler||''):(p.nakshatra_ruler||'');
-      const ne=document.getElementById('nakEnd');if(ne)ne.textContent=p.nakshatra_end?'Ends: '+p.nakshatra_end:'';
+      if(nr) nr.textContent=p.nakshatra_ruler?(/[\u0C00-\u0C7F\u0900-\u097F]/.test(p.nakshatra_ruler)?p.nakshatra_ruler:sdTerm('planet',p.nakshatra_ruler)):'';
+      const ne=document.getElementById('nakEnd');if(ne)ne.textContent=p.nakshatra_end?AF('astrol.ends_time',{time:p.nakshatra_end}):'';
     }
     // ── Yoga ──
     if(p.yoga){
@@ -5954,7 +6020,7 @@ function calHinduMonth(month, year){
     if(e > monthStart && s <= monthEnd) spanning.push(HM[i]);
   }
   if(!spanning.length) spanning.push(HM[0]);
-  const names = spanning.map(e => H ? e[1] : e[2]).join(' – ');
+  const names = spanning.map(e => sdMasa({hi:e[1],en:e[2]})).join(' – ');
   const samvat = spanning[spanning.length-1][3];
   const label = A('dashbo.vikram_samvat');
   return `${names} | ${label} ${samvat}`;
@@ -6237,7 +6303,7 @@ function renderCalendar(){
     var W = (window.SD_UI && window.SD_UI.wdShort) || {};
     var l = window.SD_LANG || 'hi';
     if (Array.isArray(W[l]) && W[l].length === 7) return W[l];
-    return H ? dh_hi : dh_en;      /* English, or a language wdShort lacks */
+    return SD_IS_TE ? SD_TE.dayS : (H ? dh_hi : dh_en);      /* English, or a language wdShort lacks */
   })();
     const _lg=document.getElementById('calLegend');
     if(_lg) _lg.innerHTML=[
@@ -6255,7 +6321,7 @@ function renderCalendar(){
   // Month title
   const MONTHS_HI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
   const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('calMonthTitle').textContent = (H?MONTHS_HI[_calMonth]:MONTHS_EN[_calMonth])+' '+_calYear;
+  document.getElementById('calMonthTitle').textContent = sdMon(_calMonth,false)+' '+_calYear;
   document.getElementById('calHinduMonth').textContent = calHinduMonth(_calMonth, _calYear);
 
   let html = '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;padding:0 0 8px;">';
@@ -6307,7 +6373,7 @@ function renderCalendar(){
         <span style="font-size:15px;font-weight:${(isToday||isSelected)?'800':'600'};color:${dateColor};line-height:1;">${d}</span>
         <span style="font-size:11px;line-height:1;opacity:0.60;">${moon.e}</span>
       </div>
-      <div style="font-size:${(H?tithi.hi:calShortTithi(tithi.en)).length>9?'6.5px':'7.5px'};color:var(--cal-tithi);margin-top:3px;line-height:1.15;
+      <div style="font-size:${(SD_IS_TE?sdTithi(tithi):(H?tithi.hi:calShortTithi(tithi.en))).length>9?'6.5px':'7.5px'};color:var(--cal-tithi);margin-top:3px;line-height:1.15;
            overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
            word-break:keep-all;overflow-wrap:normal;hyphens:none;">${calShortTithi(sdTithi(tithi))}</div>
       ${festival?`<div style="font-size:15px;margin-top:3px;line-height:1;">${festival.i}${fests.length>1?`<span style="font-size:8px;color:rgba(212,168,67,0.62);vertical-align:top;">+${fests.length-1}</span>`:''}</div>`:(bankSat?`<div style="font-size:12px;margin-top:3px;line-height:1;opacity:0.75;">🏦</div>`:'')}
@@ -6342,7 +6408,7 @@ function renderMonthEvents(){
   const MEN=['January','February','March','April','May','June','July','August','September','October','November','December'];
   const DHI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
   const DEN=['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const title=(H?MHI[_calMonth]:MEN[_calMonth])+' '+_calYear;
+  const title=sdMon(_calMonth,false)+' '+_calYear;
   const today=new Date();
   const head='<div class="cev-hd"><div class="cev-t">'+(A('dashbo.this_month'))+' · '+title+'</div>'
     +'<div class="cev-n">'+(evs.length?AF(evs.length===1?'dashbo.n_important_day':'dashbo.n_important_days',{n:evs.length}):'')+'</div></div>';
@@ -6356,9 +6422,9 @@ function renderMonthEvents(){
     const sub=(e.cat==='bank')?(typeof A==='function'&&e.subKey&&sdHas(e.subKey)?A(e.subKey):(sdRow(e,'sub'))):'';
     rows+='<div class="cev'+(e.d===_calSelected?' sel':'')+(isToday?' today':'')+'" onclick="selectCalDate('+e.d+')">'
       +'<div class="cev-dt"><div class="cev-dd">'+e.d+'</div>'
-      +'<div class="cev-dw">'+(H?DHI[e.date.getDay()]:DEN[e.date.getDay()])+'</div></div>'
+      +'<div class="cev-dw">'+(SD_IS_TE?SD_TE.dayS[e.date.getDay()]:(H?DHI[e.date.getDay()]:DEN[e.date.getDay()]))+'</div></div>'
       +'<div class="cev-bd"><div class="cev-nm"><em>'+e.icon+'</em>'+sdCalName(e)+'</div>'
-      +'<span class="cev-cg '+m.c+'">'+(H?m.hi:m.en)+'</span>'
+      +'<span class="cev-cg '+m.c+'">'+L3(m.hi,m.en,SD_TE.cev[e.kind]||sdCevByMeta(m))+'</span>'
       +(sub?'<span class="cev-more"> · '+sub+'</span>':'')
       +'</div></div>';
   });
@@ -6381,7 +6447,7 @@ function calSpiritualNote(phase, festival, date){
   const d = new Date().getDay();
   const hi=['☀️ सूर्यदेव की पूजा करें','🕉️ शिव की आराधना करें','🙏 हनुमान चालीसा पढ़ें','📿 गणेश मंत्र जप करें','🌸 विष्णु सहस्रनाम पाठ करें','🌺 माँ लक्ष्मी का ध्यान करें','🪔 शनिदेव को तेल चढ़ाएं'];
   const en=['☀️ Offer prayers to Surya Dev','🕉️ Ideal day to worship Shiva','🙏 Recite Hanuman Chalisa','📿 Chant Ganesh mantra','🌸 Read Vishnu Sahasranama','🌺 Worship Maa Lakshmi','🪔 Offer oil to Shani Dev'];
-  return H ? hi[d] : en[d];
+  return L3(hi[d], en[d], SD_TE.tip[d]);
 }
 /* Per-date panchang, cached under the same sd_pan_<date>_<city> scheme. */
 /* First clean window of a date: its shubh choghadiya minus its OWN forbidden
@@ -6403,7 +6469,7 @@ function cleanWindowOf(q){
           if(b.e<pc.e) nx.push({s:Math.max(b.e,pc.s),e:pc.e});
         }); pieces=nx; });
       pieces=pieces.filter(function(pc){return pc.e-pc.s>=12*60000;});
-      if(pieces.length) found={n:(H?sg.hi:sg.en),s:pgFmt(new Date(pieces[0].s)),e:pgFmt(new Date(pieces[0].e))};
+      if(pieces.length) found={n:sdChog(sg),s:pgFmt(new Date(pieces[0].s)),e:pgFmt(new Date(pieces[0].e))};
     });
     return found;
   }catch(e){ return null; }
@@ -6437,13 +6503,13 @@ function calGuidance(date,obs,q){
         .sort(function(a,b){return new Date(a.date)-new Date(b.date);})[0];
       if(nxt){
         var days=Math.round((new Date(nxt.date+'T00:00:00')-base)/86400000);
-        out.push('📿 '+(H?(nxt.hi+' — '+days+' दिन में'):(nxt.en+' in '+days+' day'+(days===1?'':'s'))));
+        out.push('📿 '+L3(nxt.hi+' — '+days+' दिन में', nxt.en+' in '+days+' day'+(days===1?'':'s'), sdCal(nxt.hi,nxt.en)+' — '+AF(days===1?'astrol.in_n_day':'astrol.in_n_days',{n:days})));
       }
     }
   }catch(e){}
   // if a chant line stays, it is that weekday's own deity, never a fixed one
   var dd=D[date.getDay()];
-  if(dd) out.push('🕉️ '+(H?(dd.d_hi+' का दिन — '+dd.chant):(dd.d_en+"'s day — "+dd.chant)));
+  if(dd) out.push('🕉️ '+L3(dd.d_hi+' का दिन — '+dd.chant, dd.d_en+"'s day — "+dd.chant, dd.d_te+' రోజు — '+dd.chant));
   return out;
 }
 function orowCal(label,val){
@@ -6470,9 +6536,9 @@ function showCalDetail(date){
   const MONTHS_HI=['जनवरी','फरवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितम्बर','अक्टूबर','नवम्बर','दिसम्बर'];
   const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-  const dayName = H?DAYS_HI[date.getDay()]:DAYS_EN[date.getDay()];
-  const monthName = H?MONTHS_HI[date.getMonth()]:MONTHS_EN[date.getMonth()];
-  const dateStr = H?`${dayName}, ${date.getDate()} ${monthName} ${date.getFullYear()}`:`${dayName}, ${monthName} ${date.getDate()}, ${date.getFullYear()}`;
+  const dayName = sdDow(date.getDay(),false);
+  const monthName = sdMon(date.getMonth(),false);
+  const dateStr = (H||SD_IS_TE)?`${dayName}, ${date.getDate()} ${monthName} ${date.getFullYear()}`:`${dayName}, ${monthName} ${date.getDate()}, ${date.getFullYear()}`;
 
   let festHtml = '';
   const drows = fests.map(function(f){
@@ -6480,7 +6546,7 @@ function showCalDetail(date){
     const fColor = f.cat==='major' ? 'rgba(255,140,30,0.85)'
                  : f.cat==='national' ? 'rgba(100,180,255,0.85)'
                  : f.cat==='vrat' ? 'rgba(201,160,255,0.90)' : 'rgba(212,168,67,0.75)';
-    return {i:f.i, name:(H?f.hi:f.en), label:(H?meta.hi:meta.en), color:fColor};
+    return {i:f.i, name:sdCal(f.hi,f.en), label:L3(meta.hi,meta.en,sdCevByMeta(meta)), color:fColor};
   });
   if(bankSat) drows.push({i:'🏦', name:(A('dashbo.bank_holiday')),
     label:sdCalName({key:bankSat.key,hi:bankSat.h,en:bankSat.e}), color:'rgba(175,195,220,0.88)'});
@@ -6649,7 +6715,7 @@ function showCalDetail(date){
       <span style="font-size:36px;line-height:1;">${moon.e}</span>
       <div>
         <div style="font-size:15px;font-weight:600;color:var(--gold);">${p&&p.tithi?p.tithi:(sdTithi(tithi))}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${tithi.paksha} ${A('dashbo.paksha')} • ${H?moon.h:moon.n}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${sdPaksha(tithi.paksha)} ${A('dashbo.paksha')} • ${L3(moon.h,moon.n,SD_TE.moon[moon.n])}</div>
       </div>
     </div>
     ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.85);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
@@ -6807,7 +6873,7 @@ function getVratsThisWeek(){
     if(dayVrats.length > 0){
       const DAYS_HI=['रवि','सोम','मंगल','बुध','गुरु','शुक्र','शनि'];
       const DAYS_EN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      const label = i===0 ? (A('dashbo.today_3')) : i===1 ? (A('dashbo.tomorrow')) : (H?DAYS_HI[dow]:DAYS_EN[dow]);
+      const label = i===0 ? (A('dashbo.today_3')) : i===1 ? (A('dashbo.tomorrow')) : sdDow(dow,true);
       vrats.push({label, date:d.getDate(), dayVrats, isToday:i===0});
     }
   }
@@ -6844,31 +6910,31 @@ function muhuratStatus(key, phase, dow){
   const badT = [7,13,22,28].includes(ti);
   if(key==='griha'){
     const gd=[1,3,4,5].includes(dow);
-    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0906\u091c \u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0905\u0936\u0941\u092d', le:'\ud83d\udd34 Better to wait', se:'Inauspicious tithi today'};
-    if(isS&&gd)      return{s:'green', lh:'\ud83d\udfe2 \u0906\u091c \u0936\u0941\u092d \u0939\u0948',       sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0936\u0941\u092d \u0935\u093e\u0930',      le:'\ud83d\udfe2 Good today',      se:'Shukla Paksha + good weekday'};
-    if(isS)          return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',                   sh:'\u0935\u093e\u0930 \u0914\u0930 \u092c\u0947\u0939\u0924\u0930 \u0939\u094b \u0938\u0915\u0924\u093e', le:'\ud83d\udfe1 Average today',   se:'Weekday could be better'};
-                     return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0915\u0930\u0947\u0902',     le:'\ud83d\udd34 Better to wait', se:'Best in Shukla Paksha'};
+    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0906\u091c \u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0905\u0936\u0941\u092d', le:'\ud83d\udd34 Better to wait', se:'Inauspicious tithi today', lt:'🔴 వేచి ఉండటం మంచిది', st:'ఈ రోజు తిథి అనుకూలం కాదు'};
+    if(isS&&gd)      return{s:'green', lh:'\ud83d\udfe2 \u0906\u091c \u0936\u0941\u092d \u0939\u0948',       sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0936\u0941\u092d \u0935\u093e\u0930',      le:'\ud83d\udfe2 Good today',      se:'Shukla Paksha + good weekday', lt:'🟢 ఈ రోజు మంచిది', st:'శుక్ల పక్షం + మంచి వారం'};
+    if(isS)          return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',                   sh:'\u0935\u093e\u0930 \u0914\u0930 \u092c\u0947\u0939\u0924\u0930 \u0939\u094b \u0938\u0915\u0924\u093e', le:'\ud83d\udfe1 Average today',   se:'Weekday could be better', lt:'🟡 ఈ రోజు సాధారణం', st:'వారం ఇంకా మంచిది అయితే బాగుండేది'};
+                     return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0915\u0930\u0947\u0902',     le:'\ud83d\udd34 Better to wait', se:'Best in Shukla Paksha', lt:'🔴 వేచి ఉండటం మంచిది', st:'శుక్ల పక్షంలో మంచిది'};
   }
   if(key==='vehicle'){
     const gd=[2,3].includes(dow);
-    if(isAm)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u091f\u093e\u0932\u0947\u0902',       sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u2014 \u0935\u093e\u0939\u0928 \u0928 \u0932\u0947\u0902', le:'\ud83d\udd34 Avoid today',    se:'Amavasya \u2014 not for vehicles'};
-    if(gd&&!badT)    return{s:'green', lh:'\ud83d\udfe2 \u0905\u091a\u094d\u091b\u093e \u0926\u093f\u0928',  sh:'\u092e\u0902\u0917\u0932/\u092c\u0941\u0927 \u0935\u093e\u0930 \u2014 \u0936\u0941\u092d',              le:'\ud83d\udfe2 Good today',      se:'Mars/Mercury day \u2014 ideal'};
-    if(badT)         return{s:'yellow',lh:'\ud83d\udfe1 \u0938\u093e\u092e\u093e\u0928\u094d\u092f \u0926\u093f\u0928', sh:'\u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902',             le:'\ud83d\udfe1 Average today',   se:'Avoid Rahu Kaal'};
-                     return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915-\u0920\u093e\u0915',              sh:'\u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0926\u0947\u0916\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Uttara/Hasta Nakshatra preferred'};
+    if(isAm)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u091f\u093e\u0932\u0947\u0902',       sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u2014 \u0935\u093e\u0939\u0928 \u0928 \u0932\u0947\u0902', le:'\ud83d\udd34 Avoid today',    se:'Amavasya \u2014 not for vehicles', lt:'🔴 ఈ రోజు వద్దు', st:'అమావాస్య — వాహనానికి వద్దు'};
+    if(gd&&!badT)    return{s:'green', lh:'\ud83d\udfe2 \u0905\u091a\u094d\u091b\u093e \u0926\u093f\u0928',  sh:'\u092e\u0902\u0917\u0932/\u092c\u0941\u0927 \u0935\u093e\u0930 \u2014 \u0936\u0941\u092d',              le:'\ud83d\udfe2 Good today',      se:'Mars/Mercury day \u2014 ideal', lt:'🟢 ఈ రోజు మంచిది', st:'మంగళ/బుధవారం — అనుకూలం'};
+    if(badT)         return{s:'yellow',lh:'\ud83d\udfe1 \u0938\u093e\u092e\u093e\u0928\u094d\u092f \u0926\u093f\u0928', sh:'\u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902',             le:'\ud83d\udfe1 Average today',   se:'Avoid Rahu Kaal', lt:'🟡 ఈ రోజు సాధారణం', st:'రాహు కాలం వద్దు'};
+                     return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915-\u0920\u093e\u0915',              sh:'\u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0926\u0947\u0916\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Uttara/Hasta Nakshatra preferred', lt:'🟡 ఈ రోజు సాధారణం', st:'ఉత్తర/హస్త నక్షత్రం మంచిది'};
   }
   if(key==='business'){
-    if(isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0928\u0939\u0940\u0902',              sh:'\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not today', se:'Ekadashi \u2014 avoid new starts'};
-    if(dow===3&&isS) return{s:'green', lh:'\ud83d\udfe2 \u092c\u0947\u0939\u0924\u0930\u0940\u0928 \u0926\u093f\u0928', sh:'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0909\u0924\u094d\u0924\u092e', le:'\ud83d\udfe2 Excellent today', se:'Wednesday + Shukla Paksha'};
-    if(dow===3||isS) return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',                    sh:'\u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Best in Abhijit Muhurta'};
-                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',               sh:'\u0932\u093e\u092d \u091a\u094c\u0918\u0921\u093c\u093f\u092f\u093e \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902',  le:'\ud83d\udfe1 Average today', se:'Best in Labh Choghadiya'};
+    if(isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0928\u0939\u0940\u0902',              sh:'\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not today', se:'Ekadashi \u2014 avoid new starts', lt:'🔴 ఈ రోజు వద్దు', st:'ఏకాదశి — కొత్త పనులు వద్దు'};
+    if(dow===3&&isS) return{s:'green', lh:'\ud83d\udfe2 \u092c\u0947\u0939\u0924\u0930\u0940\u0928 \u0926\u093f\u0928', sh:'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0909\u0924\u094d\u0924\u092e', le:'\ud83d\udfe2 Excellent today', se:'Wednesday + Shukla Paksha', lt:'🟢 ఈ రోజు చాలా మంచిది', st:'బుధవారం + శుక్ల పక్షం'};
+    if(dow===3||isS) return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',                    sh:'\u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Best in Abhijit Muhurta', lt:'🟡 ఈ రోజు సాధారణం', st:'అభిజిత్ ముహూర్తంలో మంచిది'};
+                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',               sh:'\u0932\u093e\u092d \u091a\u094c\u0918\u0921\u093c\u093f\u092f\u093e \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902',  le:'\ud83d\udfe1 Average today', se:'Best in Labh Choghadiya', lt:'🟡 ఈ రోజు సాధారణం', st:'లాభ చౌఘడియాలో మంచిది'};
   }
   if(key==='newstart'){
-    if(isAm||isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0909\u091a\u093f\u0924 \u0928\u0939\u0940\u0902', sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e/\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not ideal', se:'Amavasya/Ekadashi \u2014 avoid new starts'};
-    if(isS&&![0,6].includes(dow)) return{s:'green', lh:'\ud83d\udfe2 \u0936\u0941\u092d \u0906\u0930\u0902\u092d', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0938\u092a\u094d\u0924\u093e\u0939 \u0915\u093e \u0926\u093f\u0928', le:'\ud83d\udfe2 Good to start', se:'Shukla Paksha weekday \u2014 auspicious'};
-    if(isS)                return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',             sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u092e\u0902\u0917\u0932-\u0936\u0928\u093f \u091b\u094b\u0921\u093c\u0915\u0930', le:'\ud83d\udfe1 Average today', se:'Shukla Paksha \u2014 avoid Tue/Sat'};
-                           return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',       sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0928\u093e \u092c\u0947\u0939\u0924\u0930', le:'\ud83d\udfe1 Average today', se:'Better in Shukla Paksha'};
+    if(isAm||isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0909\u091a\u093f\u0924 \u0928\u0939\u0940\u0902', sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e/\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not ideal', se:'Amavasya/Ekadashi \u2014 avoid new starts', lt:'🔴 అంత అనుకూలం కాదు', st:'అమావాస్య/ఏకాదశి — కొత్త పనులు వద్దు'};
+    if(isS&&![0,6].includes(dow)) return{s:'green', lh:'\ud83d\udfe2 \u0936\u0941\u092d \u0906\u0930\u0902\u092d', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0938\u092a\u094d\u0924\u093e\u0939 \u0915\u093e \u0926\u093f\u0928', le:'\ud83d\udfe2 Good to start', se:'Shukla Paksha weekday \u2014 auspicious', lt:'🟢 మొదలుపెట్టడానికి మంచిది', st:'శుక్ల పక్షం వారం రోజు — శుభం'};
+    if(isS)                return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948',             sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u092e\u0902\u0917\u0932-\u0936\u0928\u093f \u091b\u094b\u0921\u093c\u0915\u0930', le:'\ud83d\udfe1 Average today', se:'Shukla Paksha \u2014 avoid Tue/Sat', lt:'🟡 ఈ రోజు సాధారణం', st:'శుక్ల పక్షం — మంగళ/శని వద్దు'};
+                           return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928',       sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0928\u093e \u092c\u0947\u0939\u0924\u0930', le:'\ud83d\udfe1 Average today', se:'Better in Shukla Paksha', lt:'🟡 ఈ రోజు సాధారణం', st:'శుక్ల పక్షంలో ఇంకా మంచిది'};
   }
-  return{s:'yellow',lh:'\ud83d\udfe1',sh:'',le:'\ud83d\udfe1',se:''};
+  return{s:'yellow',lh:'\ud83d\udfe1',sh:'',le:'\ud83d\udfe1',se:'', lt:'🟡', st:''};
 }
 
 function getNextGoodDates(key, count){
@@ -6882,7 +6948,7 @@ function getNextGoodDates(key, count){
   }
   const MEN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const MHI = ['\u091c\u0928','\u092b\u0930','\u092e\u093e\u0930','\u0905\u092a\u094d\u0930','\u092e\u0908','\u091c\u0942\u0928','\u091c\u0941\u0932','\u0905\u0917','\u0938\u093f\u0924','\u0905\u0915\u094d\u091f','\u0928\u0935','\u0926\u093f\u0938'];
-  return dates.map(d => H ? (d.getDate()+' '+MHI[d.getMonth()]) : (d.getDate()+' '+MEN[d.getMonth()]));
+  return dates.map(d => d.getDate()+' '+sdMon(d.getMonth(),true));
 }
 
 function renderMuhurat(){
@@ -6906,8 +6972,8 @@ function renderMuhurat(){
     return `<div style="background:${BG[st.s]};border:1px solid ${BR[st.s]};border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
       <div style="font-size:20px;margin-bottom:4px;">${m.i}</div>
       <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${sdCalName({hi:m.h,en:m.e})}</div>
-      <div style="font-size:10px;font-weight:700;color:${CL[st.s]};">${H?st.lh:st.le}</div>
-      <div style="font-size:8px;color:rgba(255,255,255,0.74);margin-top:2px;">${H?st.sh:st.se}</div>
+      <div style="font-size:10px;font-weight:700;color:${CL[st.s]};">${L3(st.lh,st.le,st.lt)}</div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.74);margin-top:2px;">${L3(st.sh,st.se,st.st)}</div>
       ${nextHtml}
     </div>`;
   }).join('');
@@ -6926,7 +6992,7 @@ function showMuhuratDetail(key){
     newstart: A('dashbo.shukla_paksha_weekday_is_ideal_avo'),
   };
   const lines = [
-    AF('dashbo.today_v', {v:(H?st.lh:st.le)}),
+    AF('dashbo.today_v', {v:L3(st.lh,st.le,st.lt)}),
     nextLine,
     abhijit?AF('dashbo.best_time_w', {w:abhijit}):'',
     advice[key]||'',
@@ -7170,7 +7236,7 @@ const ML_TITLES={0:{key:'settin.surya_mantra',hi:'सूर्य मंत्�
  5:{key:'settin.lakshmi_mantra',hi:'लक्ष्मी मंत्र',en:'Lakshmi Mantra'},6:{key:'settin.shani_gayatri',hi:'शनि गायत्री',en:'Shani Gayatri'}};
 const ML_LIB=[0,1,2,3,4,5,6].map(function(d){return {
   god_hi:D[d].d_hi, god_en:D[d].d_en, god_te:D[d].d_te, img:D[d].img, ico:D[d].ico,
-  mantras:[{t1:ML_TITLES[d][0],t1en:ML_TITLES[d][1],
+  mantras:[{t1:ML_TITLES[d].hi,t1en:ML_TITLES[d].en,key:ML_TITLES[d].key,
     words:MANTRA_WORDS[d]||D[d].chant.split(' '),
     ts:MANTRA_TIMESTAMPS[d]||null, audio:CHANT_MAP[d]}]};});
 
@@ -7197,7 +7263,7 @@ function mlList(gi){
   const x=ML_LIB[gi]; let r='';
   x.mantras.forEach(function(m,mi){
     r+='<div class="ml-row" onclick="mlPlayer('+gi+','+mi+')"><div class="ic">'+x.ico+'</div>'
-     +'<div class="tt"><div class="t1">'+(H?m.t1:m.t1en)+'</div>'
+     +'<div class="tt"><div class="t1">'+(m.key&&sdHas(m.key)?A(m.key):(H?m.t1:m.t1en))+'</div>'
      +'<div class="t2">'+m.words.join(' ').slice(0,44)+'…</div></div><div class="go">▶</div></div>';
   });
   r+='<div class="ml-row" style="opacity:0.55;cursor:default;border-style:dashed;" onclick="event.stopPropagation()">'
@@ -7209,7 +7275,7 @@ function mlPlayer(gi,mi){
   const x=ML_LIB[gi], m=x.mantras[mi];
   let w='';
   m.words.forEach(function(word,i){w+='<span class="mlw" id="mlw'+i+'">'+word+'</span>';});
-  mlBody().innerHTML=mlHead(H?m.t1:m.t1en,sdDev(x.god_hi,x.god_en,x.god_te),'mlList('+gi+')')
+  mlBody().innerHTML=mlHead((m.key&&sdHas(m.key)?A(m.key):(H?m.t1:m.t1en)),sdDev(x.god_hi,x.god_en,x.god_te),'mlList('+gi+')')
    +'<div class="mlp" id="mlpBox"><div class="mlp-bg" style="background-image:url(\''+x.img+'\')"></div>'
    +'<div class="mlp-in"><div class="mlp-god">'+(sdDev(x.god_hi,x.god_en,x.god_te))+'</div>'
    +'<div class="mlp-mt">'+(A('dashbo.listen_chant_along'))+'</div>'
