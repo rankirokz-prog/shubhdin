@@ -1258,7 +1258,9 @@ function window_(r,key,ico,label){
   }).join('');
 }
 /* ── shared segment-list renderer (choghadiya, hora) ── */
-function segList(arr,label,bads){
+function segList(arr,label,bads,kind){
+  /* kind: 'choghadiya' (default) or 'hora'. The hora rows used to go through
+     sdChog(), miss on every planet name and fall back to Hindi. */
   var now=Date.now(),h='';
   arr.forEach(function(sg){
     var a=new Date(sg.start).getTime(), b=new Date(sg.end).getTime();
@@ -1267,7 +1269,7 @@ function segList(arr,label,bads){
     var ok=sg.good&&!hit.length;
     h+='<div class="sgrow '+(ok?'g':'b')+(live?' now':'')+'">'
       +'<div class="sg-d" style="background:'+(ok?'#5ABE78':(sg.good?'#E8A317':'#E66E5A'))+'"></div>'
-      +'<div class="sg-n dev">'+(sdChog(sg))+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
+      +'<div class="sg-n dev">'+(kind==='hora'?sdHora(sg):sdChog(sg))+(live?' <span class="sg-now">'+A('dashbo.now')+'</span>':'')
       +(hit.length?'<div style="font-size:9.5px;color:rgba(240,150,130,0.9);margin-top:2px;">⚠ '+AF('astrol.overlaps_what', {what:(hit[0].en)})+'</div>':'')+'</div>'
       +'<div class="sg-t">'+fR(sg.start,sg.end)+'</div></div>';
   });
@@ -1284,8 +1286,8 @@ function vHora(){
   var p=panchang();
   var day=p.hora.filter(function(x){return x.dayTime;}), night=p.hora.filter(function(x){return !x.dayTime;});
   app.innerHTML=pgHead(A('astrol.hora'),A('astrol.24_planetary_hours_and_their_lords'),'#explore')
-   +segList(day,A('astrol.daytime_hora'))
-   +segList(night,A('astrol.night_hora'))
+   +segList(day,A('astrol.daytime_hora'),null,'hora')
+   +segList(night,A('astrol.night_hora'),null,'hora')
    +'<div class="note">'+A('astrol.each_hora_is_ruled_by_a_planet_sai')+'</div>';
 }
 function vTara(){
