@@ -484,7 +484,7 @@
       s2title:"మీ పేరు ఏమిటి?",
       s2desc:"ప్రతి ఉదయం మీ పేరుతో మిమ్మల్ని పలకరిస్తాం",
       tiLbl:"ఈ రోజు మీ కోసం",
-      hookTitle:"మీ రోజు, మీ సొంత జాతకం నుంచి",
+      hookTitle:"మీ జాతకం ఆధారంగా మీ రోజును తెలుసుకోండి",
       hookSub:"పంచాంగం, ముహూర్తం, రోజువారీ జపం — మీ జాతకం, మీ నగరం ఆధారంగా మీ కోసం ప్రత్యేకంగా",
       v1:"ఉచిత జాతకం",
       v1s:"మీ జన్మ జాతకం మీ గురించి ఏమి చెబుతుందో తెలుసుకోండి",
@@ -506,7 +506,7 @@
       tobOpt:"ఐచ్ఛికం",
       tobHint:"💡 మీ నక్షత్రం తెలుసుకోవడానికి",
       tobUnkLabel:"నా పుట్టిన సమయం నాకు తెలియదు",
-      tobUnkNote:"మీ పుట్టిన రోజు సూర్యోదయ సమయాన్ని తీసుకుంటాం — సమయం తెలియనప్పుడు శాస్త్రం చెప్పే పద్ధతి ఇదే. మీ రాశి, నక్షత్రం సరిగ్గానే వస్తాయి; లగ్నం, పాదం మాత్రం సుమారుగా ఉంటాయి, అవి ముఖ్యమైన చోట యాప్ మీకు చెబుతుంది.",
+      tobUnkNote:"సమయం తెలియనప్పుడు శాస్త్రం చెప్పే పద్ధతి ప్రకారం, మీ పుట్టిన రోజు సూర్యోదయ సమయం తీసుకుంటాం. మీ రాశి, నక్షత్రం సరిగ్గానే వస్తాయి. లగ్నం, పాదం మాత్రం సుమారుగా ఉంటాయి. అవి ముఖ్యమైన చోట యాప్ మీకు చెబుతుంది.",
       cta3:"కొనసాగండి",
       skip3:"ఇప్పటికి వద్దు → తర్వాత చేస్తాను",
       s4title:"మీరు ఎక్కడ ఉంటున్నారు?",
@@ -517,7 +517,7 @@
       cityPH:"ఉదా. ఢిల్లీ, ముంబై, నెల్లూరు...",
       stateLabel:"రాష్ట్రం",
       stateOpt:"రాష్ట్రం ఎంచుకోండి",
-      cta4:"ప్రయాణం మొదలుపెడదాం 🙏",
+      cta4:"ప్రయాణం మొదలుపెడదామా 🙏",
       rcLbl:"మీ రాశి & నక్షత్రం",
       enterTxt:"నేటి వివరాలు చూడండి →"
     },
@@ -688,7 +688,7 @@
      first screen a new user sees. Hindi until they are written. */
     const cn=(user.name||'').charAt(0).toUpperCase()+(user.name||'').slice(1);
     if(n===3&&user.name) document.getElementById('s3title').textContent=lang==='hi'?cn+' जी, जन्म तिथि?':lang==='te'?cn+' గారు, జనన తేదీ?':'Birth details, '+cn+'?';
-    if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':lang==='te'?'దాదాపు అయిపోయింది, '+cn+' గారు!':'Almost done, '+cn+'!';
+    if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':lang==='te'?'ఇంకొంచెమే ఉంది, '+cn+' గారు!':'Almost done, '+cn+'!';
     if (n===5) buildWelcome();
 
     showStep(n);
@@ -837,7 +837,7 @@
     const name = user.name || '';
     const cN=name.charAt(0).toUpperCase()+name.slice(1);
     document.getElementById('wTitle').textContent=lang==='hi'?'स्वागत है, '+cN+' जी! 🙏':lang==='te'?'స్వాగతం, '+cN+' గారు! 🙏':'Welcome, '+cN+'! 🙏';
-    document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : lang==='te' ? user.city+' నుంచి — మీ ప్రయాణం ఈ రోజు మొదలవుతోంది 🌼' : 'From '+user.city+' — your journey begins today 🌼';
+    document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : lang==='te' ? user.city+' నుంచి — మీ రోజు మొదలవుతుంది 🌼' : 'From '+user.city+' — your journey begins today 🌼';
     document.getElementById('rIcon').textContent  = r.icon;
     // Vedic name leads; the Western label follows in brackets purely so a user
     // who only knows "Scorpio" recognises themselves. Never the other way round.
