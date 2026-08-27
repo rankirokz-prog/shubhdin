@@ -98,6 +98,8 @@ if(typeof window.A!=='function'){
     <div id="kCityResults" style="display:none;position:absolute;left:0;right:0;top:100%;background:#1A0800;border:1.5px solid rgba(212,168,67,0.25);border-radius:12px;max-height:200px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.6);margin-top:4px;"></div>
   </div>
   <button type="button" id="kGpsBtn" onclick="kDetectLoc()" style="margin-top:9px;width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;">📍 <span id="kGpsTxt" data-i18n="buy.use_my_current_location">मेरी वर्तमान लोकेशन इस्तेमाल करें</span></button>
+  <label id="lbLang">रिपोर्ट की भाषा</label><select id="fLang"></select>
+  <div id="lbLangHint" style="font-size:11px;opacity:.6;margin:4px 0 12px;">आपकी PDF इसी भाषा में तैयार होगी</div>
   <button class="btn" id="btDetails" onclick="submitDetails()">कुंडली बनाएँ →</button>
   <div class="err" id="errDetails">कृपया सभी विवरण भरें</div>
 </div>
@@ -143,6 +145,8 @@ if(typeof window.A!=='function'){
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+var SD_LANGS_NATIVE={en:'English',hi:'हिंदी',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',mr:'मराठी',gu:'ગુજરાતી',bn:'বাংলা',as:'অসমীয়া'};
+function sdLangOptions(sel){var cur=(window.SD_LANG||'hi');if(!SD_LANGS_NATIVE[cur])cur='hi';return Object.keys(SD_LANGS_NATIVE).map(function(l){return '<option value="'+l+'"'+(l===cur?' selected':'')+'>'+SD_LANGS_NATIVE[l]+'</option>';}).join('');}
 'use strict';
 var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
@@ -192,7 +196,8 @@ if(true){
   $('hTitle').textContent=A('onboar.free_kundli');
   $('ldDetails').textContent=A('kundli.fill_your_birth_details_your_detai');
   (function(){var e=document.getElementById('kGpsTxt');if(e&&typeof A==='function')e.textContent=A('buy.use_my_current_location');})();
-  $('lbName').textContent=A('buy.full_name');(function(){var g=$('fGender');if(g&&g.options.length>1){g.options[0].textContent=A('kundli.male');g.options[1].textContent=A('kundli.female');}var p=$('fPlace');if(p)p.placeholder=A('shared.search_city');})();$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
+  $('lbName').textContent=A('buy.full_name');
+  (function(){var l=$('fLang');if(l){l.innerHTML=sdLangOptions();}$('lbLang').textContent=A('shared.report_language');$('lbLangHint').textContent=A('shared.report_language_hint');})();(function(){var g=$('fGender');if(g&&g.options.length>1){g.options[0].textContent=A('kundli.male');g.options[1].textContent=A('kundli.female');}var p=$('fPlace');if(p)p.placeholder=A('shared.search_city');})();$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
   $('lbTime').textContent=A('kundli.time_of_birth');$('lbPlace').textContent=A('kundli.place_of_birth');
   $('btDetails').textContent=A('kundli.create_my_kundli');$('errDetails').textContent=A('buy.please_fill_all_details');
   $('auT').textContent=A('kundli.protect_your_kundli');
@@ -276,7 +281,7 @@ function kDetectLoc(){
 /* ── 1 · details ── */
 function submitDetails(){
   var d={name:$('fName').value.trim(),gender:$('fGender').value,dob:$('fDob').value,
-         time:$('fTime').value,place:$('fPlace').value.trim()};
+         time:$('fTime').value,place:$('fPlace').value.trim(),lang:($('fLang')&&$('fLang').value)||window.SD_LANG||'hi'};
   if(_kCity.lat){d.lat=_kCity.lat;d.lng=_kCity.lng;}
   if(!d.name||!d.dob||!d.time||!d.place){$('errDetails').style.display='block';return;}
   localStorage.setItem('shubhdin_kundli_details',JSON.stringify(d));
@@ -350,7 +355,7 @@ function requestServerPdf(){
     var sess=r.data&&r.data.session; if(!sess)return;
     var det=null; try{det=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');}catch(e){}
     if(!det)return;
-    det.lang=(window.SD_LANG||'hi');
+    det.lang=det.lang||(window.SD_LANG||'hi');   /* the language chosen on the form, else the app language */
     dlog('pdf: requesting server render');
     fetch('/api/kundli-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({uid:sess.user.id,access_token:sess.access_token,details:det})})
