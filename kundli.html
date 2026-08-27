@@ -358,7 +358,7 @@ function requestServerPdf(){
     det.lang=det.lang||(window.SD_LANG||'hi');   /* the language chosen on the form, else the app language */
     dlog('pdf: requesting server render');
     fetch('/api/kundli-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({uid:sess.user.id,access_token:sess.access_token,details:det})})
+      body:JSON.stringify({uid:sess.user.id,access_token:sess.access_token,details:det,lang:det.lang})})
     .then(function(x){return x.json();})
     .then(function(j){
       if(j&&j.ready&&j.url){PDF_URL=j.url;localStorage.setItem('shubhdin_kundli_pdf',j.url);
@@ -420,7 +420,8 @@ function kShowManualLink(url){
         +(A('kundli.downloads_sometimes_do_not_run_fro'))
         +'</div>' : '');
 }
-function viewKundli(){location.href='kundli-report.html?autoview=1';}
+function kundliLang(){try{var d=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');if(d&&d.lang)return d.lang;}catch(e){}return window.SD_LANG||'hi';}
+function viewKundli(){location.href='kundli-report.html?autoview=1&lang='+encodeURIComponent(kundliLang());}
 function downloadKundli(){
   if(PDF_URL){dlog('pdf: downloading file');kOpenPdf(PDF_URL);return;}
   /* not ready yet: one quick retry, else fall back to on-device save */
@@ -430,7 +431,7 @@ function downloadKundli(){
     tries++;
     if(PDF_URL){clearInterval(pv);updateDlBtn();kOpenPdf(PDF_URL);}
     else if(tries>20){clearInterval(pv);dlog('pdf: server slow → device fallback');
-      location.href='kundli-report.html?autopdf=1';}
+      location.href='kundli-report.html?autopdf=1&lang='+encodeURIComponent(kundliLang());}
   },4000);
 }
 
