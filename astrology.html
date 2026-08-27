@@ -1080,7 +1080,7 @@ function vPick(iso){
     var hc=q.hinduCalendar;
     body='<div class="card">'
      +prow(A('dashbo.vara'),'<span class="dev">'+(sdVara(q.vara))+'</span>')
-     +prow(A('dashbo.tithi'),'<span class="dev">'+(sdTithi(q.tithi))+'</span> · '+t(q.tithi.paksha==='Krishna'?'कृष्ण':'शुक्ल',q.tithi.paksha))
+     +prow(A('dashbo.tithi'),'<span class="dev">'+(sdTithi(q.tithi))+'</span> · '+sdPaksha(q.tithi.paksha))
      +prow(A('dashbo.nakshatra'),'<span class="dev">'+(sdNak(q.nakshatra))+'</span>')
      +prow(A('dashbo.yoga'),'<span class="dev">'+(sdYoga(q.yoga))+'</span>')
      +prow(A('dashbo.karana'),'<span class="dev">'+(sdKarana(q.karana))+'</span>')
