@@ -198,6 +198,8 @@ if(!CFG[R]){
      connection is seconds, not milliseconds. Throwing ends the inline script. */
   throw new Error('shubhdin: no saleable report for "'+R+'" — redirecting');
 }
+var SD_LANGS_NATIVE={en:'English',hi:'हिंदी',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',mr:'मराठी',gu:'ગુજરાતી',bn:'বাংলা',as:'অসমীয়া'};
+function sdLangOptions(sel){var cur=(window.SD_LANG||'hi');if(!SD_LANGS_NATIVE[cur])cur='hi';return Object.keys(SD_LANGS_NATIVE).map(function(l){return '<option value="'+l+'"'+(l===cur?' selected':'')+'>'+SD_LANGS_NATIVE[l]+'</option>';}).join('');}
 var C=CFG[R]||{};
 /* Title in the reader's language from the same key premium.html uses, so the
    name on the sales card and the name at checkout are one word. */
@@ -233,7 +235,7 @@ function person(prefix,label){
   var g=prefix==='p'; // primary naming: reports use pname or bname/gname
   return '<div class="sect dev">'+label+'</div>'
    +'<label>'+(A('buy.full_name'))+'</label><input id="f_'+prefix+'name" type="text">'
-   +(C.gender&&prefix==='p'?'<label>'+(A('buy.gender'))+'</label><select id="f_pgender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>':'')
+   +(C.gender&&prefix==='p'?'<label>'+(A('buy.gender'))+'</label><select id="f_pgender"><option value="male">'+A('kundli.male')+'</option><option value="female">'+A('kundli.female')+'</option></select>':'')
    +'<div class="two"><div><label>'+(A('buy.birth_date'))+'</label><input id="f_'+prefix+'date" type="date" max="'+SD_TODAY+'" min="1900-01-01"></div>'
    +'<div><label>'+(A('buy.birth_time'))+'</label><input id="f_'+prefix+'time" type="time"></div></div>'
    /* Birth time is genuinely unknown for many buyers. We never block the sale for it,
@@ -281,10 +283,15 @@ function residenceBlock(){
 $('formRoot').innerHTML = (C.two
  ? person('b',A('buy.groom_details'))+person('g',A('buy.bride_details'))
  : person('p',A('buy.birth_details')))
- + (C.residence?residenceBlock():'');
+ + (C.residence?residenceBlock():'')
+ + langBlock();
 /* prefill from profile */
 (function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
 
+function langBlock(){
+  return '<label>'+A('shared.report_language')+'</label><select id="f_lang">'+sdLangOptions()+'</select>'
+   +'<div style="font-size:11px;opacity:.6;margin:4px 0 12px;">'+A('shared.report_language_hint')+'</div>';
+}
 function val(id){var e=$(id);return e?e.value.trim():'';}
 function noTimeOn(prefix){var c=$('f_'+prefix+'notime');return !!(c&&c.checked);}
 function noTime(prefix){
@@ -398,6 +405,7 @@ function badDate(reason){
 function missD(){var e=$('errD');e.textContent=A('buy.please_fill_all_details');e.style.display='block';}
 async function submitDetails(){
   var d={};
+  d.lang=val('f_lang')||window.SD_LANG||'hi';   /* report language chosen on the form */
   if(C.two){
     d.bname=val('f_bname');d.bdate=val('f_bdate');d.btime=val('f_btime');d.bplace=val('f_bplace');
     d.gname=val('f_gname');d.gdate=val('f_gdate');d.gtime=val('f_gtime');d.gplace=val('f_gplace');
@@ -689,7 +697,7 @@ function showDone(){
     var det=details();
     if(det&&SESSION&&SESSION.user){
       fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:det,lang:(window.SD_LANG||'hi')})})
+        body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:det,lang:(det.lang||window.SD_LANG||'hi')})})
       .then(apiJson).then(function(j){
         if(j&&j.ready&&j.url){PDF_URL=PDF_URL||j.url;sdOwnedWrite(R,ORDER_CODE,j.url);
           bdlog('prerender '+(j.cached?'cached':'rendered'));}
@@ -706,7 +714,7 @@ function doDownload(){
   var d=details(); if(!d){show('stDetails');return;}
   $('btDl').textContent=A('buy.preparing_your_report_30_40s');
   fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:(window.SD_LANG||'hi')})})
+    body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:(d.lang||window.SD_LANG||'hi')})})
   .then(apiJson).then(function(j){
     if(j&&j.ready&&j.url){PDF_URL=j.url;sdOwnedWrite(R,ORDER_CODE,j.url);$('btDl').textContent=A('buy.download_pdf');location.href=j.url;}
     else{$('errX').textContent=(j&&(j.detail||j.error))||'failed';$('errX').style.display='block';
