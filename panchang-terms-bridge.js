@@ -105,7 +105,10 @@
   g.sdKarana  = function (v, l) { return g.sdTerm('karana', v, l); };
   g.sdRashi   = function (v, l) { return g.sdTerm('rashi', v, l); };
   g.sdVara    = function (v, l) { return g.sdTerm('weekday', v, l); };
-  g.sdChog    = function (v, l) { return g.sdTerm('choghadiya', v, l); };
+  /* A choghadiya segment can also be a named muhurta (Abhijit, Brahma…) —
+     the hub's "first clean window" passes both. Route through sdWindow so a
+     named muhurta resolves from its own table instead of missing. */
+  g.sdChog    = function (v, l) { return g.sdWindow(v, l); };
   g.sdHora    = function (v, l) { return g.sdTerm('hora', v, l); };
   g.sdRitu    = function (v, l) { return g.sdTerm('ritu', v, l); };
   g.sdMasa    = function (v, l) { return g.sdTerm('masa', v, l); };
