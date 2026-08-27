@@ -26,6 +26,14 @@ function loadStack() {
   return _stack;
 }
 
+// ── report language: nine codes, never clamped to hi/en ──
+// Before this, `lang === 'hi' ? 'hi' : 'en'` turned every other language into
+// English before the page was asked, so Telugu/Kannada/… PDFs came out English.
+const SD_LANGS = ['en','hi','te','kn','ta','bn','mr','gu','as'];
+function pickLang(...cands) {
+  for (const c of cands) if (typeof c === 'string' && SD_LANGS.includes(c)) return c;
+  return 'hi';
+}
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -36,7 +44,8 @@ module.exports = async function handler(req, res) {
   const serviceKey  = process.env.SUPABASE_SERVICE_KEY;
   if (!supabaseUrl || !serviceKey) return res.status(500).json({ error: 'Missing Supabase config' });
 
-  const { report, uid, access_token, details, lang } = req.body || {};
+  const { report, uid, access_token, details } = req.body || {};
+  const lang = pickLang(req.body && req.body.lang, details && details.lang);
   if (!REPORTS[report]) return res.status(400).json({ error: 'unknown report' });
   if (!uid || !details) return res.status(400).json({ error: 'uid and details required' });
 
@@ -59,14 +68,16 @@ module.exports = async function handler(req, res) {
   }
 
   const BUCKET = 'shubhdin-audio';
-  const path = `reports/${uid}/${report}.pdf`;
+  // one file per (report, language); a buyer who opens the same purchase in
+  // another language gets a fresh render, the same-language request is instant
+  const path = `reports/${uid}/${report}-${lang}.pdf`;
   const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${path}`;
-  const dlUrl = publicUrl + `?download=Shubh-Din-${report}-report.pdf`;
+  const dlUrl = publicUrl + `?download=Shubh-Din-${report}-${lang}.pdf`;
 
   // ── cached? ──
   try {
     const head = await fetch(publicUrl, { method: 'HEAD' });
-    if (head.ok) return res.status(200).json({ ready: true, url: dlUrl, cached: true });
+    if (head.ok) return res.status(200).json({ ready: true, url: dlUrl, lang, cached: true });
   } catch (e) {}
 
   // ── render ──
@@ -81,7 +92,7 @@ module.exports = async function handler(req, res) {
     });
     const page = await browser.newPage();
     const site = 'https://' + (req.headers['x-forwarded-host'] || req.headers.host);
-    await page.goto(site + '/' + REPORTS[report], { waitUntil: 'networkidle0', timeout: 90000 });
+    await page.goto(site + '/' + REPORTS[report] + '?lang=' + lang, { waitUntil: 'networkidle0', timeout: 90000 });
 
     // drive the report's own form directly — no report-file edits needed
     await page.evaluate((d, lng) => {
@@ -91,7 +102,7 @@ module.exports = async function handler(req, res) {
         if (el && d[k] !== undefined && d[k] !== null && d[k] !== '') el.value = d[k];
       }
       confirmStep(); generate();
-    }, details, lang === 'hi' ? 'hi' : 'en');
+    }, details, lang);
 
     await page.waitForFunction(() => {
       const r = document.getElementById('report');
@@ -112,7 +123,7 @@ module.exports = async function handler(req, res) {
       body: pdf
     });
     if (!up.ok) return res.status(500).json({ error: 'storage upload failed' });
-    return res.status(200).json({ ready: true, url: dlUrl, bytes: pdf.length });
+    return res.status(200).json({ ready: true, url: dlUrl, lang, bytes: pdf.length });
   } catch (e) {
     if (browser) { try { await browser.close(); } catch (x) {} }
     return res.status(500).json({ error: 'render failed', detail: String(e.message).slice(0, 200) });
