@@ -408,8 +408,26 @@ function sdPrint(){
 }
 
 var LANG='en', CTX=null;
+/* ══ LANGUAGE ON LOAD (additive) ══
+   This page hard-coded LANG='en' and only changed it when a human tapped a
+   language button, so every automatic open — the app's "view on screen", the
+   device-PDF fallback, and the server renderer — produced English. Order:
+     1. ?lang= in the URL          (kundli.html and kundli-pdf.js pass it)
+     2. the app language           (shubhdin_user.lang — a direct visit)
+     3. English                    (unchanged default)
+   Validated against the nine codes so a junk parameter cannot break the page. */
+(function(){
+  try{
+    var OK=['en','hi','te','kn','ta','bn','mr','gu','as'];
+    var q=(location.search.match(/[?&]lang=([a-z]{2})/)||[])[1];
+    var saved=null; try{ saved=(JSON.parse(localStorage.getItem('shubhdin_user')||'{}')||{}).lang; }catch(e){}
+    var pick=(OK.indexOf(q)>=0)?q:(OK.indexOf(saved)>=0)?saved:null;
+    if(pick) LANG=pick;
+  }catch(e){}
+})();
 function setLang(l){LANG=l;['en','hi','te','kn','ta','bn','mr','gu','as'].forEach(function(x){var b=document.getElementById('l'+x.charAt(0).toUpperCase()+x.slice(1));if(b)b.className=(l===x?'on':'');});}
 function T(o){return o?(o[LANG]||o.en||o.hi):'';}
+document.addEventListener('DOMContentLoaded',function(){try{setLang(LANG);}catch(e){}});
 
 var UI=null;
 var UI_FB={'kundli.k001':'CHAPTER','kundli.k006':'Mahadasha','kundli.k007':'Antar','kundli.k029':'House',
@@ -1014,7 +1032,7 @@ function generate(){
       ov.id='sdAutoLoader';
       ov.style.cssText='position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(165deg,#0D0500,#241005);color:#E8BE5A;';
       ov.innerHTML='<div style="font-size:56px;font-family:serif;text-shadow:0 0 30px rgba(232,190,90,0.6);">ॐ</div>'
-        +'<div style="margin-top:14px;font-size:14px;color:rgba(255,244,222,0.8);font-family:sans-serif;">आपकी कुंडली खुल रही है…</div>';
+        +'<div style="margin-top:14px;font-size:14px;color:rgba(255,244,222,0.8);font-family:sans-serif;">'+({en:'Opening your Kundli…',hi:'आपकी कुंडली खुल रही है…',te:'మీ జాతకం తెరుచుకుంటోంది…',kn:'ನಿಮ್ಮ ಜಾತಕ ತೆರೆಯುತ್ತಿದೆ…',ta:'உங்கள் ஜாதகம் திறக்கிறது…',mr:'तुमची कुंडली उघडत आहे…',gu:'તમારી કુંડળી ખૂલી રહી છે…',bn:'আপনার কোষ্ঠী খুলছে…',as:'আপোনাৰ কুণ্ডলী খুলি আছে…'}[LANG]||'Opening your Kundli…')+'…</div>';
       document.body.appendChild(ov);
       var rmLoader=function(){var e=document.getElementById('sdAutoLoader');if(e)e.remove();};
       var lw=setInterval(function(){
