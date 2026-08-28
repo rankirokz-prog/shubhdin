@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Dispatch — शुभ दिन</title>
+<!-- ════════════════════════════════════════════════════════════════════════
+     DISPATCH — Ram's control room. Admin-only, English-only (internal tool;
+     WhatsApp templates below are in the BUYER's language).
+
+     Security model: this file holds no secrets. It signs in with the same
+     Google OAuth as buy.html; the server (api/order.js ?dispatch=1 …) verifies
+     the session AND checks the uid against env SD_ADMIN_UIDS before the
+     service key touches anything. A non-admin who finds this URL sees their
+     own uid and an access-denied line, nothing else.
+
+     The gate: every paid order is born dispatch_status='pending'. Nothing —
+     no Download button, no pdf_url from ?list=1 — reaches the buyer until the
+     order is moved to 'sent' HERE. Approve & Send opens WhatsApp with the
+     message in the buyer's language; Mark Sent closes the loop.
+     ════════════════════════════════════════════════════════════════════════ -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0D0500;color:rgba(255,244,222,0.92);font-family:'Poppins',sans-serif;padding:0 12px 60px;min-height:100vh;}
+.hdr{display:flex;align-items:center;gap:10px;padding:16px 2px 10px;flex-wrap:wrap;}
+h1{font-size:17px;color:#D4A843;}
+.sub{font-size:10.5px;opacity:.55;width:100%;}
+.tabs{display:flex;gap:8px;margin:10px 0 12px;}
+.tab{flex:1;padding:10px;border-radius:12px;border:1px solid rgba(212,168,67,0.3);background:none;color:rgba(255,244,222,0.75);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.tab.on{background:linear-gradient(120deg,#D4A843,#B8892F);color:#1A0D00;}
+.filters{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.f{padding:5px 11px;border-radius:20px;border:1px solid rgba(212,168,67,0.25);background:none;color:rgba(255,244,222,0.7);font-size:11px;cursor:pointer;font-family:inherit;}
+.f.on{background:rgba(212,168,67,0.2);color:#FFE9B8;border-color:rgba(212,168,67,0.6);}
+.card{border:1px solid rgba(212,168,67,0.22);border-radius:16px;padding:13px 14px;margin-bottom:11px;background:linear-gradient(150deg,rgba(255,255,255,0.035),rgba(255,255,255,0));}
+.card.problem{border-color:rgba(220,80,80,0.5);}
+.card.stale{border-color:rgba(255,107,26,0.65);box-shadow:0 0 0 1px rgba(255,107,26,0.25);}
+.row1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.rep{font-size:15px;font-weight:600;color:#FFE9B8;text-transform:capitalize;}
+.amt{font-size:12px;color:#7DE29A;font-weight:600;}
+.lang{font-size:10px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.3);padding:1px 7px;border-radius:10px;letter-spacing:1px;text-transform:uppercase;}
+.age{margin-left:auto;font-size:10px;opacity:.6;}
+.age.hot{color:#FF9A66;opacity:1;font-weight:600;}
+.who{font-size:11px;opacity:.65;margin:3px 0 8px;word-break:break-all;}
+.ticks{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;}
+.tick{font-size:12px;display:flex;gap:7px;align-items:baseline;}
+.ok{color:#7DE29A;} .bad{color:#FF7A7A;} .warn{color:#FFC46B;}
+.btns{display:flex;gap:7px;flex-wrap:wrap;}
+.b{padding:8px 12px;border-radius:11px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block;}
+.b.gold{background:linear-gradient(120deg,#D4A843,#B8892F);color:#1A0D00;}
+.b.green{background:linear-gradient(120deg,#4A7C59,#2E7D46);color:#EAFFEF;}
+.b.grey{background:rgba(255,255,255,0.09);color:rgba(255,244,222,0.85);}
+.b.red{background:rgba(184,67,74,0.25);color:#FFB3B3;border:1px solid rgba(184,67,74,0.5);}
+.b:disabled{opacity:.35;cursor:not-allowed;}
+.state{font-size:10px;letter-spacing:1.5px;font-weight:700;padding:2px 8px;border-radius:8px;text-transform:uppercase;}
+.st-pending{background:rgba(255,196,107,0.15);color:#FFC46B;}
+.st-approved{background:rgba(125,226,154,0.15);color:#7DE29A;}
+.st-sent{background:rgba(125,226,154,0.28);color:#BFEFD0;}
+.st-problem{background:rgba(255,122,122,0.18);color:#FF7A7A;}
+.note{font-size:11px;color:#FFC46B;margin-top:7px;font-style:italic;}
+.center{text-align:center;padding:14vh 20px;}
+.center .big{font-size:44px;margin-bottom:14px;}
+.center p{font-size:13px;line-height:1.8;opacity:.8;}
+.mono{font-family:monospace;font-size:11px;word-break:break-all;background:rgba(255,255,255,0.06);padding:8px 10px;border-radius:10px;display:inline-block;margin-top:10px;}
+.gbtn{margin-top:18px;padding:12px 22px;border-radius:13px;border:none;background:#fff;color:#1a1a1a;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
+.summary{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.pill{font-size:11px;padding:6px 11px;border-radius:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(212,168,67,0.18);}
+.pill b{color:#FFE9B8;}
+.empty{text-align:center;font-size:12.5px;opacity:.5;padding:40px 10px;line-height:1.8;}
+.search{width:100%;padding:9px 13px;border-radius:12px;border:1px solid rgba(212,168,67,0.25);background:rgba(255,255,255,0.04);color:inherit;font-size:12.5px;font-family:inherit;margin-bottom:10px;}
+.tsel{width:100%;padding:8px 10px;border-radius:10px;border:1px solid rgba(212,168,67,0.25);background:#1A0800;color:inherit;font-size:12px;font-family:inherit;margin:6px 0;}
+.refresh{margin-left:auto;background:none;border:1px solid rgba(212,168,67,0.3);color:#D4A843;border-radius:10px;padding:6px 11px;font-size:11.5px;cursor:pointer;font-family:inherit;}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div id="stAuth" class="center" style="display:none;">
+  <div class="big">🔒</div>
+  <p><b>Shubh Din — Dispatch</b><br>Sign in with the admin Google account.</p>
+  <button class="gbtn" onclick="signIn()">Sign in with Google</button>
+</div>
+
+<div id="stDenied" class="center" style="display:none;">
+  <div class="big">⛔</div>
+  <p>This account is not on the admin list.<br>To grant it access, add this uid to <b>SD_ADMIN_UIDS</b> in Vercel and redeploy:</p>
+  <div class="mono" id="deniedUid"></div>
+</div>
+
+<div id="stMain" style="display:none;">
+  <div class="hdr">
+    <h1>🕉️ Dispatch</h1>
+    <button class="refresh" onclick="loadAll()">↻ Refresh</button>
+    <div class="sub" id="subLine">—</div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" id="tabO" onclick="showTab('o')">📦 Paid orders <span id="cntO"></span></button>
+    <button class="tab" id="tabL" onclick="showTab('l')">🪔 Kundli leads <span id="cntL"></span></button>
+  </div>
+
+  <div id="paneO">
+    <div class="summary" id="sumO"></div>
+    <div class="filters" id="filtO"></div>
+    <input class="search" id="qO" placeholder="Search email / order code / report…" oninput="renderOrders()">
+    <div id="listO"></div>
+  </div>
+
+  <div id="paneL" style="display:none;">
+    <div class="summary" id="sumL"></div>
+    <div class="filters" id="filtL"></div>
+    <input class="search" id="qL" placeholder="Search name / phone…" oninput="renderLeads()">
+    <div id="listL"></div>
+  </div>
+</div>
+
+<script>
+/* ── auth (same project + flow as buy.html) ── */
+var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
+var sb=null;
+try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SB_URL,SB_ANON); }catch(e){}
+var SESSION=null, ORDERS=[], LEADS=[], FO='pending', FL='waiting';
+
+function show(id){['stAuth','stDenied','stMain'].forEach(function(x){document.getElementById(x).style.display=(x===id)?'block':'none';});}
+function $(id){return document.getElementById(id);}
+function signIn(){ if(!sb)return alert('Supabase CDN did not load — check the connection and reload.');
+  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}}); }
+
+/* Supabase returns tokens in the URL hash on OAuth redirect */
+(function boot(){
+  if(!sb){show('stAuth');return;}
+  var h=location.hash;
+  var fin=function(){ sb.auth.getSession().then(function(r){
+    SESSION=r.data&&r.data.session;
+    if(!SESSION){show('stAuth');return;}
+    loadAll();
+  });};
+  if(h.indexOf('access_token=')>-1){
+    var p={}; h.slice(1).split('&').forEach(function(kv){var a=kv.split('=');p[a[0]]=decodeURIComponent(a[1]||'');});
+    sb.auth.setSession({access_token:p.access_token,refresh_token:p.refresh_token})
+      .then(function(){try{history.replaceState(null,'',location.pathname);}catch(e){} fin();});
+  } else fin();
+})();
+
+function api(qs){return fetch('/api/order?'+qs+'&uid='+SESSION.user.id+'&access_token='+encodeURIComponent(SESSION.access_token)).then(function(r){return r.json();});}
+function apiPost(qs,body){body.admin_uid=SESSION.user.id;body.access_token=SESSION.access_token;
+  return fetch('/api/order?'+qs,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();});}
+
+function loadAll(){
+  $('subLine').textContent='Loading…';
+  api('dispatch=1').then(function(j){
+    if(j&&j.error==='admin only'){ $('deniedUid').textContent=SESSION.user.id; show('stDenied'); return; }
+    ORDERS=(j&&j.orders)||[];
+    show('stMain');
+    $('subLine').textContent=(SESSION.user.email||'')+' · '+new Date().toLocaleString('en-IN');
+    renderOrders();
+    api('leads=1').then(function(k){ LEADS=(k&&k.leads)||[]; renderLeads(); });
+  }).catch(function(e){ $('subLine').textContent='Load failed: '+e.message; show('stMain'); });
+}
+
+function showTab(t){
+  $('paneO').style.display=t==='o'?'block':'none';
+  $('paneL').style.display=t==='l'?'block':'none';
+  $('tabO').className='tab'+(t==='o'?' on':''); $('tabL').className='tab'+(t==='l'?' on':'');
+}
+
+/* ══ WhatsApp templates — in the BUYER's language ══════════════════════════
+   Short, personal, ends by inviting a reply (replies + saved contacts are
+   what keep a WhatsApp number healthy). {name} {report} {code} {link} fill in.
+   Non-Hindi/Telugu wording: pending native review — see the batch JSON. */
+var REPORT_NAME={
+ marriage:{en:'Marriage Report',hi:'विवाह रिपोर्ट',te:'వివాహ రిపోర్ట్',kn:'ವಿವಾಹ ವರದಿ',ta:'திருமண அறிக்கை',bn:'বিবাহ রিপোর্ট',mr:'विवाह रिपोर्ट',gu:'લગ્ન રિપોર્ટ',as:'বিবাহ ৰিপৰ্ট'},
+ love:{en:'Love Report',hi:'प्रेम रिपोर्ट',te:'ప్రేమ రిపోర్ట్',kn:'ಪ್ರೇಮ ವರದಿ',ta:'காதல் அறிக்கை',bn:'প্রেম রিপোর্ট',mr:'प्रेम रिपोर्ट',gu:'પ્રેમ રિપોર્ટ',as:'প্ৰেম ৰিপৰ্ট'},
+ career:{en:'Career Report',hi:'करियर रिपोर्ट',te:'కెరీర్ రిపోర్ట్',kn:'ವೃತ್ತಿ ವರದಿ',ta:'தொழில் அறிக்கை',bn:'কেরিয়ার রিপোর্ট',mr:'करिअर रिपोर्ट',gu:'કારકિર્દી રિપોર્ટ',as:'কেৰিয়াৰ ৰিপৰ্ট'},
+ child:{en:'Child Report',hi:'संतान रिपोर्ट',te:'సంతాన రిపోర్ట్',kn:'ಸಂತಾನ ವರದಿ',ta:'குழந்தை அறிக்கை',bn:'সন্তান রিপোর্ট',mr:'संतान रिपोर्ट',gu:'સંતાન રિપોર્ટ',as:'সন্তান ৰিপৰ্ট'},
+ annual:{en:'Annual Report',hi:'वार्षिक रिपोर्ट',te:'వార్షిక రిపోర్ట్',kn:'ವಾರ್ಷಿಕ ವರದಿ',ta:'ஆண்டு அறிக்கை',bn:'বার্ষিক রিপোর্ট',mr:'वार्षिक रिपोर्ट',gu:'વાર્ષિક રિપોર્ટ',as:'বাৰ্ষিক ৰিপৰ্ট'},
+ forecast:{en:'Forecast Report',hi:'भविष्य रिपोर्ट',te:'భవిష్య రిపోర్ట్',kn:'ಭವಿಷ್ಯ ವರದಿ',ta:'எதிர்கால அறிக்கை',bn:'ভবিষ্যৎ রিপোর্ট',mr:'भविष्य रिपोर्ट',gu:'ભવિષ્ય રિપોર્ટ',as:'ভৱিষ্যত ৰিপৰ্ট'},
+ muhurta:{en:'Muhurta Report',hi:'मुहूर्त रिपोर्ट',te:'ముహూర్త రిపోర్ట్',kn:'ಮುಹೂರ್ತ ವರದಿ',ta:'முகூர்த்த அறிக்கை',bn:'মুহূর্ত রিপোর্ট',mr:'मुहूर्त रिपोर्ट',gu:'મુહૂર્ત રિપોર્ટ',as:'মুহূৰ্ত ৰিপৰ্ট'}};
+var TPL={
+ report:{
+  en:"🙏 Namaste{name}! Your Shubh Din {report} is ready — prepared and personally checked for you.\n\n📄 {link}\n\nOrder: {code}\nIt is also open in the app under My Reports. Any question — just reply here. Please save this number for your updates. 🙏",
+  hi:"🙏 नमस्ते{name}! आपकी शुभ दिन {report} तैयार है — आपके लिए विशेष रूप से बनाकर जाँची गई है।\n\n📄 {link}\n\nऑर्डर: {code}\nयह ऐप में My Reports में भी खुल गई है। कोई भी प्रश्न हो तो यहीं पूछें। कृपया यह नंबर सेव कर लें 🙏",
+  te:"🙏 నమస్తే{name}! మీ శుభ్ దిన్ {report} సిద్ధంగా ఉంది — మీ కోసం ప్రత్యేకంగా తయారు చేసి పరిశీలించాం.\n\n📄 {link}\n\nఆర్డర్: {code}\nయాప్‌లో My Reportsలో కూడా తెరుచుకుంది. ఏదైనా సందేహం ఉంటే ఇక్కడే అడగండి. ఈ నంబర్ సేవ్ చేసుకోండి 🙏",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ನಿಮ್ಮ ಶುಭ ದಿನ {report} ಸಿದ್ಧವಾಗಿದೆ — ನಿಮಗಾಗಿ ವಿಶೇಷವಾಗಿ ತಯಾರಿಸಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.\n\n📄 {link}\n\nಆರ್ಡರ್: {code}\nಆ್ಯಪ್‌ನ My Reports‑ನಲ್ಲಿಯೂ ತೆರೆದಿದೆ. ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇದ್ದರೆ ಇಲ್ಲಿಯೇ ಕೇಳಿ. ಈ ನಂಬರ್ ಸೇವ್ ಮಾಡಿಕೊಳ್ಳಿ 🙏",
+  ta:"🙏 வணக்கம்{name}! உங்கள் சுப தின {report} தயார் — உங்களுக்காகவே தயாரித்து சரிபார்க்கப்பட்டது.\n\n📄 {link}\n\nஆர்டர்: {code}\nஆப்பில் My Reports‑இலும் திறந்துள்ளது. ஏதேனும் கேள்வி இருந்தால் இங்கேயே கேளுங்கள். இந்த எண்ணை சேவ் செய்யுங்கள் 🙏",
+  bn:"🙏 নমস্কার{name}! আপনার শুভ দিন {report} তৈরি — আপনার জন্য বিশেষভাবে বানিয়ে যাচাই করা হয়েছে।\n\n📄 {link}\n\nঅর্ডার: {code}\nঅ্যাপের My Reports‑এও খুলে গেছে। কোনো প্রশ্ন থাকলে এখানেই জিজ্ঞাসা করুন। এই নম্বরটি সেভ করে রাখুন 🙏",
+  mr:"🙏 नमस्कार{name}! तुमचा शुभ दिन {report} तयार आहे — तुमच्यासाठी खास बनवून तपासला आहे.\n\n📄 {link}\n\nऑर्डर: {code}\nअ‍ॅपमध्ये My Reports मध्येही उघडला आहे. काही प्रश्न असल्यास इथेच विचारा. हा नंबर सेव्ह करा 🙏",
+  gu:"🙏 નમસ્તે{name}! તમારો શુભ દિન {report} તૈયાર છે — તમારા માટે ખાસ બનાવીને ચકાસ્યો છે.\n\n📄 {link}\n\nઓર્ડર: {code}\nએપમાં My Reports માં પણ ખૂલી ગયો છે. કોઈ પ્રશ્ન હોય તો અહીં જ પૂછો. આ નંબર સેવ કરી લો 🙏",
+  as:"🙏 নমস্কাৰ{name}! আপোনাৰ শুভ দিন {report} প্ৰস্তুত — আপোনাৰ বাবে বিশেষভাৱে প্ৰস্তুত কৰি পৰীক্ষা কৰা হৈছে।\n\n📄 {link}\n\nঅৰ্ডাৰ: {code}\nএপৰ My Reports‑তো খোল খাইছে। কিবা প্ৰশ্ন থাকিলে ইয়াতে সোধক। এই নম্বৰটো ছেভ কৰি থওক 🙏"},
+ kundli:{
+  en:"🙏 Namaste{name}! Here is your free Shubh Din Kundli — made from your own birth details.\n\n📄 {link}\n\nOpen the Shubh Din app daily for your panchang, muhurta and jap. Save this number — your shubh din updates will come here. 🙏",
+  hi:"🙏 नमस्ते{name}! यह रही आपकी निःशुल्क शुभ दिन कुंडली — आपके अपने जन्म विवरण से बनी।\n\n📄 {link}\n\nरोज़ का पंचांग, मुहूर्त और जप के लिए शुभ दिन ऐप खोलें। यह नंबर सेव कर लें — आपके शुभ दिन अपडेट यहीं आएँगे 🙏",
+  te:"🙏 నమస్తే{name}! ఇదిగో మీ ఉచిత శుభ్ దిన్ జాతకం — మీ పుట్టిన వివరాలతోనే తయారైంది.\n\n📄 {link}\n\nరోజువారీ పంచాంగం, ముహూర్తం, జపం కోసం శుభ్ దిన్ యాప్ తెరవండి. ఈ నంబర్ సేవ్ చేసుకోండి — మీ శుభ దిన అప్‌డేట్స్ ఇక్కడికే వస్తాయి 🙏",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ಇದೋ ನಿಮ್ಮ ಉಚಿತ ಶುಭ ದಿನ ಜಾತಕ — ನಿಮ್ಮದೇ ಜನ್ಮ ವಿವರಗಳಿಂದ ತಯಾರಾಗಿದೆ.\n\n📄 {link}\n\nದೈನಂದಿನ ಪಂಚಾಂಗ, ಮುಹೂರ್ತ, ಜಪಕ್ಕಾಗಿ ಶುಭ ದಿನ ಆ್ಯಪ್ ತೆರೆಯಿರಿ. ಈ ನಂಬರ್ ಸೇವ್ ಮಾಡಿಕೊಳ್ಳಿ 🙏",
+  ta:"🙏 வணக்கம்{name}! இதோ உங்கள் இலவச சுப தின ஜாதகம் — உங்கள் பிறப்பு விவரங்களிலிருந்தே தயாரானது.\n\n📄 {link}\n\nதினசரி பஞ்சாங்கம், முகூர்த்தம், ஜபத்திற்கு சுப தின ஆப்பைத் திறங்கள். இந்த எண்ணை சேவ் செய்யுங்கள் 🙏",
+  bn:"🙏 নমস্কার{name}! এই যে আপনার বিনামূল্যের শুভ দিন কোষ্ঠী — আপনার নিজের জন্ম বিবরণ থেকেই তৈরি।\n\n📄 {link}\n\nদৈনিক পঞ্জিকা, মুহূর্ত ও জপের জন্য শুভ দিন অ্যাপ খুলুন। এই নম্বরটি সেভ করে রাখুন 🙏",
+  mr:"🙏 नमस्कार{name}! ही तुमची मोफत शुभ दिन कुंडली — तुमच्याच जन्म तपशिलांवरून बनवली आहे.\n\n📄 {link}\n\nरोजचे पंचांग, मुहूर्त आणि जपासाठी शुभ दिन अ‍ॅप उघडा. हा नंबर सेव्ह करा 🙏",
+  gu:"🙏 નમસ્તે{name}! આ રહી તમારી મફત શુભ દિન કુંડળી — તમારી જ જન્મ વિગતોમાંથી બની.\n\n📄 {link}\n\nરોજનું પંચાંગ, મુહૂર્ત અને જપ માટે શુભ દિન એપ ખોલો. આ નંબર સેવ કરી લો 🙏",
+  as:"🙏 নমস্কাৰ{name}! এয়া আপোনাৰ বিনামূলীয়া শুভ দিন কুণ্ডলী — আপোনাৰ নিজৰ জন্ম বিৱৰণৰ পৰাই প্ৰস্তুত।\n\n📄 {link}\n\nদৈনিক পঞ্চাং, মুহূৰ্ত আৰু জপৰ বাবে শুভ দিন এপ খোলক। এই নম্বৰটো ছেভ কৰক 🙏"},
+ jap:{
+  en:"🙏 Namaste{name}! Today's jap is waiting for you in Shubh Din — a few minutes with your mantra sets the whole day right. Open the app: https://shubhdin.app 🪔",
+  hi:"🙏 नमस्ते{name}! आज का जप शुभ दिन में आपकी प्रतीक्षा कर रहा है — अपने मंत्र के साथ कुछ मिनट, और पूरा दिन शुभ। ऐप खोलें: https://shubhdin.app 🪔",
+  te:"🙏 నమస్తే{name}! ఈ రోజు జపం శుభ్ దిన్‌లో మీ కోసం సిద్ధంగా ఉంది — మీ మంత్రంతో కొన్ని నిమిషాలు, రోజంతా శుభం. యాప్ తెరవండి: https://shubhdin.app 🪔",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ಇಂದಿನ ಜಪ ಶುಭ ದಿನದಲ್ಲಿ ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ — ನಿಮ್ಮ ಮಂತ್ರದೊಂದಿಗೆ ಕೆಲವು ನಿಮಿಷ, ಇಡೀ ದಿನ ಶುಭ. ಆ್ಯಪ್ ತೆರೆಯಿರಿ: https://shubhdin.app 🪔",
+  ta:"🙏 வணக்கம்{name}! இன்றைய ஜபம் சுப தினில் உங்களுக்காகக் காத்திருக்கிறது — உங்கள் மந்திரத்துடன் சில நிமிடங்கள், நாள் முழுவதும் சுபம். ஆப்பைத் திறங்கள்: https://shubhdin.app 🪔",
+  bn:"🙏 নমস্কার{name}! আজকের জপ শুভ দিনে আপনার অপেক্ষায় — আপনার মন্ত্রের সাথে কয়েক মিনিট, সারা দিন শুভ। অ্যাপ খুলুন: https://shubhdin.app 🪔",
+  mr:"🙏 नमस्कार{name}! आजचा जप शुभ दिनमध्ये तुमची वाट पाहत आहे — तुमच्या मंत्रासोबत काही मिनिटे, संपूर्ण दिवस शुभ. अ‍ॅप उघडा: https://shubhdin.app 🪔",
+  gu:"🙏 નમસ્તે{name}! આજનો જપ શુભ દિનમાં તમારી રાહ જુએ છે — તમારા મંત્ર સાથે થોડી મિનિટો, આખો દિવસ શુભ. એપ ખોલો: https://shubhdin.app 🪔",
+  as:"🙏 নমস্কাৰ{name}! আজিৰ জপ শুভ দিনত আপোনাৰ বাবে ৰৈ আছে — আপোনাৰ মন্ত্ৰৰ সৈতে কেইমিনিটমান, গোটেই দিনটো শুভ। এপ খোলক: https://shubhdin.app 🪔"},
+ panchang:{
+  en:"🙏 Namaste{name}! Today's panchang and shubh muhurta are ready in Shubh Din — see the auspicious time before you begin anything important: https://shubhdin.app 🌅",
+  hi:"🙏 नमस्ते{name}! आज का पंचांग और शुभ मुहूर्त शुभ दिन में तैयार हैं — कोई भी महत्वपूर्ण काम शुरू करने से पहले शुभ समय देख लें: https://shubhdin.app 🌅",
+  te:"🙏 నమస్తే{name}! ఈ రోజు పంచాంగం, శుభ ముహూర్తం శుభ్ దిన్‌లో సిద్ధంగా ఉన్నాయి — ముఖ్యమైన పని మొదలుపెట్టే ముందు శుభ సమయం చూసుకోండి: https://shubhdin.app 🌅",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ಇಂದಿನ ಪಂಚಾಂಗ ಮತ್ತು ಶುಭ ಮುಹೂರ್ತ ಶುಭ ದಿನದಲ್ಲಿ ಸಿದ್ಧ — ಮುಖ್ಯ ಕೆಲಸ ಆರಂಭಿಸುವ ಮೊದಲು ಶುಭ ಸಮಯ ನೋಡಿಕೊಳ್ಳಿ: https://shubhdin.app 🌅",
+  ta:"🙏 வணக்கம்{name}! இன்றைய பஞ்சாங்கமும் சுப முகூர்த்தமும் சுப தினில் தயார் — முக்கியமான வேலையைத் தொடங்கும் முன் சுப நேரத்தைப் பாருங்கள்: https://shubhdin.app 🌅",
+  bn:"🙏 নমস্কার{name}! আজকের পঞ্জিকা ও শুভ মুহূর্ত শুভ দিনে তৈরি — গুরুত্বপূর্ণ কাজ শুরুর আগে শুভ সময় দেখে নিন: https://shubhdin.app 🌅",
+  mr:"🙏 नमस्कार{name}! आजचे पंचांग आणि शुभ मुहूर्त शुभ दिनमध्ये तयार — महत्त्वाचे काम सुरू करण्यापूर्वी शुभ वेळ पाहा: https://shubhdin.app 🌅",
+  gu:"🙏 નમસ્તે{name}! આજનું પંચાંગ અને શુભ મુહૂર્ત શુભ દિનમાં તૈયાર — મહત્વનું કામ શરૂ કરતાં પહેલાં શુભ સમય જોઈ લો: https://shubhdin.app 🌅",
+  as:"🙏 নমস্কাৰ{name}! আজিৰ পঞ্চাং আৰু শুভ মুহূৰ্ত শুভ দিনত প্ৰস্তুত — গুৰুত্বপূৰ্ণ কাম আৰম্ভৰ আগতে শুভ সময় চাই লওক: https://shubhdin.app 🌅"}};
+function fillTpl(kind,lang,vars){
+  var t=(TPL[kind]&&(TPL[kind][lang]||TPL[kind].hi))||'';
+  return t.replace('{name}',vars.name?(' '+vars.name):'')
+          .replace('{report}',vars.report||'').replace('{code}',vars.code||'')
+          .replace('{link}',vars.link||'');
+}
+function waLink(phone,text){return 'https://wa.me/'+phone+'?text='+encodeURIComponent(text);}
+
+/* ── size floors: below this, a PDF is almost certainly broken/blank ──
+   These are deliberately conservative; eyeball the PDF from the card anyway. */
+var MIN_BYTES={marriage:150000,love:120000,career:120000,child:120000,annual:120000,forecast:130000,muhurta:100000,kundli:400000};
+
+function hoursSince(iso){return Math.floor((Date.now()-new Date(iso).getTime())/36e5);}
+function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* ══ ORDERS ══ */
+function orderChecks(o){
+  var t=[];
+  t.push({ok:true,txt:'Payment verified — ₹'+o.amount+' · '+(o.payment_id||'?')});
+  if(o.pdf_url){
+    var big=(o.pdf_bytes||0)>=(MIN_BYTES[o.report]||120000);
+    t.push({ok:big,txt:'PDF exists · '+Math.round((o.pdf_bytes||0)/1024)+' KB'+(big?'':' — SUSPICIOUSLY SMALL, open it')});
+    t.push({ok:!!o.pdf_lang_scoped,warn:!o.pdf_lang_scoped,txt:o.pdf_lang_scoped?('Language-correct PDF ('+o.lang+')'):('Only a LEGACY PDF found — language unknown; ask the buyer to reopen the report in the app to re-render in '+o.lang)});
+  } else {
+    t.push({ok:false,txt:'No PDF yet — buyer\'s device renders it in the background after payment; if this stays red, WhatsApp them to reopen the report in the app (birth details never touch the server, so it cannot be re-rendered from here)'});
+  }
+  t.push({ok:!!o.phone,txt:o.phone?('WhatsApp number +'+o.phone):'No phone on the order — older purchase or form skipped; get it on WhatsApp/email first'});
+  return t;
+}
+function renderOrders(){
+  var counts={pending:0,approved:0,sent:0,problem:0};
+  ORDERS.forEach(function(o){counts[o.dispatch_status||'pending']=(counts[o.dispatch_status||'pending']||0)+1;});
+  $('cntO').textContent='('+ORDERS.length+')';
+  $('sumO').innerHTML='<span class="pill">⏳ Pending <b>'+(counts.pending||0)+'</b></span>'
+    +'<span class="pill">✅ Approved <b>'+(counts.approved||0)+'</b></span>'
+    +'<span class="pill">📤 Sent <b>'+(counts.sent||0)+'</b></span>'
+    +'<span class="pill">⚠️ Problem <b>'+(counts.problem||0)+'</b></span>';
+  $('filtO').innerHTML=['pending','approved','sent','problem','all'].map(function(f){
+    return '<button class="f'+(FO===f?' on':'')+'" onclick="FO=\''+f+'\';renderOrders()">'+f+'</button>';}).join('');
+  var q=($('qO').value||'').toLowerCase();
+  var rows=ORDERS.filter(function(o){
+    if(FO!=='all'&&(o.dispatch_status||'pending')!==FO)return false;
+    if(q&&((o.email||'')+(o.order_code||'')+o.report+(o.phone||'')).toLowerCase().indexOf(q)<0)return false;
+    return true;});
+  if(!rows.length){$('listO').innerHTML='<div class="empty">Nothing here.<br>New paid orders arrive as ⏳ pending.</div>';return;}
+  $('listO').innerHTML=rows.map(function(o){
+    var st=o.dispatch_status||'pending';
+    var age=hoursSince(o.created_at);
+    var stale=(st==='pending'||st==='approved')&&age>=36;   /* 48h promise at risk */
+    var ticks=orderChecks(o);
+    var allGreen=ticks.every(function(t){return t.ok;});
+    var name=(o.email||'').split('@')[0];
+    var msg=fillTpl('report',o.lang,{name:name,report:(REPORT_NAME[o.report]&&(REPORT_NAME[o.report][o.lang]||REPORT_NAME[o.report].en))||o.report,code:o.order_code,link:o.pdf_url||''});
+    var key=esc(o.uid)+'|'+esc(o.report);
+    var b='';
+    if(o.pdf_url)b+='<a class="b grey" href="'+esc(o.pdf_url)+'" target="_blank">👁️ Open PDF</a>';
+    if(st==='pending')
+      b+='<button class="b gold" '+(allGreen?'':'disabled title="fix the red ticks first"')+' onclick="approveSend(\''+key+'\')">✅ Approve &amp; WhatsApp</button>';
+    if(st==='approved'){
+      b+='<a class="b gold" href="'+(o.phone?waLink(o.phone,msg):'#')+'" target="_blank">💬 WhatsApp again</a>';
+      b+='<button class="b green" onclick="setState(\''+key+'\',\'sent\')">📤 Mark Sent — buyer has it</button>';}
+    if(st!=='sent'&&st!=='problem')b+='<button class="b red" onclick="setProblem(\''+key+'\')">⚠️ Problem</button>';
+    if(st==='problem')b+='<button class="b grey" onclick="setState(\''+key+'\',\'pending\')">↩︎ Back to pending</button>';
+    if(st==='sent')b+='<span class="tick ok" style="font-size:11px;align-self:center;">Sent '+(o.sent_at?new Date(o.sent_at).toLocaleString('en-IN'):'')+'</span>';
+    return '<div class="card'+(st==='problem'?' problem':'')+(stale?' stale':'')+'">'
+      +'<div class="row1"><span class="rep">'+esc(o.report)+'</span><span class="amt">₹'+o.amount+'</span>'
+      +'<span class="lang">'+esc(o.lang)+'</span><span class="state st-'+st+'">'+st+'</span>'
+      +'<span class="age'+(stale?' hot':'')+'">'+(stale?'⏰ ':'')+age+'h ago</span></div>'
+      +'<div class="who">'+esc(o.email||o.uid)+' · '+esc(o.order_code||'')+'</div>'
+      +'<div class="ticks">'+ticks.map(function(t){return '<div class="tick '+(t.ok?'ok':(t.warn?'warn':'bad'))+'">'+(t.ok?'✓':(t.warn?'△':'✗'))+' <span>'+esc(t.txt)+'</span></div>';}).join('')+'</div>'
+      +(o.note?'<div class="note">📝 '+esc(o.note)+'</div>':'')
+      +'<div class="btns">'+b+'</div></div>';
+  }).join('');
+}
+function findO(key){var a=key.split('|');return ORDERS.filter(function(o){return o.uid===a[0]&&o.report===a[1];})[0];}
+/* Approve = record 'approved', then open WhatsApp with the filled template.
+   Two explicit steps (Approve → Mark Sent) so "did it actually go?" always
+   has a truthful answer in the ledger. */
+function approveSend(key){
+  var o=findO(key); if(!o)return;
+  apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:'approved'}).then(function(j){
+    if(!j||!j.ok)return alert('Could not save: '+((j&&j.error)||'?'));
+    o.dispatch_status='approved';renderOrders();
+    var name=(o.email||'').split('@')[0];
+    var msg=fillTpl('report',o.lang,{name:name,report:(REPORT_NAME[o.report]&&(REPORT_NAME[o.report][o.lang]||REPORT_NAME[o.report].en))||o.report,code:o.order_code,link:o.pdf_url||''});
+    if(o.phone)window.open(waLink(o.phone,msg),'_blank');
+  });
+}
+function setState(key,st){
+  var o=findO(key); if(!o)return;
+  apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:st}).then(function(j){
+    if(!j||!j.ok)return alert('Could not save: '+((j&&j.error)||'?'));
+    o.dispatch_status=st; if(st==='sent')o.sent_at=new Date().toISOString();
+    renderOrders();
+  });
+}
+function setProblem(key){
+  var o=findO(key); if(!o)return;
+  var note=prompt('What is wrong? (saved on the order)','');
+  if(note===null)return;
+  apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:'problem',note:note}).then(function(j){
+    if(!j||!j.ok)return alert('Could not save: '+((j&&j.error)||'?'));
+    o.dispatch_status='problem';o.note=note;renderOrders();
+  });
+}
+
+/* ══ LEADS ══ */
+function renderLeads(){
+  $('cntL').textContent='('+LEADS.length+')';
+  var waiting=LEADS.filter(function(l){return !l.kundli_sent_at;}).length;
+  $('sumL').innerHTML='<span class="pill">🪔 Waiting for Kundli <b>'+waiting+'</b></span>'
+    +'<span class="pill">📤 Kundli sent <b>'+(LEADS.length-waiting)+'</b></span>'
+    +'<span class="pill">👥 Total opt-ins <b>'+LEADS.length+'</b></span>';
+  $('filtL').innerHTML=[['waiting','waiting for kundli'],['sent','kundli sent'],['all','all']].map(function(f){
+    return '<button class="f'+(FL===f[0]?' on':'')+'" onclick="FL=\''+f[0]+'\';renderLeads()">'+f[1]+'</button>';}).join('');
+  var q=($('qL').value||'').toLowerCase();
+  var rows=LEADS.filter(function(l){
+    if(FL==='waiting'&&l.kundli_sent_at)return false;
+    if(FL==='sent'&&!l.kundli_sent_at)return false;
+    if(q&&((l.name||'')+(l.phone||'')).toLowerCase().indexOf(q)<0)return false;
+    return true;});
+  if(!rows.length){$('listL').innerHTML='<div class="empty">No leads here yet.<br>They arrive when someone ticks the WhatsApp box on the free Kundli form.</div>';return;}
+  $('listL').innerHTML=rows.map(function(l){
+    var kmsg=fillTpl('kundli',l.lang,{name:l.name||'',link:l.kundli_pdf_url||''});
+    var ticks=[
+      {ok:!!l.kundli_pdf_url,txt:l.kundli_pdf_url?('Kundli PDF ready · '+Math.round((l.kundli_pdf_bytes||0)/1024)+' KB'):'Kundli PDF not rendered yet — it appears after they finish generating in the app'},
+      {ok:!!l.phone,txt:'+'+(l.phone||'?')+' · '+(l.lang||'hi').toUpperCase()}];
+    var b='';
+    if(l.kundli_pdf_url&&!l.kundli_sent_at)
+      b+='<a class="b gold" href="'+waLink(l.phone,kmsg)+'" target="_blank" onclick="leadMark(\''+esc(l.uid)+'\',\'kundli_sent\')">🪔 Send Kundli on WhatsApp</a>';
+    if(l.kundli_sent_at)
+      b+='<span class="tick ok" style="font-size:11px;align-self:center;">Kundli sent '+new Date(l.kundli_sent_at).toLocaleDateString('en-IN')+'</span>';
+    b+='<button class="b grey" onclick="notifyLead(\''+esc(l.uid)+'\')">🔔 Notify</button>';
+    return '<div class="card">'
+      +'<div class="row1"><span class="rep">'+esc(l.name||'(no name)')+'</span><span class="lang">'+esc(l.lang)+'</span>'
+      +'<span class="age">'+(l.last_notified_at?('last notified '+new Date(l.last_notified_at).toLocaleDateString('en-IN')):'never notified')+'</span></div>'
+      +'<div class="ticks">'+ticks.map(function(t){return '<div class="tick '+(t.ok?'ok':'bad')+'">'+(t.ok?'✓':'✗')+' <span>'+esc(t.txt)+'</span></div>';}).join('')+'</div>'
+      +'<div class="btns">'+b+'</div>'
+      +'<select class="tsel" id="tpl_'+esc(l.uid)+'" style="display:none;">'
+      +'<option value="jap">🪔 Jap reminder</option><option value="panchang">🌅 Panchang nudge</option></select>'
+      +'</div>';
+  }).join('');
+}
+function findL(uid){return LEADS.filter(function(l){return l.uid===uid;})[0];}
+function leadMark(uid,action){
+  apiPost('lead_set=1',{uid:uid,action:action}).then(function(j){
+    var l=findL(uid); if(l&&j&&j.ok){if(action==='kundli_sent')l.kundli_sent_at=new Date().toISOString();
+      if(action==='notified')l.last_notified_at=new Date().toISOString(); renderLeads();}
+  });
+}
+/* Notify: pick a template, WhatsApp opens, mark notified. One person, one
+   tap, no bulk blast — that restraint is what keeps the number alive. */
+function notifyLead(uid){
+  var l=findL(uid); if(!l)return;
+  var sel=$('tpl_'+uid);
+  if(sel.style.display==='none'){sel.style.display='block';sel.focus();
+    sel.onchange=function(){
+      var msg=fillTpl(sel.value,l.lang,{name:l.name||''});
+      window.open(waLink(l.phone,msg),'_blank');
+      leadMark(uid,'notified'); sel.style.display='none';};
+    return;}
+  sel.style.display='none';
+}
+</script>
+</body>
+</html>
