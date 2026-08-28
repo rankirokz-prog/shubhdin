@@ -83,9 +83,13 @@ h1{font-size:17px;color:#D4A843;}
 </div>
 
 <div id="stDenied" class="center" style="display:none;">
-  <div class="big">⛔</div>
-  <p>This account is not on the admin list.<br>To grant it access, add this uid to <b>SD_ADMIN_UIDS</b> in Vercel and redeploy:</p>
+  <div class="big" id="deniedIco">⛔</div>
+  <p id="deniedMsg">This account is not on the admin list.</p>
+  <p style="margin-top:14px;">Add this uid to <b>SD_ADMIN_UIDS</b> in Vercel, then redeploy:</p>
   <div class="mono" id="deniedUid"></div>
+  <div><button class="gbtn" style="margin-top:12px;padding:9px 16px;font-size:12.5px;" onclick="copyUid()">📋 Copy uid</button>
+       <button class="gbtn" style="margin-top:12px;padding:9px 16px;font-size:12.5px;background:rgba(255,255,255,0.12);color:#FFE9B8;" onclick="loadAll()">↻ Try again</button></div>
+  <p style="margin-top:16px;font-size:11px;opacity:.55;line-height:1.7;" id="deniedRaw"></p>
 </div>
 
 <div id="stMain" style="display:none;">
@@ -147,16 +151,43 @@ function api(qs){return fetch('/api/order?'+qs+'&uid='+SESSION.user.id+'&access_
 function apiPost(qs,body){body.admin_uid=SESSION.user.id;body.access_token=SESSION.access_token;
   return fetch('/api/order?'+qs,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();});}
 
+function copyUid(){
+  var u=SESSION&&SESSION.user?SESSION.user.id:'';
+  try{navigator.clipboard.writeText(u);alert('Copied:\n'+u);}catch(e){prompt('Copy this uid:',u);}
+}
+/* Any answer that is not a real order list means we are not in yet — an
+   unrecognised error, an older api/order.js that has no ?dispatch=1 mode, or
+   a network failure. Every one of those paths must show the uid, because the
+   uid is what Ram needs to unlock access. An empty board would look like
+   "zero orders" and hide the actual problem. */
+function cannotLoad(reason,detail){
+  $('deniedUid').textContent=(SESSION&&SESSION.user)?SESSION.user.id:'(no session)';
+  $('deniedMsg').textContent=reason;
+  $('deniedRaw').textContent=detail?('Server said: '+detail):'';
+  show('stDenied');
+}
 function loadAll(){
   $('subLine').textContent='Loading…';
   api('dispatch=1').then(function(j){
-    if(j&&j.error==='admin only'){ $('deniedUid').textContent=SESSION.user.id; show('stDenied'); return; }
-    ORDERS=(j&&j.orders)||[];
+    if(j&&j.error==='admin only'){
+      $('deniedIco').textContent='⛔';
+      cannotLoad('This account is not on the admin list yet.',null); return; }
+    if(!j||!Array.isArray(j.orders)){
+      /* the giveaway: an api/order.js without the dispatch mode answers the
+         plain GET contract instead ("uid and report required"). */
+      var stale=j&&/report required/i.test(String(j.error||''));
+      $('deniedIco').textContent=stale?'📦':'⚠️';
+      cannotLoad(stale
+        ? 'The new api/order.js is not deployed yet — upload it (Step 3), then reload this page.'
+        : 'Could not read the orders list.',
+        (j&&(j.error||j.detail))||'no orders array in the response');
+      return; }
+    ORDERS=j.orders;
     show('stMain');
-    $('subLine').textContent=(SESSION.user.email||'')+' · '+new Date().toLocaleString('en-IN');
+    $('subLine').textContent=(SESSION.user.email||'')+' · uid '+SESSION.user.id+' · '+new Date().toLocaleString('en-IN');
     renderOrders();
     api('leads=1').then(function(k){ LEADS=(k&&k.leads)||[]; renderLeads(); });
-  }).catch(function(e){ $('subLine').textContent='Load failed: '+e.message; show('stMain'); });
+  }).catch(function(e){ $('deniedIco').textContent='⚠️'; cannotLoad('Could not reach /api/order.',e.message); });
 }
 
 function showTab(t){
