@@ -1,4 +1,4 @@
-// api/order.js — one function, five jobs:
+// api/order.js — one function, eleven jobs:
 //  1) GET  ?check=1&uid=..&report=..&access_token=..   → { paid, order_code }
 //  2) GET  ?list=1&uid=..&access_token=..              → every paid report + pdf_url
 //  3) GET  ?dev=1&uid=..&report=..&access_token=..     → marks a ₹0 test order
@@ -9,8 +9,19 @@
 //  5) POST  Razorpay webhook (payment_link.paid / payment.captured)
 //        verified with env RZP_WEBHOOK_SECRET; expects notes { uid, report }.
 //        Inert until keys are configured — safe to deploy today.
+//  6) POST ?meta=1&uid=..&access_token=..             → buyer writes phone+lang
+//        onto their OWN order row after payment. Both confirm paths (direct
+//        and webhook-poll) end here, so the row always knows where to send.
+//  7) POST ?lead=1&uid=..&access_token=..             → free-Kundli WhatsApp
+//        opt-in: upserts kundli_leads for THIS signed-in user only.
+//  ADMIN modes — session-verified AND uid must be in env SD_ADMIN_UIDS:
+//  8) GET  ?dispatch=1        → every paid order + delivery checks (pdf at the
+//        language-scoped path, bytes, phone) for dispatch.html
+//  9) POST ?dispatch_set=1    → move one order pending→approved→sent / problem
+// 10) GET  ?leads=1           → kundli_leads list + per-lead kundli pdf check
+// 11) POST ?lead_set=1        → mark kundli_sent / notified / note
 //
-// env: SUPABASE_URL, SUPABASE_SERVICE_KEY, SD_DEV_FREE,
+// env: SUPABASE_URL, SUPABASE_SERVICE_KEY, SD_DEV_FREE, SD_ADMIN_UIDS,
 //      RZP_KEY_ID, RZP_KEY_SECRET, RZP_WEBHOOK_SECRET
 //
 // orders table (run once in Supabase SQL editor):
@@ -72,6 +83,113 @@ module.exports = async function handler(req, res) {
       }).then(r => r.json());
       return who && who.id === uid;
     } catch (e) { return false; }
+  }
+
+  // ── dispatch-gate helpers ──────────────────────────────────────────────
+  const SD_LANGS = ['en','hi','te','kn','ta','bn','mr','gu','as'];
+  const BUCKET = 'shubhdin-audio';
+  // Admin = a real signed-in session (verifyUser) whose uid is on the
+  // allow-list. Without the second check any signed-in buyer could list every
+  // order in the system.
+  function isAdmin(uid) {
+    return String(process.env.SD_ADMIN_UIDS || '').split(',')
+      .map(x => x.trim()).filter(Boolean).includes(uid);
+  }
+  function cleanPhone(p) {
+    const d = String(p || '').replace(/\D/g, '');
+    if (d.length === 10) return '91' + d;               // bare Indian number
+    if (d.length >= 11 && d.length <= 15) return d;     // already has country code
+    return null;
+  }
+  // The v134 language fix keys PDFs by language: {report}-{lang}.pdf. Older
+  // renders may still sit at the legacy path; check both, prefer the scoped
+  // one, and never claim a legacy file speaks the buyer's language unless it
+  // is Hindi-era unknown — the caller sees which path answered.
+  async function pdfCheck(uid, report, lang) {
+    const base = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/`;
+    const paths = report === 'kundli'
+      ? [`kundlis/${uid}-${lang}.pdf`, `kundlis/${uid}.pdf`]
+      : [`reports/${uid}/${report}-${lang}.pdf`, `reports/${uid}/${report}.pdf`];
+    for (let i = 0; i < paths.length; i++) {
+      try {
+        const h = await fetch(base + paths[i], { method: 'HEAD' });
+        if (h.ok) return { url: base + paths[i], bytes: parseInt(h.headers.get('content-length') || '0', 10),
+                           lang_scoped: i === 0 };
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  // ── buyer writes phone + language onto their own order row ──
+  if (req.method === 'POST' && (req.query || {}).meta === '1') {
+    const b = req.body || {};
+    if (!b.uid || !b.report) return res.status(400).json({ error: 'uid and report required' });
+    if (!(await verifyUser(b.uid, b.access_token))) return res.status(401).json({ error: 'auth mismatch' });
+    const patch = {};
+    const ph = cleanPhone(b.phone);
+    if (ph) patch.phone = ph;
+    if (SD_LANGS.includes(b.lang)) patch.lang = b.lang;
+    if (!Object.keys(patch).length) return res.status(400).json({ error: 'nothing valid to save' });
+    try {
+      const r = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${b.uid}&report=eq.${encodeURIComponent(b.report)}`,
+        { method: 'PATCH', headers: H, body: JSON.stringify(patch) });
+      return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true } : { error: 'meta write failed' });
+    } catch (e) { return res.status(500).json({ error: 'meta write failed' }); }
+  }
+
+  // ── free-Kundli WhatsApp opt-in ──
+  // Only the signed-in owner can write their own row; re-submitting updates it.
+  if (req.method === 'POST' && (req.query || {}).lead === '1') {
+    const b = req.body || {};
+    if (!b.uid) return res.status(400).json({ error: 'uid required' });
+    if (!(await verifyUser(b.uid, b.access_token))) return res.status(401).json({ error: 'auth mismatch' });
+    const ph = cleanPhone(b.phone);
+    if (!ph) return res.status(400).json({ error: 'valid phone required' });
+    try {
+      const r = await fetch(`${supabaseUrl}/rest/v1/kundli_leads?on_conflict=uid`, {
+        method: 'POST', headers: { ...H, Prefer: 'resolution=merge-duplicates' },
+        body: JSON.stringify([{ uid: b.uid, phone: ph,
+          name: String(b.name || '').slice(0, 80) || null,
+          lang: SD_LANGS.includes(b.lang) ? b.lang : 'hi', consent: true }])
+      });
+      return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true } : { error: 'lead write failed' });
+    } catch (e) { return res.status(500).json({ error: 'lead write failed' }); }
+  }
+
+  // ── ADMIN · move one order through the dispatch gate ──
+  if (req.method === 'POST' && (req.query || {}).dispatch_set === '1') {
+    const b = req.body || {};
+    if (!b.admin_uid || !(await verifyUser(b.admin_uid, b.access_token)) || !isAdmin(b.admin_uid))
+      return res.status(403).json({ error: 'admin only' });
+    if (!b.uid || !b.report) return res.status(400).json({ error: 'uid and report required' });
+    const allowed = ['pending', 'approved', 'sent', 'problem'];
+    if (!allowed.includes(b.dispatch_status)) return res.status(400).json({ error: 'bad dispatch_status' });
+    const patch = { dispatch_status: b.dispatch_status };
+    if (b.dispatch_status === 'sent') patch.sent_at = new Date().toISOString();
+    if (typeof b.note === 'string') patch.note = b.note.slice(0, 300);
+    try {
+      const r = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${b.uid}&report=eq.${encodeURIComponent(b.report)}&status=eq.paid`,
+        { method: 'PATCH', headers: H, body: JSON.stringify(patch) });
+      return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true, dispatch_status: b.dispatch_status } : { error: 'update failed' });
+    } catch (e) { return res.status(500).json({ error: 'update failed' }); }
+  }
+
+  // ── ADMIN · mark a lead: kundli sent / notified / note ──
+  if (req.method === 'POST' && (req.query || {}).lead_set === '1') {
+    const b = req.body || {};
+    if (!b.admin_uid || !(await verifyUser(b.admin_uid, b.access_token)) || !isAdmin(b.admin_uid))
+      return res.status(403).json({ error: 'admin only' });
+    if (!b.uid) return res.status(400).json({ error: 'uid required' });
+    const patch = {};
+    if (b.action === 'kundli_sent') patch.kundli_sent_at = new Date().toISOString();
+    if (b.action === 'notified')    patch.last_notified_at = new Date().toISOString();
+    if (typeof b.note === 'string') patch.note = b.note.slice(0, 300);
+    if (!Object.keys(patch).length) return res.status(400).json({ error: 'nothing to do' });
+    try {
+      const r = await fetch(`${supabaseUrl}/rest/v1/kundli_leads?uid=eq.${b.uid}`,
+        { method: 'PATCH', headers: H, body: JSON.stringify(patch) });
+      return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true } : { error: 'update failed' });
+    } catch (e) { return res.status(500).json({ error: 'update failed' }); }
   }
 
   // ── create a payment link for THIS buyer ──
@@ -263,31 +381,68 @@ module.exports = async function handler(req, res) {
   if (!q.uid) return res.status(400).json({ error: 'uid required' });
   if (!(await verifyUser(q.uid, q.access_token))) return res.status(401).json({ error: 'auth mismatch' });
 
+  // ── ADMIN · the dispatch board ──
+  if (q.dispatch === '1') {
+    if (!isAdmin(q.uid)) return res.status(403).json({ error: 'admin only', your_uid: q.uid,
+      hint: 'add this uid to SD_ADMIN_UIDS in Vercel and redeploy' });
+    try {
+      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?status=eq.paid&select=uid,report,lang,phone,amount,order_code,payment_id,created_at,dispatch_status,sent_at,note&order=created_at.desc&limit=500`,
+        { headers: H }).then(r => r.json());
+      if (!Array.isArray(rows)) return res.status(500).json({ error: 'orders query failed' });
+      await Promise.all(rows.map(async (r) => {
+        r.lang = SD_LANGS.includes(r.lang) ? r.lang : 'hi';
+        r.dispatch_status = r.dispatch_status || 'pending';
+        const pdf = await pdfCheck(r.uid, r.report, r.lang);
+        if (pdf) { r.pdf_url = pdf.url; r.pdf_bytes = pdf.bytes; r.pdf_lang_scoped = pdf.lang_scoped; }
+        try {   // buyer's email, for the card — service key may read auth admin
+          const u = await fetch(`${supabaseUrl}/auth/v1/admin/users/${r.uid}`, { headers: H }).then(x => x.json());
+          if (u && u.email) r.email = u.email;
+        } catch (e) {}
+      }));
+      return res.status(200).json({ ok: true, orders: rows });
+    } catch (e) { return res.status(500).json({ error: 'dispatch list failed' }); }
+  }
+
+  // ── ADMIN · the leads board ──
+  if (q.leads === '1') {
+    if (!isAdmin(q.uid)) return res.status(403).json({ error: 'admin only', your_uid: q.uid });
+    try {
+      const rows = await fetch(`${supabaseUrl}/rest/v1/kundli_leads?select=*&order=created_at.desc&limit=1000`,
+        { headers: H }).then(r => r.json());
+      if (!Array.isArray(rows)) return res.status(500).json({ error: 'leads query failed' });
+      await Promise.all(rows.map(async (r) => {
+        r.lang = SD_LANGS.includes(r.lang) ? r.lang : 'hi';
+        const pdf = await pdfCheck(r.uid, 'kundli', r.lang);
+        if (pdf) { r.kundli_pdf_url = pdf.url; r.kundli_pdf_bytes = pdf.bytes; }
+      }));
+      return res.status(200).json({ ok: true, leads: rows });
+    } catch (e) { return res.status(500).json({ error: 'leads list failed' }); }
+  }
+
   // list: every paid report for this uid, one call — feeds sd_owned_reports.
   // Must sit before the report-required check: list has no report param.
   if (q.list === '1') {
     try {
-      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q.uid}&status=eq.paid&select=report,order_code,created_at&order=created_at.asc`,
+      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q.uid}&status=eq.paid&select=report,order_code,created_at,lang,dispatch_status&order=created_at.asc`,
         { headers: H }).then(r => r.json());
       if (!Array.isArray(rows)) return res.status(500).json({ error: 'orders query failed' });
       const seen = {}, reports = [];
       for (const r of rows) {
         if (seen[r.report]) continue;
         seen[r.report] = true;
-        reports.push({ report: r.report, order_code: r.order_code, paid_at: r.created_at });
+        reports.push({ report: r.report, order_code: r.order_code, paid_at: r.created_at,
+          lang: SD_LANGS.includes(r.lang) ? r.lang : 'hi',
+          dispatch_status: r.dispatch_status || 'pending' });
       }
-      // pdf_url: the storage path is deterministic, so HEAD-check the cache and
-      // include the URL only when the PDF actually exists. Presence in the
-      // response therefore means "openable right now" — a buyer on a new phone
-      // gets restore → open with no birth details needed. Checks run in
-      // parallel; a failed HEAD just means no pdf_url for that report.
-      const BUCKET = 'shubhdin-audio';
+      // pdf_url is the delivery. It appears ONLY once Ram has moved the order
+      // to 'sent' on the dispatch page — the whole point of the gate is that a
+      // blank or wrong PDF can never reach a buyer because nothing is
+      // delivered by default. The path is language-scoped since v134, with a
+      // legacy fallback for pre-v134 renders.
       await Promise.all(reports.map(async (rep) => {
-        const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/reports/${q.uid}/${rep.report}.pdf`;
-        try {
-          const head = await fetch(publicUrl, { method: 'HEAD' });
-          if (head.ok) rep.pdf_url = publicUrl + `?download=Shubh-Din-${rep.report}-report.pdf`;
-        } catch (e) {}
+        if (rep.dispatch_status !== 'sent') return;
+        const pdf = await pdfCheck(q.uid, rep.report, rep.lang);
+        if (pdf) rep.pdf_url = pdf.url + `?download=Shubh-Din-${rep.report}-${rep.lang}.pdf`;
       }));
       return res.status(200).json({ ok: true, reports });
     } catch (e) { return res.status(500).json({ error: 'list failed' }); }
