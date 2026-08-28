@@ -100,6 +100,17 @@ if(typeof window.A!=='function'){
   <button type="button" id="kGpsBtn" onclick="kDetectLoc()" style="margin-top:9px;width:100%;padding:10px;border-radius:12px;border:1px dashed rgba(212,168,67,0.45);background:rgba(212,168,67,0.06);color:rgba(212,168,67,0.9);font-size:12px;font-family:'Poppins',sans-serif;cursor:pointer;">📍 <span id="kGpsTxt" data-i18n="buy.use_my_current_location">मेरी वर्तमान लोकेशन इस्तेमाल करें</span></button>
   <label id="lbLang">रिपोर्ट की भाषा</label><select id="fLang"></select>
   <div id="lbLangHint" style="font-size:11px;opacity:.6;margin:4px 0 12px;">आपकी PDF इसी भाषा में तैयार होगी</div>
+  <!-- WhatsApp opt-in: unticked by default, so consent is real. The free
+       Kundli is the hook; jap and panchang nudges on WhatsApp are the
+       engagement. Only opted-in numbers are ever messaged. -->
+  <label style="display:flex;align-items:flex-start;gap:9px;margin:2px 0 6px;font-size:12.5px;line-height:1.6;cursor:pointer;">
+    <input id="fWa" type="checkbox" style="margin-top:3px;width:16px;height:16px;accent-color:#D4A843;" onchange="document.getElementById('waPhoneWrap').style.display=this.checked?'block':'none'">
+    <span id="lbWa">📱 मेरी कुंडली WhatsApp पर भेजें + दैनिक शुभ दिन अपडेट (मुफ़्त)</span>
+  </label>
+  <div id="waPhoneWrap" style="display:none;">
+    <input id="fWaPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="98XXXXXXXX">
+    <div id="lbWaErr" class="err" style="display:none;">कृपया सही 10 अंकों का मोबाइल नंबर भरें</div>
+  </div>
   <button class="btn" id="btDetails" onclick="submitDetails()">कुंडली बनाएँ →</button>
   <div class="err" id="errDetails">कृपया सभी विवरण भरें</div>
 </div>
@@ -148,6 +159,26 @@ if(typeof window.A!=='function'){
 var SD_LANGS_NATIVE={en:'English',hi:'हिंदी',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',mr:'मराठी',gu:'ગુજરાતી',bn:'বাংলা',as:'অসমীয়া'};
 function sdLangOptions(sel){var cur=(window.SD_LANG||'hi');if(!SD_LANGS_NATIVE[cur])cur='hi';return Object.keys(SD_LANGS_NATIVE).map(function(l){return '<option value="'+l+'"'+(l===cur?' selected':'')+'>'+SD_LANGS_NATIVE[l]+'</option>';}).join('');}
 'use strict';
+
+/* ══ SD-WA STRINGS (additive) ══════════════════════════════════════════════
+   New WhatsApp-delivery strings, all nine languages inline so this build is
+   correct on upload even before the sheet/build catches up. SDX() prefers the
+   string tables the moment the keys exist there (batch JSON shipped alongside
+   this file); until then it reads this block. Non-Telugu entries need native
+   review — flagged in the batch file. */
+var SD_WA_STR={
+ phone_label:{en:"WhatsApp number",hi:"WhatsApp नंबर",te:"WhatsApp నంబర్",kn:"WhatsApp ನಂಬರ್",ta:"WhatsApp எண்",bn:"WhatsApp নম্বর",mr:"WhatsApp नंबर",gu:"WhatsApp નંબર",as:"WhatsApp নম্বৰ"},
+ phone_hint:{en:"Your report will be sent to this number on WhatsApp",hi:"आपकी रिपोर्ट इसी नंबर पर WhatsApp से भेजी जाएगी",te:"మీ రిపోర్ట్ ఈ నంబర్‌కే WhatsAppలో పంపిస్తాం",kn:"ನಿಮ್ಮ ವರದಿಯನ್ನು ಇದೇ ನಂಬರ್‌ಗೆ WhatsApp ಮೂಲಕ ಕಳುಹಿಸುತ್ತೇವೆ",ta:"உங்கள் அறிக்கை இதே எண்ணுக்கு WhatsApp‑இல் அனுப்பப்படும்",bn:"আপনার রিপোর্ট এই নম্বরেই WhatsApp‑এ পাঠানো হবে",mr:"तुमचा रिपोर्ट याच नंबरवर WhatsApp‑वर पाठवला जाईल",gu:"તમારો રિપોર્ટ આ જ નંબર પર WhatsApp‑થી મોકલવામાં આવશે",as:"আপোনাৰ ৰিপৰ্ট এই নম্বৰতে WhatsApp‑ত পঠোৱা হ'ব"},
+ phone_err:{en:"Please enter a valid 10-digit mobile number",hi:"कृपया सही 10 अंकों का मोबाइल नंबर भरें",te:"సరైన 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి",kn:"ಸರಿಯಾದ 10 ಅಂಕಿಯ ಮೊಬೈಲ್ ನಂಬರ್ ನಮೂದಿಸಿ",ta:"சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்",bn:"সঠিক 10 অঙ্কের মোবাইল নম্বর দিন",mr:"कृपया योग्य 10 अंकी मोबाईल नंबर भरा",gu:"કૃપા કરીને સાચો 10 આંકડાનો મોબાઇલ નંબર ભરો",as:"শুদ্ধ 10 টা সংখ্যাৰ ম'বাইল নম্বৰ দিয়ক"},
+ prep48:{en:"Our team is personally checking and preparing your report. It will reach your WhatsApp within 48 hours — usually much sooner. It will also open here the moment it is ready.",hi:"हमारी टीम आपकी रिपोर्ट स्वयं जाँच कर तैयार कर रही है। 48 घंटे के अंदर यह आपके WhatsApp पर पहुँच जाएगी — अक्सर उससे बहुत पहले। तैयार होते ही यह यहाँ भी खुल जाएगी।",te:"మీ రిపోర్ట్‌ను మా బృందం స్వయంగా పరిశీలించి తయారు చేస్తోంది. 48 గంటల్లోపు మీ WhatsAppకు చేరుతుంది — చాలాసార్లు అంతకంటే ముందే. సిద్ధమైన వెంటనే ఇక్కడ కూడా తెరుచుకుంటుంది.",kn:"ನಿಮ್ಮ ವರದಿಯನ್ನು ನಮ್ಮ ತಂಡ ಸ್ವತಃ ಪರಿಶೀಲಿಸಿ ಸಿದ್ಧಪಡಿಸುತ್ತಿದೆ. 48 ಗಂಟೆಗಳ ಒಳಗೆ ನಿಮ್ಮ WhatsApp‑ಗೆ ತಲುಪುತ್ತದೆ — ಹೆಚ್ಚಿನ ಬಾರಿ ಅದಕ್ಕೂ ಮೊದಲೇ. ಸಿದ್ಧವಾದ ಕೂಡಲೇ ಇಲ್ಲಿಯೂ ತೆರೆಯುತ್ತದೆ.",ta:"உங்கள் அறிக்கையை எங்கள் குழு நேரடியாகச் சரிபார்த்து தயார் செய்கிறது. 48 மணி நேரத்திற்குள் உங்கள் WhatsApp‑க்கு வந்து சேரும் — பெரும்பாலும் அதற்கு முன்பே. தயாரானதும் இங்கேயும் திறக்கும்.",bn:"আপনার রিপোর্ট আমাদের টিম নিজে যাচাই করে তৈরি করছে। 48 ঘণ্টার মধ্যে আপনার WhatsApp‑এ পৌঁছে যাবে — বেশিরভাগ সময় তার অনেক আগেই। তৈরি হলেই এখানেও খুলে যাবে।",mr:"तुमचा रिपोर्ट आमची टीम स्वतः तपासून तयार करत आहे. 48 तासांच्या आत तो तुमच्या WhatsApp‑वर पोहोचेल — बहुतेक वेळा त्याआधीच. तयार होताच इथेही उघडेल.",gu:"તમારો રિપોર્ટ અમારી ટીમ જાતે ચકાસીને તૈયાર કરી રહી છે. 48 કલાકની અંદર તે તમારા WhatsApp પર પહોંચી જશે — મોટા ભાગે તેનાથી ઘણો વહેલો. તૈયાર થતાં જ અહીં પણ ખૂલી જશે.",as:"আপোনাৰ ৰিপৰ্ট আমাৰ দলে নিজে পৰীক্ষা কৰি প্ৰস্তুত কৰি আছে। 48 ঘণ্টাৰ ভিতৰত আপোনাৰ WhatsApp‑লৈ পাব — বেছিভাগ সময়ত তাতোকৈ বহু আগতে। প্ৰস্তুত হোৱাৰ লগে লগে ইয়াতো খোল খাব।"},
+ ready:{en:"Your report is ready 🎉",hi:"आपकी रिपोर्ट तैयार है 🎉",te:"మీ రిపోర్ట్ సిద్ధంగా ఉంది 🎉",kn:"ನಿಮ್ಮ ವರದಿ ಸಿದ್ಧವಾಗಿದೆ 🎉",ta:"உங்கள் அறிக்கை தயார் 🎉",bn:"আপনার রিপোর্ট তৈরি 🎉",mr:"तुमचा रिपोर्ट तयार आहे 🎉",gu:"તમારો રિપોર્ટ તૈયાર છે 🎉",as:"আপোনাৰ ৰিপৰ্ট প্ৰস্তুত 🎉"},
+ ready_sub:{en:"Download it below — it stays in your account forever.",hi:"नीचे से डाउनलोड करें — यह हमेशा आपके खाते में रहेगी।",te:"కింద నుంచి డౌన్‌లోడ్ చేసుకోండి — ఇది ఎప్పటికీ మీ ఖాతాలో ఉంటుంది.",kn:"ಕೆಳಗಿನಿಂದ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿಕೊಳ್ಳಿ — ಇದು ಯಾವಾಗಲೂ ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಇರುತ್ತದೆ.",ta:"கீழே இருந்து பதிவிறக்கவும் — இது எப்போதும் உங்கள் கணக்கில் இருக்கும்.",bn:"নিচ থেকে ডাউনলোড করুন — এটি চিরকাল আপনার অ্যাকাউন্টে থাকবে।",mr:"खालून डाउनलोड करा — तो कायम तुमच्या खात्यात राहील.",gu:"નીચેથી ડાઉનલોડ કરો — તે હંમેશાં તમારા ખાતામાં રહેશે.",as:"তলৰ পৰা ডাউনল'ড কৰক — ই সদায় আপোনাৰ একাউণ্টত থাকিব।"},
+ wa_optin:{en:"Send my Kundli on WhatsApp + daily shubh din updates (free)",hi:"मेरी कुंडली WhatsApp पर भेजें + दैनिक शुभ दिन अपडेट (मुफ़्त)",te:"నా జాతకం WhatsAppలో పంపండి + రోజువారీ శుభ దిన్ అప్‌డేట్స్ (ఉచితం)",kn:"ನನ್ನ ಜಾತಕವನ್ನು WhatsApp‑ನಲ್ಲಿ ಕಳುಹಿಸಿ + ದೈನಂದಿನ ಶುಭ ದಿನ ಅಪ್‌ಡೇಟ್‌ಗಳು (ಉಚಿತ)",ta:"என் ஜாதகத்தை WhatsApp‑இல் அனுப்புங்கள் + தினசரி சுப தின அப்டேட்கள் (இலவசம்)",bn:"আমার কোষ্ঠী WhatsApp‑এ পাঠান + দৈনিক শুভ দিন আপডেট (বিনামূল্যে)",mr:"माझी कुंडली WhatsApp‑वर पाठवा + दैनिक शुभ दिन अपडेट (मोफत)",gu:"મારી કુંડળી WhatsApp પર મોકલો + દૈનિક શુભ દિન અપડેટ (મફત)",as:"মোৰ কুণ্ডলী WhatsApp‑ত পঠিয়াওক + দৈনিক শুভ দিন আপডেট (বিনামূলীয়া)"},
+ support:{en:"Any question? Ask on WhatsApp",hi:"कोई प्रश्न? WhatsApp पर पूछें",te:"ఏదైనా సందేహమా? WhatsAppలో అడగండి",kn:"ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇದೆಯೇ? WhatsApp‑ನಲ್ಲಿ ಕೇಳಿ",ta:"ஏதேனும் சந்தேகமா? WhatsApp‑இல் கேளுங்கள்",bn:"কোনো প্রশ্ন? WhatsApp‑এ জিজ্ঞাসা করুন",mr:"काही प्रश्न? WhatsApp‑वर विचारा",gu:"કોઈ પ્રશ્ન? WhatsApp પર પૂછો",as:"কিবা প্ৰশ্ন আছে নেকি? WhatsApp‑ত সোধক"}};
+function SDX(k){var lang=window.SD_LANG||'hi';
+  if(typeof sdHas==='function'&&typeof A==='function'&&sdHas('kundliwa.'+k))return A('kundliwa.'+k);
+  var t=SD_WA_STR[k]||{};return t[lang]||t.hi||t.en||k;}
+
 var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
 var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
 /* The free Kundli is the acquisition page, so it must render even when the
@@ -199,6 +230,7 @@ if(true){
   $('lbName').textContent=A('buy.full_name');
   (function(){var l=$('fLang');if(l){l.innerHTML=sdLangOptions();}$('lbLang').textContent=A('shared.report_language');$('lbLangHint').textContent=A('shared.report_language_hint');})();(function(){var g=$('fGender');if(g&&g.options.length>1){g.options[0].textContent=A('kundli.male');g.options[1].textContent=A('kundli.female');}var p=$('fPlace');if(p)p.placeholder=A('shared.search_city');})();$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
   $('lbTime').textContent=A('kundli.time_of_birth');$('lbPlace').textContent=A('kundli.place_of_birth');
+  try{$('lbWa').textContent='📱 '+SDX('wa_optin');$('lbWaErr').textContent=SDX('phone_err');$('fWaPhone').placeholder='98XXXXXXXX';}catch(e){}
   $('btDetails').textContent=A('kundli.create_my_kundli');$('errDetails').textContent=A('buy.please_fill_all_details');
   $('auT').textContent=A('kundli.protect_your_kundli');
   $('auL').textContent=A('kundli.sign_in_with_google_your_kundli_wi');
@@ -284,6 +316,12 @@ function submitDetails(){
          time:$('fTime').value,place:$('fPlace').value.trim(),lang:($('fLang')&&$('fLang').value)||window.SD_LANG||'hi'};
   if(_kCity.lat){d.lat=_kCity.lat;d.lng=_kCity.lng;}
   if(!d.name||!d.dob||!d.time||!d.place){$('errDetails').style.display='block';return;}
+  /* WhatsApp opt-in: only validated when ticked; never blocks an unticked user */
+  if($('fWa')&&$('fWa').checked){
+    var wp=$('fWaPhone').value.replace(/\D/g,'');
+    if(!(wp.length===10||(wp.length>=11&&wp.length<=15))){$('lbWaErr').style.display='block';return;}
+    $('lbWaErr').style.display='none'; d.wa=true; d.phone=wp;
+  }
   localStorage.setItem('shubhdin_kundli_details',JSON.stringify(d));
   checkAuthThen();
 }
@@ -311,6 +349,22 @@ var STEPS_EN=['Calculating planetary positions…','Building lagna and houses…
  'Computing dasha periods…','Checking yogas and doshas…','Writing your Kundli…'];
 function startPrep(user){
   show('stPrep');
+  /* WhatsApp opt-in → kundli_leads, authenticated as this user. Silent on
+     failure: the lead list is a growth tool, never a reason to block a
+     Kundli. Re-submits simply update the same row. */
+  try{
+    var dl=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');
+    if(dl&&dl.wa&&dl.phone){
+      sbAuth().getSession().then(function(r){
+        var ss=r.data&&r.data.session; if(!ss)return;
+        fetch('/api/order?lead=1',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({uid:ss.user.id,access_token:ss.access_token,
+            name:dl.name||'',phone:dl.phone,lang:dl.lang||window.SD_LANG||'hi'})})
+        .then(function(x){return x.json();}).then(function(j){dlog('wa lead '+((j&&j.ok)?'saved':'skipped'));})
+        .catch(function(){});
+      });
+    }
+  }catch(e){}
   /* geocode the birth place during the preparation window (Nominatim, free) */
   try{
     var det=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');
