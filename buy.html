@@ -83,7 +83,12 @@ input:focus{outline:none;border-color:var(--gold);}
  <div class="p-s" id="doneS">नीचे से अपनी रिपोर्ट प्राप्त करें — यह हमेशा आपके खाते में रहेगी।</div></div>
  <button class="btn" id="btDl" onclick="doDownload()">⬇️ PDF डाउनलोड करें</button>
  <button class="btn wa" id="btWa" onclick="doWhatsApp()" style="display:none;">💬 WhatsApp पर पाएँ</button>
- <button class="btn sec" onclick="doView()">👁️ स्क्रीन पर देखें</button>
+ <button class="btn sec" id="btView" onclick="doView()">👁️ स्क्रीन पर देखें</button>
+ <div id="prepPanel" style="display:none;text-align:left;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.3);border-radius:14px;padding:14px 15px;margin-top:6px;">
+   <div id="prepTxt" style="font-size:13px;line-height:1.75;"></div>
+   <div id="prepOc" style="font-size:11px;opacity:.65;margin-top:8px;font-family:monospace;"></div>
+   <a id="prepWa" href="#" style="display:none;margin-top:10px;font-size:12.5px;color:#7DE29A;text-decoration:none;"></a>
+ </div>
  <div class="err" id="errX"></div></div>
 
 </div>
@@ -132,6 +137,25 @@ function sbDown(){
 }
 var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
 var H=(U.lang||'hi')==='hi';
+
+/* ══ SD-WA STRINGS (additive) ══════════════════════════════════════════════
+   New WhatsApp-delivery strings, all nine languages inline so this build is
+   correct on upload even before the sheet/build catches up. SDX() prefers the
+   string tables the moment the keys exist there (batch JSON shipped alongside
+   this file); until then it reads this block. Non-Telugu entries need native
+   review — flagged in the batch file. */
+var SD_WA_STR={
+ phone_label:{en:"WhatsApp number",hi:"WhatsApp नंबर",te:"WhatsApp నంబర్",kn:"WhatsApp ನಂಬರ್",ta:"WhatsApp எண்",bn:"WhatsApp নম্বর",mr:"WhatsApp नंबर",gu:"WhatsApp નંબર",as:"WhatsApp নম্বৰ"},
+ phone_hint:{en:"Your report will be sent to this number on WhatsApp",hi:"आपकी रिपोर्ट इसी नंबर पर WhatsApp से भेजी जाएगी",te:"మీ రిపోర్ట్ ఈ నంబర్‌కే WhatsAppలో పంపిస్తాం",kn:"ನಿಮ್ಮ ವರದಿಯನ್ನು ಇದೇ ನಂಬರ್‌ಗೆ WhatsApp ಮೂಲಕ ಕಳುಹಿಸುತ್ತೇವೆ",ta:"உங்கள் அறிக்கை இதே எண்ணுக்கு WhatsApp‑இல் அனுப்பப்படும்",bn:"আপনার রিপোর্ট এই নম্বরেই WhatsApp‑এ পাঠানো হবে",mr:"तुमचा रिपोर्ट याच नंबरवर WhatsApp‑वर पाठवला जाईल",gu:"તમારો રિપોર્ટ આ જ નંબર પર WhatsApp‑થી મોકલવામાં આવશે",as:"আপোনাৰ ৰিপৰ্ট এই নম্বৰতে WhatsApp‑ত পঠোৱা হ'ব"},
+ phone_err:{en:"Please enter a valid 10-digit mobile number",hi:"कृपया सही 10 अंकों का मोबाइल नंबर भरें",te:"సరైన 10 అంకెల మొబైల్ నంబర్ ఇవ్వండి",kn:"ಸರಿಯಾದ 10 ಅಂಕಿಯ ಮೊಬೈಲ್ ನಂಬರ್ ನಮೂದಿಸಿ",ta:"சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்",bn:"সঠিক 10 অঙ্কের মোবাইল নম্বর দিন",mr:"कृपया योग्य 10 अंकी मोबाईल नंबर भरा",gu:"કૃપા કરીને સાચો 10 આંકડાનો મોબાઇલ નંબર ભરો",as:"শুদ্ধ 10 টা সংখ্যাৰ ম'বাইল নম্বৰ দিয়ক"},
+ prep48:{en:"Our team is personally checking and preparing your report. It will reach your WhatsApp within 48 hours — usually much sooner. It will also open here the moment it is ready.",hi:"हमारी टीम आपकी रिपोर्ट स्वयं जाँच कर तैयार कर रही है। 48 घंटे के अंदर यह आपके WhatsApp पर पहुँच जाएगी — अक्सर उससे बहुत पहले। तैयार होते ही यह यहाँ भी खुल जाएगी।",te:"మీ రిపోర్ట్‌ను మా బృందం స్వయంగా పరిశీలించి తయారు చేస్తోంది. 48 గంటల్లోపు మీ WhatsAppకు చేరుతుంది — చాలాసార్లు అంతకంటే ముందే. సిద్ధమైన వెంటనే ఇక్కడ కూడా తెరుచుకుంటుంది.",kn:"ನಿಮ್ಮ ವರದಿಯನ್ನು ನಮ್ಮ ತಂಡ ಸ್ವತಃ ಪರಿಶೀಲಿಸಿ ಸಿದ್ಧಪಡಿಸುತ್ತಿದೆ. 48 ಗಂಟೆಗಳ ಒಳಗೆ ನಿಮ್ಮ WhatsApp‑ಗೆ ತಲುಪುತ್ತದೆ — ಹೆಚ್ಚಿನ ಬಾರಿ ಅದಕ್ಕೂ ಮೊದಲೇ. ಸಿದ್ಧವಾದ ಕೂಡಲೇ ಇಲ್ಲಿಯೂ ತೆರೆಯುತ್ತದೆ.",ta:"உங்கள் அறிக்கையை எங்கள் குழு நேரடியாகச் சரிபார்த்து தயார் செய்கிறது. 48 மணி நேரத்திற்குள் உங்கள் WhatsApp‑க்கு வந்து சேரும் — பெரும்பாலும் அதற்கு முன்பே. தயாரானதும் இங்கேயும் திறக்கும்.",bn:"আপনার রিপোর্ট আমাদের টিম নিজে যাচাই করে তৈরি করছে। 48 ঘণ্টার মধ্যে আপনার WhatsApp‑এ পৌঁছে যাবে — বেশিরভাগ সময় তার অনেক আগেই। তৈরি হলেই এখানেও খুলে যাবে।",mr:"तुमचा रिपोर्ट आमची टीम स्वतः तपासून तयार करत आहे. 48 तासांच्या आत तो तुमच्या WhatsApp‑वर पोहोचेल — बहुतेक वेळा त्याआधीच. तयार होताच इथेही उघडेल.",gu:"તમારો રિપોર્ટ અમારી ટીમ જાતે ચકાસીને તૈયાર કરી રહી છે. 48 કલાકની અંદર તે તમારા WhatsApp પર પહોંચી જશે — મોટા ભાગે તેનાથી ઘણો વહેલો. તૈયાર થતાં જ અહીં પણ ખૂલી જશે.",as:"আপোনাৰ ৰিপৰ্ট আমাৰ দলে নিজে পৰীক্ষা কৰি প্ৰস্তুত কৰি আছে। 48 ঘণ্টাৰ ভিতৰত আপোনাৰ WhatsApp‑লৈ পাব — বেছিভাগ সময়ত তাতোকৈ বহু আগতে। প্ৰস্তুত হোৱাৰ লগে লগে ইয়াতো খোল খাব।"},
+ ready:{en:"Your report is ready 🎉",hi:"आपकी रिपोर्ट तैयार है 🎉",te:"మీ రిపోర్ట్ సిద్ధంగా ఉంది 🎉",kn:"ನಿಮ್ಮ ವರದಿ ಸಿದ್ಧವಾಗಿದೆ 🎉",ta:"உங்கள் அறிக்கை தயார் 🎉",bn:"আপনার রিপোর্ট তৈরি 🎉",mr:"तुमचा रिपोर्ट तयार आहे 🎉",gu:"તમારો રિપોર્ટ તૈયાર છે 🎉",as:"আপোনাৰ ৰিপৰ্ট প্ৰস্তুত 🎉"},
+ ready_sub:{en:"Download it below — it stays in your account forever.",hi:"नीचे से डाउनलोड करें — यह हमेशा आपके खाते में रहेगी।",te:"కింద నుంచి డౌన్‌లోడ్ చేసుకోండి — ఇది ఎప్పటికీ మీ ఖాతాలో ఉంటుంది.",kn:"ಕೆಳಗಿನಿಂದ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿಕೊಳ್ಳಿ — ಇದು ಯಾವಾಗಲೂ ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಇರುತ್ತದೆ.",ta:"கீழே இருந்து பதிவிறக்கவும் — இது எப்போதும் உங்கள் கணக்கில் இருக்கும்.",bn:"নিচ থেকে ডাউনলোড করুন — এটি চিরকাল আপনার অ্যাকাউন্টে থাকবে।",mr:"खालून डाउनलोड करा — तो कायम तुमच्या खात्यात राहील.",gu:"નીચેથી ડાઉનલોડ કરો — તે હંમેશાં તમારા ખાતામાં રહેશે.",as:"তলৰ পৰা ডাউনল'ড কৰক — ই সদায় আপোনাৰ একাউণ্টত থাকিব।"},
+ support:{en:"Any question? Ask on WhatsApp",hi:"कोई प्रश्न? WhatsApp पर पूछें",te:"ఏదైనా సందేహమా? WhatsAppలో అడగండి",kn:"ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇದೆಯೇ? WhatsApp‑ನಲ್ಲಿ ಕೇಳಿ",ta:"ஏதேனும் சந்தேகமா? WhatsApp‑இல் கேளுங்கள்",bn:"কোনো প্রশ্ন? WhatsApp‑এ জিজ্ঞাসা করুন",mr:"काही प्रश्न? WhatsApp‑वर विचारा",gu:"કોઈ પ્રશ્ન? WhatsApp પર પૂછો",as:"কিবা প্ৰশ্ন আছে নেকি? WhatsApp‑ত সোধক"}};
+function SDX(k){var lang=window.SD_LANG||'hi';
+  if(typeof sdHas==='function'&&typeof A==='function'&&sdHas('buywa.'+k))return A('buywa.'+k);
+  var t=SD_WA_STR[k]||{};return t[lang]||t.hi||t.en||k;}
+
 function $(id){return document.getElementById(id);}
 function show(id){document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');}
 
@@ -284,13 +308,24 @@ $('formRoot').innerHTML = (C.two
  ? person('b',A('buy.groom_details'))+person('g',A('buy.bride_details'))
  : person('p',A('buy.birth_details')))
  + (C.residence?residenceBlock():'')
- + langBlock();
+ + langBlock()
+ + phoneBlock();
 /* prefill from profile */
 (function(){var m=$('f_pname')||$('f_bname');if(m&&U.name)m.value=U.name;})();
 
 function langBlock(){
   return '<label>'+A('shared.report_language')+'</label><select id="f_lang">'+sdLangOptions()+'</select>'
    +'<div style="font-size:11px;opacity:.6;margin:4px 0 12px;">'+A('shared.report_language_hint')+'</div>';
+}
+/* WhatsApp delivery number — required. The report is dispatched by hand on
+   WhatsApp after Ram's checks (the 48-hour promise), so an order without a
+   number is an order that cannot be delivered. Prefilled from the last buy. */
+function phoneBlock(){
+  var prev='';try{var ks=Object.keys(localStorage).filter(function(k){return k.indexOf('sd_buy_')===0;});
+    for(var i=0;i<ks.length;i++){var o=JSON.parse(localStorage.getItem(ks[i])||'{}');if(o&&o.phone){prev=o.phone;break;}}}catch(e){}
+  return '<label>📱 '+SDX('phone_label')+'</label>'
+   +'<input id="f_phone" type="tel" inputmode="numeric" autocomplete="tel" value="'+prev+'" placeholder="98XXXXXXXX">'
+   +'<div style="font-size:11px;opacity:.6;margin:4px 0 12px;">'+SDX('phone_hint')+'</div>';
 }
 function val(id){var e=$(id);return e?e.value.trim():'';}
 function noTimeOn(prefix){var c=$('f_'+prefix+'notime');return !!(c&&c.checked);}
@@ -421,6 +456,11 @@ async function submitDetails(){
     var pb=sdBadDate(d.bdate);
     if(pb){badDate(pb);return;}
   }
+  /* WhatsApp number: 10 digits (India) or 11–15 with a country code */
+  var phRaw=val('f_phone').replace(/\D/g,'');
+  if(!(phRaw.length===10||(phRaw.length>=11&&phRaw.length<=15))){
+    var eP=$('errD');eP.textContent=SDX('phone_err');eP.style.display='block';return;}
+  d.phone=phRaw;
   $('btNext').textContent=A('buy.locating');
   /* ── coordinate guard ──────────────────────────────────────────────────────
      Every report's blat/blng inputs carry Eluru markup defaults (16.4343/81.6985).
@@ -683,9 +723,51 @@ function payPending(){
     :'Your payment has gone through; confirmation is taking a moment. The report will appear in your account within a few minutes')+oc+'.';
   $('errP').style.display='block';
 }
+/* Buyer writes phone+language onto their own order row. Idempotent; both
+   confirm paths and every revisit call it, so the row always knows where to
+   send even if the first call raced the row's creation. */
+function postMeta(){
+  try{var d=details(); if(!d||!SESSION)return;
+    fetch('/api/order?meta=1',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({uid:SESSION.user.id,access_token:SESSION.access_token,report:R,
+        phone:(d.phone||''),lang:(d.lang||window.SD_LANG||'hi')})})
+    .then(apiJson).then(function(j){bdlog('meta '+((j&&j.ok)?'saved':'skipped'));})
+    .catch(function(){});
+  }catch(e){}
+}
+/* The dispatch gate, buyer side. Paid ≠ delivered: the report reaches the
+   buyer only after Ram's checks on dispatch.html move the order to 'sent'.
+   Until then this screen promises 48 hours and shows the support line; the
+   moment ?list=1 says 'sent', the buttons appear. The background pre-render
+   below still fires immediately — it is what CREATES the PDF that the
+   dispatch checks then inspect. */
+function deliveryState(){
+  ['btDl','btWa','btView'].forEach(function(i){var e=$(i);if(e)e.style.display='none';});
+  $('prepPanel').style.display='block';
+  $('prepTxt').textContent=SDX('prep48');
+  $('prepOc').textContent=ORDER_CODE?(A('buy.order_code_2')+ORDER_CODE):'';
+  if(WA_NUMBER){var w=$('prepWa');w.style.display='inline-block';
+    w.href='https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent((ORDER_CODE||'')+' ');
+    w.textContent='💬 '+SDX('support');}
+  fetch('/api/order?list=1&uid='+SESSION.user.id+'&access_token='+encodeURIComponent(SESSION.access_token))
+   .then(apiJson).then(function(j){
+     var o=(j&&j.reports||[]).filter(function(x){return x.report===R;})[0];
+     if(!o){bdlog('deliveryState: order row not visible yet');return;}
+     bdlog('deliveryState: '+o.dispatch_status);
+     if(o.dispatch_status==='sent'){
+       $('prepPanel').style.display='none';
+       $('doneT').textContent=SDX('ready');
+       $('doneS').textContent=SDX('ready_sub');
+       $('btDl').style.display='block';$('btView').style.display='block';
+       if(WA_NUMBER)$('btWa').style.display='block';
+       if(o.pdf_url){PDF_URL=o.pdf_url;sdOwnedWrite(R,ORDER_CODE,o.pdf_url);}
+     }
+   }).catch(function(){});
+}
 function showDone(){
-  if(WA_NUMBER)$('btWa').style.display='block';
   show('stDone');
+  postMeta();
+  deliveryState();
   /* Pre-render the PDF now, in the background, so a cached copy exists even if
      the buyer closes the tab without tapping Download. Without this, "paid and
      left" is unrecoverable on a new phone: ownership self-heals from the orders
