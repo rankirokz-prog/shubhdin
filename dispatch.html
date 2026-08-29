@@ -201,30 +201,30 @@ function showTab(t){
    what keep a WhatsApp number healthy). {name} {report} {code} {link} fill in.
    Non-Hindi/Telugu wording: pending native review — see the batch JSON. */
 var REPORT_NAME={
- marriage:{en:'Marriage Report',hi:'विवाह रिपोर्ट',te:'వివాహ రిపోర్ట్',kn:'ವಿವಾಹ ವರದಿ',ta:'திருமண அறிக்கை',bn:'বিবাহ রিপোর্ট',mr:'विवाह रिपोर्ट',gu:'લગ્ન રિપોર્ટ',as:'বিবাহ ৰিপৰ্ট'},
- love:{en:'Love Report',hi:'प्रेम रिपोर्ट',te:'ప్రేమ రిపోర్ట్',kn:'ಪ್ರೇಮ ವರದಿ',ta:'காதல் அறிக்கை',bn:'প্রেম রিপোর্ট',mr:'प्रेम रिपोर्ट',gu:'પ્રેમ રિપોર્ટ',as:'প্ৰেম ৰিপৰ্ট'},
- career:{en:'Career Report',hi:'करियर रिपोर्ट',te:'కెరీర్ రిపోర్ట్',kn:'ವೃತ್ತಿ ವರದಿ',ta:'தொழில் அறிக்கை',bn:'কেরিয়ার রিপোর্ট',mr:'करिअर रिपोर्ट',gu:'કારકિર્દી રિપોર્ટ',as:'কেৰিয়াৰ ৰিপৰ্ট'},
- child:{en:'Child Report',hi:'संतान रिपोर्ट',te:'సంతాన రిపోర్ట్',kn:'ಸಂತಾನ ವರದಿ',ta:'குழந்தை அறிக்கை',bn:'সন্তান রিপোর্ট',mr:'संतान रिपोर्ट',gu:'સંતાન રિપોર્ટ',as:'সন্তান ৰিপৰ্ট'},
- annual:{en:'Annual Report',hi:'वार्षिक रिपोर्ट',te:'వార్షిక రిపోర్ట్',kn:'ವಾರ್ಷಿಕ ವರದಿ',ta:'ஆண்டு அறிக்கை',bn:'বার্ষিক রিপোর্ট',mr:'वार्षिक रिपोर्ट',gu:'વાર્ષિક રિપોર્ટ',as:'বাৰ্ষিক ৰিপৰ্ট'},
- forecast:{en:'Forecast Report',hi:'भविष्य रिपोर्ट',te:'భవిష్య రిపోర్ట్',kn:'ಭವಿಷ್ಯ ವರದಿ',ta:'எதிர்கால அறிக்கை',bn:'ভবিষ্যৎ রিপোর্ট',mr:'भविष्य रिपोर्ट',gu:'ભવિષ્ય રિપોર્ટ',as:'ভৱিষ্যত ৰিপৰ্ট'},
- muhurta:{en:'Muhurta Report',hi:'मुहूर्त रिपोर्ट',te:'ముహూర్త రిపోర్ట్',kn:'ಮುಹೂರ್ತ ವರದಿ',ta:'முகூர்த்த அறிக்கை',bn:'মুহূর্ত রিপোর্ট',mr:'मुहूर्त रिपोर्ट',gu:'મુહૂર્ત રિપોર્ટ',as:'মুহূৰ্ত ৰিপৰ্ট'}};
+ marriage:{en:'Marriage Report',hi:'विवाह रिपोर्ट',te:'వివాహ రిపోర్ట్',kn:'ವಿವಾಹ ವರದಿ',ta:'திருமண அறிக்கை',bn:'বিবাহ রিপোর্ট',mr:'विवाह रिपोर्ट',gu:'લગ્ન રિપોર્ટ',as:'বিবাহ ৰিপ\'ৰ্ট'},
+ love:{en:'Love Report',hi:'प्रेम रिपोर्ट',te:'ప్రేమ రిపోర్ట్',kn:'ಪ್ರೇಮ ವರದಿ',ta:'காதல் அறிக்கை',bn:'প্রেম রিপোর্ট',mr:'प्रेम रिपोर्ट',gu:'પ્રેમ રિપોર્ટ',as:'প্ৰেম ৰিপ\'ৰ্ট'},
+ career:{en:'Career Report',hi:'करियर रिपोर्ट',te:'కెరీర్ రిపోర్ట్',kn:'ವೃತ್ತಿ ವರದಿ',ta:'தொழில் அறிக்கை',bn:'কেরিয়ার রিপোর্ট',mr:'करिअर रिपोर्ट',gu:'કારકિર્દી રિપોર્ટ',as:'কেৰিয়াৰ ৰিপ\'ৰ্ট'},
+ child:{en:'Child Report',hi:'संतान रिपोर्ट',te:'సంతాన రిపోర్ట్',kn:'ಸಂತಾನ ವರದಿ',ta:'குழந்தை அறிக்கை',bn:'সন্তান রিপোর্ট',mr:'संतान रिपोर्ट',gu:'સંતાન રિપોર્ટ',as:'সন্তান ৰিপ\'ৰ্ট'},
+ annual:{en:'Annual Report',hi:'वार्षिक रिपोर्ट',te:'వార్షిక రిపోర్ట్',kn:'ವಾರ್ಷಿಕ ವರದಿ',ta:'ஆண்டு அறிக்கை',bn:'বার্ষিক রিপোর্ট',mr:'वार्षिक रिपोर्ट',gu:'વાર્ષિક રિપોર્ટ',as:'বাৰ্ষিক ৰিপ\'ৰ্ট'},
+ forecast:{en:'Forecast Report',hi:'भविष्य रिपोर्ट',te:'భవిష్య రిపోర్ట్',kn:'ಭವಿಷ್ಯ ವರದಿ',ta:'எதிர்கால அறிக்கை',bn:'ভবিষ্যৎ রিপোর্ট',mr:'भविष्य रिपोर्ट',gu:'ભવિષ્ય રિપોર્ટ',as:'ভৱিষ্যত ৰিপ\'ৰ্ট'},
+ muhurta:{en:'Muhurta Report',hi:'मुहूर्त रिपोर्ट',te:'ముహూర్త రిపోర్ట్',kn:'ಮುಹೂರ್ತ ವರದಿ',ta:'முகூர்த்த அறிக்கை',bn:'মুহূর্ত রিপোর্ট',mr:'मुहूर्त रिपोर्ट',gu:'મુહૂર્ત રિપોર્ટ',as:'মুহূৰ্ত ৰিপ\'ৰ্ট'}};
 var TPL={
  report:{
   en:"🙏 Namaste{name}! Your Shubh Din {report} is ready — prepared and personally checked for you.\n\n📄 {link}\n\nOrder: {code}\nIt is also open in the app under My Reports. Any question — just reply here. Please save this number for your updates. 🙏",
   hi:"🙏 नमस्ते{name}! आपकी शुभ दिन {report} तैयार है — आपके लिए विशेष रूप से बनाकर जाँची गई है।\n\n📄 {link}\n\nऑर्डर: {code}\nयह ऐप में My Reports में भी खुल गई है। कोई भी प्रश्न हो तो यहीं पूछें। कृपया यह नंबर सेव कर लें 🙏",
   te:"🙏 నమస్తే{name}! మీ శుభ్ దిన్ {report} సిద్ధంగా ఉంది — మీ కోసం ప్రత్యేకంగా తయారు చేసి పరిశీలించాం.\n\n📄 {link}\n\nఆర్డర్: {code}\nయాప్‌లో My Reportsలో కూడా తెరుచుకుంది. ఏదైనా సందేహం ఉంటే ఇక్కడే అడగండి. ఈ నంబర్ సేవ్ చేసుకోండి 🙏",
-  kn:"🙏 ನಮಸ್ತೆ{name}! ನಿಮ್ಮ ಶುಭ ದಿನ {report} ಸಿದ್ಧವಾಗಿದೆ — ನಿಮಗಾಗಿ ವಿಶೇಷವಾಗಿ ತಯಾರಿಸಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.\n\n📄 {link}\n\nಆರ್ಡರ್: {code}\nಆ್ಯಪ್‌ನ My Reports‑ನಲ್ಲಿಯೂ ತೆರೆದಿದೆ. ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇದ್ದರೆ ಇಲ್ಲಿಯೇ ಕೇಳಿ. ಈ ನಂಬರ್ ಸೇವ್ ಮಾಡಿಕೊಳ್ಳಿ 🙏",
-  ta:"🙏 வணக்கம்{name}! உங்கள் சுப தின {report} தயார் — உங்களுக்காகவே தயாரித்து சரிபார்க்கப்பட்டது.\n\n📄 {link}\n\nஆர்டர்: {code}\nஆப்பில் My Reports‑இலும் திறந்துள்ளது. ஏதேனும் கேள்வி இருந்தால் இங்கேயே கேளுங்கள். இந்த எண்ணை சேவ் செய்யுங்கள் 🙏",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ನಿಮ್ಮ ಶುಭ್ ದಿನ್ {report} ಸಿದ್ಧವಾಗಿದೆ — ನಿಮಗಾಗಿ ವಿಶೇಷವಾಗಿ ತಯಾರಿಸಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.\n\n📄 {link}\n\nಆರ್ಡರ್: {code}\nಆ್ಯಪ್‌ನ My Reports‑ನಲ್ಲಿಯೂ ತೆರೆದಿದೆ. ಯಾವುದೇ ಪ್ರಶ್ನೆ ಇದ್ದರೆ ಇಲ್ಲಿಯೇ ಕೇಳಿ. ಈ ನಂಬರ್ ಸೇವ್ ಮಾಡಿಕೊಳ್ಳಿ 🙏",
+  ta:"🙏 வணக்கம்{name}! உங்கள் சுப் தின் {report} தயார் — உங்களுக்காகவே தயாரித்து சரிபார்க்கப்பட்டது.\n\n📄 {link}\n\nஆர்டர்: {code}\nஆப்பில் My Reports‑இலும் திறந்துள்ளது. ஏதேனும் கேள்வி இருந்தால் இங்கேயே கேளுங்கள். இந்த எண்ணை சேவ் செய்யுங்கள் 🙏",
   bn:"🙏 নমস্কার{name}! আপনার শুভ দিন {report} তৈরি — আপনার জন্য বিশেষভাবে বানিয়ে যাচাই করা হয়েছে।\n\n📄 {link}\n\nঅর্ডার: {code}\nঅ্যাপের My Reports‑এও খুলে গেছে। কোনো প্রশ্ন থাকলে এখানেই জিজ্ঞাসা করুন। এই নম্বরটি সেভ করে রাখুন 🙏",
   mr:"🙏 नमस्कार{name}! तुमचा शुभ दिन {report} तयार आहे — तुमच्यासाठी खास बनवून तपासला आहे.\n\n📄 {link}\n\nऑर्डर: {code}\nअ‍ॅपमध्ये My Reports मध्येही उघडला आहे. काही प्रश्न असल्यास इथेच विचारा. हा नंबर सेव्ह करा 🙏",
   gu:"🙏 નમસ્તે{name}! તમારો શુભ દિન {report} તૈયાર છે — તમારા માટે ખાસ બનાવીને ચકાસ્યો છે.\n\n📄 {link}\n\nઓર્ડર: {code}\nએપમાં My Reports માં પણ ખૂલી ગયો છે. કોઈ પ્રશ્ન હોય તો અહીં જ પૂછો. આ નંબર સેવ કરી લો 🙏",
-  as:"🙏 নমস্কাৰ{name}! আপোনাৰ শুভ দিন {report} প্ৰস্তুত — আপোনাৰ বাবে বিশেষভাৱে প্ৰস্তুত কৰি পৰীক্ষা কৰা হৈছে।\n\n📄 {link}\n\nঅৰ্ডাৰ: {code}\nএপৰ My Reports‑তো খোল খাইছে। কিবা প্ৰশ্ন থাকিলে ইয়াতে সোধক। এই নম্বৰটো ছেভ কৰি থওক 🙏"},
+  as:"🙏 নমস্কাৰ{name}! আপোনাৰ শুভ দিন {report} প্ৰস্তুত — আপোনাৰ বাবে বিশেষভাৱে প্ৰস্তুত কৰি পৰীক্ষা কৰা হৈছে।\n\n📄 {link}\n\nঅৰ্ডাৰ: {code}\nএপৰ My Reports‑তো খুলি গৈছে। কিবা প্ৰশ্ন থাকিলে ইয়াতে সোধক। এই নম্বৰটো ছেভ কৰি থওক 🙏"},
  kundli:{
   en:"🙏 Namaste{name}! Here is your free Shubh Din Kundli — made from your own birth details.\n\n📄 {link}\n\nOpen the Shubh Din app daily for your panchang, muhurta and jap. Save this number — your shubh din updates will come here. 🙏",
   hi:"🙏 नमस्ते{name}! यह रही आपकी निःशुल्क शुभ दिन कुंडली — आपके अपने जन्म विवरण से बनी।\n\n📄 {link}\n\nरोज़ का पंचांग, मुहूर्त और जप के लिए शुभ दिन ऐप खोलें। यह नंबर सेव कर लें — आपके शुभ दिन अपडेट यहीं आएँगे 🙏",
   te:"🙏 నమస్తే{name}! ఇదిగో మీ ఉచిత శుభ్ దిన్ జాతకం — మీ పుట్టిన వివరాలతోనే తయారైంది.\n\n📄 {link}\n\nరోజువారీ పంచాంగం, ముహూర్తం, జపం కోసం శుభ్ దిన్ యాప్ తెరవండి. ఈ నంబర్ సేవ్ చేసుకోండి — మీ శుభ దిన అప్‌డేట్స్ ఇక్కడికే వస్తాయి 🙏",
-  kn:"🙏 ನಮಸ್ತೆ{name}! ಇದೋ ನಿಮ್ಮ ಉಚಿತ ಶುಭ ದಿನ ಜಾತಕ — ನಿಮ್ಮದೇ ಜನ್ಮ ವಿವರಗಳಿಂದ ತಯಾರಾಗಿದೆ.\n\n📄 {link}\n\nದೈನಂದಿನ ಪಂಚಾಂಗ, ಮುಹೂರ್ತ, ಜಪಕ್ಕಾಗಿ ಶುಭ ದಿನ ಆ್ಯಪ್ ತೆರೆಯಿರಿ. ಈ ನಂಬರ್ ಸೇವ್ ಮಾಡಿಕೊಳ್ಳಿ 🙏",
-  ta:"🙏 வணக்கம்{name}! இதோ உங்கள் இலவச சுப தின ஜாதகம் — உங்கள் பிறப்பு விவரங்களிலிருந்தே தயாரானது.\n\n📄 {link}\n\nதினசரி பஞ்சாங்கம், முகூர்த்தம், ஜபத்திற்கு சுப தின ஆப்பைத் திறங்கள். இந்த எண்ணை சேவ் செய்யுங்கள் 🙏",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ಇದೋ ನಿಮ್ಮ ಉಚಿತ ಶುಭ್ ದಿನ್ ಜಾತಕ — ನಿಮ್ಮದೇ ಜನ್ಮ ವಿವರಗಳಿಂದ ತಯಾರಾಗಿದೆ.\n\n📄 {link}\n\nದೈನಂದಿನ ಪಂಚಾಂಗ, ಮುಹೂರ್ತ, ಜಪಕ್ಕಾಗಿ ಶುಭ್ ದಿನ್ ಆ್ಯಪ್ ತೆರೆಯಿರಿ. ಈ ನಂಬರ್ ಸೇವ್ ಮಾಡಿಕೊಳ್ಳಿ 🙏",
+  ta:"🙏 வணக்கம்{name}! இதோ உங்கள் இலவச சுப் தின் ஜாதகம் — உங்கள் பிறப்பு விவரங்களிலிருந்தே தயாரானது.\n\n📄 {link}\n\nதினசரி பஞ்சாங்கம், முகூர்த்தம், ஜபத்திற்கு சுப் தின் ஆப்பைத் திறங்கள். இந்த எண்ணை சேவ் செய்யுங்கள் 🙏",
   bn:"🙏 নমস্কার{name}! এই যে আপনার বিনামূল্যের শুভ দিন কোষ্ঠী — আপনার নিজের জন্ম বিবরণ থেকেই তৈরি।\n\n📄 {link}\n\nদৈনিক পঞ্জিকা, মুহূর্ত ও জপের জন্য শুভ দিন অ্যাপ খুলুন। এই নম্বরটি সেভ করে রাখুন 🙏",
   mr:"🙏 नमस्कार{name}! ही तुमची मोफत शुभ दिन कुंडली — तुमच्याच जन्म तपशिलांवरून बनवली आहे.\n\n📄 {link}\n\nरोजचे पंचांग, मुहूर्त आणि जपासाठी शुभ दिन अ‍ॅप उघडा. हा नंबर सेव्ह करा 🙏",
   gu:"🙏 નમસ્તે{name}! આ રહી તમારી મફત શુભ દિન કુંડળી — તમારી જ જન્મ વિગતોમાંથી બની.\n\n📄 {link}\n\nરોજનું પંચાંગ, મુહૂર્ત અને જપ માટે શુભ દિન એપ ખોલો. આ નંબર સેવ કરી લો 🙏",
@@ -233,8 +233,8 @@ var TPL={
   en:"🙏 Namaste{name}! Today's jap is waiting for you in Shubh Din — a few minutes with your mantra sets the whole day right. Open the app: https://shubhdin.app 🪔",
   hi:"🙏 नमस्ते{name}! आज का जप शुभ दिन में आपकी प्रतीक्षा कर रहा है — अपने मंत्र के साथ कुछ मिनट, और पूरा दिन शुभ। ऐप खोलें: https://shubhdin.app 🪔",
   te:"🙏 నమస్తే{name}! ఈ రోజు జపం శుభ్ దిన్‌లో మీ కోసం సిద్ధంగా ఉంది — మీ మంత్రంతో కొన్ని నిమిషాలు, రోజంతా శుభం. యాప్ తెరవండి: https://shubhdin.app 🪔",
-  kn:"🙏 ನಮಸ್ತೆ{name}! ಇಂದಿನ ಜಪ ಶುಭ ದಿನದಲ್ಲಿ ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ — ನಿಮ್ಮ ಮಂತ್ರದೊಂದಿಗೆ ಕೆಲವು ನಿಮಿಷ, ಇಡೀ ದಿನ ಶುಭ. ಆ್ಯಪ್ ತೆರೆಯಿರಿ: https://shubhdin.app 🪔",
-  ta:"🙏 வணக்கம்{name}! இன்றைய ஜபம் சுப தினில் உங்களுக்காகக் காத்திருக்கிறது — உங்கள் மந்திரத்துடன் சில நிமிடங்கள், நாள் முழுவதும் சுபம். ஆப்பைத் திறங்கள்: https://shubhdin.app 🪔",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ಇಂದಿನ ಜಪ ಶುಭ್ ದಿನ್‌ನಲ್ಲಿ ನಿಮಗಾಗಿ ಕಾಯುತ್ತಿದೆ — ನಿಮ್ಮ ಮಂತ್ರದೊಂದಿಗೆ ಕೆಲವು ನಿಮಿಷ, ಇಡೀ ದಿನ ಶುಭ. ಆ್ಯಪ್ ತೆರೆಯಿರಿ: https://shubhdin.app 🪔",
+  ta:"🙏 வணக்கம்{name}! இன்றைய ஜபம் சுப் தினில் உங்களுக்காகக் காத்திருக்கிறது — உங்கள் மந்திரத்துடன் சில நிமிடங்கள், நாள் முழுவதும் சுபம். ஆப்பைத் திறங்கள்: https://shubhdin.app 🪔",
   bn:"🙏 নমস্কার{name}! আজকের জপ শুভ দিনে আপনার অপেক্ষায় — আপনার মন্ত্রের সাথে কয়েক মিনিট, সারা দিন শুভ। অ্যাপ খুলুন: https://shubhdin.app 🪔",
   mr:"🙏 नमस्कार{name}! आजचा जप शुभ दिनमध्ये तुमची वाट पाहत आहे — तुमच्या मंत्रासोबत काही मिनिटे, संपूर्ण दिवस शुभ. अ‍ॅप उघडा: https://shubhdin.app 🪔",
   gu:"🙏 નમસ્તે{name}! આજનો જપ શુભ દિનમાં તમારી રાહ જુએ છે — તમારા મંત્ર સાથે થોડી મિનિટો, આખો દિવસ શુભ. એપ ખોલો: https://shubhdin.app 🪔",
@@ -243,8 +243,8 @@ var TPL={
   en:"🙏 Namaste{name}! Today's panchang and shubh muhurta are ready in Shubh Din — see the auspicious time before you begin anything important: https://shubhdin.app 🌅",
   hi:"🙏 नमस्ते{name}! आज का पंचांग और शुभ मुहूर्त शुभ दिन में तैयार हैं — कोई भी महत्वपूर्ण काम शुरू करने से पहले शुभ समय देख लें: https://shubhdin.app 🌅",
   te:"🙏 నమస్తే{name}! ఈ రోజు పంచాంగం, శుభ ముహూర్తం శుభ్ దిన్‌లో సిద్ధంగా ఉన్నాయి — ముఖ్యమైన పని మొదలుపెట్టే ముందు శుభ సమయం చూసుకోండి: https://shubhdin.app 🌅",
-  kn:"🙏 ನಮಸ್ತೆ{name}! ಇಂದಿನ ಪಂಚಾಂಗ ಮತ್ತು ಶುಭ ಮುಹೂರ್ತ ಶುಭ ದಿನದಲ್ಲಿ ಸಿದ್ಧ — ಮುಖ್ಯ ಕೆಲಸ ಆರಂಭಿಸುವ ಮೊದಲು ಶುಭ ಸಮಯ ನೋಡಿಕೊಳ್ಳಿ: https://shubhdin.app 🌅",
-  ta:"🙏 வணக்கம்{name}! இன்றைய பஞ்சாங்கமும் சுப முகூர்த்தமும் சுப தினில் தயார் — முக்கியமான வேலையைத் தொடங்கும் முன் சுப நேரத்தைப் பாருங்கள்: https://shubhdin.app 🌅",
+  kn:"🙏 ನಮಸ್ತೆ{name}! ಇಂದಿನ ಪಂಚಾಂಗ ಮತ್ತು ಶುಭ ಮುಹೂರ್ತ ಶುಭ್ ದಿನ್‌ನಲ್ಲಿ ಸಿದ್ಧ — ಮುಖ್ಯ ಕೆಲಸ ಆರಂಭಿಸುವ ಮೊದಲು ಶುಭ ಸಮಯ ನೋಡಿಕೊಳ್ಳಿ: https://shubhdin.app 🌅",
+  ta:"🙏 வணக்கம்{name}! இன்றைய பஞ்சாங்கமும் சுப முகூர்த்தமும் சுப் தினில் தயார் — முக்கியமான வேலையைத் தொடங்கும் முன் சுப நேரத்தைப் பாருங்கள்: https://shubhdin.app 🌅",
   bn:"🙏 নমস্কার{name}! আজকের পঞ্জিকা ও শুভ মুহূর্ত শুভ দিনে তৈরি — গুরুত্বপূর্ণ কাজ শুরুর আগে শুভ সময় দেখে নিন: https://shubhdin.app 🌅",
   mr:"🙏 नमस्कार{name}! आजचे पंचांग आणि शुभ मुहूर्त शुभ दिनमध्ये तयार — महत्त्वाचे काम सुरू करण्यापूर्वी शुभ वेळ पाहा: https://shubhdin.app 🌅",
   gu:"🙏 નમસ્તે{name}! આજનું પંચાંગ અને શુભ મુહૂર્ત શુભ દિનમાં તૈયાર — મહત્વનું કામ શરૂ કરતાં પહેલાં શુભ સમય જોઈ લો: https://shubhdin.app 🌅",
@@ -271,7 +271,15 @@ function orderChecks(o){
   if(o.pdf_url){
     var big=(o.pdf_bytes||0)>=(MIN_BYTES[o.report]||120000);
     t.push({ok:big,txt:'PDF exists · '+Math.round((o.pdf_bytes||0)/1024)+' KB'+(big?'':' — SUSPICIOUSLY SMALL, open it')});
-    t.push({ok:!!o.pdf_lang_scoped,warn:!o.pdf_lang_scoped,txt:o.pdf_lang_scoped?('Language-correct PDF ('+o.lang+')'):('Only a LEGACY PDF found — language unknown; ask the buyer to reopen the report in the app to re-render in '+o.lang)});
+    /* A language mismatch is a RED tick, never a warning. The buyer paid in
+       o.lang; a file in any other language is the wrong product. The app now
+       withholds it too, so approving here would send a PDF by WhatsApp that
+       the app itself refuses to show. */
+    t.push({ok:!!o.pdf_lang_scoped,
+      txt:o.pdf_lang_scoped
+        ? ('Language-correct PDF ('+o.lang+')')
+        : ('WRONG LANGUAGE — bought in '+o.lang+', on disk as '+(o.pdf_found_lang||'legacy/unknown')
+           +'. Do NOT send this file. Ask the buyer to reopen the report in the app; their device re-renders in '+o.lang+' and this tick turns green.')});
   } else {
     t.push({ok:false,txt:'No PDF yet — buyer\'s device renders it in the background after payment; if this stays red, WhatsApp them to reopen the report in the app (birth details never touch the server, so it cannot be re-rendered from here)'});
   }
@@ -374,10 +382,15 @@ function renderLeads(){
   $('listL').innerHTML=rows.map(function(l){
     var kmsg=fillTpl('kundli',l.lang,{name:l.name||'',link:l.kundli_pdf_url||''});
     var ticks=[
-      {ok:!!l.kundli_pdf_url,txt:l.kundli_pdf_url?('Kundli PDF ready · '+Math.round((l.kundli_pdf_bytes||0)/1024)+' KB'):'Kundli PDF not rendered yet — it appears after they finish generating in the app'},
+      {ok:!!l.kundli_pdf_url&&l.kundli_pdf_exact!==false,
+       txt:!l.kundli_pdf_url
+         ? 'Kundli PDF not rendered yet — it appears after they finish generating in the app'
+         : (l.kundli_pdf_exact===false
+            ? ('WRONG LANGUAGE — opted in as '+l.lang+', on disk as '+(l.kundli_pdf_found_lang||'legacy/unknown')+'. Ask them to reopen their Kundli in the app.')
+            : ('Kundli PDF ready · '+Math.round((l.kundli_pdf_bytes||0)/1024)+' KB'))},
       {ok:!!l.phone,txt:'+'+(l.phone||'?')+' · '+(l.lang||'hi').toUpperCase()}];
     var b='';
-    if(l.kundli_pdf_url&&!l.kundli_sent_at)
+    if(l.kundli_pdf_url&&l.kundli_pdf_exact!==false&&!l.kundli_sent_at)
       b+='<a class="b gold" href="'+waLink(l.phone,kmsg)+'" target="_blank" onclick="leadMark(\''+esc(l.uid)+'\',\'kundli_sent\')">🪔 Send Kundli on WhatsApp</a>';
     if(l.kundli_sent_at)
       b+='<span class="tick ok" style="font-size:11px;align-self:center;">Kundli sent '+new Date(l.kundli_sent_at).toLocaleDateString('en-IN')+'</span>';
