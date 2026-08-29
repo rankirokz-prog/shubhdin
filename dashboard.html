@@ -722,7 +722,7 @@ body[data-home="returning"] .kh-btn{
    silently jumps AHEAD of order:1 — which is what happened first time round:
    the listen card and the streak strip landed above the Kundli bar. */
 body[data-home="returning"] #gitaMount{order:4;}
-body[data-home="returning"] #wpMount{order:7;}
+body[data-home="returning"] #wpMount{order:9;}   /* card off; mount kept empty */
 body[data-home="returning"] .khero {order:1;}   /* one-line bar            */
 body[data-home="returning"] .jthumb{order:2;}   /* today's jap + streak    */
 body[data-home="returning"] .agate {order:3;}   /* today's astrology       */
@@ -1489,17 +1489,22 @@ body[data-home="returning"] .streak{display:none;}
 .wpc:active{transform:scale(0.99);}
 .wpc-img{position:absolute;inset:0;background-size:cover;background-position:center 22%;}
 /* ══ SD-GITA · today's verse ══════════════════════════════════════════════
-   Read in two seconds, share in one tap. Deliberately quieter than the jap
-   and wallpaper cards: something to absorb on the way past, not another
-   thing demanding to be started. */
-.gita{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(212,168,67,0.24);
-  background:linear-gradient(150deg,rgba(255,255,255,0.045),rgba(255,255,255,0.01));}
-.gita-img{position:absolute;inset:0;background-size:cover;background-position:center 28%;opacity:0.20;}
-.gita-sh{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,3,0,0.55),rgba(10,3,0,0.88));}
-.gita-b{position:relative;z-index:2;padding:14px 15px 13px;}
-.gita-tag{font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(212,168,67,0.85);font-weight:600;}
-.gita-sans{font-family:'Tiro Devanagari Hindi',serif;font-size:12.5px;color:rgba(212,168,67,0.70);margin-top:8px;line-height:1.7;}
-.gita-q{font-size:15px;line-height:1.65;color:#FFF4DE;font-weight:600;margin-top:7px;}
+   The picture leads and the words sit under it. It was a background at 20%
+   opacity behind a dark scrim, which is not a picture — it was a texture.
+   Now it runs full width at its own 3:2 shape, so nothing is cropped away,
+   and the text below gets the card's own background instead of fighting the
+   image for contrast. */
+.gita{border-radius:18px;overflow:hidden;border:1px solid rgba(212,168,67,0.24);
+  background:linear-gradient(150deg,rgba(255,255,255,0.05),rgba(255,255,255,0.012));}
+.gita-head{display:flex;align-items:center;gap:7px;padding:12px 15px 9px;}
+.gita-img{width:100%;aspect-ratio:3/2;background-size:cover;background-position:center 30%;
+  background-color:rgba(255,255,255,0.04);display:block;}
+.gita-img.none{display:none;}
+.gita-b{padding:13px 15px 13px;}
+.gita-tag{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(212,168,67,0.88);font-weight:600;}
+.gita-rule{flex:1;height:1px;background:linear-gradient(90deg,rgba(212,168,67,0.30),transparent);}
+.gita-sans{font-family:'Tiro Devanagari Hindi',serif;font-size:12.5px;color:rgba(212,168,67,0.72);margin-top:0;line-height:1.7;}
+.gita-q{font-size:15.5px;line-height:1.65;color:#FFF4DE;font-weight:600;margin-top:7px;}
 .gita-n{font-size:12.5px;line-height:1.75;color:rgba(255,244,222,0.78);margin-top:7px;}
 .gita-row{display:flex;align-items:center;gap:10px;margin-top:12px;}
 .gita-ref{font-size:10.5px;color:rgba(255,244,222,0.45);}
@@ -5415,11 +5420,14 @@ function wpOfDay(d){
    bucket sends the right CORS header — which cannot be verified from here. A
    text share works on every phone today. Better a share that always works
    than a pretty one that fails silently on half the devices. */
-var GITA_IMG_CANDIDATES=[
-  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/Gita.png',
-  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/Gita.jpg',
-  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/gita.png',
-  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/gita.jpg'];
+/* A FUNCTION, not a top-level var. Function declarations are hoisted and
+   survive an exception thrown earlier in this very large script; a plain
+   `var X = [...]` assignment does not, and the picture silently never loaded
+   because of exactly that. Third time this pattern has bitten in this file. */
+function gitaImgCandidates(){
+  var B='https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/';
+  return [B+'Gita.png',B+'Gita.jpg',B+'gita.png',B+'gita.jpg'];
+}
 function gitaOfDay(){
   try{
     var list=window.SD_GITA||[]; if(!list.length) return null;
@@ -5440,9 +5448,10 @@ function renderGitaCard(){
   var SHR={en:'Share',hi:'भेजें',te:'పంపండి',kn:'ಕಳುಹಿಸಿ',ta:'அனுப்பு',
            bn:'পাঠান',mr:'पाठवा',gu:'મોકલો',as:'পঠিয়াওক'};
   m.innerHTML=
-   '<div class="gita"><div class="gita-img" id="gitaImg"></div><div class="gita-sh"></div>'
+   '<div class="gita">'
+   +'<div class="gita-head"><span class="gita-tag">📿 '+(TAG[L]||TAG.hi)+'</span><span class="gita-rule"></span></div>'
+   +'<div class="gita-img none" id="gitaImg"></div>'
    +'<div class="gita-b">'
-   +'<div class="gita-tag">📿 '+(TAG[L]||TAG.hi)+'</div>'
    +(g.sanskrit?'<div class="gita-sans">'+g.sanskrit+'</div>':'')
    +'<div class="gita-q">'+g.q+'</div>'
    +'<div class="gita-n">'+g.n+'</div>'
@@ -5451,12 +5460,16 @@ function renderGitaCard(){
    +'</div></div>';
   (function(){
     var el=document.getElementById('gitaImg'); if(!el) return;
+    var GITA_IMG_CANDIDATES=gitaImgCandidates();
+    /* the frame stays hidden until a picture has actually loaded, so a
+       missing file leaves a clean text card rather than an empty grey box */
+    function reveal(url){ el.style.backgroundImage='url(\''+url+'\')'; el.classList.remove('none'); }
     function tryNext(n){
       if(n>=GITA_IMG_CANDIDATES.length){
-        try{ el.style.backgroundImage='url(\''+wpOfDay(new Date()).img+'\')'; }catch(e){}
+        try{ var d=wpOfDay(new Date()); if(d&&d.img) reveal(d.img); }catch(e){}
         return; }
       var im=new Image();
-      im.onload=function(){ el.style.backgroundImage='url(\''+GITA_IMG_CANDIDATES[n]+'\')'; };
+      im.onload=function(){ reveal(GITA_IMG_CANDIDATES[n]); };
       im.onerror=function(){ tryNext(n+1); };
       im.src=GITA_IMG_CANDIDATES[n];
     }
@@ -5481,8 +5494,18 @@ function shareGita(){
    Set SD_WP_GATE=true to bring the lock back the day a real ad network is
    connected; nothing else needs to change. */
 window.SD_WP_GATE=false;
+/* ══ SD-WP-CARD-OFF ══
+   The card is gone from the home screen. It was showing the same picture the
+   splash had just shown full-screen on open — the same image twice, once
+   unasked and once as a card competing for the first screen.
+
+   The splash keeps both jobs it was doing: the picture on open, and the save
+   / share affordance on it. Nothing below is deleted, so setting this to true
+   brings the card back with no other change. */
+window.SD_WP_CARD=false;
 function renderWallpaperCard(){
   var m=document.getElementById('wpMount'); if(!m) return;
+  if(window.SD_WP_CARD!==true){ m.innerHTML=''; return; }
   /* ===true, not truthiness: if the assignment above is ever skipped because
      something earlier in this script threw, the card must fail OPEN — showing
      a picture — rather than fail locked behind an ad that does not exist. */
