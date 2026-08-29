@@ -689,6 +689,60 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 /* Home body */
 .hbody{padding:0 14px 10px;display:flex;flex-direction:column;gap:8px;position:relative;z-index:5;}
 
+/* ══ SD-HOME-STATE ══════════════════════════════════════════════════════
+   Two dashboards, one markup.
+
+   State A (default) is what ships today: the free Kundli as a full hero,
+   because a user who has not claimed it should see nothing else first.
+
+   State B is for the returning user — set once shubhdin_kundli_ready is '1'.
+   That card is then STATIC: on day 5 it says the same thing it said on day 1,
+   while occupying most of the first screen. So in state B it collapses to a
+   single bar and the daily, changing content rises above the fold.
+
+   No markup moved. .hbody is already a flex column, so the running order is
+   CSS `order`, and the collapse hides four children of the existing .khero
+   and lays the rest out as a row. The whole card keeps its click handler, so
+   the Kundli is still one tap away. Delete this block and the dashboard is
+   exactly as it was — which is what makes it safe to try. */
+body[data-home="returning"] .khero{
+  padding:11px 13px;flex-direction:row;align-items:center;gap:10px;min-height:0;}
+body[data-home="returning"] .kh-tag,
+body[data-home="returning"] .kh-sub,
+body[data-home="returning"] .kh-price,
+body[data-home="returning"] .kh-badge{display:none;}
+body[data-home="returning"] .kh-title{
+  font-size:13px;line-height:1.35;margin:0;flex:1;font-weight:600;}
+body[data-home="returning"] .kh-btn{
+  margin:0;padding:7px 12px;font-size:11.5px;white-space:nowrap;flex-shrink:0;}
+
+/* running order for the returning user: their Kundli within reach, then the
+   things that are different every morning, then the things that sell */
+/* Every child needs a number. Flex defaults to order:0, so anything left out
+   silently jumps AHEAD of order:1 — which is what happened first time round:
+   the listen card and the streak strip landed above the Kundli bar. */
+body[data-home="returning"] #wpMount{order:0;}
+body[data-home="returning"] .khero {order:1;}   /* one-line bar            */
+body[data-home="returning"] .jthumb{order:2;}   /* today's jap + streak    */
+body[data-home="returning"] .agate {order:3;}   /* today's astrology       */
+body[data-home="returning"] .lhero,
+body[data-home="returning"] .listen{order:4;}   /* listen to the panchang  */
+body[data-home="returning"] .prem  {order:5;}   /* premium                 */
+body[data-home="returning"] .hbody > div:not([class]):not([id]){order:4;}
+
+/* The standalone streak strip is redundant once the count sits on the jap
+   card itself, and it cost 53px of the first screen. Hidden in state B only;
+   state A is untouched. */
+body[data-home="returning"] .streak{display:none;}
+
+/* the streak belongs where the jap is, not on a screen you have to reach */
+.jt-streak{position:absolute;top:10px;right:10px;z-index:3;
+  background:rgba(255,150,0,0.18);border:1px solid rgba(255,150,0,0.45);
+  color:#FFD9A0;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;
+  backdrop-filter:blur(4px);}
+/* ══ end SD-HOME-STATE ══ */
+
+
 /* ── LISTEN HERO ── */
 .lhero{
   background:linear-gradient(135deg,#1A0800 0%,#3D1A05 55%,#2C1208 100%);
@@ -5339,7 +5393,68 @@ document.addEventListener('visibilitychange',function(){
   window._sdDay=today;
 });
 window._sdDay=new Date().toDateString();
+/* ══ SD-HOME-STATE · the toggle ══
+   Deliberately not localised: this is a decision tool for Ram, not a feature
+   for devotees. If it ever ships to users it needs nine languages and a
+   better name than "Daily first". */
+
+/* ══ SD-HOME-STATE ══
+   Deliberately NOT inside the translation routine. Layout must not depend on
+   the string tables having loaded — if translation throws, the dashboard
+   should still be laid out correctly rather than silently reverting. Runs on
+   DOM ready and again whenever the page is shown, so claiming a Kundli in
+   another tab is reflected on return. */
+function applyHomeState(){
+  try{
+    var pref=null; try{ pref=localStorage.getItem('sd_home_layout'); }catch(e){}
+    var hasKundli=localStorage.getItem('shubhdin_kundli_ready')==='1';
+    var returning = pref==='returning' ? true : pref==='hero' ? false : hasKundli;
+    document.body.dataset.home = returning ? 'returning' : 'first';
+  }catch(e){}
+  try{ paintJapStreak(); }catch(e){}
+}
+/* The streak lived only on the jap screen — the one place you no longer need
+   reminding. It belongs on the card that starts the jap. */
+function paintJapStreak(){
+  var jt=document.getElementById('jtCard'); if(!jt)return;
+  var n=0; try{ n=getStreak(); }catch(e){}
+  var el=jt.querySelector('.jt-streak');
+  if(!el){ el=document.createElement('div'); el.className='jt-streak'; jt.appendChild(el); }
+  var L=(window.SD_LANG||'hi');
+  var STK={
+    days:{en:'{n}-day streak',hi:'{n} दिन लगातार',te:'{n} రోజుల వరుస',kn:'{n} ದಿನಗಳ ಸರಣಿ',
+          ta:'{n} நாள் தொடர்ச்சி',bn:'{n} দিন টানা',mr:'{n} दिवस सलग',
+          gu:'{n} દિવસ સળંગ',as:'{n} দিন একেৰাহে'},
+    start:{en:'Start today',hi:'आज से शुरू करें',te:'ఈ రోజే మొదలుపెట్టండి',kn:'ಇಂದೇ ಆರಂಭಿಸಿ',
+           ta:'இன்றே தொடங்குங்கள்',bn:'আজই শুরু করুন',mr:'आजपासून सुरू करा',
+           gu:'આજથી શરૂ કરો',as:'আজিৰ পৰাই আৰম্ভ কৰক'}};
+  function stk(k,vars){
+    var key='dashbo.'+(k==='days'?'streak_days':'start_today');
+    try{ if(typeof sdHas==='function'&&sdHas(key)) return vars?AF(key,vars):A(key); }catch(e){}
+    var t=(STK[k][L]||STK[k].hi);
+    return vars?t.replace('{n}',vars.n):t;
+  }
+  el.textContent = n>0 ? ('🔥 '+stk('days',{n:n})) : ('🔥 '+stk('start'));
+}
+
+function setHomeLayout(mode){
+  try{ mode ? localStorage.setItem('sd_home_layout',mode)
+            : localStorage.removeItem('sd_home_layout'); }catch(e){}
+  applyHomeState();
+  paintHomeLayoutBtns();
+}
+function paintHomeLayoutBtns(){
+  var cur=''; try{ cur=localStorage.getItem('sd_home_layout')||''; }catch(e){}
+  [['settHomeAuto',''],['settHomeHero','hero'],['settHomeRet','returning']].forEach(function(p){
+    var b=document.getElementById(p[0]); if(!b)return;
+    var on=(cur===p[1]);
+    b.style.borderColor = on?'rgba(212,168,67,0.75)':'rgba(212,168,67,0.25)';
+    b.style.background  = on?'rgba(212,168,67,0.16)':'#1A0800';
+    b.style.color       = on?'#FFE9B8':'rgba(255,240,220,0.85)';
+  });
+}
 function openSettings(){
+  paintHomeLayoutBtns();
   // Prefill current values
   const u = {};
   try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
@@ -7188,6 +7303,17 @@ if('serviceWorker' in navigator){
 
     <!-- Feedback -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.14);border-radius:16px;padding:12px 14px;">
+      <!-- SD-HOME-STATE · compare both dashboards on a real phone -->
+      <div id="settHomeLbl" style="font-size:10px;color:rgba(212,168,67,0.72);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:10px;">🏠 Home screen</div>
+      <div style="display:flex;gap:8px;margin-bottom:18px;">
+        <button type="button" id="settHomeAuto" onclick="setHomeLayout('')"
+          style="flex:1;padding:10px 6px;border-radius:11px;border:1px solid rgba(212,168,67,0.25);background:#1A0800;color:rgba(255,240,220,0.85);font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;">Automatic<span style="display:block;font-weight:400;font-size:9.5px;opacity:.6;margin-top:2px;">collapses after Kundli</span></button>
+        <button type="button" id="settHomeHero" onclick="setHomeLayout('hero')"
+          style="flex:1;padding:10px 6px;border-radius:11px;border:1px solid rgba(212,168,67,0.25);background:#1A0800;color:rgba(255,240,220,0.85);font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;">Big Kundli<span style="display:block;font-weight:400;font-size:9.5px;opacity:.6;margin-top:2px;">today's layout</span></button>
+        <button type="button" id="settHomeRet" onclick="setHomeLayout('returning')"
+          style="flex:1;padding:10px 6px;border-radius:11px;border:1px solid rgba(212,168,67,0.25);background:#1A0800;color:rgba(255,240,220,0.85);font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;">Daily first<span style="display:block;font-weight:400;font-size:9.5px;opacity:.6;margin-top:2px;">jap above the fold</span></button>
+      </div>
+
       <div id="settFbLbl" style="font-size:10px;color:rgba(212,168,67,0.72);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:10px;">💬 फीडबैक / Feedback</div>
       <!-- Star rating -->
       <div id="fbStars" style="display:flex;gap:8px;margin-bottom:10px;">
@@ -7360,6 +7486,19 @@ window.mlStop=mlStop;
     render:go,
     open:{ sadhana:function(){ go('sadhana'); if(typeof renderSadhana==='function') renderSadhana(); } }
   });
+})();
+</script>
+<script>
+/* SD-HOME-STATE · registration lives alone on purpose.
+   It was originally a statement inside the main script. Any exception earlier
+   in that same script skips every statement after it, and the dashboard
+   silently fell back to the old layout. Function declarations hoist;
+   statements do not. One tag of its own, so this cannot happen. */
+(function(){
+  function go(){ try{ applyHomeState(); }catch(e){} }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',go);
+  else go();
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) go(); });
 })();
 </script>
 </body>
