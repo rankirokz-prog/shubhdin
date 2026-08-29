@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Preflight — शुभ दिन</title>
+<!-- ════════════════════════════════════════════════════════════════════════
+     PREFLIGHT — open this on your phone AFTER every upload.
+
+     It checks the LIVE site, not a copy. Every check below exists because
+     something in that class already went wrong once:
+
+       · a language leak      (Telugu buyer, English report)
+       · a silent location    (Eluru / Delhi substituted for a real birthplace)
+       · a delivery hole      (a PDF reaching a buyer before approval)
+       · a stale cache        (testing yesterday's file and trusting the result)
+
+     It cannot sign in, pay, or read a buyer's PDF. That is what your ten
+     minutes in Telugu are for. This page clears the ground so those ten
+     minutes are spent on meaning, not on plumbing.
+
+     No secrets, no writes. The API checks deliberately send invalid
+     credentials and assert that they are REFUSED.
+     ════════════════════════════════════════════════════════════════════════ -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--gold:#D4A843;--ink:#0D0500;--ok:#7DE29A;--bad:#FF7A7A;--warn:#FFC46B;
+      --paper:rgba(255,244,222,0.92);--dim:rgba(255,244,222,0.55);}
+body{background:linear-gradient(170deg,#0D0500,#1E0C04 60%,#0D0500);min-height:100vh;
+  color:var(--paper);font-family:'Poppins',sans-serif;padding:0 13px 70px;}
+.hdr{padding:20px 2px 4px;}
+h1{font-size:18px;color:var(--gold);letter-spacing:.3px;}
+.sub{font-size:10.5px;color:var(--dim);margin-top:3px;line-height:1.6;}
+
+/* the verdict is the one loud thing on the page */
+.verdict{margin:16px 0 14px;border-radius:18px;padding:20px 18px;text-align:center;
+  border:1.5px solid rgba(212,168,67,0.35);background:rgba(255,255,255,0.035);transition:all .3s;}
+.verdict .big{font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1;}
+.verdict .lbl{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;margin-top:9px;color:var(--dim);}
+.verdict.pass{border-color:rgba(125,226,154,0.6);background:rgba(125,226,154,0.08);}
+.verdict.pass .big{color:var(--ok);}
+.verdict.fail{border-color:rgba(255,122,122,0.65);background:rgba(255,122,122,0.08);}
+.verdict.fail .big{color:var(--bad);}
+.verdict.warnv{border-color:rgba(255,196,107,0.6);background:rgba(255,196,107,0.07);}
+.verdict.warnv .big{color:var(--warn);}
+.verdict .note{font-size:12px;margin-top:10px;line-height:1.65;color:var(--paper);}
+
+.bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.b{flex:1;min-width:130px;padding:12px;border-radius:13px;border:none;font-family:inherit;
+  font-size:13px;font-weight:600;cursor:pointer;}
+.b.go{background:linear-gradient(120deg,var(--gold),#B8892F);color:#1A0D00;}
+.b.alt{background:rgba(255,255,255,0.08);color:var(--paper);border:1px solid rgba(212,168,67,0.3);}
+.b:disabled{opacity:.4;cursor:not-allowed;}
+
+.grp{margin-top:18px;}
+.grp h2{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);
+  padding-bottom:7px;border-bottom:1px solid rgba(212,168,67,0.22);margin-bottom:2px;}
+.row{display:flex;gap:10px;align-items:flex-start;padding:10px 2px;
+  border-bottom:1px solid rgba(255,255,255,0.05);}
+.mark{font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.4;width:17px;flex-shrink:0;}
+.m-ok{color:var(--ok);} .m-bad{color:var(--bad);} .m-warn{color:var(--warn);} .m-run{color:var(--dim);}
+.txt{flex:1;}
+.name{font-size:13px;line-height:1.45;}
+.det{font-size:11px;color:var(--dim);margin-top:3px;line-height:1.55;
+  font-family:'JetBrains Mono',monospace;word-break:break-word;}
+.row.bad .name{color:#FFD2D2;}
+.fixnote{font-size:11.5px;color:var(--warn);margin-top:5px;line-height:1.6;}
+.foot{margin-top:26px;font-size:11px;color:var(--dim);line-height:1.75;
+  border-top:1px solid rgba(212,168,67,0.2);padding-top:14px;}
+.foot b{color:var(--paper);}
+#frame{position:fixed;left:-9999px;top:0;width:420px;height:700px;border:0;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>Preflight</h1>
+  <div class="sub">Checks the live site after an upload. Run it, then do your ten minutes in Telugu.</div>
+</div>
+
+<div class="verdict" id="verdict">
+  <div class="big" id="vBig">—</div>
+  <div class="lbl" id="vLbl">not run yet</div>
+  <div class="note" id="vNote">Tap Run checks. Takes about twenty seconds.</div>
+</div>
+
+<div class="bar">
+  <button class="b go" id="btRun" onclick="runAll()">Run checks</button>
+  <button class="b alt" id="btDeep" onclick="runDeep()">Also open all 6 reports</button>
+  <button class="b alt" onclick="copyReport()">Copy result</button>
+</div>
+
+<div id="out"></div>
+
+<div class="foot">
+  <b>What this cannot see.</b> It never signs in, never pays, and never opens
+  a buyer's PDF. A report can pass every check here and still say something
+  wrong. That is what your own run in Telugu is for — Kundli, dashboard rashi,
+  buy a report, approve it on dispatch, then open it on screen and as a PDF.
+</div>
+
+<iframe id="frame" title="deep check"></iframe>
+
+<script>
+/* ── plumbing ──────────────────────────────────────────────────────────── */
+var RESULTS=[], FILES={};
+function $(i){return document.getElementById(i);}
+
+/* Always ask the server, never the service worker cache — otherwise this page
+   would happily certify yesterday's files, which is the exact mistake it
+   exists to prevent. */
+function grab(path){
+  if(FILES[path]) return Promise.resolve(FILES[path]);
+  return fetch(path+'?preflight='+Date.now(),{cache:'reload'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(t){ FILES[path]=t; return t; });
+}
+function add(group,name,state,detail,fix){
+  RESULTS.push({group:group,name:name,state:state,detail:detail||'',fix:fix||''});
+  draw();
+}
+/* One check = one promise that never rejects. A thrown error is a failed
+   check with the reason attached, not a dead page. */
+function check(group,name,fn,fix){
+  return Promise.resolve().then(fn).then(function(r){
+    r=r||{};
+    add(group,name,r.warn?'warn':(r.ok?'ok':'bad'),r.detail,r.ok?'':fix);
+  }).catch(function(e){
+    add(group,name,'bad',String(e.message||e),fix);
+  });
+}
+function draw(){
+  var groups=[], seen={};
+  RESULTS.forEach(function(r){ if(!seen[r.group]){seen[r.group]=[];groups.push(r.group);} seen[r.group].push(r); });
+  $('out').innerHTML=groups.map(function(g){
+    return '<div class="grp"><h2>'+esc(g)+'</h2>'+seen[g].map(function(r){
+      var m=r.state==='ok'?['m-ok','✓']:r.state==='warn'?['m-warn','!']:['m-bad','✗'];
+      return '<div class="row'+(r.state==='bad'?' bad':'')+'">'
+        +'<div class="mark '+m[0]+'">'+m[1]+'</div><div class="txt">'
+        +'<div class="name">'+esc(r.name)+'</div>'
+        +(r.detail?'<div class="det">'+esc(r.detail)+'</div>':'')
+        +(r.fix?'<div class="fixnote">→ '+esc(r.fix)+'</div>':'')
+        +'</div></div>';
+    }).join('')+'</div>';
+  }).join('');
+}
+function esc(x){return String(x==null?'':x).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function verdict(){
+  var bad=RESULTS.filter(function(r){return r.state==='bad';}).length;
+  var warn=RESULTS.filter(function(r){return r.state==='warn';}).length;
+  var v=$('verdict');
+  v.className='verdict '+(bad?'fail':warn?'warnv':'pass');
+  $('vBig').textContent=bad?bad+' failed':warn?warn+' to look at':'all clear';
+  $('vLbl').textContent=RESULTS.length+' checks · '+new Date().toLocaleTimeString('en-IN');
+  $('vNote').textContent = bad
+    ? 'Do not announce this build. Fix the red rows, upload again, run this again.'
+    : warn ? 'Nothing is broken, but read the amber rows before you announce.'
+    : 'Plumbing is sound. Now do the ten minutes in Telugu — that is the part this page cannot do.';
+}
+
+/* ── the checks ────────────────────────────────────────────────────────── */
+var PAGES=['buy.html','kundli.html','reports.html','dashboard.html','index.html',
+           'premium.html','astrology.html','dispatch.html'];
+var REPORTS=['career','annual','child','love','marriage','forecast'];
+var LANGS=['en','hi','te','kn','ta','bn','mr','gu','as'];
+
+async function runAll(){
+  RESULTS=[];FILES={};$('btRun').disabled=true;$('btDeep').disabled=true;
+  $('vBig').textContent='…';$('vLbl').textContent='running';$('vNote').textContent='Checking the live site.';
+  $('verdict').className='verdict';
+
+  /* ── 1 · is this even the build you just uploaded? ── */
+  var G='Freshness';
+  var swText='';
+  await check(G,'service-worker.js is on the server',async function(){
+    swText=await grab('service-worker.js');
+    var m=swText.match(/CACHE_NAME\s*=\s*'([^']+)'/);
+    if(!m) return {ok:false,detail:'no CACHE_NAME found in the file'};
+    window.__SWV=m[1];
+    return {ok:true,detail:'version '+m[1]};
+  },'Upload service-worker.js.');
+
+  await check(G,'phones are not holding an older cache',async function(){
+    if(!window.caches) return {ok:true,warn:true,detail:'CacheStorage unavailable in this browser'};
+    var keys=await caches.keys();
+    var mine=keys.filter(function(k){return k.indexOf('shubhdin-')===0;});
+    if(!mine.length) return {ok:true,detail:'no cache yet on this phone (first visit)'};
+    var stale=mine.filter(function(k){return k!==window.__SWV;});
+    if(stale.length) return {ok:false,detail:'stale: '+stale.join(', ')+' · current: '+window.__SWV};
+    return {ok:true,detail:mine.join(', ')};
+  },'The service worker version was not bumped, or this phone has not reloaded yet. Bump it, upload, then hard-refresh once.');
+
+  for(var i=0;i<PAGES.length;i++){
+    (function(p){
+      // deliberately sequential-ish: each page is fetched once and reused below
+    })(PAGES[i]);
+  }
+  await check(G,'every page loads from the server',async function(){
+    var missing=[];
+    for(var i=0;i<PAGES.length;i++){
+      try{ await grab(PAGES[i]); }catch(e){ missing.push(PAGES[i]+' ('+e.message+')'); }
+    }
+    for(var j=0;j<REPORTS.length;j++){
+      try{ await grab(REPORTS[j]+'-report.html'); }catch(e){ missing.push(REPORTS[j]+'-report.html'); }
+    }
+    try{ await grab('kundli-report.html'); }catch(e){ missing.push('kundli-report.html'); }
+    return missing.length?{ok:false,detail:missing.join(' · ')}
+                         :{ok:true,detail:(PAGES.length+REPORTS.length+1)+' pages'};
+  },'A page is missing from the server. Upload it.');
+
+  /* ── 2 · language ── */
+  G='Language';
+  await check(G,'all six paid reports read the language they were bought in',async function(){
+    var miss=[];
+    for(var i=0;i<REPORTS.length;i++){
+      var t=await grab(REPORTS[i]+'-report.html');
+      if(t.indexOf('SD-VIEW-LANG')<0) miss.push(REPORTS[i]);
+    }
+    return miss.length?{ok:false,detail:'missing the language reader: '+miss.join(', ')}
+                      :{ok:true,detail:'career annual child love marriage forecast'};
+  },'Those pages will open in English for every buyer. Re-upload the patched copies.');
+
+  await check(G,'buy.html opens a report in the purchase language',async function(){
+    var t=await grab('buy.html');
+    return {ok:t.indexOf('autoview=1&lang=')>-1,detail:t.indexOf('viewLang')>-1?'viewLang() present':'viewLang() ABSENT'};
+  },'View-on-screen will fall back to the app language.');
+
+  await check(G,'My Reports rebuilds a PDF in the right language',async function(){
+    var t=await grab('reports.html');
+    var clamp=/lang:\s*H\s*\?\s*'hi'\s*:\s*'en'/.test(t);
+    if(clamp) return {ok:false,detail:"the hi-or-english clamp is back in the report-pdf call"};
+    return {ok:t.indexOf('reportLang(')>-1,detail:'reportLang() present'};
+  },'A Telugu buyer on a new phone would be handed a fresh ENGLISH PDF.');
+
+  await check(G,'all nine language files are on the server',async function(){
+    var miss=[],counts={};
+    for(var i=0;i<LANGS.length;i++){
+      try{
+        var t=await grab('app-strings-'+LANGS[i]+'.js');
+        counts[LANGS[i]]=(t.match(/['"][a-z0-9]+\.[a-zA-Z0-9_]+['"]\s*:/g)||[]).length;
+      }catch(e){ miss.push(LANGS[i]); }
+    }
+    window.__COUNTS=counts;
+    return miss.length?{ok:false,detail:'missing: '+miss.join(', ')}
+                      :{ok:true,detail:LANGS.join(' ')};
+  },'A missing language file means humanised keys on screen instead of words.');
+
+  await check(G,'no language is missing a block of strings',function(){
+    var c=window.__COUNTS||{}, hi=c.hi||0;
+    if(!hi) return {ok:true,warn:true,detail:'could not read the Hindi table to compare against'};
+    var thin=Object.keys(c).filter(function(l){return c[l] < hi*0.9;})
+      .map(function(l){return l+' '+c[l]+'/'+hi;});
+    return thin.length?{ok:true,warn:true,detail:'noticeably shorter: '+thin.join(', ')}
+                      :{ok:true,detail:'hi '+hi+' keys · all others within 10%'};
+  });
+
+  /* ── 3 · locations ── */
+  G='Birth places';
+  await check(G,'free Kundli refuses to guess a birth place',async function(){
+    var t=await grab('kundli.html');
+    return {ok:t.indexOf('SD-KUNDLI-COORD-GUARD')>-1,detail:'coordinate guard'};
+  },'A typed city that is never tapped would fall back to Eluru.');
+
+  await check(G,'onboarding resolves a typed city',async function(){
+    var t=await grab('index.html');
+    return {ok:t.indexOf('SD-CITY-COORD')>-1,detail:'city lookup on save'};
+  },'The profile would carry a city name with no coordinates, and the rashi would not compute.');
+
+  await check(G,'the dashboard never invents Delhi',async function(){
+    var t=await grab('dashboard.html');
+    if(/28\.6139/.test(t)) return {ok:false,detail:'the Delhi fallback is still in the file'};
+    return {ok:t.indexOf('not guessing')>-1,detail:'no coordinates → no chart'};
+  },'A birth chart would be computed for Delhi and shown as fact.');
+
+  await check(G,'the rashi is stored as a key, not as translated text',async function(){
+    var t=await grab('dashboard.html');
+    if(/rashi:\(sdRashi\(moon\.rashi\)\)/.test(t))
+      return {ok:false,detail:'the translated label is being stored again'};
+    return {ok:t.indexOf('SD-RASHI-KEY')>-1,detail:'canonical key stored, label shown'};
+  },'Rashifal would stop recognising the user’s own rashi in every non-English language.');
+
+  /* ── 4 · money and delivery ── */
+  G='Money and delivery';
+  var FAKE='00000000-0000-0000-0000-000000000000';
+  await check(G,'a bad token cannot read anyone’s reports',async function(){
+    var r=await fetch('/api/order?list=1&uid='+FAKE+'&access_token=preflight-invalid');
+    return {ok:r.status===401||r.status===403,detail:'HTTP '+r.status+' (expected 401)'};
+  },'The order list is answering to invalid credentials. Stop and check api/order.js.');
+
+  await check(G,'the dispatch board is not readable by a stranger',async function(){
+    var r=await fetch('/api/order?dispatch=1&uid='+FAKE+'&access_token=preflight-invalid');
+    return {ok:r.status===401||r.status===403,detail:'HTTP '+r.status+' (expected 401 or 403)'};
+  },'Anyone could list every order. Stop and check SD_ADMIN_UIDS and api/order.js.');
+
+  await check(G,'a stranger cannot mark an order as sent',async function(){
+    var r=await fetch('/api/order?dispatch_set=1',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({admin_uid:FAKE,access_token:'preflight-invalid',
+        uid:FAKE,report:'career',dispatch_status:'sent'})});
+    return {ok:r.status===401||r.status===403,detail:'HTTP '+r.status+' (expected 403)'};
+  },'The delivery gate can be opened without being an admin.');
+
+  await check(G,'buy.html asks for a WhatsApp number',async function(){
+    var t=await grab('buy.html');
+    var num=(t.match(/var WA_NUMBER\s*=\s*'(\d*)'/)||[])[1];
+    if(t.indexOf("id=\"f_phone\"")<0) return {ok:false,detail:'the phone field is missing from the form'};
+    if(!num) return {ok:true,warn:true,detail:'phone field present, but WA_NUMBER is empty — the support link will not show'};
+    return {ok:true,detail:'phone field present · support number '+num};
+  },'Orders would arrive with no way to deliver them.');
+
+  await check(G,'dispatch.html stays out of Google',async function(){
+    var t=await grab('dispatch.html');
+    return {ok:/noindex/.test(t),detail:'noindex present'};
+  },'Your admin page could be indexed.');
+
+  $('btRun').disabled=false;$('btDeep').disabled=false;
+  verdict();
+}
+
+/* ── deep check · actually open each report and read its language ──────── */
+async function runDeep(){
+  $('btRun').disabled=true;$('btDeep').disabled=true;
+  var G='Reports opened for real';
+  for(var i=0;i<REPORTS.length;i++){
+    await (function(rep){
+      return check(G,rep+'-report.html opens in Telugu when asked',function(){
+        return new Promise(function(resolve){
+          var f=$('frame'), done=false;
+          var timer=setTimeout(function(){ if(!done){done=true;
+            resolve({ok:false,detail:'did not answer within 20s'});} },20000);
+          f.onload=function(){
+            setTimeout(function(){
+              if(done)return; done=true; clearTimeout(timer);
+              var L=null;
+              try{ L=f.contentWindow.LANG; }catch(e){}
+              resolve(L==='te'?{ok:true,detail:'LANG = te'}
+                              :{ok:false,detail:'LANG = '+(L||'unreadable')});
+            },900);
+          };
+          f.src=rep+'-report.html?lang=te&preflight='+Date.now();
+        });
+      },'This page ignores the language it is given — buyers will see English.');
+    })(REPORTS[i]);
+  }
+  $('frame').src='about:blank';
+  $('btRun').disabled=false;$('btDeep').disabled=false;
+  verdict();
+}
+
+/* ── share ── */
+function copyReport(){
+  var lines=['Shubh Din preflight · '+new Date().toLocaleString('en-IN'),
+             location.origin,''];
+  var g='';
+  RESULTS.forEach(function(r){
+    if(r.group!==g){g=r.group;lines.push('['+g+']');}
+    lines.push((r.state==='ok'?'  OK   ':r.state==='warn'?'  WARN ':'  FAIL ')
+      +r.name+(r.detail?'  — '+r.detail:''));
+  });
+  var bad=RESULTS.filter(function(r){return r.state==='bad';}).length;
+  lines.push('', bad?(bad+' failed'):'all clear');
+  var txt=lines.join('\n');
+  try{ navigator.clipboard.writeText(txt); alert('Copied. Paste it to Claude if anything failed.'); }
+  catch(e){ prompt('Copy this:',txt); }
+}
+</script>
+</body>
+</html>
