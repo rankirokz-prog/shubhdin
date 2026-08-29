@@ -721,14 +721,15 @@ body[data-home="returning"] .kh-btn{
 /* Every child needs a number. Flex defaults to order:0, so anything left out
    silently jumps AHEAD of order:1 — which is what happened first time round:
    the listen card and the streak strip landed above the Kundli bar. */
-body[data-home="returning"] #wpMount{order:0;}
+body[data-home="returning"] #gitaMount{order:4;}
+body[data-home="returning"] #wpMount{order:7;}
 body[data-home="returning"] .khero {order:1;}   /* one-line bar            */
 body[data-home="returning"] .jthumb{order:2;}   /* today's jap + streak    */
 body[data-home="returning"] .agate {order:3;}   /* today's astrology       */
 body[data-home="returning"] .lhero,
-body[data-home="returning"] .listen{order:4;}   /* listen to the panchang  */
-body[data-home="returning"] .prem  {order:5;}   /* premium                 */
-body[data-home="returning"] .hbody > div:not([class]):not([id]){order:4;}
+body[data-home="returning"] .listen{order:5;}   /* listen to the panchang  */
+body[data-home="returning"] .prem  {order:6;}   /* premium                 */
+body[data-home="returning"] .hbody > div:not([class]):not([id]){order:5;}
 
 /* The standalone streak strip is redundant once the count sits on the jap
    card itself, and it cost 53px of the first screen. Hidden in state B only;
@@ -1487,6 +1488,24 @@ body[data-home="returning"] .streak{display:none;}
  min-height:172px;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer;transition:transform .12s;}
 .wpc:active{transform:scale(0.99);}
 .wpc-img{position:absolute;inset:0;background-size:cover;background-position:center 22%;}
+/* ══ SD-GITA · today's verse ══════════════════════════════════════════════
+   Read in two seconds, share in one tap. Deliberately quieter than the jap
+   and wallpaper cards: something to absorb on the way past, not another
+   thing demanding to be started. */
+.gita{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(212,168,67,0.24);
+  background:linear-gradient(150deg,rgba(255,255,255,0.045),rgba(255,255,255,0.01));}
+.gita-img{position:absolute;inset:0;background-size:cover;background-position:center 28%;opacity:0.20;}
+.gita-sh{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,3,0,0.55),rgba(10,3,0,0.88));}
+.gita-b{position:relative;z-index:2;padding:14px 15px 13px;}
+.gita-tag{font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(212,168,67,0.85);font-weight:600;}
+.gita-sans{font-family:'Tiro Devanagari Hindi',serif;font-size:12.5px;color:rgba(212,168,67,0.70);margin-top:8px;line-height:1.7;}
+.gita-q{font-size:15px;line-height:1.65;color:#FFF4DE;font-weight:600;margin-top:7px;}
+.gita-n{font-size:12.5px;line-height:1.75;color:rgba(255,244,222,0.78);margin-top:7px;}
+.gita-row{display:flex;align-items:center;gap:10px;margin-top:12px;}
+.gita-ref{font-size:10.5px;color:rgba(255,244,222,0.45);}
+.gita-share{margin-left:auto;background:linear-gradient(120deg,#1EA362,#128C4A);color:#EAFFEF;
+  font-size:12px;font-weight:600;padding:9px 14px;border-radius:11px;white-space:nowrap;cursor:pointer;
+  border:none;font-family:'Poppins',sans-serif;}
 .wpc.locked .wpc-img{filter:blur(11px) brightness(0.55) saturate(1.1);transform:scale(1.12);}
 .wpc-sh{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,3,0,0.30) 0%,rgba(10,3,0,0.20) 42%,rgba(10,3,0,0.93) 100%);}
 .wpc-b{position:relative;z-index:2;padding:13px 15px;}
@@ -1757,6 +1776,7 @@ if(typeof window.A!=='function'){
         </div>
 
         <!-- WALLPAPER OF THE DAY — the only place in the app that shows a rewarded ad -->
+        <div id="gitaMount"></div>
         <div id="wpMount"></div>
         <!-- Calendar & Festivals Button -->
         <div onclick="openCalendar()" style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(255,140,30,0.05));border:1px solid rgba(212,168,67,0.20);border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
@@ -5382,6 +5402,76 @@ function wpOfDay(d){
 }
 
 /* ── card ── */
+/* ══ SD-GITA ══════════════════════════════════════════════════════════════
+   One verse per day of the month, the same one for everybody — which is what
+   makes "did you see today's shloka?" a real conversation.
+
+   Skips any entry not complete in the READER's language rather than falling
+   back to English: a Telugu reader shown English is the exact defect this app
+   has spent weeks removing.
+
+   Share is TEXT, not an image. An image share needs the picture drawn onto a
+   canvas, and a cross-origin image taints that canvas unless the storage
+   bucket sends the right CORS header — which cannot be verified from here. A
+   text share works on every phone today. Better a share that always works
+   than a pretty one that fails silently on half the devices. */
+var GITA_IMG_CANDIDATES=[
+  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/Gita.png',
+  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/Gita.jpg',
+  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/gita.png',
+  'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/gita.jpg'];
+function gitaOfDay(){
+  try{
+    var list=window.SD_GITA||[]; if(!list.length) return null;
+    var L=(window.SD_LANG||'hi');
+    var ok=list.filter(function(e){ return e&&e.quote&&e.note&&e.quote[L]&&e.note[L]; });
+    if(!ok.length) return null;
+    var e=ok[(new Date().getDate()-1)%ok.length];
+    return {ref:e.ref, sanskrit:e.sanskrit, q:e.quote[L], n:e.note[L]};
+  }catch(err){ return null; }
+}
+function renderGitaCard(){
+  var m=document.getElementById('gitaMount'); if(!m) return;
+  var g=gitaOfDay();
+  if(!g){ m.innerHTML=''; return; }      /* nothing, rather than something wrong */
+  var L=(window.SD_LANG||'hi');
+  var TAG={en:"Today's Gita",hi:'आज की गीता',te:'ఈ రోజు గీత',kn:'ಇಂದಿನ ಗೀತೆ',ta:'இன்றைய கீதை',
+           bn:'আজকের গীতা',mr:'आजची गीता',gu:'આજની ગીતા',as:'আজিৰ গীতা'};
+  var SHR={en:'Share',hi:'भेजें',te:'పంపండి',kn:'ಕಳುಹಿಸಿ',ta:'அனுப்பு',
+           bn:'পাঠান',mr:'पाठवा',gu:'મોકલો',as:'পঠিয়াওক'};
+  m.innerHTML=
+   '<div class="gita"><div class="gita-img" id="gitaImg"></div><div class="gita-sh"></div>'
+   +'<div class="gita-b">'
+   +'<div class="gita-tag">📿 '+(TAG[L]||TAG.hi)+'</div>'
+   +(g.sanskrit?'<div class="gita-sans">'+g.sanskrit+'</div>':'')
+   +'<div class="gita-q">'+g.q+'</div>'
+   +'<div class="gita-n">'+g.n+'</div>'
+   +'<div class="gita-row"><span class="gita-ref">'+g.ref+'</span>'
+   +'<button class="gita-share" onclick="shareGita()">📲 '+(SHR[L]||SHR.hi)+'</button></div>'
+   +'</div></div>';
+  (function(){
+    var el=document.getElementById('gitaImg'); if(!el) return;
+    function tryNext(n){
+      if(n>=GITA_IMG_CANDIDATES.length){
+        try{ el.style.backgroundImage='url(\''+wpOfDay(new Date()).img+'\')'; }catch(e){}
+        return; }
+      var im=new Image();
+      im.onload=function(){ el.style.backgroundImage='url(\''+GITA_IMG_CANDIDATES[n]+'\')'; };
+      im.onerror=function(){ tryNext(n+1); };
+      im.src=GITA_IMG_CANDIDATES[n];
+    }
+    tryNext(0);
+  })();
+}
+function shareGita(){
+  var g=gitaOfDay(); if(!g) return;
+  var txt='📿 '+g.q+'\n\n'+g.n+'\n\n— '+g.ref+'\n\nhttps://www.shubhdin.app';
+  try{
+    if(navigator.share) return navigator.share({text:txt}).catch(function(){});
+    navigator.clipboard.writeText(txt).then(function(){ try{ showToast&&showToast(); }catch(e){} });
+  }catch(e){}
+}
+
 /* ══ SD-WP-UNLOCK ══
    The lock asked people to watch an ad to unlock the very image the splash
    had just shown them full-screen for three seconds. And WP_AD_PROVIDER is
@@ -5508,6 +5598,7 @@ function applyHomeState(){
     document.body.dataset.home = returning ? 'returning' : 'first';
   }catch(e){}
   try{ paintJapStreak(); }catch(e){}
+  try{ renderGitaCard(); }catch(e){}
 }
 /* The streak lived only on the jap screen — the one place you no longer need
    reminding. It belongs on the card that starts the jap. */
@@ -7569,6 +7660,7 @@ window.mlStop=mlStop;
 </script>
 <script src="birthdate-guard.js"></script>
 <script src="report-catalog.js"></script>
+<script src="daily-gita.js"></script>
 <script src="nav-history.js"></script>
 <script>
 /* Tabs become history entries. Called after go() and openSadhana() exist, and
