@@ -311,6 +311,27 @@ function kDetectLoc(){
 }
 
 /* ── 1 · details ── */
+/* ══ SD-KUNDLI-COORD-GUARD ══
+   The Kundli only had coordinates when the user TAPPED a city in the dropdown.
+   Type "Eluru" and press the button without tapping, and d.lat was never set:
+   the page carried on, fired an async geocode that nobody waited for, and on
+   failure logged "report defaults will be used" — meaning kundli-report.html's
+   markup default of 16.4343 / 81.6985. Ram's town. A chart computed for the
+   wrong place, with no error anywhere. Same class as the buy-flow guard, which
+   already resolves-or-blocks; this side never got it.
+
+   Now: coordinates come from the tapped city, or from a geocode we WAIT for,
+   or the submit stops with a visible message. Never a default. */
+function kGeocode(place){
+  return fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(place)
+               +'&countrycodes=in&limit=1&format=json')
+    .then(function(r){return r.json();})
+    .then(function(a){
+      if(a&&a[0]){var la=parseFloat(a[0].lat), ln=parseFloat(a[0].lon);
+        if(isFinite(la)&&isFinite(ln))return{lat:la,lng:ln};}
+      return null;})
+    .catch(function(){return null;});
+}
 function submitDetails(){
   var d={name:$('fName').value.trim(),gender:$('fGender').value,dob:$('fDob').value,
          time:$('fTime').value,place:$('fPlace').value.trim(),lang:($('fLang')&&$('fLang').value)||window.SD_LANG||'hi'};
@@ -322,7 +343,44 @@ function submitDetails(){
     if(!(wp.length===10||(wp.length>=11&&wp.length<=15))){$('lbWaErr').style.display='block';return;}
     $('lbWaErr').style.display='none'; d.wa=true; d.phone=wp;
   }
+  /* coordinates or nothing */
+  if(!(isFinite(d.lat)&&isFinite(d.lng))){
+    var btn=$('btDetails'), lbl=btn?btn.textContent:'';
+    if(btn){btn.disabled=true;btn.textContent=A('buy.locating');}
+    kGeocode(d.place).then(function(g){
+      if(btn){btn.disabled=false;btn.textContent=lbl;}
+      if(!g){
+        var e=$('errDetails');
+        e.textContent=A('buy.could_not_resolve_the_birth_place_');
+        e.style.display='block';
+        dlog('coord guard: could not resolve "'+d.place+'" — submit blocked');
+        return;
+      }
+      d.lat=g.lat; d.lng=g.lng;
+      dlog('coord guard: geocoded '+d.lat.toFixed(3)+','+d.lng.toFixed(3));
+      kSaveAndGo(d);
+    });
+    return;
+  }
+  kSaveAndGo(d);
+}
+function kSaveAndGo(d){
   localStorage.setItem('shubhdin_kundli_details',JSON.stringify(d));
+  /* The app profile is what the dashboard reads for the daily rashi. Keeping
+     these in step means a user who only ever makes a free Kundli still gets a
+     rashi on the dashboard — including the coordinates, which a place NAME
+     alone cannot give. */
+  try{
+    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    if(d.name)u.name=d.name;
+    if(d.gender)u.gender=d.gender;
+    if(d.dob){u.dob=d.dob;u.birth_date=d.dob;}
+    if(d.time){u.birth_time=d.time;u.time=d.time;}
+    if(d.place)u.birth_place=d.place;
+    if(isFinite(d.lat)){u.birth_lat=d.lat;u.lat=d.lat;}
+    if(isFinite(d.lng)){u.birth_lng=d.lng;u.lng=d.lng;}
+    localStorage.setItem('shubhdin_user',JSON.stringify(u));
+  }catch(e){}
   checkAuthThen();
 }
 
@@ -368,6 +426,8 @@ function startPrep(user){
   /* geocode the birth place during the preparation window (Nominatim, free) */
   try{
     var det=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');
+    /* Unreachable now that submitDetails resolves-or-blocks. Kept only as a
+       belt-and-braces path for a details record written by an older build. */
     if(det&&det.place&&!det.lat){
       fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(det.place)+'&format=json&limit=1')
        .then(function(r){return r.json();}).then(function(a){
