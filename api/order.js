@@ -101,23 +101,41 @@ module.exports = async function handler(req, res) {
     if (d.length >= 11 && d.length <= 15) return d;     // already has country code
     return null;
   }
-  // The v134 language fix keys PDFs by language: {report}-{lang}.pdf. Older
-  // renders may still sit at the legacy path; check both, prefer the scoped
-  // one, and never claim a legacy file speaks the buyer's language unless it
-  // is Hindi-era unknown — the caller sees which path answered.
-  async function pdfCheck(uid, report, lang) {
-    const base = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/`;
-    const paths = report === 'kundli'
-      ? [`kundlis/${uid}-${lang}.pdf`, `kundlis/${uid}.pdf`]
-      : [`reports/${uid}/${report}-${lang}.pdf`, `reports/${uid}/${report}.pdf`];
-    for (let i = 0; i < paths.length; i++) {
-      try {
-        const h = await fetch(base + paths[i], { method: 'HEAD' });
-        if (h.ok) return { url: base + paths[i], bytes: parseInt(h.headers.get('content-length') || '0', 10),
-                           lang_scoped: i === 0 };
-      } catch (e) {}
-    }
+  // PDFs are keyed by language since v134: {report}-{lang}.pdf.
+  //
+  // This used to fall back to the legacy language-less path and hand it back
+  // as if it were the buyer's language — so a Telugu buyer could be served an
+  // English file, downloaded under the name "…-te.pdf". Silent substitution,
+  // the Eluru pattern in a new place.
+  //
+  // Now: find the file for the language asked for. If it is not there, look at
+  // what IS there (legacy, or another language) and SAY SO via found_lang.
+  // Callers decide — dispatch shows it as a red tick, the buyer's list refuses
+  // to deliver it. Nothing guesses.
+  function pdfPath(uid, report, lang) {
+    return report === 'kundli'
+      ? (lang ? `kundlis/${uid}-${lang}.pdf` : `kundlis/${uid}.pdf`)
+      : (lang ? `reports/${uid}/${report}-${lang}.pdf` : `reports/${uid}/${report}.pdf`);
+  }
+  async function headOk(path) {
+    try {
+      const h = await fetch(`${supabaseUrl}/storage/v1/object/public/${BUCKET}/` + path, { method: 'HEAD' });
+      if (h.ok) return { url: `${supabaseUrl}/storage/v1/object/public/${BUCKET}/` + path,
+                         bytes: parseInt(h.headers.get('content-length') || '0', 10) };
+    } catch (e) {}
     return null;
+  }
+  async function pdfCheck(uid, report, lang) {
+    const want = await headOk(pdfPath(uid, report, lang));
+    if (want) return { ...want, found_lang: lang, exact: true };
+    // Not there. What exists instead? Probe the legacy path, then the other
+    // eight languages. Only runs on a miss, so the common case stays one HEAD.
+    const legacy = await headOk(pdfPath(uid, report, null));
+    if (legacy) return { ...legacy, found_lang: null, exact: false };
+    const others = await Promise.all(SD_LANGS.filter(l => l !== lang)
+      .map(async l => { const h = await headOk(pdfPath(uid, report, l)); return h ? { ...h, found_lang: l } : null; }));
+    const hit = others.filter(Boolean)[0];
+    return hit ? { ...hit, exact: false } : null;
   }
 
   // ── buyer writes phone + language onto their own order row ──
@@ -393,7 +411,8 @@ module.exports = async function handler(req, res) {
         r.lang = SD_LANGS.includes(r.lang) ? r.lang : 'hi';
         r.dispatch_status = r.dispatch_status || 'pending';
         const pdf = await pdfCheck(r.uid, r.report, r.lang);
-        if (pdf) { r.pdf_url = pdf.url; r.pdf_bytes = pdf.bytes; r.pdf_lang_scoped = pdf.lang_scoped; }
+        if (pdf) { r.pdf_url = pdf.url; r.pdf_bytes = pdf.bytes;
+                   r.pdf_lang_scoped = pdf.exact; r.pdf_found_lang = pdf.found_lang; }
         try {   // buyer's email, for the card — service key may read auth admin
           const u = await fetch(`${supabaseUrl}/auth/v1/admin/users/${r.uid}`, { headers: H }).then(x => x.json());
           if (u && u.email) r.email = u.email;
@@ -413,7 +432,8 @@ module.exports = async function handler(req, res) {
       await Promise.all(rows.map(async (r) => {
         r.lang = SD_LANGS.includes(r.lang) ? r.lang : 'hi';
         const pdf = await pdfCheck(r.uid, 'kundli', r.lang);
-        if (pdf) { r.kundli_pdf_url = pdf.url; r.kundli_pdf_bytes = pdf.bytes; }
+        if (pdf) { r.kundli_pdf_url = pdf.url; r.kundli_pdf_bytes = pdf.bytes;
+                   r.kundli_pdf_exact = pdf.exact; r.kundli_pdf_found_lang = pdf.found_lang; }
       }));
       return res.status(200).json({ ok: true, leads: rows });
     } catch (e) { return res.status(500).json({ error: 'leads list failed' }); }
@@ -439,10 +459,15 @@ module.exports = async function handler(req, res) {
       // blank or wrong PDF can never reach a buyer because nothing is
       // delivered by default. The path is language-scoped since v134, with a
       // legacy fallback for pre-v134 renders.
-      await Promise.all(reports.map(async (rep) => {
-        if (rep.dispatch_status !== 'sent') return;
-        const pdf = await pdfCheck(q.uid, rep.report, rep.lang);
-        if (pdf) rep.pdf_url = pdf.url + `?download=Shubh-Din-${rep.report}-${rep.lang}.pdf`;
+      await Promise.all(reports.map(async (r2) => {
+        if (r2.dispatch_status !== 'sent') return;
+        const pdf = await pdfCheck(q.uid, r2.report, r2.lang);
+        if (!pdf) return;
+        // EXACT language or nothing. A near-miss (legacy file, or another
+        // language) is withheld and flagged: the buyer's Download button then
+        // re-renders in the right language rather than opening the wrong one.
+        if (!pdf.exact) { r2.pdf_lang_mismatch = pdf.found_lang || 'legacy'; return; }
+        r2.pdf_url = pdf.url + `?download=Shubh-Din-${r2.report}-${r2.lang}.pdf`;
       }));
       return res.status(200).json({ ok: true, reports });
     } catch (e) { return res.status(500).json({ error: 'list failed' }); }
