@@ -2671,6 +2671,7 @@ function personalise(){
   _t('pmSub',A('dashbo.deeper_personalized_astrology_insi'));
   _t('agTitle',A('dashbo.astrology_today'));
   _t('agSub',A('dashbo.panchang_muhurat_rashi_nakshatra'));
+  try{ paintAstroTeaser(); }catch(e){}
   // nv updated by fetchPanchang from API (today's nakshatra)
   // Listen hero
   document.getElementById('lhTag').textContent=A('dashbo.today_s_panchang_for_you');
@@ -5064,8 +5065,91 @@ async function fetchPanchang(){
   applyPanchang(window._panchangData||null);
 }
 /* Every DOM write that used to live inside the API call, unchanged. */
+/* ══ SD-ASTRO-TEASER ══════════════════════════════════════════════════════
+   The astrology card said the same four words every day of the year, so
+   there was never a reason to tap it twice. Everything needed to make it
+   different each morning was already computed and sitting unused on this
+   screen: the personal chandrabala/tarabala verdict, and the first clean
+   window of the day.
+
+   Precedence, strongest reason to tap first:
+     1. a clean window that has not passed yet  → the concrete promise
+     2. the personal moon verdict               → why TODAY is different
+     3. the static label                        → unchanged fallback
+
+   Deliberately a tease, not an answer: it names the next window and says how
+   many more there are, so the reason to open Astrology Today survives. If it
+   ever gave the full list, the card would replace the page it advertises.
+   Falls back silently — a missing field must never blank the subtitle. */
+var SD_TEASE={
+ good:{en:'The Moon favours you today · see your good times',hi:'आज चंद्रबल आपके पक्ष में है · शुभ समय देखें',
+   te:'ఈ రోజు చంద్రబలం మీకు అనుకూలం · శుభ సమయాలు చూడండి',kn:'ಇಂದು ಚಂದ್ರಬಲ ನಿಮ್ಮ ಪರವಾಗಿದೆ · ಶುಭ ಸಮಯ ನೋಡಿ',
+   ta:'இன்று சந்திரபலம் உங்களுக்கு சாதகம் · நல்ல நேரங்களைப் பாருங்கள்',bn:'আজ চন্দ্রবল আপনার অনুকূলে · শুভ সময় দেখুন',
+   mr:'आज चंद्रबल तुमच्या बाजूने आहे · शुभ वेळ पाहा',gu:'આજે ચંદ્રબળ તમારા પક્ષમાં છે · શુભ સમય જુઓ',
+   as:'আজি চন্দ্ৰবল আপোনাৰ অনুকূলে · শুভ সময় চাওক'},
+ care:{en:'Check Rahu Kaal and Varjyam before anything important',hi:'ज़रूरी काम से पहले राहुकाल और वर्ज्य देख लें',
+   te:'ముఖ్యమైన పని ముందు రాహుకాలం, వర్జ్యం చూసుకోండి',kn:'ಮುಖ್ಯ ಕೆಲಸಕ್ಕೆ ಮೊದಲು ರಾಹುಕಾಲ, ವರ್ಜ್ಯ ನೋಡಿ',
+   ta:'முக்கியமான வேலைக்கு முன் ராகு காலம், வர்ஜ்யம் பாருங்கள்',bn:'জরুরি কাজের আগে রাহুকাল ও বর্জ্য দেখে নিন',
+   mr:'महत्त्वाच्या कामाआधी राहुकाळ आणि वर्ज्य पाहा',gu:'મહત્વના કામ પહેલાં રાહુકાળ અને વર્જ્ય જોઈ લો',
+   as:'গুৰুত্বপূৰ্ণ কামৰ আগতে ৰাহুকাল আৰু বৰ্জ্য চাই লওক'},
+ next:{en:'Next good time {t}',hi:'अगला शुभ समय {t}',te:'తర్వాతి శుభ సమయం {t}',
+   kn:'ಮುಂದಿನ ಶುಭ ಸಮಯ {t}',ta:'அடுத்த நல்ல நேரம் {t}',bn:'পরের শুভ সময় {t}',
+   mr:'पुढील शुभ वेळ {t}',gu:'આગળનો શુભ સમય {t}',as:'পৰৱৰ্তী শুভ সময় {t}'},
+ more:{en:'{n} more today',hi:'आज {n} और',te:'ఈ రోజు మరో {n}',kn:'ಇಂದು ಇನ್ನೂ {n}',
+   ta:'இன்று மேலும் {n}',bn:'আজ আরও {n}',mr:'आज आणखी {n}',gu:'આજે વધુ {n}',as:'আজি আৰু {n}'}};
+function sdTease(k,vars){
+  var L=(window.SD_LANG||'hi'), key='dashbo.tease_'+k;
+  try{ if(typeof sdHas==='function'&&sdHas(key)) return vars?AF(key,vars):A(key); }catch(e){}
+  var t=(SD_TEASE[k]&&(SD_TEASE[k][L]||SD_TEASE[k].hi))||'';
+  if(vars) Object.keys(vars).forEach(function(n){ t=t.replace('{'+n+'}',vars[n]); });
+  return t;
+}
+/* "10:15" or "10:15 AM" → minutes since midnight, for "has it passed?" */
+function sdMins(str){
+  try{
+    var m=String(str).match(/(\d{1,2}):(\d{2})\s*([AaPp])?/); if(!m) return null;
+    var h=+m[1], mi=+m[2], ap=(m[3]||'').toLowerCase();
+    if(ap==='p'&&h<12) h+=12; if(ap==='a'&&h===12) h=0;
+    return h*60+mi;
+  }catch(e){ return null; }
+}
+function paintAstroTeaser(){
+  var el=document.getElementById('agSub'); if(!el) return;
+  var p=window._panchangData; if(!p) return;          /* keep the static label */
+  var now=new Date(), nowM=now.getHours()*60+now.getMinutes();
+
+  /* every auspicious window the day still has ahead of it */
+  var ahead=[];
+  try{
+    var pool=[];
+    if(p.shubh){
+      if(p.shubh.abhijit) pool.push(p.shubh.abhijit);
+      (p.shubh.amrit||[]).forEach(function(w){ pool.push(w); });
+    }
+    if(p.clean) pool.push({s:p.clean.s,e:p.clean.e});
+    pool.forEach(function(w){
+      if(!w||!w.s) return;
+      var m=sdMins(w.s); if(m===null||m<nowM) return;
+      if(!ahead.some(function(x){return x.m===m;})) ahead.push({m:m,s:w.s});
+    });
+    ahead.sort(function(a,b){return a.m-b.m;});
+  }catch(e){}
+
+  var txt='';
+  if(ahead.length){
+    txt='🟢 '+sdTease('next',{t:ahead[0].s});
+    if(ahead.length>1) txt+=' · '+sdTease('more',{n:ahead.length-1});
+  } else if(p.mine && (p.mine.chandraGood||p.mine.taraGood)){
+    txt='✨ '+sdTease('good');
+  } else if(p.mine){
+    txt='⚠️ '+sdTease('care');
+  }
+  if(txt) el.textContent=txt+' →';
+}
+
 function applyPanchang(p){
   if(!p) return;
+  try{ paintAstroTeaser(); }catch(e){}
   try{
     setTimeout(prewarmAudio, 1000);
 
@@ -5298,9 +5382,21 @@ function wpOfDay(d){
 }
 
 /* ── card ── */
+/* ══ SD-WP-UNLOCK ══
+   The lock asked people to watch an ad to unlock the very image the splash
+   had just shown them full-screen for three seconds. And WP_AD_PROVIDER is
+   still 'stub' — no network is wired, so showRewardedAd() returns without
+   showing anything and earns nothing. The gate was pure friction against
+   zero revenue, on the one card most likely to be shared.
+   Set SD_WP_GATE=true to bring the lock back the day a real ad network is
+   connected; nothing else needs to change. */
+window.SD_WP_GATE=false;
 function renderWallpaperCard(){
   var m=document.getElementById('wpMount'); if(!m) return;
-  var w=wpOfDay(new Date()), open=wpIsUnlocked(w.key);
+  /* ===true, not truthiness: if the assignment above is ever skipped because
+     something earlier in this script threw, the card must fail OPEN — showing
+     a picture — rather than fail locked behind an ad that does not exist. */
+  var w=wpOfDay(new Date()), open=(window.SD_WP_GATE!==true)||wpIsUnlocked(w.key);
   m.innerHTML=
    '<div class="wpc'+(open?'':' locked')+'" onclick="'+(open?'wpUse()':'wpUnlock()')+'">'
    +'<div class="wpc-img" style="background-image:url(\''+w.img+'\')"></div><div class="wpc-sh"></div>'
