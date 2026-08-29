@@ -151,14 +151,35 @@ async function apiJson(r){
   catch(e){ throw new Error(A('report.unexpected_response_from_the_serve')); }
 }
 
+/* ══ SD-REPORT-LANG ══
+   The language a report was BOUGHT in. My Reports had no idea reports even
+   had a language: it re-rendered PDFs as Hindi-or-English and opened the
+   on-screen view with no language at all. Both are fixed below; this is the
+   single place that answers "which language is this report?".
+     1. the ownership record   (written by buy.html and by list=1)
+     2. the purchase details still on this device (sd_buy_<report>)
+     3. the app language
+     4. Hindi
+   Never guesses from the UI language alone when better evidence exists. */
+function reportLang(id){
+  var OK=['en','hi','te','kn','ta','bn','mr','gu','as'];
+  var rec=null, det=null;
+  try{ rec=sdOwnedRead().filter(function(x){return x.report===id;})[0]; }catch(e){}
+  try{ det=JSON.parse(localStorage.getItem('sd_buy_'+id)||'null'); }catch(e){}
+  var picks=[rec&&rec.lang, det&&det.lang, window.SD_LANG, 'hi'];
+  for(var i=0;i<picks.length;i++) if(OK.indexOf(picks[i])>=0) return picks[i];
+  return 'hi';
+}
+
 /* Merge semantics per the contract: never overwrite an existing pdf_url. */
-function ownedWrite(report,orderCode,pdfUrl,date){
+function ownedWrite(report,orderCode,pdfUrl,date,lang){
   try{
     var a=sdOwnedRead(), f=null;
     for(var i=0;i<a.length;i++) if(a[i].report===report){f=a[i];break;}
     if(!f){ f={report:report,date:date||new Date().toISOString().slice(0,10)}; a.push(f); }
     if(orderCode) f.order_code=orderCode;
     if(pdfUrl && !f.pdf_url) f.pdf_url=pdfUrl;
+    if(lang) f.lang=lang;   /* remembered so a re-render never guesses */
     localStorage.setItem('sd_owned_reports',JSON.stringify(a));
   }catch(e){}
 }
@@ -333,10 +354,11 @@ async function openReport(id){
   try{
     var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({report:id,uid:SESSION.user.id,access_token:SESSION.access_token,
-                           details:d,lang:H?'hi':'en'})});
+                           details:d,lang:reportLang(id)})});   /* was H?'hi':'en' — the v134
+                             clamp, which silently re-rendered a Telugu report in English */
     var j=await apiJson(r);
     if(j&&j.ready&&j.url){
-      ownedWrite(id,rec.order_code,j.url,rec.date);   // backfill for next time
+      ownedWrite(id,rec.order_code,j.url,rec.date,reportLang(id));   // backfill for next time
       btn.disabled=false; btn.textContent=label;
       render();                                        // chips must reflect the new state
       openPdf(id,j.url);
@@ -395,7 +417,7 @@ function showManualLink(id,url){
         +A('kundli.downloads_sometimes_do_not_run_fro')+'</div>' : '');
   box.style.display='block';
 }
-function viewOnScreen(id){ location.href=id+'-report.html?autoview=1'; }
+function viewOnScreen(id){ location.href=id+'-report.html?autoview=1&lang='+encodeURIComponent(reportLang(id)); }
 /* Re-asks the server. Once the buy side returns pdf_url in the list=1 payload,
    this is all a new phone ever needs — the PDF was cached at first render. */
 async function checkAgain(id){
@@ -448,7 +470,7 @@ async function restoreFromServer(){
            storage path and returns a URL only when a PDF genuinely exists, so its
            presence means "openable right now". Passing null here silently threw
            that away — "Check again" fetched the answer and discarded it. */
-        ownedWrite(o.report,o.order_code,o.pdf_url||null,(o.paid_at||'').slice(0,10));
+        ownedWrite(o.report,o.order_code,o.pdf_url||null,(o.paid_at||'').slice(0,10),o.lang);
         // A URL the server no longer returns is a file that no longer exists.
         // Without this, one written in an older session could never be cleared
         // and the buyer would tap a dead link forever with no way back.
