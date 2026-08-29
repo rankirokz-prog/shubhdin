@@ -5143,6 +5143,18 @@ function updateSadhanaTab(){
 // Clear old birth cache if rashi is empty (old wrong field name)
 const _u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
 if(_u.birth_cache_key && !_u.rashi){ _u.birth_cache_key=''; localStorage.setItem('shubhdin_user',JSON.stringify(_u)); }
+/* ══ SD-RASHI-KEY · heal existing phones ══
+   Anyone who opened the dashboard on a non-English app has a LOCALISED rashi
+   stored ("మేషం" instead of "Mesha"), which no consumer can match. Detect a
+   non-ASCII value and clear the cache key so the next computation rewrites it
+   in canonical form. Costs one recomputation, once. */
+try{
+  var _bad=function(v){ return typeof v==='string' && v && /[^\x00-\x7F]/.test(v); };
+  if(_bad(_u.rashi) || _bad(_u.nakshatra) || _bad(_u.lagna)){
+    _u.rashi=''; _u.nakshatra=''; _u.lagna=''; _u.birth_cache_key='';
+    localStorage.setItem('shubhdin_user',JSON.stringify(_u));
+  }
+}catch(e){}
 setWallpaper();personalise();personaliseMarg();fetchPanchang();
 updateSadhanaTab();
 renderSadhanaCard();
@@ -5562,10 +5574,25 @@ function computeBirthLocal(u){
     var bc=PE.getBirthChart(d,lat,lng);
     var moon=bc.grahas.filter(function(g){return g.key==='moon';})[0];
     if(!moon) return null;
-    return {rashi:(sdRashi(moon.rashi)),
-            nakshatra:(sdNak(moon.nakshatra)),
+    /* ══ SD-RASHI-KEY ══
+       These values are STORED, not shown. Storing the localised label —
+       sdRashi(moon.rashi) gives "మేషం" on a Telugu phone — broke every
+       consumer, because they all match on the English key:
+         dashboard : cb.good[].en.toLowerCase() === myRas
+         astrology : RASHI[i][1] Sanskrit / RASHI[i][2] Western
+       so the user's own rashi stopped being recognised on the Rashifal
+       page and in the chandrabalam check the moment the app was not in
+       English. It looked like "rashi identification is lost".
+       The canonical English key is stored; sdRashi()/sdNak() run at DISPLAY
+       time only — see updateBirthChips below. */
+    return {rashi:(moon.rashi&&(moon.rashi.en||moon.rashi))||'',
+            nakshatra:(moon.nakshatra&&(moon.nakshatra.en||moon.nakshatra))||'',
             nakshatra_pada:moon.nakshatra.pada,
-            lagna:(sdRashi(bc.lagna)),
+            lagna:(bc.lagna&&(bc.lagna.en||bc.lagna))||'',
+            /* kept separately so the chips can show the right script without
+               anyone being tempted to read them back as keys */
+            rashi_label:(sdRashi(moon.rashi)),
+            nakshatra_label:(sdNak(moon.nakshatra)),
             source:'engine'};
   }catch(e){ return null; }
 }
@@ -5603,17 +5630,23 @@ async function fetchBirthChart(){
   }catch(e){ /* engine unavailable — fall through to the network */ }
   // 2 · network fallback, only if the engine could not answer
   try{
-    const lat = u.birth_lat || u.city_lat || 28.6139;
-    const lon = u.birth_lng || u.city_lon || 77.2090;
+    /* Never fabricate a location. A rashi computed at Delhi for someone born
+       in Eluru is not a fallback, it is a wrong answer presented as a fact —
+       and the user has no way to tell. No coordinates means no chart. */
+    const lat = (u.birth_lat!=null?u.birth_lat:u.city_lat);
+    const lon = (u.birth_lng!=null?u.birth_lng:u.city_lon);
+    if(lat==null||lon==null){ console.log('birth chart: no coordinates on the profile — not guessing'); return; }
     const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&lat=${lat}&lon=${lon}`);
     const data = await res.json();
     if(!data.success) return;
 
     // Save to localStorage
-    u.nakshatra      = data.nakshatra;
+    /* the API answers in English already, but normalise defensively so this
+       path can never reintroduce a localised value into a key field */
+    u.nakshatra      = (data.nakshatra&&(data.nakshatra.en||data.nakshatra))||'';
     u.nakshatra_pada = data.nakshatra_pada;
-    u.rashi          = data.rashi;
-    u.lagna          = data.lagna;
+    u.rashi          = (data.rashi&&(data.rashi.en||data.rashi))||'';
+    u.lagna          = (data.lagna&&(data.lagna.en||data.lagna))||'';
     u.birth_cache_key = cacheKey;
     localStorage.setItem('shubhdin_user', JSON.stringify(u));
 
@@ -5629,13 +5662,20 @@ function tobIsUnknown(){ try{return !!JSON.parse(localStorage.getItem('shubhdin_
 function approxNote(){ return tobIsUnknown()
   ? ' <span style="font-size:9px;color:rgba(212,168,67,0.72);">'+(A('dashbo.time_assumed'))+'</span>' : ''; }
 function updateBirthChips(data){
+  /* data.rashi / data.nakshatra are canonical English keys (SD-RASHI-KEY).
+     Localise for display here — and only here. The *_label fields are used
+     when present (a fresh local computation supplies them); otherwise the key
+     is resolved through the same term bridge every other screen uses. */
+  const rLabel = data.rashi_label || (data.rashi ? sdRashi(data.rashi) : '');
+  const nLabel = data.nakshatra_label || (data.nakshatra ? sdNak(data.nakshatra) : '');
+
   // Home chips
   const rv = document.getElementById('rv');
-  if(rv && data.rashi) rv.textContent = data.rashi;
+  if(rv && rLabel) rv.textContent = rLabel;
 
   const nv = document.getElementById('nv');
   // pada depends on the exact birth minute — drop it when the time was assumed
-  if(nv && data.nakshatra) nv.innerHTML = data.nakshatra
+  if(nv && nLabel) nv.innerHTML = nLabel
     + ((data.nakshatra_pada && !tobIsUnknown()) ? ' (P'+data.nakshatra_pada+')' : '')
     + approxNote();
 
