@@ -685,6 +685,43 @@ var SD_JP_HIGHLIGHT = 'jp.childHighlight';
 } catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
 </script>
 
+
+<!-- ══ SD-VIEW-LANG v1 (append-only; re-apply if this file is regenerated) ══
+     This page set LANG='en' and only ever changed it when a human tapped a
+     language button. Nothing read the URL and nothing read the purchase, so
+     "view on screen" from the app rendered ENGLISH for every buyer in every
+     language — while their PDF was correct. That is the bug Ram found with a
+     Telugu purchase on an English app.
+
+     Precedence, matching kundli-report.html:
+       1. ?lang=  in the URL         (buy.html now passes it)
+       2. the language BOUGHT        (sd_buy_<report>.lang)
+       3. the app language           (shubhdin_user.lang)
+       4. English                    (unchanged default)
+     Runs before the buy bridge's generate() timer, so the first render is
+     already in the right language — no flash of English, no re-render. -->
+<script>
+(function(){
+  try{
+    var OK=['en','hi','te','kn','ta','bn','mr','gu','as'];
+    var q=(location.search.match(/[?&]lang=([a-z]{2})/)||[])[1];
+    var bought=null, app=null;
+    try{
+      var m=location.pathname.match(/([a-z]+)-report\.html/);
+      if(m){var d=JSON.parse(localStorage.getItem('sd_buy_'+m[1])||'null'); if(d)bought=d.lang;}
+    }catch(e){}
+    try{ app=(JSON.parse(localStorage.getItem('shubhdin_user')||'{}')||{}).lang; }catch(e){}
+    var pick=[q,bought,app].filter(function(x){return OK.indexOf(x)>=0;})[0];
+    if(!pick)return;                    /* nothing known — leave English */
+    if(typeof setLang==='function')setLang(pick);
+    else if(typeof LANG!=='undefined')LANG=pick;
+    document.addEventListener('DOMContentLoaded',function(){
+      try{ if(typeof setLang==='function')setLang(pick); }catch(e){}
+    });
+  }catch(e){}
+})();
+</script>
+
 <!-- ══ SHUBHDIN BUY BRIDGE v1 (append-only; re-apply if this file is regenerated) ══ -->
 <script>
 (function(){
