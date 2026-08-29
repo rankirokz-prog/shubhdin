@@ -830,6 +830,43 @@ var SD_JP_HIGHLIGHT = 'jp.loveHighlight';
 } catch(err){ alert('Report generation error: '+err.message+'\n\nLikely an outdated cached file — hard-refresh (Ctrl+Shift+R) and retry.'); console.error(err); } }
 </script>
 
+
+<!-- ══ SD-VIEW-LANG v1 (append-only; re-apply if this file is regenerated) ══
+     This page set LANG='en' and only ever changed it when a human tapped a
+     language button. Nothing read the URL and nothing read the purchase, so
+     "view on screen" from the app rendered ENGLISH for every buyer in every
+     language — while their PDF was correct. That is the bug Ram found with a
+     Telugu purchase on an English app.
+
+     Precedence, matching kundli-report.html:
+       1. ?lang=  in the URL         (buy.html now passes it)
+       2. the language BOUGHT        (sd_buy_<report>.lang)
+       3. the app language           (shubhdin_user.lang)
+       4. English                    (unchanged default)
+     Runs before the buy bridge's generate() timer, so the first render is
+     already in the right language — no flash of English, no re-render. -->
+<script>
+(function(){
+  try{
+    var OK=['en','hi','te','kn','ta','bn','mr','gu','as'];
+    var q=(location.search.match(/[?&]lang=([a-z]{2})/)||[])[1];
+    var bought=null, app=null;
+    try{
+      var m=location.pathname.match(/([a-z]+)-report\.html/);
+      if(m){var d=JSON.parse(localStorage.getItem('sd_buy_'+m[1])||'null'); if(d)bought=d.lang;}
+    }catch(e){}
+    try{ app=(JSON.parse(localStorage.getItem('shubhdin_user')||'{}')||{}).lang; }catch(e){}
+    var pick=[q,bought,app].filter(function(x){return OK.indexOf(x)>=0;})[0];
+    if(!pick)return;                    /* nothing known — leave English */
+    if(typeof setLang==='function')setLang(pick);
+    else if(typeof LANG!=='undefined')LANG=pick;
+    document.addEventListener('DOMContentLoaded',function(){
+      try{ if(typeof setLang==='function')setLang(pick); }catch(e){}
+    });
+  }catch(e){}
+})();
+</script>
+
 <!-- ══ SHUBHDIN BUY BRIDGE v1 (append-only; re-apply if this file is regenerated) ══ -->
 <script>
 (function(){
@@ -876,54 +913,5 @@ var SD_JP_HIGHLIGHT = 'jp.loveHighlight';
 })();
 </script>
 <!-- ══ END BUY BRIDGE ══ -->
-
-<!-- ══ SD-FIT-TO-SCREEN (additive, screen only) ═══════════════════════════
-     The report is an A4 document: .page is a fixed 794px canvas and its
-     tables are sized for that width. On a phone the browser squeezed .page
-     to screen width while the tables kept theirs, so they burst through the
-     gold page border. The PDF was always right — Puppeteer renders at full
-     width. Fix: hold the document at 794px and scale it down to fit, the way
-     a PDF viewer does. Nothing reflows. Print is reset below, so page.pdf()
-     is unchanged. -->
-<style>
-@media screen{
-  #sdfitbox{overflow:hidden;}
-  #sdfit{width:794px;transform-origin:top left;}
-}
-@media print{
-  #sdfitbox{overflow:visible !important;height:auto !important;}
-  #sdfit{width:auto !important;transform:none !important;margin:0 !important;}
-}
-</style>
-<script>
-(function(){
-  var PAGE_W=794, GUTTER=6;
-  var rep=document.getElementById('report');
-  if(!rep||!rep.parentNode||document.getElementById('sdfitbox')) return;
-  var box=document.createElement('div'); box.id='sdfitbox';
-  var fit=document.createElement('div'); fit.id='sdfit';
-  rep.parentNode.insertBefore(box,rep); fit.appendChild(rep); box.appendChild(fit);
-  var scale=1;
-  function size(){
-    /* transform does not affect layout, so the box must carry the scaled
-       height or the page ends in a tall blank strip */
-    box.style.height = (scale===1) ? 'auto' : (fit.offsetHeight*scale)+'px';
-  }
-  function apply(){
-    var avail=document.documentElement.clientWidth-GUTTER;
-    scale = (avail>0 && avail<PAGE_W) ? avail/PAGE_W : 1;   /* never magnify */
-    fit.style.transform = (scale===1) ? 'none' : 'scale('+scale+')';
-    fit.style.margin    = (scale===1) ? '0 auto' : '0';
-    size();
-  }
-  apply();
-  addEventListener('resize',apply);
-  addEventListener('orientationchange',apply);
-  /* the report is generated after load, and grows as pages are appended */
-  if(window.ResizeObserver) new ResizeObserver(size).observe(fit);
-  else setInterval(size,700);
-  window.sdFitRefresh=apply;   /* generate() may call this; safe if it does not */
-})();
-</script>
 </body>
 </html>
