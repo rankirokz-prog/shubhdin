@@ -988,6 +988,28 @@
     user.city  = document.getElementById('userCity')?.value?.trim()  || user.city  || '';
     user.state = document.getElementById('userState')?.value         || user.state || '';
 
+    /* ══ SD-CITY-COORD ══
+       city_lat/city_lon were only ever set by GPS or by TAPPING a suggestion.
+       Type "Eluru" and move on without tapping — what most people do — and the
+       profile had a city NAME and no coordinates. The dashboard needs
+       coordinates to compute the birth rashi on device; without them it fell
+       through to a network call that assumed DELHI. So the user either got no
+       rashi at all, or one computed for a city they have never seen.
+       Resolve the typed name here instead. Never blocks onboarding: if the
+       lookup fails the fields stay empty and the dashboard reports the gap
+       rather than inventing a location. */
+    if(user.city && (user.city_lat==null || user.city_lon==null)){
+      try{
+        const _g = await fetch('https://nominatim.openstreetmap.org/search?q='
+                   +encodeURIComponent(user.city)+'&countrycodes=in&limit=1&format=json')
+                   .then(r=>r.json()).catch(()=>null);
+        if(_g && _g[0]){
+          const _la=parseFloat(_g[0].lat), _ln=parseFloat(_g[0].lon);
+          if(isFinite(_la)&&isFinite(_ln)){ user.city_lat=_la; user.city_lon=_ln; }
+        }
+      }catch(e){}
+    }
+
     // Personalise step titles
     const t = T[lang] || T.hi;   /* six of the nine offered languages have no
      T entry yet; without this fallback every read off T[lang] throws on the
