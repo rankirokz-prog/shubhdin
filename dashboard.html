@@ -737,7 +737,8 @@ body[data-home="returning"] .hbody > div:not([class]):not([id]){order:5;}
 body[data-home="returning"] .streak{display:none;}
 
 /* the streak belongs where the jap is, not on a screen you have to reach */
-.jt-streak{position:absolute;top:10px;right:10px;z-index:3;
+.jt-streak{position:absolute;top:10px;right:10px;z-index:6;
+  pointer-events:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;
   background:rgba(255,150,0,0.18);border:1px solid rgba(255,150,0,0.45);
   color:#FFD9A0;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;
   backdrop-filter:blur(4px);transition:transform .12s,box-shadow .2s;}
@@ -5519,12 +5520,115 @@ function gitaShareText(){
        + '✨ '+(PITCH[L]||PITCH.hi)+'\n'
        + '👉 https://www.shubhdin.app';
 }
-/* Tries to send the picture with the words, and quietly settles for the words
-   when it cannot. Drawing the picture needs the storage bucket to allow
-   cross-origin reads; if it does not, the canvas is tainted and toBlob throws.
-   Rather than guess at that header from here, this attempts it and falls back
-   the moment anything objects — so the share always works, and gets better on
-   its own the day CORS is enabled. */
+/* ══ SD-GITA-IMAGE ══════════════════════════════════════════════════════
+   The shared picture is DRAWN, not forwarded. Forwarding the remote photo
+   produced a blank image: a browser will display a cross-origin image
+   happily, but the instant it is drawn to a canvas that canvas is tainted and
+   cannot be exported — depending on the phone you get an error or an empty
+   file. That was the blank.
+
+   So we compose the card ourselves. The photo is attempted; if it cannot be
+   drawn we paint a devotional gradient instead — but either way WE paint the
+   Sanskrit, the reference and the app name, so what reaches WhatsApp always
+   carries the verse and is never blank.
+
+   1080×1350 is WhatsApp's portrait shape: fills the chat preview without
+   being cropped. */
+function wrapCanvasText(ctx,text,maxW){
+  var out=[],line='';
+  (String(text||'').split(/\s+/)).forEach(function(w){
+    var t=line?line+' '+w:w;
+    if(ctx.measureText(t).width<=maxW){ line=t; return; }
+    if(line) out.push(line);
+    if(ctx.measureText(w).width<=maxW){ line=w; return; }
+    var part='';
+    for(var i=0;i<w.length;i++){
+      if(ctx.measureText(part+w[i]).width>maxW){ out.push(part); part=''; }
+      part+=w[i];
+    }
+    line=part;
+  });
+  if(line) out.push(line);
+  return out;
+}
+function gitaImageBlob(){
+  return new Promise(function(resolve){
+    var g=gitaOfDay(); if(!g) return resolve(null);
+    /* 1150 tall, not 1350: at 1350 there was an empty band between the reference
+       and the footer doing nothing but making the picture smaller in the chat
+       preview. */
+    var W=1080,H=1150,PHOTO_H=760;
+    var c=document.createElement('canvas'); c.width=W; c.height=H;
+    var x=c.getContext('2d');
+    function paintText(){
+      var grd=x.createLinearGradient(0,PHOTO_H-120,0,H);
+      grd.addColorStop(0,'rgba(13,5,0,0)');
+      grd.addColorStop(0.16,'rgba(13,5,0,0.92)');
+      grd.addColorStop(1,'#0D0500');
+      x.fillStyle=grd; x.fillRect(0,PHOTO_H-120,W,H-PHOTO_H+120);
+      var y=PHOTO_H+80;
+      x.fillStyle='#E6BE5A'; x.textAlign='center';
+      var size=52, lines=[];
+      do{
+        x.font='600 '+size+'px "Tiro Devanagari Hindi", serif';
+        lines=wrapCanvasText(x,g.sanskrit||'',W-120);
+        if(lines.length<=3) break;
+        size-=4;
+      } while(size>30);
+      lines.slice(0,3).forEach(function(ln){ x.fillText(ln,W/2,y); y+=size*1.55; });
+      y+=14;
+      var hg=x.createLinearGradient(W*0.22,0,W*0.78,0);
+      hg.addColorStop(0,'rgba(212,168,67,0)'); hg.addColorStop(0.5,'rgba(212,168,67,0.55)');
+      hg.addColorStop(1,'rgba(212,168,67,0)');
+      x.fillStyle=hg; x.fillRect(W*0.22,y,W*0.56,2); y+=52;
+      x.fillStyle='rgba(255,244,222,0.72)';
+      x.font='500 30px Poppins, sans-serif';
+      x.fillText(g.ref,W/2,y);
+      x.fillStyle='rgba(212,168,67,0.80)';
+      x.font='600 27px Poppins, sans-serif';
+      x.fillText('shubhdin.app',W/2,H-52);
+    }
+    function fallbackArt(){
+      var bg=x.createLinearGradient(0,0,W,PHOTO_H);
+      bg.addColorStop(0,'#1E0C04'); bg.addColorStop(0.55,'#3A1808'); bg.addColorStop(1,'#0D0500');
+      x.fillStyle=bg; x.fillRect(0,0,W,PHOTO_H);
+      x.strokeStyle='rgba(212,168,67,0.30)'; x.lineWidth=3;
+      for(var i=0;i<3;i++){ x.beginPath(); x.arc(W/2,PHOTO_H/2,150+i*70,0,Math.PI*2); x.stroke(); }
+      x.fillStyle='rgba(212,168,67,0.92)'; x.textAlign='center';
+      x.font='600 210px "Tiro Devanagari Hindi", serif';
+      x.fillText('\u0950',W/2,PHOTO_H/2+80);
+    }
+    function redraw(){
+      x.clearRect(0,0,W,H); fallbackArt(); paintText();
+      try{ c.toBlob(function(b){ resolve(b||null); },'image/jpeg',0.9); }
+      catch(e){ resolve(null); }
+    }
+    function finish(){
+      paintText();
+      try{ c.toBlob(function(b){ if(b) return resolve(b); redraw(); },'image/jpeg',0.9); }
+      catch(e){ redraw(); }
+    }
+    var ready=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();
+    ready.then(function(){
+      var el=document.getElementById('gitaImg');
+      var bg=el?el.style.backgroundImage:'';
+      var m=bg&&bg.match(/url\(['"]?([^'")]+)/);
+      if(!m){ fallbackArt(); return finish(); }
+      var img=new Image();
+      img.crossOrigin='anonymous';
+      img.onerror=function(){ fallbackArt(); finish(); };
+      img.onload=function(){
+        try{
+          var r=Math.max(W/img.width, PHOTO_H/img.height);
+          var dw=img.width*r, dh=img.height*r;
+          x.drawImage(img,(W-dw)/2,(PHOTO_H-dh)/2+dh*0.06,dw,dh);
+        }catch(e){ fallbackArt(); }
+        finish();
+      };
+      img.src=m[1];
+    });
+  });
+}
 function shareGita(){
   var txt=gitaShareText(); if(!txt) return;
   function sendText(){
@@ -5533,30 +5637,15 @@ function shareGita(){
       navigator.clipboard.writeText(txt).then(function(){ try{ showToast&&showToast(); }catch(e){} });
     }catch(e){}
   }
-  var el=document.getElementById('gitaImg');
-  var bg=el?el.style.backgroundImage:'';
-  var m=bg&&bg.match(/url\(['"]?([^'")]+)/);
-  if(!m||!navigator.canShare) return sendText();
-  var img=new Image();
-  img.crossOrigin='anonymous';
-  img.onerror=sendText;
-  img.onload=function(){
+  if(!navigator.canShare||!window.File) return sendText();
+  gitaImageBlob().then(function(blob){
+    if(!blob) return sendText();
     try{
-      var W=1080,H=Math.round(W*img.height/img.width);
-      var c=document.createElement('canvas'); c.width=W; c.height=H;
-      c.getContext('2d').drawImage(img,0,0,W,H);
-      c.toBlob(function(blob){
-        if(!blob) return sendText();
-        try{
-          var f=new File([blob],'shubh-din.jpg',{type:'image/jpeg'});
-          if(navigator.canShare({files:[f]}))
-            return navigator.share({files:[f],text:txt}).catch(sendText);
-        }catch(e){}
-        sendText();
-      },'image/jpeg',0.88);
-    }catch(e){ sendText(); }     /* tainted canvas lands here */
-  };
-  img.src=m[1];
+      var f=new File([blob],'shubh-din.jpg',{type:'image/jpeg'});
+      if(!navigator.canShare({files:[f]})) return sendText();
+      navigator.share({files:[f],text:txt}).catch(sendText);
+    }catch(e){ sendText(); }
+  }).catch(sendText);
 }
 
 /* ══ SD-WP-UNLOCK ══
@@ -5712,16 +5801,26 @@ function japDoneToday(){
    back into a jap they have already completed would either double-count the
    day or quietly do nothing, and both are worse than leaving it alone. */
 function japStreakTap(e){
-  try{ e&&e.stopPropagation&&e.stopPropagation(); }catch(x){}
-  if(japDoneToday()) return;
-  try{ goJap(); }catch(x){}
+  /* INVERTED from the first attempt, which did not work on a phone: it
+     swallowed the tap with stopPropagation() and then called goJap() itself,
+     so any failure inside this handler meant the tap did nothing at all. The
+     badge sits ON the jap card, whose own onclick already opens and starts
+     the jap. So the not-done case now does NOTHING and lets the tap fall
+     through to that proven path; only the already-done case intervenes.
+     Failure now degrades to the behaviour before this feature existed. */
+  try{
+    if(!japDoneToday()) return;
+    if(e){ e.stopPropagation&&e.stopPropagation(); e.preventDefault&&e.preventDefault(); }
+  }catch(x){}
 }
 function paintJapStreak(){
   var jt=document.getElementById('jtCard'); if(!jt)return;
   var n=0; try{ n=getStreak(); }catch(e){}
   var el=jt.querySelector('.jt-streak');
-  if(!el){ el=document.createElement('div'); el.className='jt-streak'; jt.appendChild(el);
-    el.setAttribute('role','button'); el.onclick=japStreakTap; }
+  if(!el){ el=document.createElement('div'); el.className='jt-streak'; jt.appendChild(el); }
+  /* reattached on every paint: whether the badge should intercept the tap
+     changes the moment a jap completes */
+  el.onclick=japStreakTap;
   var done=japDoneToday();
   el.classList.toggle('done',done);
   el.style.cursor=done?'default':'pointer';
