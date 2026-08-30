@@ -5207,9 +5207,43 @@ function buildPayload(q){
     shubh:{abhijit:win(q.abhijit), amrit:wins(q.amritKaalAll||(q.amritKaal?[q.amritKaal]:[])),
            brahma:win(q.brahmaMuhurta)},
     disha:(q.dishaShool?(sdTerm("disha",q.dishaShool)):''),
-    panchaka:(q.panchaka?A('dashbo.panchaka'):''),
+    panchaka:panchakaLabel(q.panchaka),
     mine:mine, clean:cleanWindowOf(q), choghadiya:q.choghadiya||null
   };
+}
+/* ══ SD-PANCHAKA ══
+   This read  panchaka: q.panchaka ? A('dashbo.panchaka') : ''  — the VALUE
+   was set to the LABEL, so the row rendered "పంచకం ➔ పంచకం". It never showed
+   which of the five panchakas was running, which is the only useful part.
+
+   The five are named, not translated (panchang terms are transliterated —
+   Language Bible), so this maps the engine's type to its name in the reader's
+   script. Anything unrecognised returns empty and the row hides itself rather
+   than printing a word nobody asked for. */
+function panchakaLabel(v){
+  if(!v) return '';
+  var raw='';
+  try{
+    raw=(typeof v==='string')?v:(v.type||v.name||v.en||v.key||'');
+  }catch(e){}
+  var k=String(raw).toLowerCase();
+  var which=['mrityu','agni','raja','chora','roga'].filter(function(x){
+    return k.indexOf(x)>=0; })[0];
+  if(!which) return '';
+  try{ if(typeof sdHas==='function'&&sdHas('panchaka.'+which)) return A('panchaka.'+which); }catch(e){}
+  var L=(window.SD_LANG||'hi');
+  var N={
+   mrityu:{en:'Mrityu Panchaka',hi:'मृत्यु पंचक',te:'మృత్యు పంచకం',kn:'ಮೃತ್ಯು ಪಂಚಕ',
+     ta:'மிருத்யு பஞ்சகம்',bn:'মৃত্যু পঞ্চক',mr:'मृत्यू पंचक',gu:'મૃત્યુ પંચક',as:'মৃত্যু পঞ্চক'},
+   agni:{en:'Agni Panchaka',hi:'अग्नि पंचक',te:'అగ్ని పంచకం',kn:'ಅಗ್ನಿ ಪಂಚಕ',
+     ta:'அக்னி பஞ்சகம்',bn:'অগ্নি পঞ্চক',mr:'अग्नी पंचक',gu:'અગ્નિ પંચક',as:'অগ্নি পঞ্চক'},
+   raja:{en:'Raja Panchaka',hi:'राज पंचक',te:'రాజ పంచకం',kn:'ರಾಜ ಪಂಚಕ',
+     ta:'ராஜ பஞ்சகம்',bn:'রাজ পঞ্চক',mr:'राज पंचक',gu:'રાજ પંચક',as:'ৰাজ পঞ্চক'},
+   chora:{en:'Chora Panchaka',hi:'चोर पंचक',te:'చోర పంచకం',kn:'ಚೋರ ಪಂಚಕ',
+     ta:'சோர பஞ்சகம்',bn:'চোর পঞ্চক',mr:'चोर पंचक',gu:'ચોર પંચક',as:'চোৰ পঞ্চক'},
+   roga:{en:'Roga Panchaka',hi:'रोग पंचक',te:'రోగ పంచకం',kn:'ರೋಗ ಪಂಚಕ',
+     ta:'ரோக பஞ்சகம்',bn:'রোগ পঞ্চক',mr:'रोग पंचक',gu:'રોગ પંચક',as:'ৰোগ পঞ্চক'}};
+  return (N[which][L]||N[which].hi);
 }
 function enginePanchang(){
   var PE=window.PanchangEngine; if(!PE) return null;
@@ -6995,6 +7029,27 @@ function calNav(dir){
   if(cd){ cd.innerHTML=''; cd.style.display='none'; }
 }
 
+/* ══ SD-PAKSHA-LINE ══
+   Rendered "కృష్ణ పక్షం • కృష్ణ పక్షం". Two separate causes, both live:
+     · sdPaksha() already returns the full term ("కృష్ణ పక్షం"), and the code
+       appended A('dashbo.paksha') — the word "పక్షం" — after it again.
+     · the moon-phase name on the right resolves to the same words in some
+       languages, so even after that fix the line could repeat itself.
+   Build it here: never append the word twice, and drop the second half
+   whenever it says what the first half already said. */
+function pakshaMoonLine(tithi,moon){
+  var pk='', ph='';
+  try{ pk=String(sdPaksha(tithi.paksha)||'').trim(); }catch(e){}
+  try{
+    var word=String(A('dashbo.paksha')||'').trim();
+    if(word && pk && pk.indexOf(word)<0) pk=(pk+' '+word).trim();
+  }catch(e){}
+  try{ ph=String(L3(moon.h,moon.n,'cal.moon_'+sdSlug(moon.n))||'').trim(); }catch(e){}
+  var norm=function(x){ return x.replace(/\s+/g,' ').toLowerCase(); };
+  if(ph && pk && (norm(ph)===norm(pk) || norm(pk).indexOf(norm(ph))>=0 || norm(ph).indexOf(norm(pk))>=0))
+    ph='';
+  return [pk,ph].filter(Boolean).join(' • ');
+}
 function renderCalendar(){
   const today = new Date();
   const firstDay = new Date(_calYear, _calMonth, 1).getDay();
@@ -7416,12 +7471,12 @@ function showCalDetail(date){
          ${A('dashbo.choghadiya_and_hora_are_shown_for_')}</div>`;
 
   document.getElementById('calDetail').innerHTML = `
-    <div style="font-size:11px;color:rgba(212,168,67,0.72);letter-spacing:0.5px;margin-bottom:6px;">${dateStr}${isToday?(A('dashbo.today_2')):''}</div>
+    <div style="font-size:11px;color:rgba(212,168,67,0.72);letter-spacing:0.5px;margin-bottom:6px;">${dateStr}${isToday?(' '+String(A('dashbo.today_2')||'').replace(/^\s+/,'')):''}</div>
     <div style="display:flex;gap:16px;align-items:center;">
       <span style="font-size:36px;line-height:1;">${moon.e}</span>
       <div>
         <div style="font-size:15px;font-weight:600;color:var(--gold);">${p&&p.tithi?p.tithi:(sdTithi(tithi))}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${sdPaksha(tithi.paksha)} ${A('dashbo.paksha')} • ${L3(moon.h,moon.n,'cal.moon_'+sdSlug(moon.n))}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.78);margin-top:2px;">${pakshaMoonLine(tithi,moon)}</div>
       </div>
     </div>
     ${specialNote?`<div style='margin-top:8px;font-size:12px;color:rgba(212,168,67,0.85);padding:6px 10px;background:rgba(212,168,67,0.06);border-radius:8px;'>${specialNote}</div>`:''}
