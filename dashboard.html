@@ -7029,6 +7029,51 @@ function calNav(dir){
   if(cd){ cd.innerHTML=''; cd.style.display='none'; }
 }
 
+/* ══ SD-LIMB-ORDER ══════════════════════════════════════════════════════════
+   The calendar built its rows as  <name> + A('dashbo.until') + <time>, with
+   the order fixed in the MARKUP. English is the only one of the nine
+   languages where that is right; everywhere else the postposition follows
+   the time:
+
+       te  తదియ 08:51 వరకు      (not  తదియ వరకు 08:51)
+       hi  तृतीया 08:51 तक       kn  08:51 ವರೆಗೆ
+       ta  08:51 வரை            bn  08:51 পর্যন্ত
+       mr  08:51 पर्यंत          gu  08:51 સુધી
+       as  08:51 লৈকে
+
+   Handing a translator the lone word "until" gave them no way to place it —
+   they never saw the name or the time it would sit between. One template per
+   language with BOTH slots in it, matching astrology.html so the two screens
+   cannot drift apart. */
+function calLimbUntil(name,time){
+  try{ if(typeof sdHas==='function'&&sdHas('astrol.limb_until'))
+        return AF('astrol.limb_until',{name:name,time:time}); }catch(e){}
+  var L=(window.SD_LANG||'hi');
+  var T={en:'{name} until {time}',hi:'{name} {time} तक',te:'{name} {time} వరకు',
+    kn:'{name} {time} ವರೆಗೆ',ta:'{name} {time} வரை',bn:'{name} {time} পর্যন্ত',
+    mr:'{name} {time} पर्यंत',gu:'{name} {time} સુધી',as:'{name} {time} লৈকে'};
+  return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
+}
+function calThenUntil(name,time){
+  try{ if(typeof sdHas==='function'&&sdHas('astrol.then_next_until'))
+        return AF('astrol.then_next_until',{next:name,time:time}); }catch(e){}
+  var L=(window.SD_LANG||'hi');
+  var T={en:'then {name} until {time}',hi:'फिर {name} {time} तक',
+    te:'ఆ తర్వాత {name} {time} వరకు',kn:'ನಂತರ {name} {time} ವರೆಗೆ',
+    ta:'பின்னர் {name} {time} வரை',bn:'তারপর {name} {time} পর্যন্ত',
+    mr:'नंतर {name} {time} पर्यंत',gu:'પછી {name} {time} સુધી',
+    as:'তাৰ পিছত {name} {time} লৈকে'};
+  return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
+}
+/* no end time known — just the name, never a dangling postposition */
+function calThenOnly(name){
+  var L=(window.SD_LANG||'hi');
+  var T={en:'then {name}',hi:'फिर {name}',te:'ఆ తర్వాత {name}',kn:'ನಂತರ {name}',
+    ta:'பின்னர் {name}',bn:'তারপর {name}',mr:'नंतर {name}',gu:'પછી {name}',
+    as:'তাৰ পিছত {name}'};
+  return (T[L]||T.hi).replace('{name}',name);
+}
+
 /* ══ SD-PAKSHA-LINE ══
    Rendered "కృష్ణ పక్షం • కృష్ణ పక్షం". Two separate causes, both live:
      · sdPaksha() already returns the full term ("కృష్ణ పక్షం"), and the code
@@ -7273,6 +7318,15 @@ function calGuidance(date,obs,q){
   if(dd) out.push('🕉️ '+AF('dashbo.deity_day_chant',{deity:sdDev(dd.d_hi,dd.d_en,dd.nameKey),chant:dd.chant}));
   return out;
 }
+/* The weekday has no time segments, so stacking label over value spent two
+   lines saying one thing and pushed it past the bottom of the panel. One
+   line, label left and value right — the same shape as the sunrise row
+   directly beneath it. */
+function orowInline(label,val){
+  return val?`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);">
+    <span style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;">${label}</span>
+    <span style="font-size:12.5px;color:rgba(255,240,220,0.92);">${val}</span></div>`:'';
+}
 function orowCal(label,val){
   return val?`<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);">
     <div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>
@@ -7345,11 +7399,15 @@ function showCalDetail(date){
       const S=segArr||[];
       if(!S.length) return orowCal(label,fallback);
       const cur=S[0], nxt=S[1];
-      const upto = cur.end ? `<span style="color:rgba(212,168,67,0.72);"> ${A('dashbo.until')} ${cur.end}</span>` : '';
-      const then = (nxt&&nxt.n) ? `<div style="font-size:11px;color:rgba(255,244,222,0.55);margin-top:1px;">${A('dashbo.then')} ${nxt.n}${nxt.end?` <span style="color:rgba(212,168,67,0.55);">${A('dashbo.until')} ${nxt.end}</span>`:''}</div>` : '';
+      /* name and time travel together so the language decides the order */
+      const head = cur.end ? calLimbUntil(cur.n, cur.end) : cur.n;
+      const then = (nxt&&nxt.n)
+        ? `<div style="font-size:11px;color:rgba(255,244,222,0.55);margin-top:1px;">`
+          + (nxt.end ? calThenUntil(nxt.n, nxt.end) : calThenOnly(nxt.n))
+          + `</div>` : '';
       return `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,0.08);">
         <div style="font-size:10px;color:rgba(212,168,67,0.70);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${label}</div>
-        <div style="font-size:12.5px;color:rgba(255,240,220,0.92);">${cur.n}${upto}</div>${then}</div>`;
+        <div style="font-size:12.5px;color:rgba(255,240,220,0.92);">${head}</div>${then}</div>`;
     };
     const grp=(title,rows)=>rows.filter(Boolean).length
       ? `<div style="margin-top:10px;"><div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(212,168,67,0.68);font-weight:700;margin-bottom:5px;">${title}</div>${rows.filter(Boolean).join('')}</div>` : '';
@@ -7396,7 +7454,7 @@ function showCalDetail(date){
       ${line(A('dashbo.nakshatra'),p.seg.nak,p.nakshatra)}
       ${line(A('dashbo.yoga'),p.seg.yoga,p.yoga)}
       ${line(A('dashbo.karana'),p.seg.karana,p.karana)}
-      ${orowCal(A('dashbo.weekday'),p.weekday)}
+      ${orowInline(A('dashbo.weekday'),p.weekday)}
       <div style="margin-top:8px;">
         ${w('🌅',(A('dashbo.sunrise_sunset')),{s:p.sunrise,e:p.sunset})}
         ${w('🌙',(A('dashbo.moonrise_moonset')),{s:p.moonrise,e:p.moonset})}
