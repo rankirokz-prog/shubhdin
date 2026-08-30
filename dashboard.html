@@ -3725,13 +3725,28 @@ function startParticles(){
    to forward to their family. Nine languages now, with the mantra itself
    carried through in Devanagari (Language Bible: Sanskrit stays as it is). */
 function shareJap(){
-  var mantras={0:'\u0950 \u0938\u0942\u0930\u094d\u092f\u093e\u092f \u0928\u092e\u0903',
-    1:'\u0950 \u0928\u092e\u0903 \u0936\u093f\u0935\u093e\u092f',
-    2:'\u0950 \u0939\u0928\u0941\u092e\u0924\u0947 \u0928\u092e\u0903',
-    3:'\u0950 \u0917\u0902 \u0917\u0923\u092a\u0924\u092f\u0947 \u0928\u092e\u0903',
-    4:'\u0936\u094d\u0930\u0940 \u0930\u093e\u092e \u091c\u092f \u0930\u093e\u092e',
-    5:'\u0950 \u0936\u094d\u0930\u0940\u0902 \u092e\u0939\u093e\u0932\u0915\u094d\u0937\u094d\u092e\u094d\u092f\u0948 \u0928\u092e\u0903',
-    6:'\u0950 \u0936\u0902 \u0936\u0928\u0948\u0936\u094d\u091a\u0930\u093e\u092f \u0928\u092e\u0903'};
+  /* The mantra ACTUALLY chanted, from MANTRA_WORDS — the same source the jap
+     screen builds from. The previous version carried a short invented mantra
+     per weekday ("ॐ सूर्याय नमः"), which is not what anyone had just recited:
+     Sunday's jap is "नमः सूर्याय शान्ताय…". Sending someone a different mantra
+     than the one they kept is the same class of error as sending the wrong
+     language. Shravan days use the day's divine name, exactly as the screen
+     does. */
+  function todaysMantraText(){
+    try{
+      var sn=(typeof getNames==='function')?getNames(dow):null;
+      if(typeof isShravan==='function' && isShravan(dow) && sn && sn[0])
+        return '\u0950 '+sn[0]+' \u0928\u092e\u0903';
+      var w=(typeof MANTRA_WORDS!=='undefined')&&MANTRA_WORDS[dow];
+      if(w&&w.length) return w.join(' ');
+    }catch(e){}
+    try{
+      var el=document.getElementById('jMantra');
+      if(el&&el.textContent.trim()) return el.textContent.replace(/\s+/g,' ').trim();
+    }catch(e){}
+    return '';
+  }
+  var mantraText=todaysMantraText();
   var NAME={
    hi:{0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'},
    en:{0:'Surya Mantra',1:'Maha Mrityunjaya',2:'Hanuman Mantra',3:'Ganesh Mantra',4:'Ram Nam',5:'Lakshmi Mantra',6:'Shani Mantra'},
@@ -3770,7 +3785,7 @@ function shareJap(){
   var did=(DID[L]||DID.hi).replace('{n}',n).replace('{name}','*'+mname+'*');
   var text='🙏 *'+(DONE[L]||DONE.hi)+'* ✨\n\n'
          + '📿 '+did+'\n'
-         + '"'+mantras[dow]+'"\n\n'
+         + (mantraText?('"'+mantraText+'"\n\n'):'\n')
          + '🌸 *'+(BLESS[L]||BLESS.hi)+'*\n\n'
          + '✨ '+(HOOK[L]||HOOK.hi)+'\n'
          + '👉 https://www.shubhdin.app';
@@ -5922,7 +5937,15 @@ function applyHomeState(){
 function japDoneToday(){
   try{
     var d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');
-    return d.lastDate===new Date().toDateString();
+    var t=new Date().toDateString();
+    /* THE BUG: dashboard.html defines updateStreak() TWICE and the two
+       versions stamp DIFFERENT fields — the first writes `lastDate`, the
+       second writes `date`. The later declaration wins, so a completed jap
+       recorded `date` while this check read `lastDate`. Always false, so the
+       streak stayed tappable all day and restarted a jap already done.
+       Accept either. Same duplicate-definition hazard as the two .hbody CSS
+       rules and the two getStreak() functions in this file. */
+    return d.date===t || d.lastDate===t;
   }catch(e){ return false; }
 }
 /* Tapping the badge starts today's jap — but only when it has not been done.
