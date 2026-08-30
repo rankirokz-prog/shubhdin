@@ -22,6 +22,7 @@
 // 11) POST ?lead_set=1        → mark kundli_sent / notified / note
 //
 // env: SUPABASE_URL, SUPABASE_SERVICE_KEY, SD_DEV_FREE, SD_ADMIN_UIDS,
+//      GOOGLE_PLAY_PACKAGE, GOOGLE_PLAY_SA_EMAIL, GOOGLE_PLAY_SA_KEY,
 //      RZP_KEY_ID, RZP_KEY_SECRET, RZP_WEBHOOK_SECRET
 //
 // orders table (run once in Supabase SQL editor):
@@ -52,6 +53,35 @@ const PRICES = {
   forecast: 299
   // muhurta: WITHDRAWN — do not re-add without restoring buy.html's CFG entry
 };
+
+// SKU naming, in ONE place. Play SKUs are immutable once created, so this
+// map is effectively permanent — get it wrong in the console and the only fix
+// is a new SKU and a migration.
+function playSku(report) {
+  return PRICES[report] ? ('report_' + report + '_' + PRICES[report]) : null;
+}
+
+// A service-account access token, signed here rather than pulling in
+// googleapis (which is far too heavy for a serverless function and would push
+// the bundle past what this endpoint needs).
+async function googleAccessToken(email, privateKey) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const claim = {
+    iss: email,
+    scope: 'https://www.googleapis.com/auth/androidpublisher',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600, iat: now
+  };
+  const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+  const unsigned = b64(header) + '.' + b64(claim);
+  const sig = crypto.createSign('RSA-SHA256').update(unsigned).sign(privateKey, 'base64url');
+  const r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + unsigned + '.' + sig
+  }).then(x => x.json());
+  return r && r.access_token;
+}
 
 function code(uid, report) {
   return 'SD-' + crypto.createHash('sha1').update(uid + ':' + report)
@@ -208,6 +238,73 @@ module.exports = async function handler(req, res) {
         { method: 'PATCH', headers: H, body: JSON.stringify(patch) });
       return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true } : { error: 'update failed' });
     } catch (e) { return res.status(500).json({ error: 'update failed' }); }
+  }
+
+  // ══ GOOGLE PLAY · verify and acknowledge a purchase ═══════════════════
+  //
+  // Play's billing runs entirely on the device, so the ONLY proof a purchase
+  // is real is asking Google's servers about the token. A client that simply
+  // reports "I paid" must never be believed — that is the whole reason this
+  // endpoint exists.
+  //
+  // ACKNOWLEDGEMENT IS TIME-CRITICAL. Google auto-refunds any purchase not
+  // acknowledged within three days. Our dispatch gate deliberately holds
+  // delivery until Ram has checked the PDF by hand, and the promise to the
+  // buyer is 48 hours — so acknowledging at DELIVERY time would leave only a
+  // few hours of margin, and one slow weekend would silently refund a paying
+  // customer. So: acknowledge here, the moment the purchase verifies. The
+  // dispatch gate then runs exactly as it does for Razorpay, on an order that
+  // is already safely paid.
+  if (req.method === 'POST' && (req.query || {}).play_verify === '1') {
+    const b = req.body || {};
+    if (!b.uid || !b.report || !b.purchaseToken)
+      return res.status(400).json({ error: 'uid, report and purchaseToken required' });
+    if (!(await verifyUser(b.uid, b.access_token)))
+      return res.status(401).json({ error: 'auth mismatch' });
+    if (!PRICES[b.report]) return res.status(400).json({ error: 'unknown report' });
+
+    const pkg = process.env.GOOGLE_PLAY_PACKAGE;
+    const saEmail = process.env.GOOGLE_PLAY_SA_EMAIL;
+    const saKey = (process.env.GOOGLE_PLAY_SA_KEY || '').replace(/\\n/g, '\n');
+    if (!pkg || !saEmail || !saKey)
+      return res.status(503).json({ error: 'play billing not configured' });
+
+    // The SKU must be the one this report actually costs. A client asking us
+    // to unlock `marriage` with the ₹199 career SKU is the obvious attack.
+    const sku = playSku(b.report);
+    if (b.productId && b.productId !== sku)
+      return res.status(400).json({ error: 'sku does not match report', expected: sku });
+
+    try {
+      const token = await googleAccessToken(saEmail, saKey);
+      if (!token) return res.status(502).json({ error: 'google auth failed' });
+
+      const base = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${pkg}/purchases/products/${encodeURIComponent(sku)}/tokens/${encodeURIComponent(b.purchaseToken)}`;
+      const pur = await fetch(base, { headers: { Authorization: 'Bearer ' + token } })
+                        .then(r => r.json());
+
+      // purchaseState: 0 purchased · 1 cancelled · 2 pending
+      if (!pur || pur.error || pur.purchaseState !== 0)
+        return res.status(402).json({ error: 'purchase not valid',
+          state: pur && pur.purchaseState, detail: pur && pur.error && pur.error.message });
+
+      // acknowledgementState: 0 not yet · 1 done. Acknowledge once, now.
+      if (pur.acknowledgementState === 0) {
+        const ack = await fetch(base + ':acknowledge', { method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ developerPayload: b.uid + ':' + b.report }) });
+        if (!ack.ok)
+          // Do NOT record the sale we could not acknowledge — Google would
+          // refund it in three days and the books would disagree.
+          return res.status(502).json({ error: 'could not acknowledge purchase' });
+      }
+
+      await upsertPaid(b.uid, b.report, PRICES[b.report], 'play:' + String(b.purchaseToken).slice(0, 24));
+      return res.status(200).json({ ok: true, paid: true, order_code: code(b.uid, b.report),
+                                    source: 'google_play' });
+    } catch (e) {
+      return res.status(500).json({ error: 'play verification failed' });
+    }
   }
 
   // ── create a payment link for THIS buyer ──
