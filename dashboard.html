@@ -3719,16 +3719,61 @@ function startParticles(){
 }
 
 // ── Jap share ──
+/* ══ SD-SHARE-JAP ══
+   Was Hindi-or-English — the same clamp that sent English PDFs to Telugu
+   buyers. A Telugu devotee finishing their jap was handed an English message
+   to forward to their family. Nine languages now, with the mantra itself
+   carried through in Devanagari (Language Bible: Sanskrit stays as it is). */
 function shareJap(){
-  const mantras={0:'ॐ सूर्याय नमः',1:'ॐ नमः शिवाय',2:'ॐ हनुमते नमः',3:'ॐ गं गणपतये नमः',4:'श्री राम जय राम',5:'ॐ महालक्ष्म्यै नमः',6:'ॐ शनैश्चराय नमः'};
-  const dtype_hi={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी अष्टोत्तर',6:'शनि मंत्र'};
-  const dtype_en={0:'Surya Mantra',1:'Maha Mrityunjaya',2:'Hanuman Mantra',3:'Ganesh Mantra',4:'Ram Nam',5:'Lakshmi Ashtottara',6:'Shani Mantra'};
-  const isFri=isShravan();
-  const count=isFri?'108 नाम':'28 बार';
-  const count_en=isFri?'108 names':'28 chants';
-  const text=H
-    ?`🙏 आज मैंने ${count} ${dtype_hi[dow]} का जप किया\n\n${mantras[dow]}\n\nमन शांत हो, बुद्धि प्रसन्न हो 🕉️`
-    :`🙏 Today I completed ${count_en} of ${dtype_en[dow]}\n\n${mantras[dow]}\n\nMay your mind be at peace 🕉️`;
+  var mantras={0:'\u0950 \u0938\u0942\u0930\u094d\u092f\u093e\u092f \u0928\u092e\u0903',
+    1:'\u0950 \u0928\u092e\u0903 \u0936\u093f\u0935\u093e\u092f',
+    2:'\u0950 \u0939\u0928\u0941\u092e\u0924\u0947 \u0928\u092e\u0903',
+    3:'\u0950 \u0917\u0902 \u0917\u0923\u092a\u0924\u092f\u0947 \u0928\u092e\u0903',
+    4:'\u0936\u094d\u0930\u0940 \u0930\u093e\u092e \u091c\u092f \u0930\u093e\u092e',
+    5:'\u0950 \u0936\u094d\u0930\u0940\u0902 \u092e\u0939\u093e\u0932\u0915\u094d\u0937\u094d\u092e\u094d\u092f\u0948 \u0928\u092e\u0903',
+    6:'\u0950 \u0936\u0902 \u0936\u0928\u0948\u0936\u094d\u091a\u0930\u093e\u092f \u0928\u092e\u0903'};
+  var NAME={
+   hi:{0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'},
+   en:{0:'Surya Mantra',1:'Maha Mrityunjaya',2:'Hanuman Mantra',3:'Ganesh Mantra',4:'Ram Nam',5:'Lakshmi Mantra',6:'Shani Mantra'},
+   te:{0:'సూర్య మంత్రం',1:'మహామృత్యుంజయ మంత్రం',2:'హనుమాన్ మంత్రం',3:'గణేశ మంత్రం',4:'రామ నామం',5:'లక్ష్మీ మంత్రం',6:'శని మంత్రం'},
+   kn:{0:'ಸೂರ್ಯ ಮಂತ್ರ',1:'ಮಹಾಮೃತ್ಯುಂಜಯ ಮಂತ್ರ',2:'ಹನುಮಾನ್ ಮಂತ್ರ',3:'ಗಣೇಶ ಮಂತ್ರ',4:'ರಾಮ ನಾಮ',5:'ಲಕ್ಷ್ಮೀ ಮಂತ್ರ',6:'ಶನಿ ಮಂತ್ರ'},
+   ta:{0:'சூரிய மந்திரம்',1:'மகாமிருத்யுஞ்சய மந்திரம்',2:'அனுமன் மந்திரம்',3:'கணேச மந்திரம்',4:'ராம நாமம்',5:'லட்சுமி மந்திரம்',6:'சனி மந்திரம்'},
+   bn:{0:'সূর্য মন্ত্র',1:'মহামৃত্যুঞ্জয় মন্ত্র',2:'হনুমান মন্ত্র',3:'গণেশ মন্ত্র',4:'রাম নাম',5:'লক্ষ্মী মন্ত্র',6:'শনি মন্ত্র'},
+   mr:{0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'},
+   gu:{0:'સૂર્ય મંત્ર',1:'મહામૃત્યુંજય મંત્ર',2:'હનુમાન મંત્ર',3:'ગણેશ મંત્ર',4:'રામ નામ',5:'લક્ષ્મી મંત્ર',6:'શનિ મંત્ર'},
+   as:{0:'সূৰ্য মন্ত্ৰ',1:'মহামৃত্যুঞ্জয় মন্ত্ৰ',2:'হনুমান মন্ত্ৰ',3:'গণেশ মন্ত্ৰ',4:'ৰাম নাম',5:'লক্ষ্মী মন্ত্ৰ',6:'শনি মন্ত্ৰ'}};
+  var DONE={en:"Today's sadhana is complete",hi:'आज की साधना पूर्ण हुई',te:'నేటి సాధన పూర్తయింది',
+    kn:'ಇಂದಿನ ಸಾಧನೆ ಪೂರ್ಣವಾಯಿತು',ta:'இன்றைய சாதனை நிறைவடைந்தது',bn:'আজকের সাধনা সম্পূর্ণ হলো',
+    mr:'आजची साधना पूर्ण झाली',gu:'આજની સાધના પૂર્ણ થઈ',as:'আজিৰ সাধনা সম্পূৰ্ণ হ\'ল'};
+  var DID={en:'I chanted {name} {n} times today',hi:'आज मैंने {n} बार {name} का जप किया',
+    te:'ఈ రోజు {n} సార్లు {name} జపించాను',kn:'ಇಂದು {n} ಬಾರಿ {name} ಜಪಿಸಿದೆ',
+    ta:'இன்று {n} முறை {name} ஜபித்தேன்',bn:'আজ {n} বার {name} জপ করলাম',
+    mr:'आज मी {n} वेळा {name} जप केला',gu:'આજે મેં {n} વાર {name} જપ કર્યો',
+    as:'আজি {n} বাৰ {name} জপ কৰিলোঁ'};
+  var BLESS={en:'May you and your family always be blessed.',
+    hi:'आपको और आपके परिवार को सदा शुभ मिले।',te:'మీకు మరియు మీ కుటుంబానికి సర్వదా శుభం కలుగుగాక.',
+    kn:'ನಿಮಗೂ ನಿಮ್ಮ ಕುಟುಂಬಕ್ಕೂ ಸದಾ ಶುಭವಾಗಲಿ.',ta:'உங்களுக்கும் உங்கள் குடும்பத்திற்கும் என்றும் நன்மை உண்டாகட்டும்.',
+    bn:'আপনার ও আপনার পরিবারের সদা মঙ্গল হোক।',mr:'तुम्हाला व तुमच्या कुटुंबाला सदैव शुभ लाभो.',
+    gu:'તમને અને તમારા પરિવારને સદા શુભ મળે.',as:'আপোনাক আৰু আপোনাৰ পৰিয়ালক সদায় শুভ হওক।'};
+  var HOOK={en:'For your daily jap and free 250+ page Kundli:',
+    hi:'अपने दैनिक जप और निःशुल्क 250+ पेज कुंडली के लिए:',
+    te:'మీ రోజువారీ జపం & ఉచిత 250+ పేజీల జాతకం కోసం:',
+    kn:'ನಿಮ್ಮ ದೈನಂದಿನ ಜಪ ಮತ್ತು ಉಚಿತ 250+ ಪುಟಗಳ ಜಾತಕಕ್ಕಾಗಿ:',
+    ta:'உங்கள் தினசரி ஜபம் மற்றும் இலவச 250+ பக்க ஜாதகத்திற்கு:',
+    bn:'আপনার দৈনিক জপ ও বিনামূল্যের 250+ পৃষ্ঠার কোষ্ঠীর জন্য:',
+    mr:'तुमच्या रोजच्या जपासाठी आणि मोफत 250+ पानांच्या कुंडलीसाठी:',
+    gu:'તમારા રોજિંદા જપ અને મફત 250+ પાનાંની કુંડળી માટે:',
+    as:'আপোনাৰ দৈনিক জপ আৰু বিনামূলীয়া 250+ পৃষ্ঠাৰ কুণ্ডলীৰ বাবে:'};
+  var L=(window.SD_LANG||'hi'); if(!NAME[L]) L='hi';
+  var n=isShravan()?108:28;
+  var mname=(NAME[L]||NAME.hi)[dow];
+  var did=(DID[L]||DID.hi).replace('{n}',n).replace('{name}','*'+mname+'*');
+  var text='🙏 *'+(DONE[L]||DONE.hi)+'* ✨\n\n'
+         + '📿 '+did+'\n'
+         + '"'+mantras[dow]+'"\n\n'
+         + '🌸 *'+(BLESS[L]||BLESS.hi)+'*\n\n'
+         + '✨ '+(HOOK[L]||HOOK.hi)+'\n'
+         + '👉 https://www.shubhdin.app';
   doShare(A('dashbo.shubh_din'), text);
 }
 function goJap(){go('jap');setTimeout(()=>{if(!jPlay&&jCount===0)toggleJap();},300);}
@@ -4396,18 +4441,81 @@ function personaliseMarg(){
 }
 
 // ── Wallpaper share ──
-function shareWallpaper(){
-  const b=document.getElementById('wpShare');
-  b.textContent='✅';setTimeout(()=>b.textContent='📤',1500);
-  const shubhTime=document.getElementById('goodTime')?.textContent||'';
-  const tithi=document.getElementById('tv')?.textContent||'';
-  const text=H
-    ?`🌅 आज का शुभ दिन\nतिथि: ${tithi} | शुभ समय: ${shubhTime}\n\n${T.d_hi} का दिन — ${T.day_hi}\n🕉️ shubhdin.app`
-    :`🌅 Today\'s Shubh Din\nTithi: ${tithi} | Auspicious time: ${shubhTime}\n\n${T.d_en} Day — ${T.day_en}\n🕉️ shubhdin.app`;
-  doShare(A('dashbo.shubh_din'), text);
+/* ══ SD-SHARE-WALLPAPER ══
+   Also Hindi-or-English before. Now nine languages, and it attaches the
+   picture itself so the wallpaper arrives in the chat rather than a
+   description of one. Falls back to text the moment the image cannot be
+   exported — same reason as the Gita card: a cross-origin image taints the
+   canvas, and a share that silently fails is worse than a plain one. */
+function shareWallpaperText(){
+  var L=(window.SD_LANG||'hi');
+  var GM={en:"Good Morning! Today's Divine Blessing",hi:'सुप्रभात! आज का दिव्य आशीर्वाद',
+    te:'శుభోదయం! నేటి దైవ ఆశీర్వాదం',kn:'ಶುಭೋದಯ! ಇಂದಿನ ದೈವ ಆಶೀರ್ವಾದ',
+    ta:'இனிய காலை! இன்றைய தெய்வ ஆசி',bn:'শুভ সকাল! আজকের দিব্য আশীর্বাদ',
+    mr:'सुप्रभात! आजचा दिव्य आशीर्वाद',gu:'સુપ્રભાત! આજનો દિવ્ય આશીર્વાદ',
+    as:'শুভ ৰাতিপুৱা! আজিৰ দিব্য আশীৰ্বাদ'};
+  var WISH={en:'May divine grace bring health, peace and abundance to you and your family.',
+    hi:'ईश्वर की कृपा से आपको और आपके परिवार को आरोग्य, शांति और समृद्धि मिले।',
+    te:'దైవ కృపతో మీకు, మీ కుటుంబానికి ఆరోగ్యం, శాంతి, సమృద్ధి కలుగుగాక.',
+    kn:'ದೈವ ಕೃಪೆಯಿಂದ ನಿಮಗೂ ನಿಮ್ಮ ಕುಟುಂಬಕ್ಕೂ ಆರೋಗ್ಯ, ಶಾಂತಿ, ಸಮೃದ್ಧಿ ದೊರೆಯಲಿ.',
+    ta:'இறையருளால் உங்களுக்கும் உங்கள் குடும்பத்திற்கும் ஆரோக்கியம், அமைதி, செழிப்பு உண்டாகட்டும்.',
+    bn:'ঈশ্বরের কৃপায় আপনার ও আপনার পরিবারের স্বাস্থ্য, শান্তি ও সমৃদ্ধি হোক।',
+    mr:'ईश्वरकृपेने तुम्हाला व तुमच्या कुटुंबाला आरोग्य, शांती आणि समृद्धी लाभो.',
+    gu:'ઈશ્વરકૃપાથી તમને અને તમારા પરિવારને આરોગ્ય, શાંતિ અને સમૃદ્ધિ મળે.',
+    as:'ঈশ্বৰৰ কৃপাত আপোনাৰ আৰু আপোনাৰ পৰিয়ালৰ স্বাস্থ্য, শান্তি আৰু সমৃদ্ধি হওক।'};
+  var HOOK={en:"Today's Panchang, auspicious timings and free Kundli:",
+    hi:'आज का पंचांग, शुभ मुहूर्त और निःशुल्क कुंडली:',
+    te:'నేటి పంచాంగం, శుభ సమయాలు, ఉచిత జాతకం:',
+    kn:'ಇಂದಿನ ಪಂಚಾಂಗ, ಶುಭ ಸಮಯ ಮತ್ತು ಉಚಿತ ಜಾತಕ:',
+    ta:'இன்றைய பஞ்சாங்கம், நல்ல நேரங்கள், இலவச ஜாதகம்:',
+    bn:'আজকের পঞ্জিকা, শুভ সময় ও বিনামূল্যের কোষ্ঠী:',
+    mr:'आजचे पंचांग, शुभ मुहूर्त आणि मोफत कुंडली:',
+    gu:'આજનું પંચાંગ, શુભ મુહૂર્ત અને મફત કુંડળી:',
+    as:'আজিৰ পঞ্চাং, শুভ সময় আৰু বিনামূলীয়া কুণ্ডলী:'};
+  /* Read what the splash already put on screen rather than re-deriving it.
+     Deriving it separately produced a mixed-script line — the deity in one
+     language and the weekday in another — because the two helpers localise
+     differently. Whatever the user is looking at is what should be forwarded. */
+  var deity='', day='';
+  try{ deity=(document.getElementById('wpDeity')||{}).textContent||''; }catch(e){}
+  try{ day=(document.getElementById('wpDay')||{}).textContent||''; }catch(e){}
+  if(!deity){ try{ deity=sdDev(T.d_hi,T.d_en,T.nameKey)||T.d_hi||''; }catch(e){} }
+  if(!day){ try{ day=(L==='hi'?T.day_hi:T.day_en)||''; }catch(e){} }
+  deity=String(deity).trim(); day=String(day).trim();
+  var line2=(deity||day)?('🕉️ *'+[deity,day].filter(Boolean).join(' • ')+'*\n'):'';
+  return '🌅 *'+(GM[L]||GM.hi)+'*\n'
+       + line2 + '\n'
+       + '"'+(WISH[L]||WISH.hi)+'" 🌸\n\n'
+       + '✨ '+(HOOK[L]||HOOK.hi)+'\n'
+       + '👉 https://www.shubhdin.app';
 }
-
-
+function shareWallpaper(){
+  var b=document.getElementById('wpShare');
+  if(b){ b.textContent='✅'; setTimeout(function(){ b.textContent='📤'; },1500); }
+  var txt=shareWallpaperText();
+  function fallback(){ try{ doShare(A('dashbo.shubh_din'), txt); }catch(e){} }
+  if(!navigator.canShare||!window.File) return fallback();
+  var src='';
+  try{ var w=wpOfDay(new Date()); src=w&&w.img; }catch(e){}
+  if(!src) return fallback();
+  var img=new Image(); img.crossOrigin='anonymous';
+  img.onerror=fallback;
+  img.onload=function(){
+    try{
+      var c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+      c.getContext('2d').drawImage(img,0,0);
+      c.toBlob(function(blob){
+        if(!blob) return fallback();
+        try{
+          var f=new File([blob],'shubh-din-wallpaper.jpg',{type:'image/jpeg'});
+          if(!navigator.canShare({files:[f]})) return fallback();
+          navigator.share({files:[f],text:txt}).catch(fallback);
+        }catch(e){ fallback(); }
+      },'image/jpeg',0.92);
+    }catch(e){ fallback(); }
+  };
+  img.src=src;
+}
 
 // Deity image map for sadhana jap screen
 const DEITY_IMGS={
@@ -5834,7 +5942,31 @@ function japStreakTap(e){
     if(e){ e.stopPropagation&&e.stopPropagation(); e.preventDefault&&e.preventDefault(); }
   }catch(x){}
 }
+/* ══ SD-STREAK-STRIP ══
+   THE BUG. There are TWO streak elements on the home screen:
+     · .jt-streak — the small pill I added on the jap card's corner
+     · .streak    — a full-width strip further down ("0 दिन लगातार /
+                    आपकी साधना यात्रा"), which has existed all along and
+                    has NO onclick on it whatsoever.
+   The strip is the big obvious one and the one that gets tapped. It has
+   never done anything, and nothing I changed on the pill could ever have
+   fixed it. Wiring it here, with the same rule. */
+function paintStreakStrip(){
+  var st=document.querySelector('.streak'); if(!st) return;
+  var done=japDoneToday();
+  st.style.cursor=done?'default':'pointer';
+  st.style.transition='transform .12s';
+  st.onclick=function(){
+    if(japDoneToday()) return;
+    try{ goJap(); }catch(e){ try{ go('jap'); }catch(e2){} }
+  };
+  /* a hint that it can be pressed, and a clear finished state */
+  st.style.boxShadow=done?'none':'0 0 0 1px rgba(255,150,0,0.22)';
+  var sub=document.getElementById('skSub');
+  if(sub) sub.style.color=done?'rgba(125,226,154,0.85)':'';
+}
 function paintJapStreak(){
+  try{ paintStreakStrip(); }catch(e){}
   var jt=document.getElementById('jtCard'); if(!jt)return;
   var n=0; try{ n=getStreak(); }catch(e){}
   var el=jt.querySelector('.jt-streak');
