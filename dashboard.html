@@ -740,7 +740,11 @@ body[data-home="returning"] .streak{display:none;}
 .jt-streak{position:absolute;top:10px;right:10px;z-index:3;
   background:rgba(255,150,0,0.18);border:1px solid rgba(255,150,0,0.45);
   color:#FFD9A0;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;
-  backdrop-filter:blur(4px);}
+  backdrop-filter:blur(4px);transition:transform .12s,box-shadow .2s;}
+/* undone: it invites a tap. done: it is a record, and stops looking tappable. */
+.jt-streak:not(.done){box-shadow:0 0 0 3px rgba(255,150,0,0.10);}
+.jt-streak:not(.done):active{transform:scale(0.94);}
+.jt-streak.done{background:rgba(125,226,154,0.16);border-color:rgba(125,226,154,0.42);color:#BFEFD0;}
 /* ══ end SD-HOME-STATE ══ */
 
 
@@ -1503,9 +1507,15 @@ body[data-home="returning"] .streak{display:none;}
 .gita-b{padding:13px 15px 13px;}
 .gita-tag{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:rgba(212,168,67,0.88);font-weight:600;}
 .gita-rule{flex:1;height:1px;background:linear-gradient(90deg,rgba(212,168,67,0.30),transparent);}
-.gita-sans{font-family:'Tiro Devanagari Hindi',serif;font-size:12.5px;color:rgba(212,168,67,0.72);margin-top:0;line-height:1.7;}
-.gita-q{font-size:15.5px;line-height:1.65;color:#FFF4DE;font-weight:600;margin-top:7px;}
-.gita-n{font-size:12.5px;line-height:1.75;color:rgba(255,244,222,0.78);margin-top:7px;}
+/* The Sanskrit is the verse itself — everything under it is our rendering of
+   it. It reads first, in gold, at the largest size on the card. */
+.gita-sans{font-family:'Tiro Devanagari Hindi',serif;font-size:17px;color:#E6BE5A;
+  margin-top:0;line-height:1.85;font-weight:600;letter-spacing:0.2px;
+  text-shadow:0 1px 10px rgba(212,168,67,0.20);}
+.gita-sep{height:1px;margin:11px 0 10px;
+  background:linear-gradient(90deg,rgba(212,168,67,0.38),rgba(212,168,67,0.06),transparent);}
+.gita-q{font-size:14.5px;line-height:1.7;color:#FFF4DE;font-weight:600;margin-top:0;}
+.gita-n{font-size:12.5px;line-height:1.8;color:rgba(255,244,222,0.76);margin-top:7px;}
 .gita-row{display:flex;align-items:center;gap:10px;margin-top:12px;}
 .gita-ref{font-size:10.5px;color:rgba(255,244,222,0.45);}
 .gita-share{margin-left:auto;background:linear-gradient(120deg,#1EA362,#128C4A);color:#EAFFEF;
@@ -5443,20 +5453,26 @@ function renderGitaCard(){
   var g=gitaOfDay();
   if(!g){ m.innerHTML=''; return; }      /* nothing, rather than something wrong */
   var L=(window.SD_LANG||'hi');
-  var TAG={en:"Today's Gita",hi:'आज की गीता',te:'ఈ రోజు గీత',kn:'ಇಂದಿನ ಗೀತೆ',ta:'இன்றைய கீதை',
-           bn:'আজকের গীতা',mr:'आजची गीता',gu:'આજની ગીતા',as:'আজিৰ গীতা'};
-  var SHR={en:'Share',hi:'भेजें',te:'పంపండి',kn:'ಕಳುಹಿಸಿ',ta:'அனுப்பு',
-           bn:'পাঠান',mr:'पाठवा',gu:'મોકલો',as:'পঠিয়াওক'};
+  /* "Today's Gita" was a label. This is a reason to open the app before the
+     day starts, and the button names the place it is going. */
+  var TAG={en:"Today's blessing & Gita message",hi:'आज का शुभ प्रभात और गीता संदेश',
+    te:'నేటి శుభోదయం & గీతా సందేశం',kn:'ಇಂದಿನ ಶುಭೋದಯ ಮತ್ತು ಗೀತಾ ಸಂದೇಶ',
+    ta:'இன்றைய இனிய காலை & கீதை செய்தி',bn:'আজকের শুভ সকাল ও গীতা বার্তা',
+    mr:'आजची शुभ सकाळ आणि गीता संदेश',gu:'આજની શુભ સવાર અને ગીતા સંદેશ',
+    as:'আজিৰ শুভ ৰাতিপুৱা আৰু গীতা বাৰ্তা'};
+  var SHR={en:'Share on WhatsApp',hi:'WhatsApp पर भेजें',te:'వాట్సాప్‌లో పంచుకోండి',
+    kn:'WhatsApp‑ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ',ta:'WhatsApp‑இல் பகிருங்கள்',bn:'WhatsApp‑এ শেয়ার করুন',
+    mr:'WhatsApp‑वर पाठवा',gu:'WhatsApp પર મોકલો',as:'WhatsApp‑ত শ্বেয়াৰ কৰক'};
   m.innerHTML=
    '<div class="gita">'
-   +'<div class="gita-head"><span class="gita-tag">📿 '+(TAG[L]||TAG.hi)+'</span><span class="gita-rule"></span></div>'
+   +'<div class="gita-head"><span class="gita-tag">🌅 '+(TAG[L]||TAG.hi)+'</span><span class="gita-rule"></span></div>'
    +'<div class="gita-img none" id="gitaImg"></div>'
    +'<div class="gita-b">'
-   +(g.sanskrit?'<div class="gita-sans">'+g.sanskrit+'</div>':'')
+   +(g.sanskrit?'<div class="gita-sans">'+g.sanskrit+'</div><div class="gita-sep"></div>':'')
    +'<div class="gita-q">'+g.q+'</div>'
    +'<div class="gita-n">'+g.n+'</div>'
    +'<div class="gita-row"><span class="gita-ref">'+g.ref+'</span>'
-   +'<button class="gita-share" onclick="shareGita()">📲 '+(SHR[L]||SHR.hi)+'</button></div>'
+   +'<button class="gita-share" onclick="shareGita()">💬 '+(SHR[L]||SHR.hi)+'</button></div>'
    +'</div></div>';
   (function(){
     var el=document.getElementById('gitaImg'); if(!el) return;
@@ -5476,13 +5492,71 @@ function renderGitaCard(){
     tryNext(0);
   })();
 }
+/* The message people actually forward. Value first — the greeting and the
+   verse are the whole point and stand alone. The app line comes last, once,
+   as an offer rather than an ask. Asterisks are WhatsApp's bold marks. */
+function gitaShareText(){
+  var g=gitaOfDay(); if(!g) return '';
+  var L=(window.SD_LANG||'hi');
+  var GM={en:'Good morning!',hi:'सुप्रभात!',te:'శుభోదయం!',kn:'ಶುಭೋದಯ!',ta:'இனிய காலை வணக்கம்!',
+    bn:'শুভ সকাল!',mr:'सुप्रभात!',gu:'સુપ્રભાત!',as:'শুভ ৰাতিপুৱা!'};
+  var MSG={en:"Today's Gita message:",hi:'आज का गीता संदेश:',te:'నేటి గీతా సందేశం:',
+    kn:'ಇಂದಿನ ಗೀತಾ ಸಂದೇಶ:',ta:'இன்றைய கீதை செய்தி:',bn:'আজকের গীতা বার্তা:',
+    mr:'आजचा गीता संदेश:',gu:'આજનો ગીતા સંદેશ:',as:'আজিৰ গীতা বাৰ্তা:'};
+  var PITCH={en:'Your free 250+ page Kundli and today\'s auspicious times:',
+    hi:'आपकी निःशुल्क 250+ पेज कुंडली और आज के शुभ मुहूर्त:',
+    te:'మీ ఉచిత 250+ పేజీల జాతకం, నేటి శుభ సమయాలు:',
+    kn:'ನಿಮ್ಮ ಉಚಿತ 250+ ಪುಟಗಳ ಜಾತಕ ಮತ್ತು ಇಂದಿನ ಶುಭ ಸಮಯ:',
+    ta:'உங்கள் இலவச 250+ பக்க ஜாதகம், இன்றைய நல்ல நேரங்கள்:',
+    bn:'আপনার বিনামূল্যের 250+ পৃষ্ঠার কোষ্ঠী ও আজকের শুভ সময়:',
+    mr:'तुमची मोफत 250+ पानांची कुंडली आणि आजचे शुभ मुहूर्त:',
+    gu:'તમારી મફત 250+ પાનાંની કુંડળી અને આજના શુભ મુહૂર્ત:',
+    as:'আপোনাৰ বিনামূলীয়া 250+ পৃষ্ঠাৰ কুণ্ডলী আৰু আজিৰ শুভ সময়:'};
+  return '🌅 *'+(GM[L]||GM.hi)+'*\n\n'
+       + '📿 *'+(MSG[L]||MSG.hi)+'*\n'
+       + '"'+g.q+'"\n\n'+g.n+'\n'
+       + '— *'+g.ref+'*\n\n'
+       + '✨ '+(PITCH[L]||PITCH.hi)+'\n'
+       + '👉 https://www.shubhdin.app';
+}
+/* Tries to send the picture with the words, and quietly settles for the words
+   when it cannot. Drawing the picture needs the storage bucket to allow
+   cross-origin reads; if it does not, the canvas is tainted and toBlob throws.
+   Rather than guess at that header from here, this attempts it and falls back
+   the moment anything objects — so the share always works, and gets better on
+   its own the day CORS is enabled. */
 function shareGita(){
-  var g=gitaOfDay(); if(!g) return;
-  var txt='📿 '+g.q+'\n\n'+g.n+'\n\n— '+g.ref+'\n\nhttps://www.shubhdin.app';
-  try{
-    if(navigator.share) return navigator.share({text:txt}).catch(function(){});
-    navigator.clipboard.writeText(txt).then(function(){ try{ showToast&&showToast(); }catch(e){} });
-  }catch(e){}
+  var txt=gitaShareText(); if(!txt) return;
+  function sendText(){
+    try{
+      if(navigator.share) return navigator.share({text:txt}).catch(function(){});
+      navigator.clipboard.writeText(txt).then(function(){ try{ showToast&&showToast(); }catch(e){} });
+    }catch(e){}
+  }
+  var el=document.getElementById('gitaImg');
+  var bg=el?el.style.backgroundImage:'';
+  var m=bg&&bg.match(/url\(['"]?([^'")]+)/);
+  if(!m||!navigator.canShare) return sendText();
+  var img=new Image();
+  img.crossOrigin='anonymous';
+  img.onerror=sendText;
+  img.onload=function(){
+    try{
+      var W=1080,H=Math.round(W*img.height/img.width);
+      var c=document.createElement('canvas'); c.width=W; c.height=H;
+      c.getContext('2d').drawImage(img,0,0,W,H);
+      c.toBlob(function(blob){
+        if(!blob) return sendText();
+        try{
+          var f=new File([blob],'shubh-din.jpg',{type:'image/jpeg'});
+          if(navigator.canShare({files:[f]}))
+            return navigator.share({files:[f],text:txt}).catch(sendText);
+        }catch(e){}
+        sendText();
+      },'image/jpeg',0.88);
+    }catch(e){ sendText(); }     /* tainted canvas lands here */
+  };
+  img.src=m[1];
 }
 
 /* ══ SD-WP-UNLOCK ══
@@ -5625,11 +5699,32 @@ function applyHomeState(){
 }
 /* The streak lived only on the jap screen — the one place you no longer need
    reminding. It belongs on the card that starts the jap. */
+/* Has today's jap already been counted? updateStreak() stamps lastDate with
+   toDateString() when a jap completes, so this is the same question it asks. */
+function japDoneToday(){
+  try{
+    var d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');
+    return d.lastDate===new Date().toDateString();
+  }catch(e){ return false; }
+}
+/* Tapping the badge starts today's jap — but only when it has not been done.
+   Once it is done the badge is a record of it, not a button: sending someone
+   back into a jap they have already completed would either double-count the
+   day or quietly do nothing, and both are worse than leaving it alone. */
+function japStreakTap(e){
+  try{ e&&e.stopPropagation&&e.stopPropagation(); }catch(x){}
+  if(japDoneToday()) return;
+  try{ goJap(); }catch(x){}
+}
 function paintJapStreak(){
   var jt=document.getElementById('jtCard'); if(!jt)return;
   var n=0; try{ n=getStreak(); }catch(e){}
   var el=jt.querySelector('.jt-streak');
-  if(!el){ el=document.createElement('div'); el.className='jt-streak'; jt.appendChild(el); }
+  if(!el){ el=document.createElement('div'); el.className='jt-streak'; jt.appendChild(el);
+    el.setAttribute('role','button'); el.onclick=japStreakTap; }
+  var done=japDoneToday();
+  el.classList.toggle('done',done);
+  el.style.cursor=done?'default':'pointer';
   var L=(window.SD_LANG||'hi');
   var STK={
     days:{en:'{n}-day streak',hi:'{n} दिन लगातार',te:'{n} రోజుల వరుస',kn:'{n} ದಿನಗಳ ಸರಣಿ',
