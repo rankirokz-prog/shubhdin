@@ -540,7 +540,9 @@ function vHub(){
   var segName = nb ? L(nb) : (cur.s?sdChog(cur.s):'—');
   var segCls = nb ? 'b' : (cur.s?(cur.s.good?'g':'b'):'');
   var segEnd = nb ? new Date(nb.e) : (cur.s?new Date(cur.s.end):null);
-  var until  = segEnd?('… '+AF('astrol.until_time',{time:fT(segEnd)})):'';
+  /* was "… until {time}" pinned after a name in a separate span; now the
+     name and the time travel together so the language decides the order */
+  var until  = segEnd?('… '+limbUntil(segName,fT(segEnd))):'';
   var cd     = segEnd?mins(+segEnd-Date.now()):'';
 
   app.innerHTML=
@@ -562,8 +564,8 @@ function vHub(){
    +'<span style="display:flex;align-items:center;gap:5px;font-size:9.5px;color:rgba(255,244,222,0.58);">'
    +'<span style="width:2px;height:11px;background:#FFE9B8;"></span>'+A('astrol.now')+'</span>'
    +'<span style="font-size:9.5px;color:rgba(255,244,222,0.40);">'+A('astrol.sunrise_to_sunrise')+'</span></div>'
-   +'<div class="d-state"><span class="d-seg dev '+segCls+'">'+segName+'</span>'
-   +'<span class="d-until">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
+   +'<div class="d-state"><span class="d-seg dev '+segCls+'" style="display:none"></span>'
+   +'<span class="d-until '+segCls+'" style="font-size:13px;color:rgba(255,244,222,0.88);">'+until+'</span><span class="d-count" id="dCount">⏳ '+cd+'</span></div>'
    +ribbonHTML()
    +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+A('astrol.hold_new_work_this_is_a_forbidden_')+'</div>':'')
    +(ng?'<div class="d-next">'+AF('astrol.next_clean_window_name_range',
@@ -717,11 +719,53 @@ function vPanchang(){
 function prow(k,v){return '<div class="row"><span class="r-k">'+k+'</span><span class="r-v">'+v+'</span></div>';}
 function limbRow(key,label,limb){
   var segs=limb.segments||[];
-  var next=segs.length>1?('<small>'+AF('astrol.then_next',
-        {next:sdTerm(key,segs[1])})):'';
+  var next=segs.length>1?('<small>'+thenNextUntil(sdTerm(key,segs[1]),
+        fT(segs[1]&&segs[1].end))+'</small>'):'';
   return '<div class="row" style="cursor:pointer" onclick="location.hash=\'#panchang/'+key+'\'">'
    +'<span class="r-k">'+label+' ›</span>'
-   +'<span class="r-v"><span class="dev">'+sdTerm(key,limb)+'</span> <small>'+AF('astrol.until_time', {time:fT(segs[0]&&segs[0].end)})+'</small>'+next+'</span></div>';
+   +'<span class="r-v"><span class="dev">'
+   +limbUntil(sdTerm(key,limb), fT(segs[0]&&segs[0].end))
+   +'</span>'+next+'</span></div>';
+}
+
+
+/* ══ SD-LIMB-ORDER ══════════════════════════════════════════════════════════
+   These rows were assembled as   <name> + "until {time}"   with the order
+   fixed in the MARKUP. English is the only one of our nine languages where
+   that order is right. Everywhere else the postposition follows the time:
+
+       te  విదియ 09:37 వరకు        (not  విదియ వరకు 09:37)
+       hi  द्वितीया 09:37 तक
+       kn  ಬಿದಿಗೆ 09:37 ವರೆಗೆ
+       ta  துவிதியை 09:37 வரை
+       bn  দ্বিতীয়া 09:37 পর্যন্ত
+       mr  द्वितीया 09:37 पर्यंत
+       gu  બીજ 09:37 સુધી
+       as  দ্বিতীয়া 09:37 লৈকে
+
+   No translator could have fixed this: they were handed the fragment
+   "until {time}" with no way to move it relative to a name they never saw.
+   One template per language, with BOTH slots in it, so word order belongs to
+   the language instead of to the code. */
+function limbUntil(name,time){
+  try{ if(typeof sdHas==='function'&&sdHas('astrol.limb_until'))
+        return AF('astrol.limb_until',{name:name,time:time}); }catch(e){}
+  var L=(window.SD_LANG||'hi');
+  var T={en:'{name} until {time}',hi:'{name} {time} तक',te:'{name} {time} వరకు',
+    kn:'{name} {time} ವರೆಗೆ',ta:'{name} {time} வரை',bn:'{name} {time} পর্যন্ত',
+    mr:'{name} {time} पर्यंत',gu:'{name} {time} સુધી',as:'{name} {time} লৈকে'};
+  return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
+}
+function thenNextUntil(name,time){
+  try{ if(typeof sdHas==='function'&&sdHas('astrol.then_next_until'))
+        return AF('astrol.then_next_until',{next:name,time:time}); }catch(e){}
+  var L=(window.SD_LANG||'hi');
+  var T={en:'then {name} until {time}',hi:'फिर {name} {time} तक',
+    te:'ఆ తర్వాత {name} {time} వరకు',kn:'ನಂತರ {name} {time} ವರೆಗೆ',
+    ta:'பின்னர் {name} {time} வரை',bn:'তারপর {name} {time} পর্যন্ত',
+    mr:'नंतर {name} {time} पर्यंत',gu:'પછી {name} {time} સુધી',
+    as:'তাৰ পিছত {name} {time} লৈকে'};
+  return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
 }
 
 function vLimb(key){
