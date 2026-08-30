@@ -1727,7 +1727,11 @@ if(typeof window.A!=='function'){
   <div id="wpInfo">
     <div id="wpDeity">श्री हनुमान</div>
     <div id="wpDay">मंगलवार • शक्ति और भक्ति</div>
-    <div id="wpHint" onclick="wpFromSplash(event)" style="margin-top:12px;font-size:11px;color:rgba(212,168,67,0.82);letter-spacing:0.3px;cursor:pointer;border:1px solid rgba(212,168,67,0.28);border-radius:20px;padding:6px 14px;display:inline-block;">आज का वॉलपेपर सेव करें →</div>
+    <!-- SD-WP-HINT-OFF · the caption that used to sit here ("save today's
+         wallpaper") scrolled the user to #wpMount. That mount is empty now
+         that the wallpaper card is off, so the scroll dropped them on the
+         Gita card instead — a sentence pointing at something that no longer
+         exists. Removed. The 📤 button below still shares the wallpaper. -->
   </div>
   <div id="wpShare" onclick="shareWallpaper()">📤</div>
 </div>
@@ -2634,8 +2638,8 @@ function setWallpaper(){
   // Deity image on wallpaper
   const wpImg=document.getElementById('wpImg');
   if(wpImg&&T.img) wpImg.style.backgroundImage="url('"+T.img+"')";
-  var wpH=document.getElementById('wpHint');
-  if(wpH) wpH.textContent=A('dashbo.save_today_s_wallpaper');
+  /* the wpHint caption is gone (SD-WP-HINT-OFF); dashbo.save_today_s_wallpaper
+     is now unused and can be retired from the sheet */
 }
 
 // ── Personalise ──
@@ -5916,16 +5920,8 @@ function wpUse(key){
   });
 }
 /* splash → home card */
-function wpFromSplash(e){
-  if(e){e.stopPropagation();}
-  var wp=document.getElementById('wallpaper');
-  if(wp){wp.style.opacity='0';wp.style.pointerEvents='none';setTimeout(function(){wp.style.display='none';},300);}
-  go('home');
-  setTimeout(function(){
-    var m=document.getElementById('wpMount');
-    if(m&&m.scrollIntoView) m.scrollIntoView({behavior:'smooth',block:'center'});
-  },420);
-}
+/* wpFromSplash() removed with the caption above — it was its only caller,
+   and its whole job was to scroll to a card that is no longer rendered. */
 
 // ── SETTINGS ──
 let _settLang = 'hi';
