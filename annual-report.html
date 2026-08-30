@@ -206,6 +206,54 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
   }
 }
 .sdsealwrap{margin:0 0 18px;}
+
+/* ══ SD-TABLE-POLISH v1 ══════════════════════════════════════════════════════
+   These tables had NO css at all — no border-collapse, no th/td rules.
+   The browser was left to lay them out, which is why they looked amateur:
+   headers centred by default while the data under them sat left-aligned,
+   columns sized by whatever text happened to be longest, no consistent
+   padding, and numbers in a proportional font so 1 and 7 took different
+   widths and no column ever lined up.
+
+   Fixes, in order of what the eye notices:
+     · every cell aligned the same way as its header
+     · numbers get tabular figures, so digits align in a column
+     · one padding value everywhere, one hairline rule between rows
+     · the first column never wraps mid-date ("September" then "2026")
+     · header set in small caps with letter-spacing, so it reads as a
+       header rather than as bold data
+   Print-safe: no shadows, no gradients, nothing that costs ink. */
+table{
+  width:100%; border-collapse:collapse; margin:10px 0 4px;
+  font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;
+}
+table th{
+  text-align:left; vertical-align:bottom;
+  font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase;
+  font-weight:700; color:#7A3B12;
+  padding:0 10px 7px 0; border-bottom:1.5px solid rgba(122,59,18,0.42);
+  white-space:nowrap;
+}
+table td{
+  text-align:left; vertical-align:top;
+  padding:7px 10px 7px 0; font-size:12.5px; line-height:1.55;
+  border-bottom:1px solid rgba(122,59,18,0.13);
+}
+table th:last-child, table td:last-child{ padding-right:0; }
+table tr:last-child td{ border-bottom:none; }
+/* first column carries the label: never break it across two lines */
+table td:first-child, table th:first-child{ white-space:nowrap; }
+/* a column of counts reads wrong when it is left-aligned next to prose */
+table td.num, table th.num{ text-align:center; padding-right:10px; }
+table td.num{ font-weight:600; }
+/* the em-dash placeholder should recede, not sit at full strength */
+table td.dash{ color:rgba(60,40,20,0.42); }
+@media print{
+  table{ page-break-inside:auto; }
+  table tr{ page-break-inside:avoid; page-break-after:auto; }
+  table thead{ display:table-header-group; }
+}
+
 </style>
 </head>
 <body>
@@ -693,7 +741,7 @@ var SD_JP_HIGHLIGHT = 'jp.annualHighlight';
                + ' \u00b7 '+U('annGo.care')+' '+(sm.unfavorableCount||0)
                + slow
                + (ing.length ? '<br>' + ing.map(function(x){
-                     return term('planet',x.graha)+' \u2192 '+term('rashi',x.to.en); }).join(', ') : '')
+                     return term('planet',x.graha)+' \u00b7 '+term('rashi',x.to.en); }).join(', ') : '')
                + '</div>';
         })()
       +'</div>');
