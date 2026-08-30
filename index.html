@@ -211,10 +211,19 @@
   .rc-label{font-size:9px;color:rgba(212,168,67,0.48);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
   .rc-name{font-family:'Tiro Devanagari Hindi',serif;font-size:17px;color:var(--gold);}
   .rc-sub{font-size:10px;color:rgba(255,255,255,0.38);margin-top:2px;}
-  .today-insight{background:rgba(212,168,67,0.09);border:1px solid rgba(212,168,67,0.20);border-radius:10px;padding:10px 12px;display:flex;align-items:flex-start;gap:8px;}
-  .ti-label{font-size:9px;color:var(--deep-gold);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:3px;}
-  .ti-text{font-size:12px;color:var(--dark);line-height:1.5;}
-  .ti-text strong{color:var(--saffron);}
+  /* ══ SD-WELCOME-CONTRAST ══
+     .ti-text was var(--dark) — #1A0A00 on a #1A0800→#3D1A05 card. Measured
+     1.01:1 against its own background: the same colour as the card, invisible
+     rather than merely dim. The line telling a brand-new user what to do
+     today could not be read at all. */
+  .today-insight{background:rgba(255,255,255,0.05);border:1px solid rgba(245,158,11,0.22);border-radius:10px;padding:11px 13px;display:flex;align-items:flex-start;gap:8px;}
+  .ti-label{font-size:9.5px;color:#FBBF24;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin-bottom:4px;}
+  .ti-text{font-size:12.5px;color:#F9FAFB;line-height:1.6;}
+  /* the time gets its own badge — it is the only actionable thing here */
+  .ti-text strong{display:inline-block;color:#FFD98A;font-weight:600;
+    background:rgba(245,158,11,0.16);border:1px solid rgba(245,158,11,0.34);
+    border-radius:7px;padding:1px 7px;margin:0 1px;
+    box-shadow:0 0 12px rgba(245,158,11,0.13);}
 
   #userDOB{color:#2C1208;}
   #userDOB::-webkit-datetime-edit{color:#2C1208;}
@@ -985,7 +994,14 @@
     // downstream calculation keeps working, with the flag saying it is a stand-in.
     user.tob   = user.tobUnknown ? '06:00'
                : (document.getElementById('userTOB')?.value || user.tob || '');
-    user.city  = document.getElementById('userCity')?.value?.trim()  || user.city  || '';
+    /* #userCity is a HIDDEN field written only when a suggestion is tapped or
+       GPS answers. Type a city and move on — what most people do — and it
+       stayed empty: the welcome line became " నుంచి —" with no place in it,
+       and the coordinate lookup below had nothing to look up. Read what the
+       user actually typed as the fallback. */
+    user.city  = document.getElementById('userCity')?.value?.trim()
+              || document.getElementById('userCityInput')?.value?.trim()
+              || user.city  || '';
     user.state = document.getElementById('userState')?.value         || user.state || '';
 
     /* ══ SD-CITY-COORD ══
@@ -1165,7 +1181,15 @@
     const name = user.name || '';
     const cN=name.charAt(0).toUpperCase()+name.slice(1);
     document.getElementById('wTitle').textContent=lang==='hi'?'स्वागत है, '+cN+' जी! 🙏':onbL()?onbL().welcome(cN):'Welcome, '+cN+'! 🙏';
-    document.getElementById('wSub').textContent   = lang==='hi' ? user.city+' से — आपकी यात्रा शुरू होती है 🌼' : onbL() ? onbL().fromCity(user.city) : 'From '+user.city+' — your journey begins today 🌼';
+    /* No city means no city sentence. Printing " से — आपकी यात्रा" with an
+       empty slot reads as broken; the generic line reads as written. */
+    var _city=(user.city||'').trim();
+    document.getElementById('wSub').textContent = _city
+      ? (lang==='hi' ? _city+' से — आपकी यात्रा शुरू होती है 🌼'
+         : onbL() ? onbL().fromCity(_city) : 'From '+_city+' — your journey begins today 🌼')
+      : (lang==='hi' ? 'आपकी साधना यात्रा आज से शुरू होती है 🌼'
+         : onbL()&&onbL().welcomeSub ? onbL().welcomeSub()
+         : 'Your journey begins today 🌼');
     document.getElementById('rIcon').textContent  = r.icon;
     // Vedic name leads; the Western label follows in brackets purely so a user
     // who only knows "Scorpio" recognises themselves. Never the other way round.
