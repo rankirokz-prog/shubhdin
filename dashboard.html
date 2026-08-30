@@ -5952,7 +5952,14 @@ window._sdDay=new Date().toDateString();
    another tab is reflected on return. */
 function applyHomeState(){
   try{
-    var pref=null; try{ pref=localStorage.getItem('sd_home_layout'); }catch(e){}
+    /* Any phone used for the layout comparison still carries a forced
+       preference. Clear it once so everyone lands on the automatic behaviour
+       that was chosen. */
+    var pref=null;
+    try{
+      pref=localStorage.getItem('sd_home_layout');
+      if(pref){ localStorage.removeItem('sd_home_layout'); pref=null; }
+    }catch(e){}
     var hasKundli=localStorage.getItem('shubhdin_kundli_ready')==='1';
     var returning = pref==='returning' ? true : pref==='hero' ? false : hasKundli;
     document.body.dataset.home = returning ? 'returning' : 'first';
@@ -6047,6 +6054,8 @@ function paintJapStreak(){
   el.textContent = n>0 ? ('🔥 '+stk('days',{n:n})) : ('🔥 '+stk('start'));
 }
 
+/* Kept so any old saved preference can be cleared, and so the behaviour can
+   be forced again from the console if it ever needs comparing. Not on screen. */
 function setHomeLayout(mode){
   try{ mode ? localStorage.setItem('sd_home_layout',mode)
             : localStorage.removeItem('sd_home_layout'); }catch(e){}
@@ -6064,7 +6073,6 @@ function paintHomeLayoutBtns(){
   });
 }
 function openSettings(){
-  paintHomeLayoutBtns();
   // Prefill current values
   const u = {};
   try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
@@ -6227,7 +6235,35 @@ function settSelectLang(l){
   renderSettLangs();
 }
 
-function saveSettings(){
+/* ══ SD-SETTINGS-SYNC ══════════════════════════════════════════════════════
+   Four things did not follow a settings change, each verified by test:
+
+   1. THE CITY. u.city took the new name but city_lat/city_lon only moved when
+      the user TAPPED a suggestion. Type "Machilipatnam" over "Eluru" and the
+      profile then said Machilipatnam while every calculation — panchang,
+      sunrise, birth rashi — kept using Eluru's coordinates. The screen agreed
+      with the user and the maths did not.
+   2. THE STALE RASHI. Correcting a wrong birth date left the old rashi and
+      nakshatra sitting on the profile. Clearing birth_cache_key made it
+      RE-COMPUTE, but until that finished the old values were still on screen
+      and still being matched against.
+   3+4. THE KUNDLI AND THE REPORTS. shubhdin_kundli_details keeps its own copy
+      of name, date, time and place. Fixing a typo in Settings left the Kundli
+      still built for the old details — so the app showed one birth date and
+      the PDF another. */
+async function settingsResolveCity(name){
+  try{
+    const r = await fetch('https://nominatim.openstreetmap.org/search?q='
+              +encodeURIComponent(name)+'&countrycodes=in&limit=1&format=json')
+              .then(x=>x.json()).catch(()=>null);
+    if(r && r[0]){
+      const la=parseFloat(r[0].lat), ln=parseFloat(r[0].lon);
+      if(isFinite(la)&&isFinite(ln)) return {lat:la,lon:ln};
+    }
+  }catch(e){}
+  return null;
+}
+async function saveSettings(){
   const newName = document.getElementById('settName').value.trim();
   const newCity = document.getElementById('settCity').value;
   const newDob  = document.getElementById('settDob').value;
@@ -6236,20 +6272,60 @@ function saveSettings(){
   // Update localStorage
   let u = {};
   try{ u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}'); }catch(e){}
+  /* Capture BEFORE anything is overwritten. The first version of this fix
+     compared u.city to newCity after u.city had already been assigned, so
+     "changed" was always false and neither fix ever ran. */
+  const oldCity = u.city, oldDob = u.dob, oldTob = u.tob, oldName = u.name;
   const nameChanged = u.name !== newName;
   u.name = newName;
   u.lang = _settLang;
   u.city = newCity;
-  if(window._selectedCityLat){ u.city_lat = window._selectedCityLat; u.city_lon = window._selectedCityLon; }
+  /* Coordinates must never lag behind the city name. Tapped suggestion wins;
+     otherwise look the typed name up. If the lookup fails we refuse to keep
+     the OLD city's coordinates against a new city name — the pair is cleared
+     so nothing computes against a place the user has left. */
+  const cityChanged = (oldCity !== newCity);
+  if(window._selectedCityLat){
+    u.city_lat = window._selectedCityLat; u.city_lon = window._selectedCityLon;
+  } else if(cityChanged && newCity){
+    const btn=document.getElementById('settSaveBtn'), lbl=btn?btn.textContent:'';
+    if(btn){ btn.disabled=true; btn.textContent='…'; }
+    const g = await settingsResolveCity(newCity);
+    if(btn){ btn.disabled=false; btn.textContent=lbl; }
+    if(g){ u.city_lat=g.lat; u.city_lon=g.lon; }
+    else { delete u.city_lat; delete u.city_lon; }
+  }
   u.dob  = newDob;
   var _tu=document.getElementById('settTobUnknown');
   u.tobUnknown = !!(_tu && _tu.checked);
   u.tob  = u.tobUnknown ? '06:00' : newTob;
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
-  // (name-audio regeneration removed with the feature)
-  // Clear birth cache so it refetches with new DOB/TOB
+  /* A changed birth moment or place invalidates the chart. Clear the cache
+     key AND the derived values, so nothing stale is shown or matched against
+     while the recomputation runs. */
+  const birthChanged = (oldDob!==newDob) || (oldTob!==(u.tobUnknown?'06:00':newTob)) || cityChanged;
   u.birth_cache_key = '';
+  if(birthChanged){ u.rashi=''; u.nakshatra=''; u.lagna=''; u.nakshatra_pada=null; }
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
+
+  /* The free Kundli keeps its own copy of these details. Left alone, the app
+     would show the corrected birth date while the Kundli PDF still carried
+     the old one. Keep them in step — but never touch a report's LANGUAGE,
+     which belongs to the purchase, not to the app setting. */
+  try{
+    const kd = JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');
+    if(kd){
+      kd.name = u.name; kd.dob = u.dob; kd.time = u.tob; 
+      if(newCity) kd.place = newCity;
+      if(u.city_lat!=null){ kd.lat = u.city_lat; kd.lng = u.city_lon; }
+      else { delete kd.lat; delete kd.lng; }
+      localStorage.setItem('shubhdin_kundli_details', JSON.stringify(kd));
+      /* the rendered Kundli is now out of date — make the app re-render it
+         rather than hand back a PDF for a birth date the user just corrected */
+      if(birthChanged || oldName!==u.name) localStorage.removeItem('shubhdin_kundli_ready');
+    }
+  }catch(e){}
+
   saveToCloud().then(()=>{ closeSettings(); window.location.reload(); });
 }
 
@@ -7992,17 +8068,9 @@ if('serviceWorker' in navigator){
 
     <!-- Feedback -->
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,168,67,0.14);border-radius:16px;padding:12px 14px;">
-      <!-- SD-HOME-STATE · compare both dashboards on a real phone -->
-      <div id="settHomeLbl" style="font-size:10px;color:rgba(212,168,67,0.72);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:10px;">🏠 Home screen</div>
-      <div style="display:flex;gap:8px;margin-bottom:18px;">
-        <button type="button" id="settHomeAuto" onclick="setHomeLayout('')"
-          style="flex:1;padding:10px 6px;border-radius:11px;border:1px solid rgba(212,168,67,0.25);background:#1A0800;color:rgba(255,240,220,0.85);font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;">Automatic<span style="display:block;font-weight:400;font-size:9.5px;opacity:.6;margin-top:2px;">collapses after Kundli</span></button>
-        <button type="button" id="settHomeHero" onclick="setHomeLayout('hero')"
-          style="flex:1;padding:10px 6px;border-radius:11px;border:1px solid rgba(212,168,67,0.25);background:#1A0800;color:rgba(255,240,220,0.85);font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;">Big Kundli<span style="display:block;font-weight:400;font-size:9.5px;opacity:.6;margin-top:2px;">today's layout</span></button>
-        <button type="button" id="settHomeRet" onclick="setHomeLayout('returning')"
-          style="flex:1;padding:10px 6px;border-radius:11px;border:1px solid rgba(212,168,67,0.25);background:#1A0800;color:rgba(255,240,220,0.85);font-family:'Poppins',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;">Daily first<span style="display:block;font-weight:400;font-size:9.5px;opacity:.6;margin-top:2px;">jap above the fold</span></button>
-      </div>
-
+      <!-- SD-HOME-STATE · the three-way layout toggle lived here. It was a
+           decision tool, and the decision is made: automatic. Removed so the
+           settings sheet only carries things a devotee would actually change. -->
       <div id="settFbLbl" style="font-size:10px;color:rgba(212,168,67,0.72);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:10px;">💬 फीडबैक / Feedback</div>
       <!-- Star rating -->
       <div id="fbStars" style="display:flex;gap:8px;margin-bottom:10px;">
