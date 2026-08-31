@@ -204,6 +204,39 @@ module.exports = async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: 'lead write failed' }); }
   }
 
+  // ══ ADMIN · analytics ═══════════════════════════════════════════════════
+  //
+  // The events table is INSERT-ONLY by policy: the browser can add an event
+  // with the public anon key and nobody can read one back with it. That is
+  // deliberate and it is what makes the data safe to collect. But it also
+  // means a dashboard page cannot query it directly, so the read happens here
+  // with the service key, behind the same admin gate dispatch.html uses.
+  //
+  // The heavy lifting is already done by the eight views created in
+  // analytics-setup.sql, so this endpoint only selects from them. If the SQL
+  // has not been run yet, each view 404s and this returns a clear "run the
+  // SQL" answer rather than an empty dashboard that looks like no traffic.
+  if (req.method === 'GET' && (req.query || {}).stats === '1') {
+    const q = req.query || {};
+    if (!q.uid || !(await verifyUser(q.uid, q.access_token)) || !isAdmin(q.uid))
+      return res.status(403).json({ error: 'admin only' });
+
+    const VIEWS = ['v_errors_7d', 'v_daily', 'v_home_state', 'v_shares',
+                   'v_buy_funnel', 'v_kundli_funnel', 'v_langs', 'v_jap'];
+    const out = {}; let missing = 0;
+    await Promise.all(VIEWS.map(async (v) => {
+      try {
+        const r = await fetch(`${supabaseUrl}/rest/v1/${v}?select=*&limit=200`, { headers: H });
+        if (!r.ok) { out[v] = null; missing++; return; }
+        out[v] = await r.json();
+      } catch (e) { out[v] = null; missing++; }
+    }));
+    if (missing === VIEWS.length)
+      return res.status(200).json({ ok: false, setup_needed: true,
+        error: 'analytics views not found — run analytics-setup.sql in Supabase first' });
+    return res.status(200).json({ ok: true, views: out, missing });
+  }
+
   // ── ADMIN · move one order through the dispatch gate ──
   if (req.method === 'POST' && (req.query || {}).dispatch_set === '1') {
     const b = req.body || {};
