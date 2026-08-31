@@ -335,9 +335,35 @@ function findO(key){var a=key.split('|');return ORDERS.filter(function(o){return
 /* Approve = record 'approved', then open WhatsApp with the filled template.
    Two explicit steps (Approve → Mark Sent) so "did it actually go?" always
    has a truthful answer in the ledger. */
+/* ══ SD-DISPATCH-INFLIGHT ══════════════════════════════════════════════════
+   Measured: three taps on Approve sent THREE writes and opened THREE WhatsApp
+   windows. The writes themselves are harmless — the same status set three
+   times — but three WhatsApp tabs on a phone is not, and tapping again is
+   exactly what anyone does when the connection is slow and nothing has
+   happened yet.
+
+   One flag per order key, so two different orders can still be worked at the
+   same time. Released when the request settles, and after 15 seconds
+   regardless, so a dropped connection can never leave a button dead. */
+var _BUSY = {};
+function busy(key){ return !!_BUSY[key]; }
+function hold(key){
+  _BUSY[key] = true;
+  try{
+    document.querySelectorAll('[onclick*="'+key+'"]').forEach(function(b){ b.disabled = true; });
+  }catch(e){}
+  setTimeout(function(){ release(key); }, 15000);
+}
+function release(key){
+  delete _BUSY[key];
+  try{ renderOrders(); }catch(e){}
+}
 function approveSend(key){
   var o=findO(key); if(!o)return;
+  if(busy(key)) return;
+  hold(key);
   apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:'approved'}).then(function(j){
+    release(key);
     if(!j||!j.ok)return alert('Could not save: '+((j&&j.error)||'?'));
     o.dispatch_status='approved';renderOrders();
     var name=(o.email||'').split('@')[0];
@@ -347,7 +373,10 @@ function approveSend(key){
 }
 function setState(key,st){
   var o=findO(key); if(!o)return;
+  if(busy(key)) return;
+  hold(key);
   apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:st}).then(function(j){
+    release(key);
     if(!j||!j.ok)return alert('Could not save: '+((j&&j.error)||'?'));
     o.dispatch_status=st; if(st==='sent')o.sent_at=new Date().toISOString();
     renderOrders();
