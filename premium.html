@@ -111,17 +111,79 @@ document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
    cached report-catalog.js that has no reportsForSale, it falls back to the
    full list and shows every card. A stale sales page is recoverable; a page
    that throws here renders NO cards at all. */
-var REPORTS = (typeof reportsForSale === 'function') ? reportsForSale() : REPORT_CATALOG;
+/* ══ SD-CATALOG-GUARD ══════════════════════════════════════════════════════
+   The comment above already worried about a stale report-catalog.js. The
+   sharper case is a MISSING one — one skipped upload, one bad cache, one
+   dropped request. Then reportsForSale is undefined AND so is REPORT_CATALOG,
+   this line throws, and every statement below it dies: the cards, the owned
+   strip, the analytics, the page chrome.
+
+   Measured: the sales page rendered ZERO cards. A customer arrived at
+   "Premium Reports" and found nothing to buy, with no error and no retry.
+   Every sale on that visit is lost, silently — and before analytics we would
+   never have known it happened.
+
+   Same failure family as reports.html. Say what happened, offer a way out. */
+var REPORTS = (function () {
+  try {
+    if (typeof reportsForSale === 'function') return reportsForSale() || [];
+    if (typeof REPORT_CATALOG !== 'undefined' && REPORT_CATALOG) return REPORT_CATALOG;
+  } catch (e) {}
+  return null;                     // null means "catalogue unavailable"
+})();
 
 /* Ownership is read from localStorage ONLY on this page — a deliberate call
    from owned-contract.md. No Supabase client on the sales page. The cost is
    that a cleared browser briefly shows an owned card as buyable until the next
    signed-in visit heals the record; the server-backed truth lives one tap away
    in My Reports. */
-var OWNED = sdOwnedIds();
+var OWNED = (function () {
+  try { return (typeof sdOwnedIds === 'function') ? (sdOwnedIds() || {}) : {}; }
+  catch (e) { return {}; }
+})();
 var ownedCount = Object.keys(OWNED).length;
 
+/* A() comes from app-strings-loader.js, which normally falls back to
+   humanised keys on its own. But if that FILE fails to load, A is undefined
+   and the card builder below throws on its first label — zero cards on the
+   sales page, same blank-page failure as the missing catalogue. One line of
+   insurance on the page that takes money. */
+if(typeof A!=='function'){
+  window.A=function(k){ return String(k||'').split('.').pop().replace(/_/g,' '); };
+}
 var root=document.getElementById('pageRoot'), h='';
+
+/* No catalogue means nothing can be priced or named. Show that honestly
+   instead of an empty page that reads as "we have nothing to sell". */
+if(!REPORTS || !REPORTS.length){
+  var _L=(window.SD_LANG||'hi');
+  var _M={en:'Could not load the reports just now.',hi:'अभी रिपोर्ट्स लोड नहीं हो सकीं।',
+    te:'ప్రస్తుతం రిపోర్ట్‌లు లోడ్ కాలేదు.',kn:'ಸದ್ಯ ವರದಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.',
+    ta:'இப்போது அறிக்கைகளை ஏற்ற முடியவில்லை.',bn:'এই মুহূর্তে রিপোর্ট লোড করা গেল না।',
+    mr:'सध्या रिपोर्ट लोड होऊ शकले नाहीत.',gu:'હાલ રિપોર્ટ લોડ થઈ શક્યા નથી.',
+    as:"এই মুহূৰ্তত ৰিপ'ৰ্ট ল'ড কৰিব পৰা নগ'ল।"};
+  var _S={en:'Check your connection and try again.',hi:'कनेक्शन जांचकर फिर कोशिश करें।',
+    te:'కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.',kn:'ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+    ta:'இணைப்பைச் சரிபார்த்து மீண்டும் முயலுங்கள்.',bn:'সংযোগ দেখে আবার চেষ্টা করুন।',
+    mr:'कनेक्शन तपासून पुन्हा प्रयत्न करा.',gu:'કનેક્શન તપાસીને ફરી પ્રયાસ કરો.',
+    as:'সংযোগ চাই পুনৰ চেষ্টা কৰক।'};
+  var _R={en:'Try again',hi:'फिर कोशिश करें',te:'మళ్లీ ప్రయత్నించండి',kn:'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
+    ta:'மீண்டும் முயலுங்கள்',bn:'আবার চেষ্টা করুন',mr:'पुन्हा प्रयत्न करा',
+    gu:'ફરી પ્રયાસ કરો',as:'পুনৰ চেষ্টা কৰক'};
+  /* Write into h, NOT into root — `root.innerHTML=h` runs a few lines below
+     and would overwrite anything set here with an empty string. It did
+     exactly that on the first attempt: guard fired, message rendered, message
+     erased, blank page. */
+  h='<div style="text-align:center;padding:40px 18px;">'
+    +'<div style="font-size:34px;margin-bottom:12px;">👑</div>'
+    +'<div style="font-size:14.5px;color:#FFF4DE;line-height:1.6;">'+(_M[_L]||_M.hi)+'</div>'
+    +'<div style="font-size:12px;color:rgba(255,244,222,0.6);margin-top:8px;">'+(_S[_L]||_S.hi)+'</div>'
+    +'<button onclick="location.reload()" style="margin-top:18px;background:linear-gradient(120deg,#D4A843,#B8892F);'
+    +'color:#1A0D00;border:none;font-family:inherit;font-size:13px;font-weight:600;'
+    +'padding:11px 20px;border-radius:11px;cursor:pointer;">'+(_R[_L]||_R.hi)+'</button></div>';
+  try{ sdTrack('js_error',{msg:'report-catalog missing',file:'premium.html'}); sdFlush(true); }catch(e){}
+  REPORTS=[];   /* the forEach below then adds nothing, and h survives */
+}
 
 /* Door 1 — the strip. Nothing renders at zero owned, so the page stays pure
    sales for someone who has bought nothing. */
