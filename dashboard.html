@@ -3966,6 +3966,38 @@ function startParticles(){
 }
 
 // ── Jap share ──
+/* ══ SD-LANG-REVIEW-STATE ══════════════════════════════════════════════════
+   Where each language stands on the four faults three native reviewers found
+   independently in the same week: the "completed sadhana" verb, "daily" where
+   devotional usage wants "nitya", the short word for a birth chart, and "good
+   time" where a panchang says "auspicious muhurta".
+
+     bn  REVIEWED   native reviewer, 14 corrections
+     mr  REVIEWED   native reviewer, 10 corrections
+     gu  REVIEWED   native reviewer, 16 corrections
+     te  REVIEWED   Ram (native), 5 corrections
+     kn  REVIEWED   Ram (native), 5 corrections + ನಂತರ → ಆನಂತರ
+     ta  REVIEWED   Ram (native) — and it DIVERGED, see below
+     as  NOT REVIEWED — applied by analogy. See the warning below.
+     hi/en  the sources everything else was written from
+
+   TAMIL IS THE INTERESTING ONE. The four-pattern rule came entirely from
+   Indo-Aryan reviewers, and Tamil did not follow it. Two of the four were
+   REJECTED on Dravidian grounds:
+     · ஜாதகம் stays — it is the universal Tamil word, not a shortening.
+     · நல்ல நேரம் stays — in Tamil panchangams (Pambu Panchangam) the daily
+       auspicious slots are strictly நல்ல நேரம் / கௌரி நல்ல நேரம், and
+       சுப முகூர்த்தம் is reserved for WEDDING DATES. Applying it to a daily
+       window would have been wrong in a way that sounded more correct.
+   Do not "harmonise" Tamil with the other five later. It is right as it is.
+
+   ⚠ ASSAMESE IS UNVERIFIED. The four terms below (সম্পন্ন হ'ল · নিত্য জপ ·
+   জন্মকোষ্ঠী · শুভ মুহূৰ্ত) were applied on Ram's ruling, by analogy with
+   Bengali — same script, shared vocabulary. That is a reasonable hypothesis
+   and NOT a review. Bengali's own reviewer showed how the two diverge: শুভ
+   সকাল is modern colloquial where a panjika says শুভ প্ৰভাত. Assamese has had
+   no native reader at any point. When one is found, re-check these first. */
+
 /* ══ SD-SHARE-JAP ══
    Was Hindi-or-English — the same clamp that sent English PDFs to Telugu
    buyers. A Telugu devotee finishing their jap was handed an English message
@@ -4004,9 +4036,9 @@ function shareJap(){
    mr:{0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'},
    gu:{0:'સૂર્ય મંત્ર',1:'મહામૃત્યુંજય મંત્ર',2:'હનુમાન મંત્ર',3:'ગણેશ મંત્ર',4:'રામ નામ',5:'લક્ષ્મી મંત્ર',6:'શનિ મંત્ર'},
    as:{0:'সূৰ্য মন্ত্ৰ',1:'মহামৃত্যুঞ্জয় মন্ত্ৰ',2:'হনুমান মন্ত্ৰ',3:'গণেশ মন্ত্ৰ',4:'ৰাম নাম',5:'লক্ষ্মী মন্ত্ৰ',6:'শনি মন্ত্ৰ'}};
-  var DONE={en:"Today's sadhana is complete",hi:'आज की साधना पूर्ण हुई',te:'నేటి సాధన పూర్తయింది',
-    kn:'ಇಂದಿನ ಸಾಧನೆ ಪೂರ್ಣವಾಯಿತು',ta:'இன்றைய சாதனை நிறைவடைந்தது',bn:'আজকের সাধনা সম্পন্ন হলো',
-    mr:'आजची साधना संपन्न झाली',gu:'આજની સાધના પૂર્ણ થઈ',as:'আজিৰ সাধনা সম্পূৰ্ণ হ\'ল'};
+  var DONE={en:"Today's sadhana is complete",hi:'आज की साधना पूर्ण हुई',te:'నేటి సాధన సంపన్నమైంది',
+    kn:'ಇಂದಿನ ಸಾಧನೆ ಸಂಪನ್ನವಾಯಿತು',ta:'இன்றைய சாதனை நிறைவேறியது',bn:'আজকের সাধনা সম্পন্ন হলো',
+    mr:'आजची साधना संपन्न झाली',gu:'આજની સાધના સંપન્ન થઈ',as:'আজিৰ সাধনা সম্পন্ন হ\'ল'};
   var DID={en:'I chanted {name} {n} times today',hi:'आज मैंने {n} बार {name} का जप किया',
     te:'ఈ రోజు {n} సార్లు {name} జపించాను',kn:'ಇಂದು {n} ಬಾರಿ {name} ಜಪಿಸಿದೆ',
     ta:'இன்று {n} முறை {name} ஜபித்தேன்',bn:'আজ {n} বার {name} জপ করলাম',
@@ -4016,16 +4048,16 @@ function shareJap(){
     hi:'आपको और आपके परिवार को सदा शुभ मिले।',te:'మీకు మరియు మీ కుటుంబానికి సర్వదా శుభం కలుగుగాక.',
     kn:'ನಿಮಗೂ ನಿಮ್ಮ ಕುಟುಂಬಕ್ಕೂ ಸದಾ ಶುಭವಾಗಲಿ.',ta:'உங்களுக்கும் உங்கள் குடும்பத்திற்கும் என்றும் நன்மை உண்டாகட்டும்.',
     bn:'আপনার ও আপনার পরিবারের সদা মঙ্গল হোক।',mr:'तुम्हाला व तुमच्या कुटुंबाला सदैव शुभ लाभो.',
-    gu:'તમને અને તમારા પરિવારને સદા શુભ મળે.',as:'আপোনাক আৰু আপোনাৰ পৰিয়ালক সদায় শুভ হওক।'};
+    gu:'તમારું અને તમારા પરિવારનું સદા મંગળ થાઓ.',as:'আপোনাক আৰু আপোনাৰ পৰিয়ালক সদায় শুভ হওক।'};
   var HOOK={en:'For your daily jap and free 250+ page Kundli:',
     hi:'अपने दैनिक जप और निःशुल्क 250+ पेज कुंडली के लिए:',
-    te:'మీ రోజువారీ జపం & ఉచిత 250+ పేజీల జాతకం కోసం:',
-    kn:'ನಿಮ್ಮ ದೈನಂದಿನ ಜಪ ಮತ್ತು ಉಚಿತ 250+ ಪುಟಗಳ ಜಾತಕಕ್ಕಾಗಿ:',
-    ta:'உங்கள் தினசரி ஜபம் மற்றும் இலவச 250+ பக்க ஜாதகத்திற்கு:',
+    te:'మీ నిత్య జపం & ఉచిత 250+ పేజీల జన్మ కుండలి కోసం:',
+    kn:'ನಿಮ್ಮ ನಿತ್ಯ ಜಪ ಮತ್ತು ಉಚಿತ 250+ ಪುಟಗಳ ಜನ್ಮ ಕುಂಡಲಿಗಾಗಿ:',
+    ta:'உங்கள் நித்திய ஜபம் மற்றும் இலவச 250+ பக்க ஜாதகத்திற்கு:',
     bn:'আপনার নিত্য জপ ও বিনামূল্যে 250+ পৃষ্ঠার জন্মকোষ্ঠীর জন্য:',
     mr:'तुमच्या नित्य जपासाठी आणि मोफत 250+ पानांच्या जन्मकुंडलीसाठी:',
-    gu:'તમારા રોજિંદા જપ અને મફત 250+ પાનાંની કુંડળી માટે:',
-    as:'আপোনাৰ দৈনিক জপ আৰু বিনামূলীয়া 250+ পৃষ্ঠাৰ কুণ্ডলীৰ বাবে:'};
+    gu:'તમારા નિત્ય જપ અને નિઃશુલ્ક 250+ પાનાંની જન્મકુંડળી માટે:',
+    as:'আপোনাৰ নিত্য জপ আৰু বিনামূলীয়া 250+ পৃষ্ঠাৰ জন্মকোষ্ঠীৰ বাবে:'};
   var L=(window.SD_LANG||'hi'); if(!NAME[L]) L='hi';
   var n=isShravan()?108:28;
   var mname=(NAME[L]||NAME.hi)[dow];
@@ -4715,7 +4747,7 @@ function shareWallpaperText(){
   var GM={en:"Good Morning! Today's Divine Blessing",hi:'सुप्रभात! आज का दिव्य आशीर्वाद',
     te:'శుభోదయం! నేటి దైవ ఆశీర్వాదం',kn:'ಶುಭೋದಯ! ಇಂದಿನ ದೈವ ಆಶೀರ್ವಾದ',
     ta:'இனிய காலை! இன்றைய தெய்வ ஆசி',bn:'শুভ প্রভাত! আজকের দিব্য আশীর্বাদ',
-    mr:'सुप्रभात! आजचा दिव्य आशीर्वाद',gu:'સુપ્રભાત! આજનો દિવ્ય આશીર્વાદ',
+    mr:'सुप्रभात! आजचा दिव्य आशीर्वाद',gu:'શુભ પ્રભાત! આજનો દિવ્ય આશીર્વાદ',
     as:'শুভ ৰাতিপুৱা! আজিৰ দিব্য আশীৰ্বাদ'};
   var WISH={en:'May divine grace bring health, peace and abundance to you and your family.',
     hi:'ईश्वर की कृपा से आपको और आपके परिवार को आरोग्य, शांति और समृद्धि मिले।',
@@ -4724,17 +4756,17 @@ function shareWallpaperText(){
     ta:'இறையருளால் உங்களுக்கும் உங்கள் குடும்பத்திற்கும் ஆரோக்கியம், அமைதி, செழிப்பு உண்டாகட்டும்.',
     bn:'ঈশ্বরের কৃপায় আপনার ও আপনার পরিবারে নীরোগ স্বাস্থ্য, শান্তি ও সমৃদ্ধি আসুক।',
     mr:'ईश्वरकृपेने तुम्हाला व तुमच्या कुटुंबाला आरोग्य, शांती आणि समृद्धी लाभो.',
-    gu:'ઈશ્વરકૃપાથી તમને અને તમારા પરિવારને આરોગ્ય, શાંતિ અને સમૃદ્ધિ મળે.',
+    gu:'ઈશ્વરકૃપાથી તમને અને તમારા પરિવારને ઉત્તમ સ્વાસ્થ્ય, શાંતિ અને સમૃદ્ધિ પ્રાપ્ત થાય.',
     as:'ঈশ্বৰৰ কৃপাত আপোনাৰ আৰু আপোনাৰ পৰিয়ালৰ স্বাস্থ্য, শান্তি আৰু সমৃদ্ধি হওক।'};
   var HOOK={en:"Today's Panchang, auspicious timings and free Kundli:",
     hi:'आज का पंचांग, शुभ मुहूर्त और निःशुल्क कुंडली:',
-    te:'నేటి పంచాంగం, శుభ సమయాలు, ఉచిత జాతకం:',
-    kn:'ಇಂದಿನ ಪಂಚಾಂಗ, ಶುಭ ಸಮಯ ಮತ್ತು ಉಚಿತ ಜಾತಕ:',
+    te:'నేటి పంచాంగం, శుభ ముహూర్తాలు, ఉచిత జన్మ కుండలి:',
+    kn:'ಇಂದಿನ ಪಂಚಾಂಗ, ಶುಭ ಮುಹೂರ್ತ ಮತ್ತು ಉಚಿತ ಜನ್ಮ ಕುಂಡಲಿ:',
     ta:'இன்றைய பஞ்சாங்கம், நல்ல நேரங்கள், இலவச ஜாதகம்:',
     bn:'আজকের পঞ্জিকা, শুভ মুহূর্ত ও বিনামূল্যে জন্মকোষ্ঠী:',
     mr:'आजचे पंचांग, शुभ मुहूर्त आणि मोफत कुंडली:',
-    gu:'આજનું પંચાંગ, શુભ મુહૂર્ત અને મફત કુંડળી:',
-    as:'আজিৰ পঞ্চাং, শুভ সময় আৰু বিনামূলীয়া কুণ্ডলী:'};
+    gu:'આજનું પંચાંગ, શુભ મુહૂર્ત અને મફત જન્મકુંડળી:',
+    as:'আজিৰ পঞ্চাং, শুভ মুহূৰ্ত আৰু বিনামূলীয়া জন্মকোষ্ঠী:'};
   /* Read what the splash already put on screen rather than re-deriving it.
      Deriving it separately produced a mixed-script line — the deity in one
      language and the weekday in another — because the two helpers localise
@@ -5538,18 +5570,18 @@ async function fetchPanchang(){
    Falls back silently — a missing field must never blank the subtitle. */
 var SD_TEASE={
  good:{en:'The Moon favours you today · see your good times',hi:'आज चंद्रबल आपके पक्ष में है · शुभ समय देखें',
-   te:'ఈ రోజు చంద్రబలం మీకు అనుకూలం · శుభ సమయాలు చూడండి',kn:'ಇಂದು ಚಂದ್ರಬಲ ನಿಮ್ಮ ಪರವಾಗಿದೆ · ಶುಭ ಸಮಯ ನೋಡಿ',
+   te:'ఈ రోజు చంద్రబలం అనుకూలం · శుభ ముహూర్తాలు చూడండి',kn:'ಇಂದು ಚಂದ್ರಬಲ ಅನುಕೂಲವಾಗಿದೆ · ಶುಭ ಮುಹೂರ್ತ ನೋಡಿ',
    ta:'இன்று சந்திரபலம் உங்களுக்கு சாதகம் · நல்ல நேரங்களைப் பாருங்கள்',bn:'আজ চন্দ্রবল আপনার পক্ষে শুভ · শুভ মুহূর্ত দেখুন',
-   mr:'आज चंद्रबल अनुकूल आहे · शुभ मुहूर्त पाहा',gu:'આજે ચંદ્રબળ તમારા પક્ષમાં છે · શુભ સમય જુઓ',
-   as:'আজি চন্দ্ৰবল আপোনাৰ অনুকূলে · শুভ সময় চাওক'},
+   mr:'आज चंद्रबल अनुकूल आहे · शुभ मुहूर्त पाहा',gu:'આજે ચંદ્રબળ અનુકૂળ છે · શુભ મુહૂર્ત જુઓ',
+   as:'আজি চন্দ্ৰবল আপোনাৰ অনুকূলে · শুভ মুহূৰ্ত চাওক'},
  care:{en:'Check Rahu Kaal and Varjyam before anything important',hi:'ज़रूरी काम से पहले राहुकाल और वर्ज्य देख लें',
    te:'ముఖ్యమైన పని ముందు రాహుకాలం, వర్జ్యం చూసుకోండి',kn:'ಮುಖ್ಯ ಕೆಲಸಕ್ಕೆ ಮೊದಲು ರಾಹುಕಾಲ, ವರ್ಜ್ಯ ನೋಡಿ',
    ta:'முக்கியமான வேலைக்கு முன் ராகு காலம், வர்ஜ்யம் பாருங்கள்',bn:'শুভ কাজের আগে রাহুকাল ও বর্জ্য সময় দেখে নিন',
-   mr:'महत्त्वाच्या कामापूर्वी राहुकाळ आणि वर्ज्य वेळ तपासा',gu:'મહત્વના કામ પહેલાં રાહુકાળ અને વર્જ્ય જોઈ લો',
+   mr:'महत्त्वाच्या कामापूर्वी राहुकाळ आणि वर्ज्य वेळ तपासा',gu:'કોઈપણ શુભ કાર્ય પહેલાં રાહુકાળ અને વર્જ્ય સમય જોઈ લો',
    as:'গুৰুত্বপূৰ্ণ কামৰ আগতে ৰাহুকাল আৰু বৰ্জ্য চাই লওক'},
  next:{en:'Next good time {t}',hi:'अगला शुभ समय {t}',te:'తర్వాతి శుభ సమయం {t}',
-   kn:'ಮುಂದಿನ ಶುಭ ಸಮಯ {t}',ta:'அடுத்த நல்ல நேரம் {t}',bn:'পরের শুভ সময় {t}',
-   mr:'पुढील शुभ वेळ {t}',gu:'આગળનો શુભ સમય {t}',as:'পৰৱৰ্তী শুভ সময় {t}'},
+   kn:'ಮುಂದಿನ ಶುಭ ಮುಹೂರ್ತ {t}',ta:'அடுத்த நல்ல நேரம் {t}',bn:'পরের শুভ সময় {t}',
+   mr:'पुढील शुभ वेळ {t}',gu:'આગળનો શુભ સમય {t}',as:'পৰৱৰ্তী শুভ মুহূৰ্ত {t}'},
  more:{en:'{n} more today',hi:'आज {n} और',te:'ఈ రోజు మరో {n}',kn:'ಇಂದು ಇನ್ನೂ {n}',
    ta:'இன்று மேலும் {n}',bn:'আজ আরও {n}',mr:'आज आणखी {n}',gu:'આજે વધુ {n}',as:'আজি আৰু {n}'}};
 function sdTease(k,vars){
@@ -5926,7 +5958,7 @@ function renderGitaCard(){
   var TAG={en:"Today's blessing & Gita message",hi:'आज का शुभ प्रभात और गीता संदेश',
     te:'నేటి శుభోదయం & గీతా సందేశం',kn:'ಇಂದಿನ ಶುಭೋದಯ ಮತ್ತು ಗೀತಾ ಸಂದೇಶ',
     ta:'இன்றைய இனிய காலை & கீதை செய்தி',bn:'আজকের শুভাশীর্বাদ ও গীতাবাণী',
-    mr:'आजचे शुभाशीर्वाद आणि गीता संदेश',gu:'આજની શુભ સવાર અને ગીતા સંદેશ',
+    mr:'आजचे शुभाशीर्वाद आणि गीता संदेश',gu:'આજના શુભાશીર્વાદ અને ગીતા સંદેશ',
     as:'আজিৰ শুভ ৰাতিপুৱা আৰু গীতা বাৰ্তা'};
   var SHR={en:'Share on WhatsApp',hi:'WhatsApp पर भेजें',te:'వాట్సాప్‌లో పంచుకోండి',
     kn:'WhatsApp‑ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ',ta:'WhatsApp‑இல் பகிருங்கள்',bn:'WhatsApp-এ পাঠান',
@@ -5967,19 +5999,19 @@ function gitaShareText(){
   var g=gitaOfDay(); if(!g) return '';
   var L=(window.SD_LANG||'hi');
   var GM={en:'Good morning!',hi:'सुप्रभात!',te:'శుభోదయం!',kn:'ಶುಭೋದಯ!',ta:'இனிய காலை வணக்கம்!',
-    bn:'শুভ প্রভাত!',mr:'सुप्रभात!',gu:'સુપ્રભાત!',as:'শুভ ৰাতিপুৱা!'};
+    bn:'শুভ প্রভাত!',mr:'सुप्रभात!',gu:'શુભ પ્રભાત!',as:'শুভ ৰাতিপুৱা!'};
   var MSG={en:"Today's Gita message:",hi:'आज का गीता संदेश:',te:'నేటి గీతా సందేశం:',
     kn:'ಇಂದಿನ ಗೀತಾ ಸಂದೇಶ:',ta:'இன்றைய கீதை செய்தி:',bn:'আজকের গীতাবাণী:',
-    mr:'आजचा गीता संदेश:',gu:'આજનો ગીતા સંદેશ:',as:'আজিৰ গীতা বাৰ্তা:'};
+    mr:'आजचा गीता संदेश:',gu:'આજની ગીતાવાણી:',as:'আজিৰ গীতা বাৰ্তা:'};
   var PITCH={en:'Your free 250+ page Kundli and today\'s auspicious times:',
     hi:'आपकी निःशुल्क 250+ पेज कुंडली और आज के शुभ मुहूर्त:',
-    te:'మీ ఉచిత 250+ పేజీల జాతకం, నేటి శుభ సమయాలు:',
-    kn:'ನಿಮ್ಮ ಉಚಿತ 250+ ಪುಟಗಳ ಜಾತಕ ಮತ್ತು ಇಂದಿನ ಶುಭ ಸಮಯ:',
+    te:'మీ ఉచిత 250+ పేజీల జన్మ కుండలి, నేటి శుభ ముహూర్తాలు:',
+    kn:'ನಿಮ್ಮ ಉಚಿತ 250+ ಪುಟಗಳ ಜನ್ಮ ಕುಂಡಲಿ ಮತ್ತು ಇಂದಿನ ಶುಭ ಮುಹೂರ್ತ:',
     ta:'உங்கள் இலவச 250+ பக்க ஜாதகம், இன்றைய நல்ல நேரங்கள்:',
     bn:'আপনার সম্পূর্ণ বিনামূল্যে 250+ পৃষ্ঠার জন্মকোষ্ঠী ও শুভ মুহূর্ত:',
     mr:'तुमची मोफत 250+ पानांची जन्मकुंडली आणि आजचे शुभ मुहूर्त:',
-    gu:'તમારી મફત 250+ પાનાંની કુંડળી અને આજના શુભ મુહૂર્ત:',
-    as:'আপোনাৰ বিনামূলীয়া 250+ পৃষ্ঠাৰ কুণ্ডলী আৰু আজিৰ শুভ সময়:'};
+    gu:'તમારી સંપૂર્ણ મફત 250+ પાનાંની જન્મકુંડળી અને આજના શુભ મુહૂર્ત:',
+    as:'আপোনাৰ বিনামূলীয়া 250+ পৃষ্ঠাৰ জন্মকোষ্ঠী আৰু আজিৰ শুভ মুহূৰ্ত:'};
   return '🌅 *'+(GM[L]||GM.hi)+'*\n\n'
        + '📿 *'+(MSG[L]||MSG.hi)+'*\n'
        + '"'+g.q+'"\n\n'+g.n+'\n'
@@ -7442,17 +7474,17 @@ function calThenUntil(name,time){
         return AF('astrol.then_next_until',{next:name,time:time}); }catch(e){}
   var L=(window.SD_LANG||'hi');
   var T={en:'then {name} until {time}',hi:'फिर {name} {time} तक',
-    te:'ఆ తర్వాత {name} {time} వరకు',kn:'ನಂತರ {name} {time} ವರೆಗೆ',
-    ta:'பின்னர் {name} {time} வரை',bn:'তারপর {name} {time} পর্যন্ত',
-    mr:'त्यानंतर {name} {time} पर्यंत',gu:'પછી {name} {time} સુધી',
+    te:'ఆ తర్వాత {name} {time} వరకు',kn:'ಆನಂತರ {name} {time} ವರೆಗೆ',
+    ta:'அதன் பிறகு {name} {time} வரை',bn:'তারপর {name} {time} পর্যন্ত',
+    mr:'त्यानंतर {name} {time} पर्यंत',gu:'ત્યારબાદ {name} {time} સુધી',
     as:'তাৰ পিছত {name} {time} লৈকে'};
   return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
 }
 /* no end time known — just the name, never a dangling postposition */
 function calThenOnly(name){
   var L=(window.SD_LANG||'hi');
-  var T={en:'then {name}',hi:'फिर {name}',te:'ఆ తర్వాత {name}',kn:'ನಂತರ {name}',
-    ta:'பின்னர் {name}',bn:'তারপর {name}',mr:'त्यानंतर {name}',gu:'પછી {name}',
+  var T={en:'then {name}',hi:'फिर {name}',te:'ఆ తర్వాత {name}',kn:'ಆನಂತರ {name}',
+    ta:'அதன் பிறகு {name}',bn:'তারপর {name}',mr:'त्यानंतर {name}',gu:'ત્યારબાદ {name}',
     as:'তাৰ পিছত {name}'};
   return (T[L]||T.hi).replace('{name}',name);
 }
