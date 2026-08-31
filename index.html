@@ -41,6 +41,13 @@
     font-family:'Poppins',sans-serif;padding:16px;position:relative;
     overflow-x:hidden;overflow-y:auto;
   }
+  /* ══ SD-320-OVERFLOW ══
+     body already had overflow-x:hidden, but HTML is the scrolling element and
+     did not. On a 320px phone the decorative particles drift a few pixels past
+     the right edge mid-animation, and the page could be dragged sideways to a
+     blank strip — measured scrollX=20 at 320px, 0 at 360 and 412.
+     Clipping on html is what actually stops it. */
+  html{ overflow-x:hidden; }
   body::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:360px;height:260px;border-radius:50%;background:radial-gradient(ellipse,rgba(212,168,67,0.18) 0%,transparent 70%);pointer-events:none;}
 
   .pt{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);opacity:0;animation:ptUp linear infinite;}
