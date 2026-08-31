@@ -98,12 +98,41 @@ module.exports = async function handler(req, res) {
   if (!supabaseUrl || !serviceKey) return res.status(500).json({ error: 'Missing Supabase config' });
   const H = { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey, 'Content-Type': 'application/json' };
 
-  async function upsertPaid(uid, report, amount, payment_id) {
+  /* ══ SD-DELIVERY-ADDRESS ══
+     phone and lang used to be written ONLY by ?meta=1, which is a PATCH and so
+     needs the row to exist — and the row does not exist until a payment
+     confirms. postMeta() runs inside showDone(), i.e. only once the buyer
+     RETURNS to the page after paying.
+
+     A buyer who pays and closes the tab is confirmed by the webhook (the code
+     already calls that "a backstop for buyers who close the tab") — but their
+     row then has NO PHONE and lang defaulting to 'hi'. Two consequences, both
+     measured: the dispatch board cannot WhatsApp them, and pdfCheck looks for
+     a .hi.pdf so a Telugu buyer's own render is never found and delivery is
+     withheld as a language mismatch.
+
+     Fix: the phone and language are known at CREATE time (the buy page
+     validates the number before Pay), so they now travel in the Razorpay
+     notes and are written by whichever path confirms the payment. Purely
+     additive — a link minted before this change simply has no extra notes and
+     behaves exactly as before. */
+  async function upsertPaid(uid, report, amount, payment_id, extra) {
     return fetch(`${supabaseUrl}/rest/v1/orders?on_conflict=uid,report`, {
       method: 'POST',
       headers: { ...H, Prefer: 'resolution=merge-duplicates' },
-      body: JSON.stringify([{ uid, report, status: 'paid', amount: amount || 0,
-        order_code: code(uid, report), payment_id: payment_id || null }])
+      body: JSON.stringify([Object.assign(
+        { uid, report, status: 'paid', amount: amount || 0,
+          order_code: code(uid, report), payment_id: payment_id || null },
+        /* only ever ADD a delivery address, never blank one that is already
+           there — ?meta=1 may have written a better one from the live page */
+        (function () {
+          const e = {}, x = extra || {};
+          const ph = cleanPhone(x.phone);
+          if (ph) e.phone = ph;
+          if (SD_LANGS.includes(x.lang)) e.lang = x.lang;
+          return e;
+        })()
+      )])
     });
   }
   async function verifyUser(uid, token) {
@@ -383,7 +412,17 @@ module.exports = async function handler(req, res) {
           currency: 'INR',
           description: 'Shubh Din — ' + q0.report + ' report',
           reference_id: code(q0.uid, q0.report) + '-' + Date.now(),
-          notes: { uid: q0.uid, report: q0.report },   // ← what the webhook reads
+          /* uid+report are what the webhook attributes on. phone+lang ride
+             along so a buyer who never returns to the page still has a
+             delivery address on their order. */
+          notes: (function () {
+            const n = { uid: q0.uid, report: q0.report };
+            const ph = cleanPhone(q0.phone || (req.body || {}).phone);
+            if (ph) n.phone = ph;
+            const lg = q0.lang || (req.body || {}).lang;
+            if (SD_LANGS.includes(lg)) n.lang = lg;
+            return n;
+          })(),
           notify: { sms: false, email: false },
           reminder_enable: false,
           callback_url: site + '/buy.html?r=' + encodeURIComponent(q0.report) + '&rzp=1',
@@ -454,7 +493,8 @@ module.exports = async function handler(req, res) {
         return res.status(409).json({ error: 'amount mismatch', paid_amount: Math.round((pay.amount || 0) / 100), expected: expect });
       }
 
-      const up = await upsertPaid(q1.uid, report, expect, pay.id);
+      const up = await upsertPaid(q1.uid, report, expect, pay.id,
+        (pay && pay.notes) || {});
       if (!up.ok) return res.status(500).json({ error: 'order write failed' });
       return res.status(200).json({ ok: true, paid: true, report: report, order_code: code(q1.uid, report), via: 'confirm' });
     } catch (e) {
@@ -519,7 +559,7 @@ module.exports = async function handler(req, res) {
           why: 'event ' + (ev.event || '?') + ' carried no uid/report and the link could not be read',
           event: ev.event || null, has_link: !!linkEnt, has_payment: !!payEnt });
       }
-      await upsertPaid(notes.uid, notes.report, Math.round((ent.amount || 0) / 100), ent.id);
+      await upsertPaid(notes.uid, notes.report, Math.round((ent.amount || 0) / 100), ent.id, notes);
       return res.status(200).json({ ok: true, marked: notes.report, event: ev.event || null });
     } catch (e) { return res.status(500).json({ error: String(e.message).slice(0, 150) }); }
   }
