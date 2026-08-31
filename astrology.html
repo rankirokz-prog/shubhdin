@@ -302,7 +302,7 @@ var CITY = SD_COORD_FALLBACK ? A('astrol.ujjain') : (U.city || A('astrol.ujjain'
         ta:'இந்த நேரங்கள் உஜ்ஜயினிக்கானவை. உங்கள் ஊர் நேரத்திற்கு நகரத்தைத் தேர்வுசெய்யுங்கள்.',
         bn:'এই সময়সূচি উজ্জয়িনীর হিসেবে। আপনার শহরের সঠিক সময়ের জন্য স্থান নির্বাচন করুন।',
         mr:'ही वेळ उज्जैनची आहे. आपल्या शहराच्या अचूक वेळेसाठी शहर निवडा.',
-        gu:'આ સમય ઉજ્જૈન માટે છે. તમારા શહેરના સમય માટે શહેર પસંદ કરો.',
+        gu:'આ સમયગાળો ઉજ્જૈન મુજબનો છે. તમારા શહેરના ચોક્કસ સમય માટે શહેર પસંદ કરો.',
         as:'এই সময়বোৰ উজ্জয়িনীৰ বাবে। নিজৰ চহৰৰ সময়ৰ বাবে চহৰ বাছনি কৰক।'};
       var d=document.createElement('div');
       d.id='sdCoordWarn';
@@ -806,9 +806,9 @@ function thenNextUntil(name,time){
         return AF('astrol.then_next_until',{next:name,time:time}); }catch(e){}
   var L=(window.SD_LANG||'hi');
   var T={en:'then {name} until {time}',hi:'फिर {name} {time} तक',
-    te:'ఆ తర్వాత {name} {time} వరకు',kn:'ನಂತರ {name} {time} ವರೆಗೆ',
-    ta:'பின்னர் {name} {time} வரை',bn:'তারপর {name} {time} পর্যন্ত',
-    mr:'त्यानंतर {name} {time} पर्यंत',gu:'પછી {name} {time} સુધી',
+    te:'ఆ తర్వాత {name} {time} వరకు',kn:'ಆನಂತರ {name} {time} ವರೆಗೆ',
+    ta:'அதன் பிறகு {name} {time} வரை',bn:'তারপর {name} {time} পর্যন্ত',
+    mr:'त्यानंतर {name} {time} पर्यंत',gu:'ત્યારબાદ {name} {time} સુધી',
     as:'তাৰ পিছত {name} {time} লৈকে'};
   return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
 }
