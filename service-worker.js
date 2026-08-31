@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v155';
+const CACHE_NAME = 'shubhdin-v156';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -13,6 +13,9 @@ const CORE_FILES = [
   /* today's verse — cached so the morning card is there on a weak
      connection, which is exactly when people open a devotional app */
   '/daily-gita.js',
+  /* cached so error reporting survives a bad connection — the moments we
+     most need to hear about are the ones where the network is failing */
+  '/analytics.js',
   // The astrology engine. astrology.html loads these directly and dashboard.html
   // now lazy-loads them to compute the birth rashi on device. Without them in
   // the cache the offline fallback would 404 and the rashi would go missing —
