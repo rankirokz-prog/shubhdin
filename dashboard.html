@@ -2676,6 +2676,27 @@ const Rs=[
 // A Vedic rashi is the MOON's sign and cannot be had from a calendar date, so
 // it is now only a rough placeholder while the real value is fetched, and
 // returns null when there is no date at all — the UI asks instead of guessing.
+/* ══ SD-JANMA-RASHI ════════════════════════════════════════════════════════
+   getRashi() derives a sign from the CALENDAR DATE ALONE, using the cutoffs
+   [20,19,21,20,21,21,23,23,23,23,22,22] — Jan 20, Feb 19, Mar 21 … Those are
+   the TROPICAL WESTERN SUN-SIGN cusps. It is wrong twice over for this app:
+
+     1. Vedic rashi is the MOON's sign at birth (janma rashi), not the Sun's.
+     2. Even as a Sun sign it is tropical, not sidereal. With Lahiri ayanamsa
+        the sidereal Sun enters Vrishabha around 15 May, not 21 April — so a
+        5 May birth is Mesha sidereally and this function says Vrishabha.
+
+   Worse, Rs[] pairs each sign with a FIXED nakshatra (Mesha→Ashwini,
+   Vrishabha→Krittika …). A nakshatra cannot be derived from a birth month at
+   all — it is the Moon's position within 13°20', and two or three different
+   nakshatras fall in every sign. That value was being shown to users as THEIR
+   nakshatra, on the home screen, permanently.
+
+   The app already computes the real thing: the engine writes the canonical
+   Moon rashi and nakshatra into the profile. Display now uses those and only
+   those. When they are not known we ask for birth details — which is honest,
+   and is the funnel we want anyway. This function is kept only for the icon
+   lookup and must never again be presented as the user's rashi. */
 function getRashi(d){
   if(!d) return null;
   const dt=new Date(d),m=dt.getMonth(),day=dt.getDate();
@@ -2684,8 +2705,19 @@ function getRashi(d){
 }
 function rashiKnown(){ return !!(U.rashi||U.dob); }
 var R={h:'—',e:'—',w:'',i:'✨',nh:'—',ne:'—'};
-try{ R=getRashi(U.dob)||R; }catch(e){}
-const R_KNOWN=!!getRashi(U.dob);
+try{ R=getRashi(U.dob)||R; }catch(e){}   /* icon only — see SD-JANMA-RASHI */
+
+/* The real values, computed by the engine from the birth moment and place. */
+var BIRTH_RASHI='', BIRTH_NAK='';
+try{ BIRTH_RASHI=String(U.rashi||'').trim(); BIRTH_NAK=String(U.nakshatra||'').trim(); }catch(e){}
+const R_KNOWN=!!BIRTH_RASHI;
+/* the icon can follow the real sign; it carries no astrological claim */
+try{
+  if(BIRTH_RASHI){
+    var _ri=Rs.filter(function(x){return x.e===BIRTH_RASHI;})[0];
+    if(_ri) R=_ri;
+  }
+}catch(e){}
 
 // ── Greeting ──
 function greetMsg(){
@@ -2755,7 +2787,7 @@ function personalise(){
   document.getElementById('rl').textContent=A('dashbo.rashi');
   const jsb=document.getElementById('jdShareBtn');if(jsb)jsb.textContent=A('dashbo.share_with_loved_ones');
   document.getElementById('ri').textContent=R_KNOWN?R.i:'✨';
-  document.getElementById('rv').textContent=R_KNOWN?sdRashi({hi:R.h,en:R.e}):(A('dashbo.add'));
+  document.getElementById('rv').textContent=R_KNOWN?sdRashi(BIRTH_RASHI):(A('dashbo.add'));
   var _rc=document.getElementById('rv');
   if(_rc&&!R_KNOWN){ _rc.parentElement.style.cursor='pointer';
     _rc.parentElement.onclick=function(){openSettings();}; }
@@ -2825,8 +2857,11 @@ function personalise(){
   // Listen hero
   document.getElementById('lhTag').textContent=A('dashbo.today_s_panchang_for_you');
   document.getElementById('lhTitle').textContent=A('dashbo.listen_to_daily_panchang');
+  /* This line is written ONCE and was never corrected afterwards, so the
+     fabricated nakshatra sat on the home screen for good. The nakshatra is now
+     shown only when the engine actually supplied one. */
   document.getElementById('lhSub').textContent=R_KNOWN
-    ? (sdRashi({hi:R.h,en:R.e})+' • '+sdNak({hi:R.nh,en:R.ne})+' • '+A('dashbo.language_name'))
+    ? (sdRashi(BIRTH_RASHI)+(BIRTH_NAK?(' • '+sdNak(BIRTH_NAK)):'')+' • '+A('dashbo.language_name'))
     : (A('dashbo.add_your_birth_details'));
   var _pv=document.getElementById('pvTime');
   /* Read the existing value BEFORE the line is re-rendered — replacing the
@@ -2944,7 +2979,9 @@ function personalise(){
   document.getElementById('yogLbl').textContent=A('dashbo.yoga');
   document.getElementById('karLbl').textContent=A('dashbo.karana');
   document.getElementById('varLbl').textContent=A('dashbo.day');
-  document.getElementById('nakVal2').textContent=sdNak({hi:R.nh,en:R.ne});
+  /* today's sky nakshatra, filled by the panchang render. Until it arrives,
+     an em dash — never a nakshatra invented from a birth month. */
+  document.getElementById('nakVal2').textContent='—';
   document.getElementById('ps2').textContent=A('dashbo.inauspicious_times');
   document.getElementById('rahuLbl').textContent=A('dashbo.rahu_kaal');
   if(!document.getElementById('rahuTime').textContent.match(/\d/))
