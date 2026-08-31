@@ -137,11 +137,24 @@
   // 4-day / 2-city Prokerala (Lahiri) reference matrix. Diagnosis: tithi & karana
   // (ayanamsa-free) were 0–1 min exact, nakshatra (ayanamsa ×1) ran +1.7 min late,
   // yoga (ayanamsa ×2) ran late — then pinned precisely by a 9-graha 3-decimal ephemeris + 6 published ingress instants (Jan+Aug 2026): final value centers graha longitudes to ±0.15 arcmin and Makar Sankranti to ~1 min.
-  const CALIBRATION_OFFSET = 0.090;
+  // LAHIRI AYANAMSA — ONE constant, deliberately not two.
+  // This previously read `24.12972 + ... + CALIBRATION_OFFSET(0.090)`. The base
+  // was ~0.086° BELOW published Lahiri and the offset added it back; the SUM was
+  // right (within ~13" of published Lahiri across 2000-2026) but neither number
+  // meant anything alone. The trap: a future maintainer notices 24.12972 does
+  // not match the published 2026 value, "corrects" it to 24.21972, and the
+  // offset is then counted TWICE — a 0.09° shift, ~10 minutes of Moon motion,
+  // enough to move nakshatra boundaries and flip a rashi near a cusp.
+  // Folded into a single value with its reference stated. DO NOT re-split.
+  // Reference: Lahiri (Chitrapaksha) ayanamsa at epoch 2026.0 = 24.21972 deg.
+  // Verified: 9 grahas within 0.15 arcmin of a published sidereal ephemeris,
+  // and 6 published gochar ingress instants reproduced (Jan & Aug 2026).
+  const AYANAMSA_2026_0 = 24.21972;
+  const CALIBRATION_OFFSET = 0;   // retained at zero; folded into the constant above
   function ayanamsa(date) {
     const jd = (date.getTime() / 86400000) + 2440587.5;
     const yearFrac = 2000.0 + (jd - 2451545.0) / 365.25;
-    return 24.12972 + (yearFrac - 2026.0) * (50.2388 / 3600) + CALIBRATION_OFFSET;
+    return AYANAMSA_2026_0 + (yearFrac - 2026.0) * (50.2388 / 3600) + CALIBRATION_OFFSET;
   }
 
   function elongation(date) { let e = (moonLongitude(date) - sunLongitude(date)) % 360; if (e < 0) e += 360; return e; }
@@ -152,16 +165,51 @@
   }
 
   // ---- Sunrise / sunset --------------------------------------------------
-  // Hardening H7 — sunrise convention. Two modes:
-  //   'hindu' (DEFAULT): sun's disc CENTER crosses the geometric horizon, no
-  //     atmospheric refraction (SearchAltitude at 0°). This is the convention
-  //     used by Drik Panchang / Prokerala — the sources devotees compare
-  //     against. Validated to ±0–1 min vs Ujjain & Chennai references.
-  //   'astronomical': upper limb + refraction (SearchRiseSet). ~4 min earlier
-  //     rise / later set in the tropics. Kept for comparison/debug.
+  // Hardening H7 — sunrise convention. Two modes, BOTH traditionally valid.
+  // The publisher world is genuinely split, and this comment states only what
+  // has been MEASURED (an earlier version of it asserted Drik used middle-limb;
+  // that was inherited, never verified, and is wrong — see below).
+  //
+  //   'hindu' (NOT the default since Aug 2026): disc CENTRE crosses the
+  //     geometric horizon, no
+  //     refraction (SearchAltitude at 0°). This is the GEOMETRIC sunrise that
+  //     Prokerala and mPanchang use — mPanchang's own rahu-kaal page states it:
+  //     "Refraction is not considered in Geometric sunrise... Geometric sunrise
+  //     marks sunrise moments when the middle of the Sun is visible".
+  //     MEASURED, exact to the minute on sunrise AND sunset AND rahu kaal:
+  //       Ujjain 29 Aug 2026 — 06:11 / 18:43 / 09:19-10:53  (Prokerala)
+  //       Ujjain  8 May 2026 — 05:53 / 18:53 / 10:45-12:23  (Prokerala)
+  //
+  //   'astronomical': upper limb + refraction (SearchRiseSet). This is what
+  //     DRIK PANCHANG uses. Measured indirectly because Drik blocks fetching:
+  //     on a SATURDAY gulika is the FIRST of the eight day-segments, so its
+  //     published start time IS their sunrise. Drik Jaipur, Sat 29 Aug 2026,
+  //     gulika from 06:05 — this mode gives 06:04 (1 min), 'hindu' gives 06:08.
+  //     muhuratchoghadiya/KundliGPT agree with Drik (Delhi 31 Aug 2026, 05:58).
+  //
+  // WHY 'astronomical' IS THE DEFAULT (changed Aug 2026, deliberate commit):
+  // The choice is COMMERCIAL, not astronomical — both conventions are valid;
+  // the only question is which almanac our users hold in the other hand.
+  // Measured audience data: the Drik Panchang app has ~4.5M downloads, ~200k
+  // ratings at 4.81, sits in the Play top-100 of its category, and ships in
+  // the SAME NINE Indian languages Shubh Din supports — i.e. the identical
+  // audience. Prokerala is a web portal module; mPanchang is smaller. A user
+  // who checks Shubh Din's rahu kaal against Drik every morning must not see a
+  // three-minute disagreement, every day, forever.
+  // Cost of the switch, stated honestly: we now match Prokerala/mPanchang ~4
+  // min instead of exactly. That is the correct trade — one exact match with
+  // the smaller source is worth less than close agreement with the source most
+  // users actually check.
+  // NOT affected by this choice: tithi, nakshatra, yoga, karana, and all graha
+  // positions. Those come from the sky, not from sunrise, and match published
+  // values to under a minute in both modes.
+  // To revert: setSunriseMode('hindu') at runtime, or flip this default and
+  // regenerate the goldens — the suite covers both modes.
+  //   'astronomical' (THE SHIPPED DEFAULT): upper limb + refraction
+  //     (SearchRiseSet). ~4 min earlier rise / later set in the tropics.
   // All sunrise-derived windows (rahu kaal, choghadiya, hora, brahma muhurta,
   // vara boundaries) follow the selected mode automatically.
-  let SUNRISE_MODE = 'hindu';
+  let SUNRISE_MODE = 'astronomical';
   function setSunriseMode(mode) {
     if (mode !== 'hindu' && mode !== 'astronomical') {
       throw new Error("PanchangEngine.setSunriseMode: mode must be 'hindu' or 'astronomical' (got " + String(mode) + ")");
@@ -1767,7 +1815,7 @@
 
   // ---- Kundli K9c: Manglik matching (two charts) ----------------------------
   // Both-manglik neutralization + classical cancellation factors, honestly listed.
-  function manglikFactors(birthDate, lat, lng) {
+  function manglikFactors(birthDate, lat, lng, refDate) {
     var bc = getBirthChart(birthDate, lat, lng);
     var d = getDoshas(birthDate, lat, lng);
     var mars = null, jup = null;
@@ -1784,7 +1832,8 @@
       var jh = ((jup.house - mars.house + 12) % 12) + 1;
       if (jh === 1 || jh === 5 || jh === 7 || jh === 9)
         factors.push({ en: 'Jupiter influences Mars (conjunction/aspect)', hi: '\u0917\u0941\u0930\u0941 \u0915\u0940 \u092E\u0902\u0917\u0932 \u092A\u0930 \u0926\u0943\u0937\u094D\u091F\u093F/\u092F\u0941\u0924\u093F' });
-      var ageYears = (Date.now() - birthDate.getTime()) / (365.25 * 86400000);
+      // refDate makes this testable at any date; defaults to the system clock.
+      var ageYears = ((refDate ? refDate.getTime() : Date.now()) - birthDate.getTime()) / (365.25 * 86400000);
       if (ageYears > 28)
         factors.push({ en: 'Age above 28 — traditional attenuation', hi: '28 \u0935\u0930\u094D\u0937 \u0938\u0947 \u0905\u0927\u093F\u0915 \u0906\u092F\u0941 \u2014 \u092A\u093E\u0930\u0902\u092A\u0930\u093F\u0915 \u0936\u092E\u0928' });
     }
@@ -2136,7 +2185,7 @@
   // ---- Ten-Year Forecast: per-year composite ---------------------------------
   // Recombines dasha (maha/antar) + Jupiter/Saturn/Rahu transits from Moon +
   // event-window signals into a year-by-year outlook with domain leanings.
-  function getYearForecast(birthDate, lat, lng, startYear, numYears) {
+  function getYearForecast(birthDate, lat, lng, startYear, numYears, refDate) {
     var bc = getBirthChart(birthDate, lat, lng);
     var dz = getVimshottariDasha(birthDate);
     var moonG = null; for (var i=0;i<bc.grahas.length;i++) if (bc.grahas[i].key==='moon') moonG=bc.grahas[i];
@@ -2242,7 +2291,7 @@
     years[bestIdx].spotlight='best';
     if (worstIdx!==bestIdx && years[worstIdx].tone<0) years[worstIdx].spotlight='caution';
     return { startYear: startYear, years: years, moonRashi: moonG.rashi,
-             birthChart: bc, currentDasha: dashaAt(Date.now()),
+             birthChart: bc, currentDasha: dashaAt(refDate ? refDate.getTime() : Date.now()),
              rulesHouses: rulesHouses, planetHouse: planetHouse, dignity: digMap };
   }
 
@@ -2852,6 +2901,70 @@
   getEventWindows = guardedOffset1(getEventWindows, 'getEventWindows');
   findMuhurta = guardedOffset1(findMuhurta, 'findMuhurta');
 
+  // ==== Patch BHADRA-2 (Aug 2026): Holika Dahan muhurta window ==============
+  // SOURCED (Drik Panchang's own published rule, corroborated by
+  // shrimahalaxmicalendar): Holika Dahan is performed between PRADOSH and
+  // Hindu midnight. If Bhadra covers pradosh but ENDS BEFORE midnight, the
+  // dahan is performed AFTER Bhadra ends — the SAME night. It does not move
+  // to the next day; that is why the festival rule must never carry
+  // avoidBhadra (see BHADRA-1).
+  //
+  // DELIBERATELY NOT IMPLEMENTED — Bhadra Mukha / Punchha subdivision.
+  // Two DIFFERENT published systems conflict: (a) fixed ghati counts from the
+  // start/end of the Vishti karana (ganeshmitra: mukha = first 5 ghati,
+  // punchha = last 3), and (b) a moon-rashi body-part mapping (astrosight:
+  // Mukha = Mesha/Karka/Tula/Makara, Kantha = Vrishabha/Simha/..., Puchchha
+  // last). Until one is settled with a classical citation, this function
+  // returns `bhadraExtendsPastMidnight: true` and NO window rather than
+  // guessing — the case where Punchha would be needed. Per project law, a
+  // festival whose wrong timing is said to bring misfortune is the last place
+  // to implement a rule from a coin-flip between sources.
+  function getHolikaDahanMuhurta(year, lat, lng, tzOffsetHours) {
+    if (!(Number(year) >= 1800 && Number(year) <= 2200)) {
+      throw new Error('PanchangEngine.getHolikaDahanMuhurta: year out of range [1800,2200] (got ' + String(year) + ')');
+    }
+    var v = validateInputs(new Date(Date.UTC(Number(year), 0, 1, 6, 0, 0)), lat, lng, 'getHolikaDahanMuhurta');
+    lat = v.lat; lng = v.lng;
+    var tz = (tzOffsetHours == null) ? 5.5 : Number(tzOffsetHours);
+    var fs = getFestivals(Number(year), lat, lng, tz);
+    var hd = null;
+    for (var i = 0; i < fs.length; i++) if (/Holika Dahan/.test(fs[i].en)) hd = fs[i];
+    if (!hd) return null;
+    var dp = hd.date.split('-').map(Number);
+    var p = getPanchang(new Date(Date.UTC(dp[0], dp[1] - 1, dp[2], 6, 0, 0)), lat, lng, tz);
+    if (!p.sunset || !p.nextSunrise) {
+      return { date: hd.date, warnings: ['NO_SUNRISE_SUNSET'], window: null };
+    }
+    // Pradosh: from sunset for ~2h24m (the classical 6-ghati pradosh kaal).
+    var pradoshStart = p.sunset.getTime();
+    var pradoshEnd = pradoshStart + 6 * 24 * 60000;
+    // Hindu midnight = midpoint of sunset -> next sunrise.
+    var hinduMidnight = pradoshStart + (p.nextSunrise.getTime() - pradoshStart) / 2;
+    var bhadraAtPradosh = bhadraOverlaps(pradoshStart, pradoshEnd);
+    var result = { date: hd.date, pradosh: { start: new Date(pradoshStart), end: new Date(pradoshEnd) },
+                   hinduMidnight: new Date(hinduMidnight), bhadraAtPradosh: bhadraAtPradosh,
+                   bhadraExtendsPastMidnight: false, window: null, rule: null };
+    if (!bhadraAtPradosh) {
+      result.window = { start: new Date(pradoshStart), end: new Date(Math.min(pradoshEnd, hinduMidnight)) };
+      result.rule = 'pradosh';
+      return result;
+    }
+    // Bhadra covers pradosh: find when it ends (scan at 6-min resolution to the
+    // same grid isBhadra uses, then refine to the minute).
+    var t = pradoshStart, limit = hinduMidnight + 12 * 3600000, end = null;
+    for (; t < limit; t += 360000) { if (!isBhadra(t)) { end = t; break; } }
+    if (end == null) { result.bhadraExtendsPastMidnight = true; result.rule = 'bhadra-past-midnight-punchha-unsourced'; return result; }
+    var lo = Math.max(pradoshStart, end - 360000), hi = end;
+    while (hi - lo > 60000) { var mid = (lo + hi) / 2; if (isBhadra(mid)) lo = mid; else hi = mid; }
+    end = hi;
+    if (end >= hinduMidnight) { result.bhadraExtendsPastMidnight = true; result.rule = 'bhadra-past-midnight-punchha-unsourced'; return result; }
+    result.window = { start: new Date(end), end: new Date(hinduMidnight) };
+    result.rule = 'after-bhadra-ends';
+    result.bhadraEnds = new Date(end);
+    return result;
+  }
+  // ==== end Patch BHADRA-2 ===================================================
+
   // ==== Upgrade U1 (Aug 2026): Personal muhurta strength + namakshara =======
   // Sources (recorded per project discipline):
   // - Tarabala: count janma nakshatra -> day nakshatra inclusive, mod 9.
@@ -3230,6 +3343,7 @@
     tarabalaOf, chandrabalaOf, getPersonalDayStrength, getNamakshara,
     getMonthlyGochar, gocharHouse,
     getMuddaDasha, getSahams, findVarshaPravesh,
+    getHolikaDahanMuhurta,
     getFestivals,
     getVrats,
     getLagna,
