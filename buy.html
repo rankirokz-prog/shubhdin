@@ -201,7 +201,7 @@ if(CFG[R]){try{localStorage.setItem('sd_buy_last',R);}catch(e){}}
    has paid and holds nothing yet. Reviewers rewrote it from "your report" to
    "your Kundli report / जन्मकुंडली / ஜாதக அறிக்கை" and added "expert team"
    and "with care" — it has to sound like a person, not a queue. */
-var SD_BUILD='C6';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
+var SD_BUILD='C7';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
 function bdlog(m){
   try{var a=JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]');
     a.push(new Date().toISOString().slice(11,19)+' '+m);
@@ -684,7 +684,14 @@ function doPay(){
   /* Ask the server to mint a payment link for THIS buyer. We send no amount —
      the server owns the price. If payments aren't configured yet it answers
      503 and we fall back to the ₹0 dev path below. */
-  fetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token),
+  /* Send the phone and language WITH the request that mints the link, so they
+   ride in the Razorpay notes. postMeta() only runs in showDone(), i.e. after
+   the buyer returns to this page — a buyer who pays and closes the tab was
+   left with an order carrying no phone and lang defaulting to 'hi'. */
+fetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
+      +'&phone='+encodeURIComponent((details()||{}).phone||'')
+      +'&lang='+encodeURIComponent((details()||{}).lang||window.SD_LANG||'hi')
+      +'&access_token='+encodeURIComponent(SESSION.access_token),
     {method:'POST'})
    .then(apiJson).then(function(j){
      if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();return;}
