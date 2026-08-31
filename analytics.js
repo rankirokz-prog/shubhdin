@@ -168,6 +168,11 @@
   try {
     g.addEventListener('error', function (e) {
       try {
+        /* Some throws are deliberate stops rather than faults — buy.html uses
+           one to halt the script during a redirect. Reporting those would fill
+           the error view with noise and hide the real failures, which is the
+           one thing this signal exists to prevent. */
+        if (e && e.error && e.error.sdIntentional) return;
         track('js_error', {
           msg: String((e && e.message) || 'error').slice(0, 180),
           file: String((e && e.filename) || '').split('/').pop().slice(0, 60),
