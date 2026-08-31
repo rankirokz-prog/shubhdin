@@ -1817,7 +1817,7 @@
   // Both-manglik neutralization + classical cancellation factors, honestly listed.
   function manglikFactors(birthDate, lat, lng, refDate) {
     var bc = getBirthChart(birthDate, lat, lng);
-    var d = getDoshas(birthDate, lat, lng);
+    var d = getDoshas(birthDate, lat, lng, refDate);   // thread refDate through
     var mars = null, jup = null;
     for (var i = 0; i < bc.grahas.length; i++) {
       if (bc.grahas[i].key === 'mars') mars = bc.grahas[i];
@@ -1842,9 +1842,12 @@
              softened: d.manglik.present && factors.length > 0 };
   }
   // Public: two-chart manglik match.
-  function getManglikMatch(boyDate, boyLat, boyLng, girlDate, girlLat, girlLng) {
-    var boy = manglikFactors(boyDate, boyLat, boyLng);
-    var girl = manglikFactors(girlDate, girlLat, girlLng);
+  function getManglikMatch(boyDate, boyLat, boyLng, girlDate, girlLat, girlLng, refDate) {
+    // refDate reaches manglikFactors -> getDoshas -> getSadeSati. Without it the
+    // whole chain silently fell back to the system clock, which made the
+    // parameter on manglikFactors unreachable from the public API.
+    var boy = manglikFactors(boyDate, boyLat, boyLng, refDate);
+    var girl = manglikFactors(girlDate, girlLat, girlLng, refDate);
     var verdict;
     if (!boy.present && !girl.present)
       verdict = { key: 'none', en: 'No Mangal Dosha in either chart — Mars poses no obstacle to this match.',
