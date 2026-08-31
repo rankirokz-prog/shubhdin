@@ -67,6 +67,10 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
 .r-buy .cta{padding:8px 13px;font-size:11.5px;}
 .note{text-align:center;font-size:10px;color:rgba(255,244,222,0.3);margin-top:24px;line-height:1.7;}
 </style>
+<!-- analytics first: it also reports uncaught errors from every script below,
+     and this page has a document.write race in its history — if it ever fails
+     again we will hear about it the same day instead of by accident. -->
+<script src="analytics.js"></script>
 <script>
 /* The string tables must be in place before the inline render script runs,
    and before report-catalog.js so its helpers can see A() and sdHas().
@@ -171,6 +175,28 @@ REPORTS.forEach(function(r){
   }
 });
 root.innerHTML=h;
+
+/* ══ funnel · top ══════════════════════════════════════════════════════════
+   report_view is fired once per report shown on this page, so the funnel has
+   a real denominator. buy_click is fired on the tap that leaves for buy.html —
+   and NOT on an owned card, which goes to My Reports and is not a purchase
+   intent. Every call is wrapped: a sales page must never fail to sell because
+   analytics broke. */
+try{
+  REPORTS.forEach(function(r){
+    if(!OWNED[r.id]) sdTrack('report_view',{report:r.id});
+  });
+  sdTrack('premium_view',{count:REPORTS.length,n:ownedCount});
+  root.addEventListener('click',function(e){
+    try{
+      var a=e.target; while(a&&a!==root&&a.tagName!=='A') a=a.parentNode;
+      if(!a||!a.getAttribute) return;
+      var href=a.getAttribute('href')||'';
+      var m=href.match(/buy\.html\?r=([a-z_]+)/);
+      if(m){ sdTrack('buy_click',{report:m[1],source:'premium'}); sdFlush(true); }
+    }catch(x){}
+  },true);
+}catch(e){}
 /* page chrome — set after render so A() is certainly resolved */
 (function(){
   var set=function(id,k){var e=document.getElementById(id); if(e&&typeof A==='function') e.textContent=A(k);};
