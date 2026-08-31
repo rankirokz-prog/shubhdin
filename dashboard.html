@@ -2,6 +2,64 @@
 <html lang="hi">
 <head>
 <script>
+/* ══ SD-SPLASH-WATCHDOG ═══════════════════════════════════════════════════
+   THE WORST BUG THIS APP CAN HAVE is the opening wallpaper never lifting.
+   The user does not see a broken feature — they see a picture, forever, and
+   they uninstall. Everything else degrades; this one is fatal.
+
+   How it used to fail: the splash was hidden by a single top-level
+       setTimeout(...)
+   sitting in the largest script on the page, directly beneath
+       loadBirthCache();  getOrCreateUID();
+   If either threw — one corrupt value in localStorage is enough — the timeout
+   was NEVER REGISTERED and the app was unreachable. The same pattern has
+   already caused three other silent failures in this file.
+
+   The splash is now lifted by FIVE independent mechanisms that do not share a
+   failure. This script is first in <head>, so it runs before any other code
+   exists to break.                                                          */
+(function(){
+  var LIFT_AT = 3000;      // normal
+  var HARD_AT = 6000;      // watchdog: something is wrong, get out anyway
+
+  function lift(why){
+    try{
+      var wp = document.getElementById('wallpaper');
+      if(!wp || wp.getAttribute('data-lifted')) return;
+      wp.setAttribute('data-lifted', why || '1');
+      wp.style.transition = 'opacity .35s ease';
+      wp.style.opacity = '0';
+      wp.style.pointerEvents = 'none';
+      setTimeout(function(){ try{ wp.style.display='none'; }catch(e){} }, 380);
+    }catch(e){
+      try{ var el=document.getElementById('wallpaper');
+           if(el&&el.parentNode) el.parentNode.removeChild(el); }catch(e2){}
+    }
+  }
+  window.__sdLiftSplash = lift;
+
+  /* 2 · hard watchdog, registered here so nothing the main script does can
+         prevent it */
+  setTimeout(function(){ lift('watchdog'); }, HARD_AT);
+  /* 3 · the normal lift, no longer dependent on anything above it surviving */
+  setTimeout(function(){ lift('timer'); }, LIFT_AT);
+  /* 4 · an uncaught error is EXACTLY the condition that used to trap people */
+  window.addEventListener('error', function(){ lift('js-error'); });
+  window.addEventListener('unhandledrejection', function(){ lift('promise'); });
+  /* 5 · user agency: whatever else is broken, a tap gets them in */
+  document.addEventListener('DOMContentLoaded', function(){
+    try{
+      var wp=document.getElementById('wallpaper'); if(!wp) return;
+      wp.addEventListener('click', function(e){
+        var t=e.target;
+        while(t && t!==wp){ if(t.id==='wpShare') return; t=t.parentNode; }
+        lift('tap');
+      });
+    }catch(e){}
+  });
+})();
+</script>
+<script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
 (function(){try{
   var hasCode=(location.search.indexOf('code=')>-1||location.hash.indexOf('access_token=')>-1||location.search.indexOf('error=')>-1);
@@ -43,6 +101,16 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 #wallpaper{
   position:fixed;inset:0;z-index:100;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
+  /* THE FLOOR. If every script is dead — syntax error, failed CDN, an old
+     browser choking on something — CSS still runs, and this alone makes the
+     app impossible to get trapped behind. 7s sits deliberately after the 6s JS
+     watchdog, so in normal life this is never what the user experiences.
+     (This rule appears twice in the file; both copies carry it.) */
+  animation: sdSplashFloor 0.5s ease 7s forwards;
+}
+@keyframes sdSplashFloor{
+  from{ opacity:1; }
+  to  { opacity:0; pointer-events:none; visibility:hidden; }
 }
 #wpBg{position:absolute;inset:0;}
 .bg-sun{background:linear-gradient(155deg,#0D0500,#3D1A05,#5C2508,#0D0500);}
@@ -630,6 +698,16 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 #wallpaper{
   position:fixed;inset:0;z-index:100;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
+  /* THE FLOOR. If every script is dead — syntax error, failed CDN, an old
+     browser choking on something — CSS still runs, and this alone makes the
+     app impossible to get trapped behind. 7s sits deliberately after the 6s JS
+     watchdog, so in normal life this is never what the user experiences.
+     (This rule appears twice in the file; both copies carry it.) */
+  animation: sdSplashFloor 0.5s ease 7s forwards;
+}
+@keyframes sdSplashFloor{
+  from{ opacity:1; }
+  to  { opacity:0; pointer-events:none; visibility:hidden; }
 }
 #wpBg{position:absolute;inset:0;}
 .bg-sun{background:linear-gradient(155deg,#0D0500,#3D1A05,#5C2508,#0D0500);}
@@ -5526,14 +5604,16 @@ renderWallpaperCard();
   history.replaceState(null,'',location.pathname);
   setTimeout(function(){ g==='sadhana'?openSadhana():go(g); },120);
 }catch(e){}})();
-loadBirthCache();
-getOrCreateUID(); // ensure UID exists
-setTimeout(saveToCloud, 3000); // save after page loads
-setTimeout(()=>{
-  const wp=document.getElementById('wallpaper');
-  wp.style.opacity='0';wp.style.pointerEvents='none';wp.style.display='none';
-  showToast();
-},3000);
+/* Each is now isolated. These used to run bare and in sequence, so a throw in
+   the first silently cancelled everything after it — including, until now, the
+   only code that lifted the opening wallpaper. */
+try{ loadBirthCache(); }catch(e){}
+try{ getOrCreateUID(); }catch(e){}
+try{ setTimeout(function(){ try{ saveToCloud(); }catch(e){} }, 3000); }catch(e){}
+
+/* The lift itself now lives in the <head> watchdog and does not depend on this
+   script running at all. This only adds the toast, which is cosmetic. */
+setTimeout(function(){ try{ showToast(); }catch(e){} }, 3200);
 
 
 /* ══════════════════════════════════════════════════════════════════
@@ -5567,21 +5647,40 @@ function wpStubAd(){
   return new Promise(function(resolve){
     var host=document.getElementById('wpAd'), cEl=document.getElementById('wpAdCount');
     if(!host) return resolve(false);
-    document.getElementById('wpAdLbl').textContent=A('dashbo.advertisement');
-    document.getElementById('wpAdBoxTxt').textContent=A('dashbo.ad_playing');
+    /* Labels are decoration. They were unguarded, so a single missing string
+       threw here — BEFORE the overlay opened — which rejected this promise and
+       left whoever awaited it hanging with no ad and no answer. Cosmetic code
+       must never be able to break the flow it decorates. */
+    try{ document.getElementById('wpAdLbl').textContent=A('dashbo.advertisement'); }catch(e){}
+    try{ document.getElementById('wpAdBoxTxt').textContent=A('dashbo.ad_playing'); }catch(e){}
     var left=WP_AD_SECONDS, done=false;
     host.classList.add('on');
     function finish(ok){
       if(done) return; done=true;
-      clearInterval(iv); host.classList.remove('on'); window._wpAdAbort=null;
+      try{ clearInterval(iv); }catch(e){}
+      try{ clearTimeout(guard); }catch(e){}
+      try{ host.classList.remove('on'); }catch(e){}
+      window._wpAdAbort=null;
       resolve(ok);
     }
     window._wpAdAbort=function(){ finish(false); };   // ✕ = dismissed, no reward
     cEl.textContent=left;
+    /* The countdown body touches the string layer, and this is the second and
+       last full-screen overlay in the app. If A() throws on a missing string
+       the interval dies, the counter freezes and the user is left staring at a
+       fake ad. The ✕ still works, but relying on the user to find their own way
+       out of a stuck screen is not a design. So: the body is caught, and a
+       guard finishes the ad regardless once its time has genuinely elapsed. */
     var iv=setInterval(function(){
-      left--; cEl.textContent=left>0?left:(A('dashbo.thank_you'));
-      if(left<=0){ setTimeout(function(){finish(true);},700); }
+      try{
+        left--; cEl.textContent = left>0 ? left : A('dashbo.thank_you');
+        if(left<=0) setTimeout(function(){ finish(true); },700);
+      }catch(e){
+        left--;
+        if(left<=0) finish(true);
+      }
     },1000);
+    var guard=setTimeout(function(){ finish(true); }, (WP_AD_SECONDS+6)*1000);
   });
 }
 function wpAdClose(){ if(window._wpAdAbort) window._wpAdAbort(); }
