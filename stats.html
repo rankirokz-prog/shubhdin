@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark only">
+<title>Stats — शुभ दिन</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!--
+  Why this page exists at all: the analytics were reachable only through the
+  Supabase SQL editor, and nobody runs SQL every morning. Numbers nobody looks
+  at may as well not be collected.
+
+  Why it needs a server hop: the events table is INSERT-ONLY by policy. The
+  browser can add an event with the public anon key and cannot read one back
+  with it — that is what makes the data safe to collect, and it means the
+  dashboard must read through api/order.js?stats=1 with the service key,
+  behind the same admin gate dispatch.html uses.
+
+  Deliberately boring. This is a tool for one person, on a phone, before
+  breakfast. No charting library, no build step, no dependencies beyond the
+  Supabase SDK that dispatch.html already loads.
+-->
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--gold:#D4A843;--ink:#0D0500;--cream:#FFF4DE;}
+body{min-height:100vh;background:linear-gradient(155deg,#0D0500,#2C1208 45%,#0D0500);
+  font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.92);padding:16px 13px 60px;}
+h1{font-size:17px;color:var(--gold);font-weight:600;}
+h1 small{display:block;font-size:9.5px;letter-spacing:2px;color:rgba(255,244,222,0.4);font-weight:400;margin-top:2px;}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.rf{margin-left:auto;background:rgba(255,255,255,0.08);border:1px solid rgba(212,168,67,0.3);
+  color:var(--gold);font-size:12px;padding:7px 12px;border-radius:10px;cursor:pointer;font-family:inherit;}
+.card{background:linear-gradient(150deg,rgba(255,255,255,0.05),rgba(255,255,255,0.012));
+  border:1px solid rgba(212,168,67,0.22);border-radius:14px;padding:13px 14px;margin-bottom:12px;}
+.ct{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(212,168,67,0.85);
+  font-weight:600;margin-bottom:9px;}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+th{text-align:left;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
+  color:rgba(255,244,222,0.45);padding:0 8px 6px 0;border-bottom:1px solid rgba(212,168,67,0.2);white-space:nowrap;}
+td{padding:6px 8px 6px 0;font-size:12.5px;border-bottom:1px solid rgba(212,168,67,0.08);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+/* right-aligned columns need a left gap or adjacent headers collide —
+   "HITS" and "PEOPLE" rendered as "HITSPEOPLE" */
+td.n,th.n{text-align:right;padding-right:0;padding-left:12px;font-weight:600;white-space:nowrap;}
+/* the first column is a label or a date; never break it across two lines */
+td:first-child,th:first-child{white-space:nowrap;}
+/* ...except the error message, which is the one column that must wrap */
+td.msg{white-space:normal;}
+.big{font-size:26px;font-weight:700;color:#FFF4DE;}
+.row3{display:flex;gap:9px;}
+.row3>div{flex:1;text-align:center;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(212,168,67,0.18);border-radius:11px;padding:11px 6px;}
+.row3 span{display:block;font-size:9.5px;color:rgba(255,244,222,0.5);margin-top:3px;}
+.err{border-color:rgba(220,90,70,0.5);background:rgba(220,90,70,0.10);}
+.err .ct{color:#FF9B84;}
+.ok{color:#7DE29A;}
+.muted{color:rgba(255,244,222,0.45);font-size:11.5px;line-height:1.7;}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:11px;word-break:break-all;
+  background:rgba(0,0,0,0.35);padding:9px;border-radius:8px;color:#FFD9A0;}
+button.g{background:linear-gradient(120deg,var(--gold),#B8892F);color:#1A0D00;border:none;
+  font-size:13px;font-weight:600;padding:11px 18px;border-radius:11px;cursor:pointer;font-family:inherit;}
+.center{text-align:center;padding:40px 16px;}
+</style>
+</head>
+<body>
+
+<div id="stAuth" class="center" style="display:none;">
+  <div style="font-size:40px;margin-bottom:14px;">📊</div>
+  <p class="muted" style="margin-bottom:18px;">Sign in with the admin Google account.</p>
+  <button class="g" onclick="signIn()">Sign in</button>
+</div>
+
+<div id="stDenied" class="center" style="display:none;">
+  <div style="font-size:40px;margin-bottom:12px;">⛔</div>
+  <p id="deniedMsg" style="margin-bottom:14px;">This account is not on the admin list.</p>
+  <p class="muted" style="margin-bottom:8px;">Add this uid to <b>SD_ADMIN_UIDS</b> in Vercel:</p>
+  <div class="mono" id="deniedUid"></div>
+  <p class="muted" style="margin-top:14px;" id="deniedRaw"></p>
+  <button class="g" style="margin-top:16px;" onclick="copyUid()">Copy uid</button>
+</div>
+
+<div id="stMain" style="display:none;">
+  <div class="hdr">
+    <h1>Shubh Din<small>STATS</small></h1>
+    <button class="rf" onclick="loadAll()" id="rfBtn">↻</button>
+  </div>
+  <div id="body"></div>
+  <p class="muted" style="margin-top:18px;text-align:center;" id="foot"></p>
+</div>
+
+<script>
+/* auth — identical flow to dispatch.html, deliberately */
+var SB_URL='https://dulfiljhfchkccqwqniv.supabase.co';
+var SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1bGZpbGpoZmNoa2NjcXdxbml2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNTQ0OTQsImV4cCI6MjA5MDYzMDQ5NH0.et_SeR8w5nLbWMIbIHvix8EYpvPI8-dPHmXQr78ocnM';
+var sb=null, SESSION=null;
+try{ if(window.supabase&&window.supabase.createClient) sb=window.supabase.createClient(SB_URL,SB_ANON); }catch(e){}
+function $(id){return document.getElementById(id);}
+function show(id){['stAuth','stDenied','stMain'].forEach(function(x){$(x).style.display=(x===id)?'block':'none';});}
+function signIn(){ if(!sb) return alert('Supabase CDN did not load — check the connection and reload.');
+  sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}}); }
+function copyUid(){ var u=SESSION&&SESSION.user?SESSION.user.id:'';
+  try{ navigator.clipboard.writeText(u); alert('Copied:\n'+u); }catch(e){ prompt('Copy this uid:',u); } }
+
+(function boot(){
+  if(!sb){ show('stAuth'); return; }
+  var fin=function(){ sb.auth.getSession().then(function(r){
+    SESSION=r.data&&r.data.session;
+    if(!SESSION){ show('stAuth'); return; }
+    loadAll();
+  }); };
+  var h=location.hash;
+  if(h.indexOf('access_token=')>-1){
+    var p={}; h.slice(1).split('&').forEach(function(kv){var a=kv.split('=');p[a[0]]=decodeURIComponent(a[1]||'');});
+    sb.auth.setSession({access_token:p.access_token,refresh_token:p.refresh_token})
+      .then(function(){ try{history.replaceState(null,'',location.pathname);}catch(e){} fin(); });
+  } else fin();
+})();
+
+/* Any answer that is not real stats means we are not in. Always show the uid —
+   it is the thing needed to unlock access. An empty dashboard would read as
+   "no traffic" and hide the actual problem, which is the failure mode this
+   whole page exists to prevent. */
+function cannotLoad(reason,detail){
+  $('deniedUid').textContent=(SESSION&&SESSION.user)?SESSION.user.id:'(no session)';
+  $('deniedMsg').textContent=reason;
+  $('deniedRaw').textContent=detail||'';
+  show('stDenied');
+}
+
+function esc(v){ return String(v==null?'':v).replace(/[&<>]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); }
+function card(title,inner,cls){ return '<div class="card '+(cls||'')+'"><div class="ct">'+title+'</div>'+inner+'</div>'; }
+function tbl(cols,rows,numCols){
+  if(!rows||!rows.length) return '<p class="muted">Nothing yet.</p>';
+  var h='<table><tr>'+cols.map(function(c,i){return '<th'+(numCols.indexOf(i)>=0?' class="n"':'')+'>'+esc(c)+'</th>';}).join('')+'</tr>';
+  rows.forEach(function(r){
+    h+='<tr>'+r.map(function(v,i){
+      var cls=numCols.indexOf(i)>=0?' class="n"':(String(v).length>24?' class="msg"':'');
+      return '<td'+cls+'>'+esc(v)+'</td>';}).join('')+'</tr>';
+  });
+  return h+'</table>';
+}
+function day(s){ return String(s||'').slice(5,10); }
+
+function loadAll(){
+  $('rfBtn').textContent='…';
+  fetch('/api/order?stats=1&uid='+SESSION.user.id+'&access_token='+encodeURIComponent(SESSION.access_token))
+    .then(function(r){ return r.json().catch(function(){ return {error:'bad response ('+r.status+')'}; }); })
+    .then(render)
+    .catch(function(e){ cannotLoad('Could not reach the server.', String(e).slice(0,120)); });
+}
+
+function render(j){
+  $('rfBtn').textContent='↻';
+  if(!j || j.error) return cannotLoad(j&&j.error==='admin only'
+      ? 'This account is not on the admin list.'
+      : 'Could not load stats.', j&&j.error);
+  if(j.setup_needed) return cannotLoad('Analytics tables are not set up yet.',
+    'Run analytics-setup.sql in the Supabase SQL editor, then reload this page.');
+
+  var v=j.views||{}, h='';
+
+  /* Errors first, always. This is the query worth running daily — three
+     features in this app died silently to an uncaught throw and each was
+     found weeks later by accident. */
+  var errs=v.v_errors_7d||[];
+  if(errs.length){
+    h+=card('⚠️ Errors · last 7 days',
+      tbl(['Day','Message','File','Hits','People'],
+        errs.slice(0,12).map(function(e){return [day(e.day),(e.message||'').slice(0,54),e.file||'',e.hits,e.people];}),
+        [3,4]),'err');
+  } else {
+    h+=card('Errors · last 7 days','<p class="muted ok">None. Nothing has thrown on anyone\u2019s phone this week.</p>');
+  }
+
+  var d=v.v_daily||[];
+  if(d.length){
+    var today=d[0]||{};
+    h+=card('People',
+      '<div class="row3">'
+      +'<div><div class="big">'+esc(today.people||0)+'</div><span>today</span></div>'
+      +'<div><div class="big">'+esc(d.reduce(function(s,x){return s+Number(x.people||0);},0))+'</div><span>30-day total opens*</span></div>'
+      +'<div><div class="big">'+esc(today.opens||0)+'</div><span>opens today</span></div>'
+      +'</div>'
+      +'<div style="margin-top:11px;">'+tbl(['Day','People','Opens'],
+         d.slice(0,10).map(function(x){return [day(x.day),x.people,x.opens];}),[1,2])+'</div>');
+  }
+
+  var f=v.v_buy_funnel||[];
+  if(f.length) h+=card('Money · viewed → clicked → started → paid',
+    tbl(['Report','View','Click','Start','Paid'],
+      f.map(function(x){return [x.report,x.viewed,x.clicked,x.started,x.paid];}),[1,2,3,4]));
+
+  var k=v.v_kundli_funnel||[];
+  if(k.length) h+=card('Free Kundli · opened → started → finished',
+    tbl(['Day','Opened','Started','Finished'],
+      k.slice(0,10).map(function(x){return [day(x.day),x.opened,x.started,x.finished];}),[1,2,3]));
+
+  var sh=v.v_shares||[];
+  h+=card('Sharing · the growth loop',
+    sh.length?tbl(['From','Shares','People'],sh.map(function(x){return [x.surface,x.shares,x.sharers];}),[1,2])
+             :'<p class="muted">Nobody has shared anything yet.</p>');
+
+  var jp=v.v_jap||[];
+  if(jp.length) h+=card('Jap · started vs completed',
+    tbl(['Day','Started','Completed'],jp.slice(0,10).map(function(x){return [day(x.day),x.started,x.completed];}),[1,2]));
+
+  var hs=v.v_home_state||[];
+  if(hs.length) h+=card('Home screen · which layout people see',
+    tbl(['State','People','Opens'],hs.map(function(x){return [x.state,x.people,x.opens];}),[1,2]));
+
+  var lg=v.v_langs||[];
+  if(lg.length) h+=card('Languages actually used',
+    tbl(['Lang','People'],lg.map(function(x){return [x.lang,x.people];}),[1]));
+
+  $('body').innerHTML=h;
+  $('foot').textContent='*column sums people per day, so someone who opens on three days counts three times.'
+    +(j.missing?'  '+j.missing+' view(s) unavailable — re-run analytics-setup.sql.':'');
+  show('stMain');
+}
+</script>
+</body>
+</html>
