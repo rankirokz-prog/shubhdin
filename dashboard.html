@@ -59,6 +59,11 @@
   });
 })();
 </script>
+<!-- analytics loads here, before every other script, so js_error catches
+     failures in all of them. It is deliberately a separate file: nothing in
+     it can be taken down by a throw in the main script, and nothing in the
+     main script can be taken down by a throw in it. -->
+<script src="analytics.js"></script>
 <script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
 (function(){try{
@@ -1848,7 +1853,7 @@ if(typeof window.A!=='function'){
         </div>
 
         <!-- 2 · PREMIUM REPORTS — single entry -->
-        <div class="prem" onclick="window.location.href='premium.html'">
+        <div class="prem" onclick="try{sdTrack('buy_click',{source:'home_card'});sdFlush(true);}catch(e){};window.location.href='premium.html'">
           <div class="pm-ico">👑</div>
           <div class="pm-body">
             <div class="pm-title" id="pmTitle">प्रीमियम रिपोर्ट्स</div>
@@ -2791,6 +2796,13 @@ function personalise(){
   _t('khFree',A('dashbo.free_alt'));
   _t('khBtn',A('home.download_my_free_kundli'));
   if(localStorage.getItem('shubhdin_kundli_ready')==='1'){
+    /* fired once per install, not per paint — this is the funnel's far end */
+    try{
+      if(!localStorage.getItem('sd_ev_kundli_ready')){
+        localStorage.setItem('sd_ev_kundli_ready','1');
+        sdTrack('kundli_ready');
+      }
+    }catch(e){}
     _t('khBadge',A('dashbo.ready'));
     _t('khTag',A('home.your_kundli'));
     _t('khTitle',A('home.my_kundli'));
@@ -3305,6 +3317,7 @@ function updateJ(){
       jChantAudio._onTimeUpdate=null;jChantAudio._rafId=null;
       jChantAudio.pause();jChantAudio=null;
     }
+    try{ sdTrack('jap_complete',{count:(isShravan()?108:28)}); }catch(e){}
     updateStreak();
     // ── COMPLETION MOMENT ──
     // Step 1: Strong vibration (guru bead feel)
@@ -4587,6 +4600,7 @@ function shareWallpaperText(){
        + '👉 https://www.shubhdin.app';
 }
 function shareWallpaper(){
+  try{ sdTrack('share',{surface:'wallpaper'}); }catch(e){}
   var b=document.getElementById('wpShare');
   if(b){ b.textContent='✅'; setTimeout(function(){ b.textContent='📤'; },1500); }
   var txt=shareWallpaperText();
@@ -5911,6 +5925,7 @@ function gitaImageBlob(){
   });
 }
 function shareGita(){
+  try{ sdTrack('share',{surface:'gita'}); }catch(e){}
   var txt=gitaShareText(); if(!txt) return;
   function sendText(){
     try{
@@ -6065,6 +6080,14 @@ function applyHomeState(){
   }catch(e){}
   try{ paintJapStreak(); }catch(e){}
   try{ renderGitaCard(); }catch(e){}
+  /* once per load, with the state — this is what tells us whether the
+     two-state home screen actually changed behaviour */
+  try{
+    if(!window.__sdOpenSent){
+      window.__sdOpenSent=1;
+      sdTrack('app_open',{state:document.body.dataset.home||'unknown'});
+    }
+  }catch(e){}
 }
 /* The streak lived only on the jap screen — the one place you no longer need
    reminding. It belongs on the card that starts the jap. */
@@ -6089,6 +6112,7 @@ function japDoneToday(){
    back into a jap they have already completed would either double-count the
    day or quietly do nothing, and both are worse than leaving it alone. */
 function japStreakTap(e){
+  try{ if(!japDoneToday()) sdTrack('jap_start',{source:'streak_pill'}); }catch(x){}
   /* INVERTED from the first attempt, which did not work on a phone: it
      swallowed the tap with stopPropagation() and then called goJap() itself,
      so any failure inside this handler meant the tap did nothing at all. The
@@ -6117,6 +6141,7 @@ function paintStreakStrip(){
   st.style.transition='transform .12s';
   st.onclick=function(){
     if(japDoneToday()) return;
+    try{ sdTrack('jap_start',{source:'streak_strip'}); }catch(e){}
     try{ goJap(); }catch(e){ try{ go('jap'); }catch(e2){} }
   };
   /* a hint that it can be pressed, and a clear finished state */
