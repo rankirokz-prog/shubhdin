@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
 <title>रिपोर्ट खरीदें — शुभ दिन</title>
+<!-- FIRST script on the money page. Errors here cost real revenue, so they
+     must be reported the same day rather than found weeks later. -->
+<script src="analytics.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -181,7 +184,7 @@ if(!R){try{R=(localStorage.getItem('sd_buy_last')||'').toLowerCase();}catch(e){}
 if(CFG[R]){try{localStorage.setItem('sd_buy_last',R);}catch(e){}}
 /* Small rolling log — the only reliable way to tell which build a phone is
    actually running once a service worker is in play. Tap the build tag. */
-var SD_BUILD='C3';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
+var SD_BUILD='C4';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
 function bdlog(m){
   try{var a=JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]');
     a.push(new Date().toISOString().slice(11,19)+' '+m);
@@ -644,6 +647,8 @@ function doPay(){
      the double-charge path — the button used to say "Check again" while still
      wired to doPay, so a worried buyer tapping it paid twice. */
   if(payProof()){bdlog('pay blocked — proof of payment already held');confirmAfterPay();return;}
+  /* the moment the buyer commits — this is the funnel step that was missing */
+  try{ sdTrack('payment_start',{report:R,method:'razorpay'}); sdFlush(true); }catch(e){}
   $('btPay').textContent='⏳';$('errP').style.display='none';
   /* Ask the server to mint a payment link for THIS buyer. We send no amount —
      the server owns the price. If payments aren't configured yet it answers
@@ -772,6 +777,17 @@ function deliveryState(){
    }).catch(function(){});
 }
 function showDone(){
+  /* Fired once per report, not per re-entry: showDone() runs again every time
+     a buyer reopens the page, and counting those as sales would quietly
+     inflate the only number that matters. */
+  try{
+    var k='sd_ev_paid_'+R;
+    if(!localStorage.getItem(k)){
+      localStorage.setItem(k,'1');
+      sdTrack('purchase_done',{report:R});
+      sdFlush(true);
+    }
+  }catch(e){}
   show('stDone');
   postMeta();
   deliveryState();
