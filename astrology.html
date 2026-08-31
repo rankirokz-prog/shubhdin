@@ -269,8 +269,53 @@ function sdLocale(){
            bn:'bn-IN', mr:'mr-IN', gu:'gu-IN', as:'as-IN' }[l] || 'hi-IN';
 }
 
-var LAT=parseFloat(U.city_lat)||23.1793, LNG=parseFloat(U.city_lon)||75.7849; // fallback: Ujjain
-var CITY=U.city||(A('astrol.ujjain'));
+/* ══ SD-COORD-HONESTY ══════════════════════════════════════════════════════
+   This read:
+       var LAT = parseFloat(U.city_lat) || 23.1793;   // Ujjain
+       var CITY = U.city || 'Ujjain';
+   Two independent fallbacks, so a user whose coordinates were missing saw
+   THEIR OWN CITY NAME sitting above UJJAIN'S timings. Measured: the page said
+   "Machilipatnam" and computed lat 23.1793. Sunrise, rahu kaal and every
+   muhurta on that screen were for a city 900km away, with nothing to tell them.
+
+   That is the same fault as the settings bug — the screen agreeing with the
+   user while the arithmetic does not — and it matters more here, because
+   people plan weddings on these timings.
+
+   The pair now moves together. If we fall back, we say we fell back. */
+var SD_COORD_FALLBACK = !(isFinite(parseFloat(U.city_lat)) && isFinite(parseFloat(U.city_lon)));
+var LAT = SD_COORD_FALLBACK ? 23.1793 : parseFloat(U.city_lat);
+var LNG = SD_COORD_FALLBACK ? 75.7849 : parseFloat(U.city_lon);
+var CITY = SD_COORD_FALLBACK ? A('astrol.ujjain') : (U.city || A('astrol.ujjain'));
+
+/* And say it on the screen, once, where it cannot be missed. */
+(function(){
+  if(!SD_COORD_FALLBACK) return;
+  try{
+    document.addEventListener('DOMContentLoaded', function(){
+      if(document.getElementById('sdCoordWarn')) return;
+      var L=(window.SD_LANG||'hi');
+      var MSG={en:'Times shown are for Ujjain. Set your city for your own timings.',
+        hi:'ये समय उज्जैन के लिए हैं। अपने शहर के समय के लिए शहर चुनें।',
+        te:'ఈ సమయాలు ఉజ్జయిని కోసం. మీ ఊరి సమయాల కోసం మీ నగరాన్ని ఎంచుకోండి.',
+        kn:'ಈ ಸಮಯಗಳು ಉಜ್ಜಯಿನಿಗಾಗಿ. ನಿಮ್ಮ ಊರಿನ ಸಮಯಕ್ಕಾಗಿ ನಗರವನ್ನು ಆಯ್ಕೆಮಾಡಿ.',
+        ta:'இந்த நேரங்கள் உஜ்ஜயினிக்கானவை. உங்கள் ஊர் நேரத்திற்கு நகரத்தைத் தேர்வுசெய்யுங்கள்.',
+        bn:'এই সময়গুলি উজ্জয়িনীর। নিজের শহরের সময়ের জন্য শহর বেছে নিন।',
+        mr:'ही वेळ उज्जैनसाठी आहे. तुमच्या शहराच्या वेळेसाठी शहर निवडा.',
+        gu:'આ સમય ઉજ્જૈન માટે છે. તમારા શહેરના સમય માટે શહેર પસંદ કરો.',
+        as:'এই সময়বোৰ উজ্জয়িনীৰ বাবে। নিজৰ চহৰৰ সময়ৰ বাবে চহৰ বাছনি কৰক।'};
+      var d=document.createElement('div');
+      d.id='sdCoordWarn';
+      d.style.cssText='margin:10px 12px;padding:10px 12px;border-radius:12px;font-size:12px;'
+        +'line-height:1.5;color:#FFE9C2;background:rgba(255,107,26,0.14);'
+        +'border:1px solid rgba(255,107,26,0.42);cursor:pointer;';
+      d.textContent='⚠️ '+(MSG[L]||MSG.hi);
+      d.onclick=function(){ location.href='dashboard.html'; };
+      var host=document.getElementById('app')||document.body;
+      host.parentNode.insertBefore(d,host);
+    });
+  }catch(e){}
+})();
 var PE=window.PanchangEngine;
 
 /* ── i18n micro-dict ─────────────────────────────────────── */
