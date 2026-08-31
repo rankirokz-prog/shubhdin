@@ -184,7 +184,7 @@ if(!R){try{R=(localStorage.getItem('sd_buy_last')||'').toLowerCase();}catch(e){}
 if(CFG[R]){try{localStorage.setItem('sd_buy_last',R);}catch(e){}}
 /* Small rolling log — the only reliable way to tell which build a phone is
    actually running once a service worker is in play. Tap the build tag. */
-var SD_BUILD='C4';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
+var SD_BUILD='C5';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
 function bdlog(m){
   try{var a=JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]');
     a.push(new Date().toISOString().slice(11,19)+' '+m);
@@ -223,7 +223,12 @@ if(!CFG[R]){
      halting here the rest of the page still runs and paints a working checkout
      for a withdrawn report until the new document loads, which on a slow
      connection is seconds, not milliseconds. Throwing ends the inline script. */
-  throw new Error('shubhdin: no saleable report for "'+R+'" — redirecting');
+  /* This throw is a deliberate stop, not a fault — it halts the script while
+     the redirect happens. It is marked so the analytics error view is not
+     filled with a hundred copies of an intentional control-flow jump. */
+  var _stop=new Error('shubhdin: no saleable report for "'+R+'" — redirecting');
+  _stop.sdIntentional=true;
+  throw _stop;
 }
 var SD_LANGS_NATIVE={en:'English',hi:'हिंदी',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',mr:'मराठी',gu:'ગુજરાતી',bn:'বাংলা',as:'অসমীয়া'};
 function sdLangOptions(sel){var cur=(window.SD_LANG||'hi');if(!SD_LANGS_NATIVE[cur])cur='hi';return Object.keys(SD_LANGS_NATIVE).map(function(l){return '<option value="'+l+'"'+(l===cur?' selected':'')+'>'+SD_LANGS_NATIVE[l]+'</option>';}).join('');}
@@ -642,11 +647,20 @@ function payProof(){
 }
 function clearProof(){try{localStorage.removeItem('sd_paid_'+R);}catch(e){}}
 
+var _payInFlight=false;
 function doPay(){
   /* Guard: never mint a second link for a buyer who already paid once. This is
      the double-charge path — the button used to say "Check again" while still
      wired to doPay, so a worried buyer tapping it paid twice. */
   if(payProof()){bdlog('pay blocked — proof of payment already held');confirmAfterPay();return;}
+  /* SECOND guard, for the gap the first one cannot cover: between the tap and
+     the server answering there is no proof of payment yet, so an anxious buyer
+     tapping three times minted THREE Razorpay links. Measured: three taps,
+     three links. The button showed ⏳ but was never actually disabled. */
+  if(_payInFlight){ bdlog('pay ignored — a request is already in flight'); return; }
+  _payInFlight=true;
+  try{ $('btPay').disabled=true; }catch(e){}
+  setTimeout(function(){ _payInFlight=false; try{ $('btPay').disabled=false; }catch(e){} },20000);
   /* the moment the buyer commits — this is the funnel step that was missing */
   try{ sdTrack('payment_start',{report:R,method:'razorpay'}); sdFlush(true); }catch(e){}
   $('btPay').textContent='⏳';$('errP').style.display='none';
@@ -658,7 +672,7 @@ function doPay(){
    .then(apiJson).then(function(j){
      if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();return;}
      if(j&&j.ok&&j.url){bdlog('payment link created');ORDER_CODE=j.order_code||ORDER_CODE;location.href=j.url;return;}
-     if(j&&j.error==='payments not configured yet'){devPay();return;}
+     if(j&&j.error==='payments not configured yet'){_payInFlight=false;try{$('btPay').disabled=false;}catch(e){}devPay();return;}
      /* show Razorpay's actual reason, not just "failed" — this is the message
         that tells you whether it's keys, mode, or something else. */
      var why=(j&&j.detail)?((j.error||'error')+' — '+j.detail):((j&&j.error)||'failed');
