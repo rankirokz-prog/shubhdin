@@ -142,6 +142,13 @@
    *   station     0 = bindu, 1..15 = tithi nitya position    default 0
    *   glow        draw the lit station                       default true
    *   outer       draw lotuses and bhupura                   default true
+   *   lit         array of station numbers already "home in the moon": drawn
+   *               as small steady dots (the story so far)
+   *   state       'day' (default) | 'purnima' (all fifteen lit, ripple) |
+   *               'amavasya' (bindu only, stations as empty rings)
+   *   motion      'in' (a spark travels from the sun to today's station) |
+   *               'out' (from the station to the sun) | null
+   *   animate     SMIL animation on/off                          default true
    *   zoom        units from centre to edge, e.g. 0.34 — shows the innermost
    *               triangle large, clipped to a circle. THE CARD MUST USE THIS:
    *               the fifteen stations span 0.19 R, invisible at 132 px unzoomed.
@@ -187,24 +194,100 @@
            '" fill="none" stroke="' + th.line + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
     });
     /* the lit station of the day */
-    /* Sizes are in units of the radius and shrink with the zoom, so that a
-       station is always a point on a side, never a blob over the triangle:
-       stations are 0.042 R apart, the marker dot is 0.011 R in zoom mode. */
+    /* ── the story layer ─────────────────────────────────────────────────
+       Sizes are in units of the radius and shrink with the zoom, so a station
+       is always a point on a side, never a blob over the triangle. */
     var gr = (st ? 0.16 : 0.22), dot = 0.022;
     if (zoom) { gr = Math.min(gr, 0.06); dot = 0.011; }
-    if (opts.glow !== false) {
-      var p = station(st);
-      o += '<circle cx="' + fmt(p.x * S) + '" cy="' + fmt(-p.y * S) + '" r="' + fmt(gr * S) + '" fill="url(#' + id + 'g)"/>';
-      if (st) o += '<circle cx="' + fmt(p.x * S) + '" cy="' + fmt(-p.y * S) + '" r="' + fmt(dot * S) + '" fill="' + th.glow + '"/>';
+    var state = opts.state || 'day', anim = opts.animate !== false, motion = opts.motion || null;
+    var lit = (opts.lit || []).slice();
+    if (state === 'purnima') { lit = []; for (var i = 1; i <= 15; i++) lit.push(i); }
+    if (state === 'amavasya') lit = [];
+    var P = function (n) { var q = station(n); return [fmt(q.x * S), fmt(-q.y * S)]; };
+    var sunAngle = Math.PI / 4, sunR = span * 0.98;                  // the sun sits at the top-right rim
+    var sun = [fmt(Math.cos(sunAngle) * sunR * S), fmt(-Math.sin(sunAngle) * sunR * S)];
+    /* empty rings at every station (the seats), faint */
+    for (var n = 1; n <= 15; n++) {
+      var q = P(n);
+      o += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + fmt(dot * 0.9 * S) + '" fill="none" stroke="' + th.gold + '" stroke-width="' + (sw * 0.6) + '" opacity="0.28"/>';
+    }
+    /* the ones already home: steady small dots. On purnima they light one by one. */
+    lit.forEach(function (n, idx) {
+      if (state !== 'purnima' && n === st) return;
+      var q = P(n);
+      o += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + fmt(dot * 0.75 * S) + '" fill="' + th.gold + '" opacity="0.85">' +
+           (anim && state === 'purnima' ? '<animate attributeName="opacity" values="0;0.95;0.85" dur="0.6s" begin="' + fmt(idx * 0.13) + 's" fill="freeze"/>' : '') + '</circle>';
+      if (state === 'purnima') o += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + fmt(gr * 0.55 * S) + '" fill="url(#' + id + 'g)" opacity="0.7">' +
+           (anim ? '<animate attributeName="opacity" values="0;0.7" dur="0.6s" begin="' + fmt(idx * 0.13) + 's" fill="freeze"/><animate attributeName="opacity" values="0.7;0.35;0.7" dur="3s" begin="' + fmt(15 * 0.13 + 0.8) + 's" repeatCount="indefinite"/>' : '') + '</circle>';
+    });
+    if (opts.glow !== false && state === 'day' && st) {
+      var q0 = P(st), delay = motion && anim ? 2.1 : 0;
+      /* today's seat: glow + dot, arriving after the spark if there is one */
+      /* opacity attribute stays 1 so a renderer without SMIL still shows the seat;
+         the animation is what hides it until the spark lands */
+      o += '<g opacity="1">' + (delay ? '<animate attributeName="opacity" values="0;0;1" keyTimes="0;' + fmt(delay / (delay + 0.5)) + ';1" dur="' + fmt(delay + 0.5) + 's" begin="0s" fill="freeze"/>' : '') +
+           '<circle cx="' + q0[0] + '" cy="' + q0[1] + '" r="' + fmt(gr * S) + '" fill="url(#' + id + 'g)">' +
+           (anim ? '<animate attributeName="r" values="' + fmt(gr * S) + ';' + fmt(gr * 1.25 * S) + ';' + fmt(gr * S) + '" dur="2.6s" begin="' + fmt(delay + 0.5) + 's" repeatCount="indefinite"/>' : '') + '</circle>' +
+           '<circle cx="' + q0[0] + '" cy="' + q0[1] + '" r="' + fmt(dot * S) + '" fill="' + th.glow + '"/></g>';
+      if (motion === 'out') {
+        /* leaving: the dot stays lit but the seat empties as the spark departs */
+        o += '<circle cx="' + q0[0] + '" cy="' + q0[1] + '" r="' + fmt(dot * S) + '" fill="' + th.glow + '">' +
+             (anim ? '<animate attributeName="opacity" values="1;1;0.35" dur="2.4s" begin="0s" fill="freeze"/>' : '') + '</circle>';
+      }
+      if (motion && anim) {
+        /* the spark: a curved flight between the sun and today's seat */
+        var from = motion === 'in' ? sun : q0, to = motion === 'in' ? q0 : sun;
+        var mx = (parseFloat(from[0]) + parseFloat(to[0])) / 2 - (parseFloat(to[1]) - parseFloat(from[1])) * 0.35;
+        var my = (parseFloat(from[1]) + parseFloat(to[1])) / 2 + (parseFloat(to[0]) - parseFloat(from[0])) * 0.35;
+        var path = 'M' + from[0] + ' ' + from[1] + ' Q' + fmt(mx) + ' ' + fmt(my) + ' ' + to[0] + ' ' + to[1];
+        o += '<path d="' + path + '" fill="none" stroke="' + th.gold + '" stroke-width="' + (sw * 0.8) + '" stroke-dasharray="' + fmt(size * 3) + '" stroke-dashoffset="' + fmt(size * 3) + '" opacity="0.35">' +
+             '<animate attributeName="stroke-dashoffset" from="' + fmt(size * 3) + '" to="0" dur="2s" begin="0.1s" fill="freeze"/>' +
+             '<animate attributeName="opacity" values="0.35;0.35;0" dur="3s" begin="0.1s" fill="freeze"/></path>';
+        o += '<circle r="' + fmt(dot * 1.3 * S) + '" fill="' + th.glow + '" opacity="0">' +
+             '<animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="2.1s" begin="0.1s" fill="freeze"/>' +
+             '<animateMotion dur="2s" begin="0.1s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1" path="' + path + '"/></circle>';
+        o += '<circle r="' + fmt(gr * 0.9 * S) + '" fill="url(#' + id + 'g)" opacity="0">' +
+             '<animate attributeName="opacity" values="0;0.8;0.8;0" keyTimes="0;0.1;0.9;1" dur="2.1s" begin="0.1s" fill="freeze"/>' +
+             '<animateMotion dur="2s" begin="0.1s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1" path="' + path + '"/></circle>';
+      }
+      /* a small sun at the rim so the flight has a visible source or destination */
+      if (motion) o += '<circle cx="' + sun[0] + '" cy="' + sun[1] + '" r="' + fmt(0.05 * S) + '" fill="url(#' + id + 'g)" opacity="0.9"/>' +
+                       '<circle cx="' + sun[0] + '" cy="' + sun[1] + '" r="' + fmt(0.014 * S) + '" fill="' + th.glow + '"/>';
     }
     /* bindu */
     var br = zoom ? 0.026 : 0.055, bi = zoom ? 0.008 : 0.016;
-    o += '<circle r="' + fmt(br * S) + '" fill="url(#' + id + 'b)"/>';
+    var bScale = state === 'amavasya' ? 2.2 : (state === 'purnima' ? 1.6 : (st ? 1 : 1.4));
+    o += '<circle r="' + fmt(br * bScale * S) + '" fill="url(#' + id + 'b)">' +
+         (anim && (state !== 'day' || !st) ? '<animate attributeName="r" values="' + fmt(br * bScale * S) + ';' + fmt(br * bScale * 1.35 * S) + ';' + fmt(br * bScale * S) + '" dur="' + (state === 'amavasya' ? '4.5s' : '3s') + '" repeatCount="indefinite"/>' : '') + '</circle>';
     o += '<circle r="' + fmt(bi * S) + '" fill="#FFF4DE"/>';
     o += '</g></svg>';
     return o;
   }
 
+  /* ── moon glyph ────────────────────────────────────────────────────────
+     Illuminated fraction from the tithi: waxing f = (1-cos(π t/15))/2, waning
+     f = (1+cos(π t/15))/2. Waxing moon is lit on the right as seen from India. */
+  function moonFraction(tithi, paksha) {
+    tithi = Math.max(0, Math.min(15, +tithi || 0));
+    var c = Math.cos(Math.PI * tithi / 15);
+    return paksha === 'krishna' ? (1 + c) / 2 : (1 - c) / 2;
+  }
+  function moonSVG(tithi, paksha, size, theme) {
+    var th = Object.assign({ dark: '#3A2408', lit: '#F1D27A', rim: 'rgba(212,168,67,0.55)' }, theme || {});
+    var f = moonFraction(tithi, paksha), r = size / 2 - 1, c = size / 2;
+    var o = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" class="sd-moon">';
+    o += '<circle cx="' + c + '" cy="' + c + '" r="' + fmt(r) + '" fill="' + th.dark + '" stroke="' + th.rim + '" stroke-width="1"/>';
+    if (f > 0.995) o += '<circle cx="' + c + '" cy="' + c + '" r="' + fmt(r) + '" fill="' + th.lit + '"/>';
+    else if (f > 0.005) {
+      var rx = fmt(Math.abs(2 * f - 1) * r), right = paksha !== 'krishna';
+      var side = right ? 1 : 0, terminator = (f > 0.5) === right ? 1 : 0;
+      o += '<path d="M' + c + ' ' + fmt(c - r) + ' A' + fmt(r) + ' ' + fmt(r) + ' 0 0 ' + side + ' ' + c + ' ' + fmt(c + r) +
+           ' A' + rx + ' ' + fmt(r) + ' 0 0 ' + terminator + ' ' + c + ' ' + fmt(c - r) + ' Z" fill="' + th.lit + '"/>';
+    }
+    return o + '</svg>';
+  }
+
   return { svg: svg, station: station, geometry: TRI, innerTriangle: innerTriangle,
+           moonFraction: moonFraction, moonSVG: moonSVG,
            config: { START_CORNER: START_CORNER, ANTICLOCKWISE: ANTICLOCKWISE } };
 }));
