@@ -1602,6 +1602,11 @@ body[data-home="returning"] .streak{display:none;}
 .nitya-name{font-size:19px;font-weight:600;color:#F1D27A;line-height:1.25}
 .nitya-digit{font-size:12.5px;color:rgba(255,244,222,.7);margin:3px 0 7px}
 .nitya-note{font-size:13.5px;line-height:1.55;color:#FFF4DE}
+/* the one hedged sentence under the digit — "held to leave the moon for the
+   sun". Omitted entirely when a language has no template, never shown in
+   English, so this rule may simply have nothing to style. */
+.nitya-motion{font-size:12.5px;line-height:1.55;color:rgba(241,210,122,.85);margin-top:6px;font-style:italic}
+.nitya-head svg{vertical-align:-2px;margin-right:5px}
 .nitya-share{margin-top:10px;width:100%;background:linear-gradient(120deg,#D4A843,#B8892F);color:#1A0D00;border:none;font-family:inherit;font-size:13px;font-weight:600;padding:10px;border-radius:11px}
 
 /* ══ SD-GITA · today's verse ══════════════════════════════════════════════
@@ -5989,11 +5994,13 @@ function renderDailySlot(){
   try{
     var ctx = sdNityaCtx();
     if(ctx && sdNityaPreview()){
-      if(ctx.paksha === 'krishna'){        /* preview only: treat as 'reverse' */
-        ctx.paksha = 'shukla';
-        ctx.tithi  = (ctx.tithi === 15) ? 15 : (16 - ctx.tithi);
-        ctx.dateLabel = (ctx.dateLabel||'') + ' · preview';
-      }
+      /* The krishna remap that used to live here is GONE, and removing it was
+         not optional: with KRISHNA='tantraraja' the waning fortnight now maps
+         natively (k → Nitya k, departing), so rewriting it to shukla 16−k
+         would have shown the WRONG goddess on every waning day in preview —
+         a preview that lies is worse than no preview.
+         All that remains is borrowing Hindi when the reader's language has no
+         content yet, which is still wrong to ship and still labelled. */
       if(typeof sdNityaCardHTML === 'function' && !sdNityaCardHTML(ctx)){
         ctx.lang = 'hi';                   /* preview only: borrow the content */
         ctx.dateLabel = (ctx.dateLabel||'') + ' (hi)';
