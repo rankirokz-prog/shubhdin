@@ -34,7 +34,7 @@ window.SD_NITYA = [
  { tithi: 3, key: 'nityaklinna',
    name:  { en: 'Nityaklinna', hi: 'नित्यक्लिन्ना', sa: 'नित्यक्लिन्ना', te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' },
    digit: { en: 'The third digit of the moon', hi: 'चंद्रमा की तीसरी कला', te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' },
-   note:  { en: 'The ever-tender one. She is held to be the compassion that never dries, like a heart that is always a little moist with kindness.',
+   note:  { en: 'The ever-tender one. She is held to be the compassion that never dries, like a heart that always overflows with gentle kindness.',
             hi: 'सदा कोमल रहने वाली। माना जाता है कि वे वह करुणा हैं जो कभी नहीं सूखती, जैसे दया से सदा भीगा हुआ हृदय।',
             te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' } },
  { tithi: 4, key: 'bherunda',
