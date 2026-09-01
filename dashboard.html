@@ -6038,6 +6038,9 @@ function sdNityaCtx(){
            /* the civil date of this Vedic day — the card and the share image
               both stamp it, so a forwarded blessing says which morning it was */
            date: new Date(),
+           /* the localised weekday, straight from the strip's own object, so
+              the forwarded message reads "(కృష్ణ పంచమి • బుధవారం)" */
+           weekday: (pd.weekday || ''),
            lang: (window.SD_LANG || 'hi'),
            dateLabel: label };
 }
