@@ -197,11 +197,12 @@
     o += '<circle r="' + fmt(R_TRI * S) + '" fill="none" stroke="' + th.line + '" stroke-width="' + sw + '"/>';
     /* nine triangles: a soft gold halo underneath (blurred, wider, translucent), then the crisp lines */
     if (zoom || opts.halo) {
-      o += '<g filter="url(#' + id + 'h)" opacity="0.55">';
+      /* 0.35 / 2.4×: at 0.55 / 3.2× it bloomed on an OLED phone and the lines read as out of focus */
+      o += '<g filter="url(#' + id + 'h)" opacity="0.35">';
       ORDER.forEach(function (k) {
         var t = TRI[k];
         o += '<polygon points="' + fmt(-t.w * S) + ',' + fmt(-t.b * S) + ' ' + fmt(t.w * S) + ',' + fmt(-t.b * S) + ' 0,' + fmt(-t.a * S) +
-             '" fill="none" stroke="' + th.gold + '" stroke-width="' + (sw * 3.2) + '" stroke-linejoin="round"/>';
+             '" fill="none" stroke="' + th.gold + '" stroke-width="' + (sw * 2.4) + '" stroke-linejoin="round"/>';
       });
       o += '</g>';
     }
@@ -221,7 +222,7 @@
     if (state === 'purnima') { lit = []; for (var i = 1; i <= 15; i++) lit.push(i); }
     if (state === 'amavasya') lit = [];
     var P = function (n) { var q = station(n); return [fmt(q.x * S), fmt(-q.y * S)]; };
-    var sunAngle = Math.PI / 4, sunR = span * 0.98;                  // the sun sits at the top-right rim
+    var sunAngle = Math.PI / 4, sunR = span * 0.80;                  // the sun sits inside the lens, near the top-right rim, whole (centre + halo < rim)
     var sun = [fmt(Math.cos(sunAngle) * sunR * S), fmt(-Math.sin(sunAngle) * sunR * S)];
     /* empty rings at every station (the seats), faint */
     for (var n = 1; n <= 15; n++) {
