@@ -173,11 +173,19 @@
          '<radialGradient id="' + id + 'g"><stop offset="0" stop-color="' + th.glow + '" stop-opacity="1"/>' +
          '<stop offset="0.45" stop-color="' + th.gold + '" stop-opacity="0.55"/><stop offset="1" stop-color="' + th.gold + '" stop-opacity="0"/></radialGradient>' +
          '<radialGradient id="' + id + 'b"><stop offset="0" stop-color="#FFF4DE"/><stop offset="0.5" stop-color="' + th.bindu + '"/><stop offset="1" stop-color="' + th.bindu + '" stop-opacity="0"/></radialGradient>' +
+         '<radialGradient id="' + id + 'v"><stop offset="0" stop-color="#5A3A0A" stop-opacity="0.55"/><stop offset="0.55" stop-color="#3A2408" stop-opacity="0.25"/><stop offset="1" stop-color="#000" stop-opacity="0.55"/></radialGradient>' +
+         '<filter id="' + id + 'h" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="' + fmt(size / 120) + '"/></filter>' +
          '</defs>';
     if (zoom) o += '<clipPath id="' + id + 'c"><circle cx="0" cy="0" r="' + fmt(c - 0.5) + '"/></clipPath>';
     if (th.bg !== 'none') o += '<rect width="' + size + '" height="' + size + '" fill="' + th.bg + '"/>';
     o += '<g transform="translate(' + c + ' ' + c + ')"' + (zoom ? ' clip-path="url(#' + id + 'c)"' : '') + '>';
-    if (zoom) o += '<circle r="' + fmt(c - 0.5) + '" fill="rgba(212,168,67,0.04)" stroke="' + th.line + '" stroke-width="' + sw + '" opacity="0.6"/>';
+    if (zoom) {
+      /* consecrated look: warm centre, dark vignette at the rim, a faint lotus
+         behind the lines (our own constructed petals — no image, no asset) */
+      o += '<circle r="' + fmt(c - 0.5) + '" fill="url(#' + id + 'v)"/>';
+      o += '<g opacity="0.13">' + petals(8, span * 0.42, span * 0.92, S, th.gold, th.gold, sw * 0.5) + '</g>';
+      o += '<g opacity="0.07">' + petals(16, span * 0.55, span * 1.0, S, th.gold, th.gold, sw * 0.4) + '</g>';
+    }
     if (outer) {
       o += bhupura(S, th.line, sw);
       o += '<circle r="' + fmt(R_OUTER * S) + '" fill="none" stroke="' + th.line + '" stroke-width="' + sw + '"/>';
@@ -187,7 +195,16 @@
       o += '<circle r="' + fmt(R_C2 * S) + '" fill="none" stroke="' + th.line + '" stroke-width="' + (sw * 0.7) + '"/>';
     }
     o += '<circle r="' + fmt(R_TRI * S) + '" fill="none" stroke="' + th.line + '" stroke-width="' + sw + '"/>';
-    /* nine triangles */
+    /* nine triangles: a soft gold halo underneath (blurred, wider, translucent), then the crisp lines */
+    if (zoom || opts.halo) {
+      o += '<g filter="url(#' + id + 'h)" opacity="0.55">';
+      ORDER.forEach(function (k) {
+        var t = TRI[k];
+        o += '<polygon points="' + fmt(-t.w * S) + ',' + fmt(-t.b * S) + ' ' + fmt(t.w * S) + ',' + fmt(-t.b * S) + ' 0,' + fmt(-t.a * S) +
+             '" fill="none" stroke="' + th.gold + '" stroke-width="' + (sw * 3.2) + '" stroke-linejoin="round"/>';
+      });
+      o += '</g>';
+    }
     ORDER.forEach(function (k) {
       var t = TRI[k];
       o += '<polygon points="' + fmt(-t.w * S) + ',' + fmt(-t.b * S) + ' ' + fmt(t.w * S) + ',' + fmt(-t.b * S) + ' 0,' + fmt(-t.a * S) +
