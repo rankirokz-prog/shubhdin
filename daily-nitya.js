@@ -134,6 +134,30 @@ window.SD_NITYA = [
    BINDU_DAY 'mahanitya' → tithi 15 of either fortnight shows the bindu entry   */
 window.SD_NITYA_CFG = { KRISHNA: 'tantraraja', BINDU_DAY: 'mahanitya' };
 
+
+/* ══ SD-NITYA-REVIEWED ══════════════════════════════════════════════════════
+   A language shows the Nitya card only when it is true here AND its content is
+   complete. Content that exists but no native reader has checked is not
+   shippable data — it falls back to the Gita, exactly like missing content.
+   That is the "wrong words" half of Ram's blank-or-wrong rule.
+
+   ALL NINE ARE TRUE because the 364-field batch was written by Ram's native
+   writer, not composed here — the same reviewer path bn/mr/gu went through.
+
+   STILL UNREVIEWED, and the reason this table exists: the four UI strings
+   (today_title, honorific, share, from_app) were composed for
+   kn/ta/bn/mr/gu/as. en/hi/te share wording is Ram's own. If a reviewer
+   objects to those four in their language, set it false here and that language
+   drops to the Gita until it is fixed — one word, no code change. */
+/* A build stamp you can see from the outside. Open
+   shubhdin.app/daily-nitya.js and look at this line: if it does not say
+   FAMILY-SHARE-v1 then this file is NOT the one on the server, and no amount
+   of reloading the app will change the button. That check takes ten seconds
+   and settles "is it the code or the upload" without another round trip. */
+window.SD_NITYA_BUILD = 'FAMILY-SHARE-v1';
+
+window.SD_NITYA_REVIEWED = { en: true, hi: true, te: true, kn: true, ta: true,
+                             bn: true, mr: true, gu: true, as: true };
 /* Card strings, nine languages, so the card never shows a bare key.
    If the app sheet defines nitya.today_title / gita.share, A() wins.
    te kn ta: Ram reviews. bn mr gu as: writer batch NITYA-1 reviews.
