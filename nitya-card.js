@@ -135,15 +135,18 @@
     var share = S_('share', L, 'nitya.share') || A_('gita.share', '');
     return '<div class="nitya-card" data-key="' + esc(e.key) + '" data-station="' + pick.station + '">' +
       '<div class="nitya-head">' + moon + '<span>' + esc(title) + (sdNityaWhen(ctx, L, true) ? '<span class="nitya-date">' + esc(sdNityaWhen(ctx, L, true)) + '</span>' : '') + '</span></div>' +
+      /* row: lens | name · digit · motion.  Then the note full width below —
+         beside a 150 px lens the note ran seven narrow lines and the name broke
+         into three; same words, a third less height. */
       '<div class="nitya-body">' +
         '<div class="nitya-chakra" aria-hidden="true">' + svg + '</div>' +
         '<div class="nitya-text">' +
           '<div class="nitya-name">' + esc(sdNityaName(e, L)) + '</div>' +
           '<div class="nitya-digit">' + esc(e.digit[L]) + '</div>' +
           (motionLine ? '<div class="nitya-motion">' + esc(motionLine) + '</div>' : '') +
-          '<div class="nitya-note">' + esc(e.note[L]) + '</div>' +
         '</div>' +
       '</div>' +
+      '<div class="nitya-note">' + esc(e.note[L]) + '</div>' +
       (share ? '<button type="button" class="nitya-share" onclick="sdNityaShare()">' + esc(share) + '</button>' : '') +
     '</div>';
   }
