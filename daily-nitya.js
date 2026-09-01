@@ -143,8 +143,18 @@ window.SD_NITYA_STRINGS = {
                  ta: 'இன்றைய ஸ்ரீசக்ர தரிசனம்', bn: 'আজকের শ্রীচক্র দর্শন', mr: 'आजचे श्रीचक्र दर्शन', gu: 'આજનું શ્રીચક્ર દર્શન', as: 'আজিৰ শ্ৰীচক্ৰ দৰ্শন' },
   honorific:   { en: 'Sri {name} Devi', hi: 'श्री {name} देवी', te: 'శ్రీ {name} దేవి', kn: 'ಶ್ರೀ {name} ದೇವಿ',
                  ta: 'ஸ்ரீ {name} தேவி', bn: 'শ্রী {name} দেবী', mr: 'श्री {name} देवी', gu: 'શ્રી {name} દેવી', as: 'শ্ৰী {name} দেৱী' },
-  share:       { en: 'Share on WhatsApp', hi: 'व्हाट्सऐप पर भेजें', te: 'వాట్సాప్‌లో పంచుకోండి', kn: 'ವಾಟ್ಸ್‌ಆ್ಯಪ್‌ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ',
-                 ta: 'வாட்ஸ்அப்பில் பகிரவும்', bn: 'হোয়াটসঅ্যাপে শেয়ার করুন', mr: 'व्हॉट्सॲपवर पाठवा', gu: 'વોટ્સએપ પર મોકલો', as: 'হোৱাটছএপত শ্বেয়াৰ কৰক' },
+  /* "Share with family" rather than "Share on WhatsApp" — Ram's call, and the
+     right one: these are morning blessings forwarded to family groups, and
+     naming the destination converts worse than naming the reason. The 💬 glyph
+     stands in for the WhatsApp mark deliberately: the real logo is a trademark
+     and an asset to host, and this renders identically on every phone.
+     ⚠ en/hi/te are Ram's own wording. kn/ta/bn/mr/gu/as are composed to match
+     and STILL NEED THEIR NATIVE REVIEWER — same rule as everything else. */
+  share:       { en: '\uD83D\uDCAC Share with family', hi: '\uD83D\uDCAC परिवार के साथ शेयर करें',
+                 te: '\uD83D\uDCAC కుటుంబంతో పంచుకోండి', kn: '\uD83D\uDCAC ಕುಟುಂಬದೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಿ',
+                 ta: '\uD83D\uDCAC குடும்பத்துடன் பகிருங்கள்', bn: '\uD83D\uDCAC পরিবারের সঙ্গে শেয়ার করুন',
+                 mr: '\uD83D\uDCAC कुटुंबासोबत शेअर करा', gu: '\uD83D\uDCAC પરિવાર સાથે શેર કરો',
+                 as: '\uD83D\uDCAC পৰিয়ালৰ সৈতে শ্বেয়াৰ কৰক' },
   from_app:    { en: 'from Shubh Din', hi: 'शुभ दिन से', te: 'శుభ దిన నుండి', kn: 'ಶುಭ ದಿನದಿಂದ', ta: 'சுப தினத்திலிருந்து',
                  bn: 'শুভ দিন থেকে', mr: 'शुभ दिन कडून', gu: 'શુભ દિન તરફથી', as: 'শুভ দিনৰ পৰা' }
 };
