@@ -149,16 +149,98 @@ if(typeof window.A!=='function'){
     <div class="r-mail" id="rdMail"></div>
     <button class="btn" onclick="downloadKundli()" id="rdBtn">⬇️ PDF डाउनलोड करने के लिए यहाँ क्लिक करें</button>
     <div style="margin-top:12px;font-size:11px;color:rgba(212,168,67,0.7);cursor:pointer;" onclick="viewKundli()" id="rdView">या स्क्रीन पर देखें →</div>
+    <!-- ══ SD-KUNDLI-GIFT ══════════════════════════════════════════════════
+         The moment the free Kundli lands is the one moment of real delight in
+         this whole funnel, so it is the one moment worth asking for a share.
+
+         IT GIVES, IT DOES NOT EXPOSE. Nobody forwards their own chart — their
+         doshas and planetary positions are private, and a button saying "share
+         my Kundli" would be ignored or resented. This button gifts a free
+         Kundli to someone else; the message carries no birth detail, no name,
+         no chart. Just the offer and the link. -->
+    <button class="btn" id="rdGift" onclick="shareKundliInvite()"
+            style="margin-top:14px;background:linear-gradient(120deg,#2E7D32,#1B5E20);color:#EAFBEA;">
+      🎁 <span id="rdGiftTxt">Gift a free Kundli to family</span>
+    </button>
     <div class="tease" onclick="location.href='premium.html'" id="rdTease">💍 विवाह, करियर और भविष्य की गहरी जानकारी चाहिए? प्रीमियम रिपोर्ट्स देखें →</div>
   </div>
 </div>
 
 </div>
+<!-- analytics.js FIRST on the page. Two reasons it must be here and not
+     just on the dashboard: this is where a shared ?src=kundli_share link
+     lands, and without it that referral tag is never recorded — the viral
+     loop would be unmeasurable. It also reports uncaught errors from every
+     script below, on the page that IS the acquisition funnel. -->
+<script src="analytics.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 var SD_LANGS_NATIVE={en:'English',hi:'हिंदी',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',mr:'मराठी',gu:'ગુજરાતી',bn:'বাংলা',as:'অসমীয়া'};
 function sdLangOptions(sel){var cur=(window.SD_LANG||'hi');if(!SD_LANGS_NATIVE[cur])cur='hi';return Object.keys(SD_LANGS_NATIVE).map(function(l){return '<option value="'+l+'"'+(l===cur?' selected':'')+'>'+SD_LANGS_NATIVE[l]+'</option>';}).join('');}
 'use strict';
+
+/* ══ SD-KUNDLI-GIFT ════════════════════════════════════════════════════════
+   The invite carries NO personal data — no name, no birth details, no chart.
+   It says "I got mine free, here is the link". That is deliberate: people do
+   not forward their own horoscope, and asking them to would waste the one
+   moment in this funnel when they are actually delighted.
+
+   ?src=kundli_share is read on arrival by analytics.js and recorded on the
+   first app_open, so v_daily can show how many installs this loop produced.
+   Without that read the tag would be decorative.
+
+   ⚠ en and te are Ram's own wording. The other seven are composed to match
+   and NEED THEIR NATIVE REVIEWER, same rule as everything else. */
+var SD_GIFT_BTN = {
+  en:'Gift a free Kundli to family', hi:'परिवार को निःशुल्क कुंडली भेंट करें',
+  te:'కుటుంబానికి ఉచిత కుండలిని బహుమతిగా ఇవ్వండి', kn:'ಕುಟುಂಬಕ್ಕೆ ಉಚಿತ ಕುಂಡಲಿ ಉಡುಗೊರೆ ನೀಡಿ',
+  ta:'குடும்பத்திற்கு இலவச ஜாதகம் பரிசளியுங்கள்', bn:'পরিবারকে বিনামূল্যে কোষ্ঠী উপহার দিন',
+  mr:'कुटुंबाला मोफत कुंडली भेट द्या', gu:'પરિવારને મફત કુંડળી ભેટ આપો',
+  as:'পৰিয়ালক বিনামূলীয়া কোষ্ঠী উপহাৰ দিয়ক'
+};
+var SD_GIFT_MSG = {
+  en:'\u2728 I just generated my detailed 250+ page Janmakundali for free! \uD83D\uDD49\uFE0F\n\nGet your complete birth chart, planetary analysis and life predictions here:\n\uD83D\uDC49 {url}\n\n(100% Free \u00b7 250+ Page PDF Report)',
+  hi:'\u2728 मैंने अपनी विस्तृत 250+ पेज जन्मकुंडली निःशुल्क बनवाई! \uD83D\uDD49\uFE0F\n\nअपना पूरा जन्म चक्र, ग्रह स्थिति और जीवन फल यहाँ निःशुल्क देखें:\n\uD83D\uDC49 {url}\n\n(पूरी तरह निःशुल्क \u00b7 250+ पेज PDF रिपोर्ट)',
+  te:'\u2728 నా 250+ పేజీల సంపూర్ణ జన్మ కుండలిని ఉచితంగా పొందాను! \uD83D\uDD49\uFE0F\n\nమీ పూర్తి జాతక చక్రం, గ్రహ స్థితులు మరియు భవిష్యత్ ఫలాలను ఉచితంగా తెలుసుకోవడానికి మీ వివరాలను ఇక్కడ నమోదు చేయండి:\n\uD83D\uDC49 {url}\n\n(పూర్తిగా ఉచితం \u00b7 250+ పేజీల PDF నివేదిక)',
+  kn:'\u2728 ನನ್ನ 250+ ಪುಟಗಳ ಸಂಪೂರ್ಣ ಜನ್ಮ ಕುಂಡಲಿಯನ್ನು ಉಚಿತವಾಗಿ ಪಡೆದೆ! \uD83D\uDD49\uFE0F\n\nನಿಮ್ಮ ಪೂರ್ಣ ಜನ್ಮ ಕುಂಡಲಿ, ಗ್ರಹ ಸ್ಥಿತಿ ಮತ್ತು ಭವಿಷ್ಯ ಫಲಗಳನ್ನು ಉಚಿತವಾಗಿ ಇಲ್ಲಿ ನೋಡಿ:\n\uD83D\uDC49 {url}\n\n(ಸಂಪೂರ್ಣ ಉಚಿತ \u00b7 250+ ಪುಟಗಳ PDF ವರದಿ)',
+  ta:'\u2728 என் 250+ பக்க முழுமையான ஜாதகத்தை இலவசமாகப் பெற்றேன்! \uD83D\uDD49\uFE0F\n\nஉங்கள் முழு ஜாதகம், கிரக நிலைகள் மற்றும் வாழ்க்கை பலன்களை இலவசமாக இங்கே பாருங்கள்:\n\uD83D\uDC49 {url}\n\n(முற்றிலும் இலவசம் \u00b7 250+ பக்க PDF அறிக்கை)',
+  bn:'\u2728 আমি আমার 250+ পৃষ্ঠার সম্পূর্ণ জন্মকোষ্ঠী বিনামূল্যে পেয়েছি! \uD83D\uDD49\uFE0F\n\nআপনার সম্পূর্ণ জন্মছক, গ্রহের অবস্থান ও জীবনফল বিনামূল্যে এখানে দেখুন:\n\uD83D\uDC49 {url}\n\n(সম্পূর্ণ বিনামূল্যে \u00b7 250+ পৃষ্ঠার PDF রিপোর্ট)',
+  mr:'\u2728 मी माझी 250+ पानांची संपूर्ण जन्मकुंडली मोफत मिळवली! \uD83D\uDD49\uFE0F\n\nतुमची संपूर्ण जन्मपत्रिका, ग्रहस्थिती आणि भविष्यफळ मोफत इथे पहा:\n\uD83D\uDC49 {url}\n\n(पूर्णपणे मोफत \u00b7 250+ पानांचा PDF अहवाल)',
+  gu:'\u2728 મેં મારી 250+ પાનાંની સંપૂર્ણ જન્મકુંડળી મફતમાં મેળવી! \uD83D\uDD49\uFE0F\n\nતમારી સંપૂર્ણ જન્મકુંડળી, ગ્રહ સ્થિતિ અને ભવિષ્યફળ મફતમાં અહીં જુઓ:\n\uD83D\uDC49 {url}\n\n(સંપૂર્ણ મફત \u00b7 250+ પાનાંનો PDF અહેવાલ)',
+  as:'\u2728 মই মোৰ 250+ পৃষ্ঠাৰ সম্পূৰ্ণ জন্মকোষ্ঠী বিনামূলীয়াকৈ পালোঁ! \uD83D\uDD49\uFE0F\n\nআপোনাৰ সম্পূৰ্ণ জন্মকোষ্ঠী, গ্ৰহ স্থিতি আৰু ভৱিষ্যৎ ফল বিনামূলীয়াকৈ ইয়াত চাওক:\n\uD83D\uDC49 {url}\n\n(সম্পূৰ্ণ বিনামূলীয়া \u00b7 250+ পৃষ্ঠাৰ PDF প্ৰতিবেদন)'
+};
+function sdGiftLang(){ var l=(window.SD_LANG||'hi'); return SD_GIFT_MSG[l]?l:'hi'; }
+function sdGiftText(){
+  var l=sdGiftLang();
+  return SD_GIFT_MSG[l].replace('{url}','https://shubhdin.app?src=kundli_share');
+}
+function paintGiftBtn(){
+  try{
+    var t=document.getElementById('rdGiftTxt');
+    if(t) t.textContent = SD_GIFT_BTN[sdGiftLang()] || SD_GIFT_BTN.hi;
+  }catch(e){}
+}
+function shareKundliInvite(){
+  var txt=sdGiftText();
+  try{ window.sdTrack && sdTrack('kundli_gift_tap'); window.sdFlush && sdFlush(true); }catch(e){}
+  /* Native sheet first, WhatsApp deep link second, clipboard last. The middle
+     one matters: on a desktop browser navigator.share is often absent and the
+     whole point is WhatsApp. */
+  if(navigator.share){
+    navigator.share({text:txt}).then(function(){
+      try{ sdTrack && sdTrack('kundli_gift_sent',{method:'native'}); }catch(e){}
+    }).catch(function(){});
+    return;
+  }
+  try{
+    window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt),'_blank','noopener');
+    try{ sdTrack && sdTrack('kundli_gift_sent',{method:'whatsapp'}); }catch(e){}
+    return;
+  }catch(e){}
+  try{ navigator.clipboard.writeText(txt);
+       try{ sdTrack && sdTrack('kundli_gift_sent',{method:'clipboard'}); }catch(e){}
+  }catch(e){}
+}
 
 /* ══ SD-WA STRINGS (additive) ══════════════════════════════════════════════
    New WhatsApp-delivery strings, all nine languages inline so this build is
@@ -218,7 +300,13 @@ function $(id){return document.getElementById(id);}
 function t2(hi,en){return H?hi:en;}
 function fmt(tpl,vals){return String(tpl).replace(/\{(\w+)\}/g,function(_,k){
   return (vals&&vals[k]!==undefined&&vals[k]!==null)?vals[k]:'';});}
-function show(id){document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');}
+function show(id){
+  document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});
+  $(id).classList.add('on');
+  /* the gift button's label is the only string on this screen set from JS, so
+     paint it whenever the ready stage appears rather than once at load */
+  if(id==='stReady'){ try{ paintGiftBtn(); sdTrack && sdTrack('kundli_ready_view'); }catch(e){} }
+}
 
 /* i18n */
 /* runs for every language now: these labels used to be set only when H
