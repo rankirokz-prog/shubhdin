@@ -167,13 +167,23 @@
   function sdNityaShareText(ctx) {
     var pick = sdNityaOfDay(ctx.tithi, ctx.paksha); if (!pick) return '';
     var e = pick.entry, L = ctx.lang; if (!sdNityaComplete(e, L)) return '';
-    var m = sdNityaMotionText(pick, L), title = S_('today_title', L, 'nitya.today_title'), from = S_('from_app', L);
-    /* WhatsApp preview shows the first line — make it the darshan, not the app */
-    var when = sdNityaWhen(ctx, L, false);
-    return '\uD83D\uDE4F ' + sdNityaName(e, L) + '\n' + (title ? title + '\n' : '') + (when ? when + '\n' : '') +
-           e.digit[L] + '\n' + (m ? m + '\n' : '') + '\n' + e.note[L] + '\n\n' +
-           (from ? from + ' · ' : '') + 'https://shubhdin.app';
+    var title = S_('today_title', L, 'nitya.today_title');
+    var hook  = S_('hook', L);
+    /* Ram's structure. The old text was the card copy dumped out with a faint
+       "from Shubh Din" at the end — a relative reads the blessing and has no
+       reason to tap anything. Now: the darshan is the WhatsApp preview line,
+       the day is named, the note is quoted, and the last two lines say what is
+       on the other side of the link. */
+    var head = '\u2728 *' + sdNityaName(e, L) + (title ? ' \u00b7 ' + title : '') + '* \uD83D\uDD49\uFE0F';
+    var when = [ctx.dateLabel, ctx.weekday].filter(Boolean).join(' \u2022 ');
+    var out  = head + '\n';
+    if (when) out += '(' + when + ')\n';
+    out += '\n\u201c' + e.note[L] + '\u201d \uD83C\uDF38\n';
+    if (hook) out += '\n*' + hook + '*\n';
+    out += '\uD83D\uDC49 https://shubhdin.app';
+    return out;
   }
+
 
   /* ── share image: 1080×1150, chakra drawn from the SVG string, no fetch.
      The SVG is a same-origin Blob URL, so the canvas is never tainted and
@@ -207,9 +217,11 @@
       c.strokeStyle = '#D4A843'; c.lineWidth = 3; c.stroke();
       c.textAlign = 'center';
       var title = S_('today_title', L, 'nitya.today_title');
-      if (title) { c.fillStyle = 'rgba(241,210,122,0.85)'; c.font = '500 30px "Noto Serif", serif'; c.fillText(title, W / 2, 42); }
+      /* full-strength gold and 12px further down: at 0.85 opacity and y=42 the
+         header sat faint and crowded against the top edge of the image. */
+      if (title) { c.fillStyle = '#F1D27A'; c.font = '600 32px "Noto Serif", "Noto Serif Devanagari", "Noto Serif Telugu", serif'; c.fillText(title, W / 2, 54); }
       var when = sdNityaWhen(ctx, L, false);
-      if (when) { c.fillStyle = 'rgba(255,244,222,0.8)'; c.font = '400 26px "Noto Serif", serif'; c.fillText(when, W / 2, 78); }
+      if (when) { c.fillStyle = 'rgba(255,244,222,0.86)'; c.font = '400 27px "Noto Serif", "Noto Serif Devanagari", "Noto Serif Telugu", serif'; c.fillText(when, W / 2, 92); }
       c.fillStyle = '#F1D27A';
       c.font = '600 58px "Noto Serif", "Noto Serif Devanagari", "Noto Serif Telugu", serif';
       c.fillText(sdNityaName(e, L), W / 2, 800);
@@ -217,10 +229,15 @@
       c.fillText(e.digit[L], W / 2, 852);
       var ml = sdNityaMotionText(pick, L), y = 906;
       if (ml) { c.fillStyle = '#F1D27A'; c.font = '500 30px "Noto Serif", serif'; wrap(c, ml, W / 2, y, 900, 40, 2); y += 84; }
-      c.fillStyle = 'rgba(255,244,222,0.72)'; c.font = '400 30px "Noto Serif", serif';
-      wrap(c, e.note[L], W / 2, y, 900, 42, ml ? 3 : 4);
-      c.fillStyle = 'rgba(241,210,122,0.75)'; c.font = '500 28px sans-serif';
-      c.fillText((S_('from_app', L) ? S_('from_app', L) + '  ·  ' : '') + 'shubhdin.app', W / 2, 1110);
+      /* 34px medium, not 30px light: WhatsApp recompresses a forwarded image and
+         the readers are mostly over 50. This is the paragraph they actually read. */
+      c.fillStyle = 'rgba(255,244,222,0.88)'; c.font = '500 34px "Noto Serif", "Noto Serif Devanagari", "Noto Serif Telugu", serif';
+      wrap(c, e.note[L], W / 2, y, 900, 48, ml ? 3 : 4);
+      c.fillStyle = 'rgba(241,210,122,0.95)'; c.font = '600 30px sans-serif';
+      /* A saved or re-forwarded image arrives with no message attached, so this
+         line is the only thing telling a new viewer where the darshan came from.
+         It was faint enough to disappear. Brand name in gold, domain beside it. */
+      c.fillText('\u2728 Shubh Din  \u2022  shubhdin.app', W / 2, 1110);
       try { cv.toBlob(function (b) { done(b); }, 'image/png'); } catch (err) { done(null); }
     }
     img.onload = lens.onload = moon.onload = ready;
