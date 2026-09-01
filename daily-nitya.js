@@ -34,7 +34,7 @@ window.SD_NITYA = [
  { tithi: 3, key: 'nityaklinna',
    name:  { en: 'Nityaklinna', hi: 'नित्यक्लिन्ना', sa: 'नित्यक्लिन्ना', te: 'నిత్యక్లిన్న', kn: 'ನಿತ್ಯಕ್ಲಿನ್ನಾ', ta: 'நித்யக்லின்னா', bn: 'নিত্যক্লিন্না', mr: 'नित्यक्लिन्ना', gu: 'નિત્યક્લિન્ના', as: 'নিত্যক্লিন্না' },
    digit: { en: 'The third digit of the moon', hi: 'चंद्रमा की तीसरी कला', te: 'చంద్రుని మూడవ కళ', kn: 'ಚಂದ್ರನ ಮೂರನೆಯ ಕಲೆ', ta: 'சந்திரனின் மூன்றாம் கலை', bn: 'চাঁদের তৃতীয় কলা', mr: 'चंद्राची तिसरी कला', gu: 'ચંદ્રની ત્રીજી કળા', as: 'চন্দ্ৰৰ তৃতীয় কলা' },
-   note:  { en: 'The ever-tender one. She is held to be the compassion that never dries, like a heart that always overflows with gentle kindness.',
+   note:  { en: 'The ever-tender one. She is held to be the compassion that never dries, like a heart that is always a little moist with kindness.',
             hi: 'सदा कोमल रहने वाली। माना जाता है कि वे वह करुणा हैं जो कभी नहीं सूखती, जैसे दया से सदा भीगा हुआ हृदय।',
             te: 'సదా దయార్ద్ర హృదయంగల దేవి. ఎప్పటికీ ఇంకిపోని నిర్మలమైన కరుణ, ఎల్లప్పుడూ వాత్సల్యంతో నిండిన మాతృహృదయం ఈమెయేనని భావిస్తారు.', kn: 'ಸದಾ ಕರುಣಾಮಯಿ. ಎಂದಿಗೂ ಬತ್ತದ ನಿರ್ಮಲ ಕರುಣೆ ಹಾಗೂ ಪ್ರೀತಿಯಿಂದ ತುಂಬಿದ ಕೋಮಲ ಹೃದಯದ ಸಂಕೇತ ಇವರು ಎಂದು ನಂಬಲಾಗಿದೆ.', ta: 'என்றும் கருணை உள்ளம் கொண்ட அன்னை. எக்காலமும் வற்றாத பெருங்கருணையும், அன்பு நிறைந்த தாய்மை உள்ளமும் இவரே என்று போற்றப்படுகிறது.', bn: 'যিনি চিরস্নেহময়ী। মনে করা হয়, তিনি হলেন এমন এক অবিরাম করুণাধারা, যা কখনও শুকায় না—স্নেহে পূর্ণ এক কোমল হৃদয়।', mr: 'सदैव कोमल आणि दयाळू असणाऱ्या देवी. मानले जाते की त्या कधीही न आटणारी ती करुणा आहेत, जे स्नेहाने ओथंबलेले निर्मळ हृदय असते.', gu: 'સદાય સ્નેહાળ અને દયાળુ દેવી. માનવામાં આવે છે કે તેઓ ક્યારેય ન સુકાતી કરુણા છે, જેમ હંમેશાં પ્રેમથી છલકાતું કોમળ હૃદય.', as: 'চিৰস্নেহময়ী দেৱী। মনে কৰা হয় যে তেওঁ কেতিয়াও শুকাই নোযোৱা অপাৰ কৰুণাৰ প্ৰতীক, ঠিক যেন দয়াৰে উপচি পৰা এক কোমল হৃদয়।' } },
  { tithi: 4, key: 'bherunda',
@@ -133,6 +133,21 @@ window.SD_NITYA = [
      'none'       → krishna shows the Gita
    BINDU_DAY 'mahanitya' → tithi 15 of either fortnight shows the bindu entry   */
 window.SD_NITYA_CFG = { KRISHNA: 'tantraraja', BINDU_DAY: 'mahanitya' };
+
+/* Card strings, nine languages, so the card never shows a bare key.
+   If the app sheet defines nitya.today_title / gita.share, A() wins.
+   te kn ta: Ram reviews. bn mr gu as: writer batch NITYA-1 reviews.
+   {name} in honorific is the Nitya's name in that language. */
+window.SD_NITYA_STRINGS = {
+  today_title: { en: "Today's Sri Chakra darshan", hi: 'आज का श्रीचक्र दर्शन', te: 'నేటి శ్రీచక్ర దర్శనం', kn: 'ಇಂದಿನ ಶ್ರೀಚಕ್ರ ದರ್ಶನ',
+                 ta: 'இன்றைய ஸ்ரீசக்ர தரிசனம்', bn: 'আজকের শ্রীচক্র দর্শন', mr: 'आजचे श्रीचक्र दर्शन', gu: 'આજનું શ્રીચક્ર દર્શન', as: 'আজিৰ শ্ৰীচক্ৰ দৰ্শন' },
+  honorific:   { en: 'Sri {name} Devi', hi: 'श्री {name} देवी', te: 'శ్రీ {name} దేవి', kn: 'ಶ್ರೀ {name} ದೇವಿ',
+                 ta: 'ஸ்ரீ {name} தேவி', bn: 'শ্রী {name} দেবী', mr: 'श्री {name} देवी', gu: 'શ્રી {name} દેવી', as: 'শ্ৰী {name} দেৱী' },
+  share:       { en: 'Share on WhatsApp', hi: 'व्हाट्सऐप पर भेजें', te: 'వాట్సాప్‌లో పంచుకోండి', kn: 'ವಾಟ್ಸ್‌ಆ್ಯಪ್‌ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ',
+                 ta: 'வாட்ஸ்அப்பில் பகிரவும்', bn: 'হোয়াটসঅ্যাপে শেয়ার করুন', mr: 'व्हॉट्सॲपवर पाठवा', gu: 'વોટ્સએપ પર મોકલો', as: 'হোৱাটছএপত শ্বেয়াৰ কৰক' },
+  from_app:    { en: 'from Shubh Din', hi: 'शुभ दिन से', te: 'శుభ దిన నుండి', kn: 'ಶುಭ ದಿನದಿಂದ', ta: 'சுப தினத்திலிருந்து',
+                 bn: 'শুভ দিন থেকে', mr: 'शुभ दिन कडून', gu: 'શુભ દિન તરફથી', as: 'শুভ দিনৰ পৰা' }
+};
 
 /* One line of motion per day, nine languages. Hedged, like everything else.
    {name} is replaced by the Nitya's name in the same language. */
