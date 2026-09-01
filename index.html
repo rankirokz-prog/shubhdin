@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<!-- analytics.js FIRST on the page. Two reasons it must be here and not
+     just on the dashboard: this is where a shared ?src=kundli_share link
+     lands, and without it that referral tag is never recorded — the viral
+     loop would be unmeasurable. It also reports uncaught errors from every
+     script below, on the page that IS the acquisition funnel. -->
+<script src="analytics.js"></script>
 <script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
 (function(){try{
