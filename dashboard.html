@@ -5977,9 +5977,25 @@ function sdNityaCtx(){
   var rawPak = pd.paksha_key || (pd.tithi && pd.tithi.paksha) || '';
   if(rawIdx == null) return null;
   var idx = parseInt(rawIdx, 10);
-  if(!(idx >= 1 && idx <= 30)) return null;
-  var paksha = String(rawPak).toLowerCase();
-  if(paksha !== 'shukla' && paksha !== 'krishna') return null;
+  /* ══ SD-TITHI-INDEX ══
+     The engine's tithi index is ZERO-BASED across the lunar month:
+        0  = Shukla Pratipada   14 = Purnima
+        15 = Krishna Pratipada  29 = Amavasya
+     Measured across a full month, not assumed. My first version did
+     `idx - 15` for the waning half and guarded with `idx >= 1`, which was
+     wrong TWICE: every waning day showed the goddess of the PREVIOUS tithi
+     (the card said Nityaklinna while the label said Chaturthi — spotted on
+     the live phone), and Shukla Pratipada, at index 0, failed the guard and
+     rendered no card at all.
+     One expression now derives both, so the number and the fortnight can
+     never disagree with each other. */
+  if(!(idx >= 0 && idx <= 29)) return null;
+  var tithiInPaksha = (idx % 15) + 1;
+  var paksha = (idx <= 14) ? 'shukla' : 'krishna';
+  /* If the engine's own paksha disagrees with the index, something upstream
+     changed; trust neither and show the Gita rather than a wrong goddess. */
+  var engPak = String(rawPak).toLowerCase();
+  if(engPak && engPak !== paksha) return null;
   var label = '';
   try{
     if(typeof pd.tithi === 'string'){
@@ -5996,7 +6012,7 @@ function sdNityaCtx(){
       label = (sdPaksha(pd.tithi.paksha) + ' ' + sdTithi(pd.tithi)).trim();
     }
   }catch(e){}
-  return { tithi: idx <= 15 ? idx : idx - 15,
+  return { tithi: tithiInPaksha,
            paksha: paksha,
            lang: (window.SD_LANG || 'hi'),
            dateLabel: label };
