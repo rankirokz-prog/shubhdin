@@ -5964,12 +5964,41 @@ function sdNityaCtx(){
 }
 /* Header, button and share text are localised inside nitya-card.js now — one
    place, so they cannot drift. The dashboard just mounts. */
+/* ══ PREVIEW ══════════════════════════════════════════════════════════════
+   dashboard.html?nitya=preview forces the Sri Chakra card so it can be seen on
+   a real phone before the two things it is waiting on are ready.
+
+   Why this exists rather than "just remove the Gita fallback": the fallback is
+   not what is hiding the card. TWO gates are, and neither is a bug —
+     · today is KRISHNA paksha, and KRISHNA is set to 'none', so no language
+       sees the card on any waning day;
+     · Telugu has 0 of 16 entries, so even on a waxing day it would fall back.
+   Removing the fallback would have produced an EMPTY SLOT, not a chakra.
+
+   In preview the waning fortnight is mapped as if 'reverse' were chosen, and
+   if the reader's language has no content the card is shown in Hindi. Both of
+   those would be WRONG to ship — a Telugu devotee must never be handed Hindi —
+   which is exactly why they are behind a URL parameter and nothing else. */
+function sdNityaPreview(){
+  try{ return /(\?|&)nitya=preview(&|$)/.test(location.search); }catch(e){ return false; }
+}
 function renderDailySlot(){
   var el = document.getElementById('gitaMount');
   if(!el) return;
   var mounted = false;
   try{
     var ctx = sdNityaCtx();
+    if(ctx && sdNityaPreview()){
+      if(ctx.paksha === 'krishna'){        /* preview only: treat as 'reverse' */
+        ctx.paksha = 'shukla';
+        ctx.tithi  = (ctx.tithi === 15) ? 15 : (16 - ctx.tithi);
+        ctx.dateLabel = (ctx.dateLabel||'') + ' · preview';
+      }
+      if(typeof sdNityaCardHTML === 'function' && !sdNityaCardHTML(ctx)){
+        ctx.lang = 'hi';                   /* preview only: borrow the content */
+        ctx.dateLabel = (ctx.dateLabel||'') + ' (hi)';
+      }
+    }
     if(ctx && typeof sdNityaMount === 'function') mounted = sdNityaMount(el, ctx);
   }catch(e){}
   if(mounted) return;
