@@ -44,9 +44,15 @@
      Hindi reader gets an English heading — the fault this project spent a week
      removing. Sheet values still win. */
   var FB = {
-    'nitya.today_title': {en:'Today in the Sri Chakra', hi:'आज श्री चक्र में',
-      te:'ఈ రోజు శ్రీ చక్రంలో', kn:'ಇಂದು ಶ್ರೀ ಚಕ್ರದಲ್ಲಿ', ta:'இன்று ஸ்ரீ சக்கரத்தில்',
-      bn:'আজ শ্রী চক্রে', mr:'आज श्री चक्रात', gu:'આજે શ્રી ચક્રમાં', as:'আজি শ্ৰী চক্ৰত'},
+    'nitya.today_title': {en:'Today\u2019s Sacred Energy', hi:'आज की दिव्य ऊर्जा',
+      te:'నేటి శ్రీ చక్ర శక్తి', kn:'ಇಂದಿನ ಶ್ರೀ ಚಕ್ರ ಶಕ್ತಿ', ta:'இன்றைய ஸ்ரீ சக்ர சக்தி',
+      bn:'আজকের শ্রী চক্র শক্তি', mr:'आजची श्री चक्र ऊर्जा', gu:'આજની શ્રી ચક્ર ઊર્જા',
+      as:'আজিৰ শ্ৰী চক্ৰ শক্তি'},
+    /* The SAME strings the Gita button already uses. Those went through the
+       Bengali, Marathi and Gujarati reviewers and through Ram for te/kn/ta —
+       inventing a second wording here would mean two unreviewed variants of
+       one idea drifting apart. WhatsApp is named explicitly, which is what
+       Ram asked for. */
     'gita.share': {en:'Share on WhatsApp', hi:'WhatsApp पर भेजें',
       te:'వాట్సాప్‌లో పంచుకోండి', kn:'WhatsApp‑ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ', ta:'WhatsApp‑இல் பகிருங்கள்',
       bn:'WhatsApp-এ পাঠান', mr:'WhatsApp‑वर पाठवा', gu:'WhatsApp પર મોકલો',
@@ -56,7 +62,15 @@
       bn:'আজ শ্রী চক্রে', mr:'आज श्री चक्रात', gu:'આજે શ્રી ચક્રમાં', as:'আজি শ্ৰী চক্ৰত'}
   };
   function AL_(k, lang, fb) {
-    var v = A_(k, null);
+    /* Detecting a sheet MISS by inspecting the returned value has now failed
+       three ways: the key itself, the key in brackets, and — the one that
+       reached Ram's phone — the key HUMANISED, so 'nitya.today_title' came
+       back as the plausible-looking "Today title" and sailed past every guard.
+       sdHas() answers the real question exactly. Only trust A() when the sheet
+       actually holds the key. */
+    var have = true;
+    try { if (typeof g.sdHas === 'function') have = !!g.sdHas(k); } catch (e) {}
+    var v = have ? A_(k, null) : null;
     if (v) return v;
     var row = FB[k];
     if (row) return row[lang] || row[(g.SD_LANG || 'hi')] || row.hi || fb;
