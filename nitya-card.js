@@ -25,12 +25,12 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   var g = typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {});
-  /* The fallback assumed A() returns the KEY on a miss. Shubh Din's string
-     layer returns the key IN BRACKETS — "[gita.share]" — which is truthy and
-     not equal to the key, so the fallback never fired. Measured: the button
-     rendered "[gita.share]" and, worse, the WhatsApp share text would have
-     carried "[nitya.share_tag]" into somebody's family group.
-     Treat a bracketed key as a miss. */
+  /* Shubh Din's string layer returns a MISSING key in brackets — "[gita.share]"
+     — which is truthy and not equal to the key, so a plain fallback never
+     fires. Measured twice now: the button rendered "[gita.share]" and the
+     heading "[nitya.today_title]". Treat a bracketed key as a miss.
+     (This fix and the table below were applied to the previous version of this
+     file and did not survive the update — worth carrying forward.) */
   function A_(k, fb) {
     try {
       if (typeof g.A === 'function') {
@@ -40,10 +40,9 @@
     } catch (e) {}
     return fb;
   }
-  /* Nine-language fallbacks for the three keys this card needs, used until
-     they are merged into the string sheet. Without these the sheet miss falls
-     through to English, and a Hindi reader gets an English button — the exact
-     fault this project spent a week removing. Sheet values still win. */
+  /* Nine-language fallbacks until these keys reach the sheet. Without them a
+     Hindi reader gets an English heading — the fault this project spent a week
+     removing. Sheet values still win. */
   var FB = {
     'nitya.today_title': {en:'Today in the Sri Chakra', hi:'आज श्री चक्र में',
       te:'ఈ రోజు శ్రీ చక్రంలో', kn:'ಇಂದು ಶ್ರೀ ಚಕ್ರದಲ್ಲಿ', ta:'இன்று ஸ்ரீ சக்கரத்தில்',
@@ -63,7 +62,6 @@
     if (row) return row[lang] || row[(g.SD_LANG || 'hi')] || row.hi || fb;
     return fb;
   }
-
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   /* ── which Nitya today ─────────────────────────────────────────────────
@@ -72,13 +70,17 @@
     cfg = cfg || g.SD_NITYA_CFG || {}; data = data || g.SD_NITYA || [];
     tithi = parseInt(tithi, 10);
     if (!(tithi >= 1 && tithi <= 15)) return null;
-    var n;
-    if (paksha === 'shukla') n = tithi;
-    else if (paksha === 'krishna') {
-      if (cfg.KRISHNA === 'reverse') n = tithi === 15 ? 15 : 16 - tithi;
-      else if (cfg.KRISHNA === 'same') n = tithi;
-      else return null;                                   // 'none' — not ruled yet
-    } else return null;
+    if (paksha !== 'shukla' && paksha !== 'krishna') return null;
+    var pol = cfg.KRISHNA || 'tantraraja', n, state, motion, lit = [], i;
+    if (pol === 'tantraraja') {
+      /* Tantraraja: krishna k → Nitya k leaves the moon; shukla k → Nitya 16-k returns. */
+      if (paksha === 'krishna') { n = tithi; motion = 'out'; for (i = tithi + 1; i <= 15; i++) lit.push(i); }
+      else { n = 16 - tithi; motion = 'in'; for (i = n; i <= 15; i++) lit.push(i); }
+    } else if (paksha === 'shukla') { n = tithi; motion = 'in'; for (i = 1; i <= n; i++) lit.push(i); }
+    else if (pol === 'reverse') { n = tithi === 15 ? 15 : 16 - tithi; motion = 'out'; for (i = n; i <= 15; i++) lit.push(i); }
+    else if (pol === 'same') { n = tithi; motion = 'out'; for (i = tithi + 1; i <= 15; i++) lit.push(i); }
+    else return null;                                       // 'none'
+    state = tithi === 15 ? (paksha === 'shukla' ? 'purnima' : 'amavasya') : 'day';
     /* the bindu is the FIFTEENTH TITHI of either fortnight (purnima / amavasya),
        not "whichever entry is numbered 15" — under the reverse policy krishna
        pratipad maps to Nitya 15 (Chitra) and must stay on the perimeter. */
@@ -88,7 +90,17 @@
       if (bindu ? data[i].bindu : (data[i].tithi === n && !data[i].bindu)) { entry = data[i]; break; }
     }
     if (!entry) return null;
-    return { entry: entry, station: bindu ? 0 : n };
+    return { entry: entry, station: bindu ? 0 : n, state: bindu ? state : 'day',
+             motion: bindu ? null : motion, lit: lit, tithi: tithi, paksha: paksha,
+             moon: g.sdSriChakra ? g.sdSriChakra.moonFraction(tithi, paksha) : null };
+  }
+
+  /* the one line of motion for the day, or '' if the template is missing in this language */
+  function sdNityaMotionText(pick, lang) {
+    var M = g.SD_NITYA_MOTION || {}; if (!pick) return '';
+    var key = pick.state === 'purnima' ? 'purnima' : pick.state === 'amavasya' ? 'amavasya' : (pick.motion === 'out' ? 'departs' : 'returns');
+    var t = M[key] && M[key][lang]; if (!t) return '';
+    return t.replace('{name}', pick.entry.name[lang] || '');
   }
 
   /* complete in this language = all three fields non-empty. No fallback. */
@@ -107,16 +119,20 @@
     /* ZOOMED, always. The fifteen stations span 0.19 R; unzoomed at 132 px they
        sit 0.8 px apart under the glow and every day looks the same (review,
        blocker 2). At 150 px and zoom 0.30 the closest pair (across a corner) is 9 px apart, dot 2.75 px. */
-    var svg = g.sdSriChakra.svg({ size: 150, station: pick.station, zoom: 0.30, id: 'sdnc' });
+    var svg = g.sdSriChakra.svg({ size: 150, station: pick.station, zoom: 0.30, id: 'sdnc',
+                                  state: pick.state, motion: pick.motion, lit: pick.lit, animate: true });
+    var moon = g.sdSriChakra.moonSVG(pick.tithi, pick.paksha, 22);
+    var motionLine = sdNityaMotionText(pick, L);
     var title = AL_('nitya.today_title', ctx.lang, 'Today in the Sri Chakra');
     var share = AL_('gita.share', ctx.lang, 'Share');
     return '<div class="nitya-card" data-key="' + esc(e.key) + '" data-station="' + pick.station + '">' +
-      '<div class="nitya-head">' + esc(title) + (ctx.dateLabel ? ' <span class="nitya-date">· ' + esc(ctx.dateLabel) + '</span>' : '') + '</div>' +
+      '<div class="nitya-head">' + moon + '<span>' + esc(title) + (ctx.dateLabel ? ' <span class="nitya-date">· ' + esc(ctx.dateLabel) + '</span>' : '') + '</span></div>' +
       '<div class="nitya-body">' +
         '<div class="nitya-chakra" aria-hidden="true">' + svg + '</div>' +
         '<div class="nitya-text">' +
           '<div class="nitya-name">' + esc(e.name[L]) + '</div>' +
           '<div class="nitya-digit">' + esc(e.digit[L]) + '</div>' +
+          (motionLine ? '<div class="nitya-motion">' + esc(motionLine) + '</div>' : '') +
           '<div class="nitya-note">' + esc(e.note[L]) + '</div>' +
         '</div>' +
       '</div>' +
@@ -140,7 +156,8 @@
   function sdNityaShareText(ctx) {
     var pick = sdNityaOfDay(ctx.tithi, ctx.paksha); if (!pick) return '';
     var e = pick.entry, L = ctx.lang; if (!sdNityaComplete(e, L)) return '';
-    return e.name[L] + '\n' + e.digit[L] + '\n\n' + e.note[L] + '\n\n' +
+    var m = sdNityaMotionText(pick, L);
+    return e.name[L] + '\n' + e.digit[L] + (m ? '\n' + m : '') + '\n\n' + e.note[L] + '\n\n' +
            AL_('nitya.share_tag', ctx.lang, 'Today in the Sri Chakra') + (ctx.dateLabel ? ' · ' + ctx.dateLabel : '') + '\nhttps://shubhdin.app';
   }
 
@@ -157,16 +174,19 @@
     c.fillStyle = bg; c.fillRect(0, 0, W, H);
     /* full yantra for recognition, plus a zoomed lens so the day's station is
        unmistakable in the forwarded image too */
-    var svgFull = g.sdSriChakra.svg({ size: 620, station: pick.station, outer: true, id: 'sdsh' });
-    var svgLens = g.sdSriChakra.svg({ size: 300, station: pick.station, zoom: 0.30, id: 'sdsl',
-                                      theme: { bg: '#1A0D00' } });
-    var url = URL.createObjectURL(new Blob([svgFull], { type: 'image/svg+xml;charset=utf-8' }));
-    var url2 = URL.createObjectURL(new Blob([svgLens], { type: 'image/svg+xml;charset=utf-8' }));
-    var img = new Image(), lens = new Image(), left = 2;
+    var st = { state: pick.state, lit: pick.lit, animate: false };   // a still image: no SMIL
+    var svgFull = g.sdSriChakra.svg(Object.assign({ size: 620, station: pick.station, outer: true, id: 'sdsh' }, st));
+    var svgLens = g.sdSriChakra.svg(Object.assign({ size: 300, station: pick.station, zoom: 0.30, id: 'sdsl',
+                                      theme: { bg: '#1A0D00' } }, st));
+    var svgMoon = g.sdSriChakra.moonSVG(pick.tithi, pick.paksha, 96);
+    var mk = function (svg) { return URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })); };
+    var url = mk(svgFull), url2 = mk(svgLens), url3 = mk(svgMoon);
+    var img = new Image(), lens = new Image(), moon = new Image(), left = 3;
     function ready() {
       if (--left) return;
-      URL.revokeObjectURL(url); URL.revokeObjectURL(url2);
+      URL.revokeObjectURL(url); URL.revokeObjectURL(url2); URL.revokeObjectURL(url3);
       c.drawImage(img, 40, 50, 620, 620);
+      c.drawImage(moon, W - 40 - 96, 50, 96, 96);
       c.save(); c.beginPath(); c.arc(W - 40 - 150, 50 + 620 - 150, 150, 0, Math.PI * 2); c.closePath(); c.clip();
       c.drawImage(lens, W - 40 - 300, 50 + 620 - 300, 300, 300); c.restore();
       c.beginPath(); c.arc(W - 40 - 150, 50 + 620 - 150, 150, 0, Math.PI * 2);
@@ -176,15 +196,17 @@
       c.fillText(e.name[L], W / 2, 790);
       c.fillStyle = 'rgba(255,244,222,0.85)'; c.font = '400 32px "Noto Serif", serif';
       c.fillText(e.digit[L], W / 2, 845);
+      var ml = sdNityaMotionText(pick, L), y = 900;
+      if (ml) { c.fillStyle = '#F1D27A'; c.font = '500 30px "Noto Serif", serif'; wrap(c, ml, W / 2, y, 900, 40, 2); y += 84; }
       c.fillStyle = 'rgba(255,244,222,0.72)'; c.font = '400 30px "Noto Serif", serif';
-      wrap(c, e.note[L], W / 2, 915, 900, 44, 4);
+      wrap(c, e.note[L], W / 2, y, 900, 42, ml ? 3 : 4);
       c.fillStyle = 'rgba(241,210,122,0.75)'; c.font = '500 28px sans-serif';
       c.fillText((ctx.dateLabel ? ctx.dateLabel + '  ·  ' : '') + 'shubhdin.app', W / 2, 1105);
       try { cv.toBlob(function (b) { done(b); }, 'image/png'); } catch (err) { done(null); }
     }
-    img.onload = ready; lens.onload = ready;
-    img.onerror = lens.onerror = function () { URL.revokeObjectURL(url); URL.revokeObjectURL(url2); done(null); };
-    img.src = url; lens.src = url2;
+    img.onload = lens.onload = moon.onload = ready;
+    img.onerror = lens.onerror = moon.onerror = function () { URL.revokeObjectURL(url); URL.revokeObjectURL(url2); URL.revokeObjectURL(url3); done(null); };
+    img.src = url; lens.src = url2; moon.src = url3;
   }
   function wrap(c, text, x, y, maxW, lh, maxLines) {
     var words = String(text).split(/\s+/), line = '', n = 0;
@@ -214,7 +236,7 @@
     });
   }
 
-  return { sdNityaOfDay: sdNityaOfDay, sdNityaComplete: sdNityaComplete, sdNityaCardHTML: sdNityaCardHTML,
+  return { sdNityaOfDay: sdNityaOfDay, sdNityaComplete: sdNityaComplete, sdNityaCardHTML: sdNityaCardHTML, sdNityaMotionText: sdNityaMotionText,
            sdNityaMount: sdNityaMount, sdNityaShareText: sdNityaShareText, sdNityaImageBlob: sdNityaImageBlob,
            sdNityaShare: sdNityaShare };
 }));
