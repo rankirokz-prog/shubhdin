@@ -143,7 +143,7 @@
     var title = S_('today_title', L, 'nitya.today_title') || e.name[L];
     var share = S_('share', L, 'nitya.share') || A_('gita.share', '');
     return '<div class="nitya-card" data-key="' + esc(e.key) + '" data-station="' + pick.station + '">' +
-      '<div class="nitya-head">' + moon + '<span>' + esc(title) + (sdNityaWhen(ctx, L, true) ? ' <span class="nitya-date">· ' + esc(sdNityaWhen(ctx, L, true)) + '</span>' : '') + '</span></div>' +
+      '<div class="nitya-head">' + moon + '<span>' + esc(title) + (sdNityaWhen(ctx, L, true) ? ' <span class="nitya-date">' + esc(sdNityaWhen(ctx, L, true)) + '</span>' : '') + '</span></div>' +
       '<div class="nitya-body">' +
         '<div class="nitya-chakra" aria-hidden="true">' + svg + '</div>' +
         '<div class="nitya-text">' +
