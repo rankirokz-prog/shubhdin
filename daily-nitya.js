@@ -16,7 +16,7 @@
    deity names in this app (see Language Bible); other scripts are
    transliterations of it, not translations.
 
-   te kn ta bn mr gu as : EMPTY on purpose — writer batch NITYA-1.
+   te kn ta bn mr gu as : EMPTY on purpose — writer batch NITYA-1 (16 entries × 3 fields + 4 motion lines).
    ═══════════════════════════════════════════════════════════════════════════ */
 window.SD_NITYA = [
  { tithi: 1, key: 'kameshvari',
@@ -118,10 +118,35 @@ window.SD_NITYA = [
             te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' } }
 ];
 
-/* Policy flags. Change here only, after the ruling.
-   KRISHNA  'none'    → no Nitya on the waning fortnight; the Gita card shows  (default until ruled)
-            'reverse' → krishna tithi k shows Nitya 16-k  (Chitra on pratipad, Kameshvari on chaturdashi)
-            'same'    → krishna tithi k shows Nitya k
-   BINDU_DAY 'mahanitya' → purnima / amavasya show the bindu entry (default, per constraint 2 of the spec)
-             'chitra'    → purnima shows Chitra as tithi 15                                            */
-window.SD_NITYA_CFG = { KRISHNA: 'none', BINDU_DAY: 'mahanitya' };
+/* ── The departure / return cycle (Tantraraja Tantra) — RULED, approved ──
+   On purnima all fifteen Nityas are in the moon. Each krishna tithi one leaves
+   the moon for the sun (krishna k → Nitya k: Kameshvari on pratipad … Chitra
+   on chaturdashi); on amavasya all are with the sun and only the Goddess
+   remains at the bindu. Each shukla tithi one returns (shukla k → Nitya 16-k:
+   Chitra first … Kameshvari on chaturdashi); purnima, all fifteen home.
+   Tvarita is the eighth in both fortnights (16-8 = 8) — the self-check.
+
+   Policy values kept for the record:
+     'tantraraja' → the cycle above                                   (LIVE)
+     'reverse'    → krishna k → Nitya 16-k, shukla k → Nitya k        (my earlier guess; not used)
+     'same'       → krishna k → Nitya k, shukla k → Nitya k
+     'none'       → krishna shows the Gita
+   BINDU_DAY 'mahanitya' → tithi 15 of either fortnight shows the bindu entry   */
+window.SD_NITYA_CFG = { KRISHNA: 'tantraraja', BINDU_DAY: 'mahanitya' };
+
+/* One line of motion per day, nine languages. Hedged, like everything else.
+   {name} is replaced by the Nitya's name in the same language. */
+window.SD_NITYA_MOTION = {
+  returns:  { en: 'Today {name} is held to return to the moon.',
+              hi: 'माना जाता है कि आज {name} चंद्रमा में लौटती हैं।',
+              te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' },
+  departs:  { en: 'Today {name} is held to leave the moon for the sun.',
+              hi: 'माना जाता है कि आज {name} चंद्रमा से सूर्य की ओर जाती हैं।',
+              te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' },
+  purnima:  { en: 'Full moon: all fifteen are held to be home in the moon tonight.',
+              hi: 'पूर्णिमा: माना जाता है कि आज रात पंद्रहों कलाएँ चंद्रमा में हैं।',
+              te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' },
+  amavasya: { en: 'New moon: all fifteen are held to be with the sun; only the Goddess remains at the centre.',
+              hi: 'अमावस्या: माना जाता है कि पंद्रहों कलाएँ सूर्य के साथ हैं; केंद्र में केवल देवी रहती हैं।',
+              te: '', kn: '', ta: '', bn: '', mr: '', gu: '', as: '' }
+};
