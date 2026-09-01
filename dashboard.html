@@ -1590,6 +1590,20 @@ body[data-home="returning"] .streak{display:none;}
 .ag-more{color:rgba(243,244,246,0.62);font-size:10.5px;}
 .ag-arrow{color:#FFC24A;font-weight:700;}
 
+/* ══ SD-NITYA · the daily Sri Chakra card ═════════════════════════════════
+   Shares the gitaMount slot; renderDailySlot() decides which card renders. */
+.nitya-card{background:linear-gradient(160deg,#2A1400,#150900);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:14px 14px 12px;margin:10px 0}
+.nitya-head{font-size:12px;letter-spacing:.02em;color:#D4A843;margin-bottom:8px}
+.nitya-date{color:rgba(255,244,222,.55)}
+.nitya-body{display:flex;gap:12px;align-items:center}
+.nitya-chakra{flex:0 0 150px;width:150px;height:150px}
+.nitya-chakra svg{display:block;width:150px;height:150px}
+.nitya-text{flex:1;min-width:0}
+.nitya-name{font-size:19px;font-weight:600;color:#F1D27A;line-height:1.25}
+.nitya-digit{font-size:12.5px;color:rgba(255,244,222,.7);margin:3px 0 7px}
+.nitya-note{font-size:13.5px;line-height:1.55;color:#FFF4DE}
+.nitya-share{margin-top:10px;width:100%;background:linear-gradient(120deg,#D4A843,#B8892F);color:#1A0D00;border:none;font-family:inherit;font-size:13px;font-weight:600;padding:10px;border-radius:11px}
+
 /* ══ SD-GITA · today's verse ══════════════════════════════════════════════
    The picture leads and the words sit under it. It was a background at 20%
    opacity behind a dark scrim, which is not a picture — it was a texture.
@@ -5750,6 +5764,9 @@ function applyPanchang(p){
       if(gulEl) gulEl.textContent=p.gulika;
     }
   }catch(e){ console.log('applyPanchang render:',e); }
+  /* the real tithi is known now — upgrade the slot if the Sri Chakra card can
+     render for this day and language */
+  try{ renderDailySlot(); }catch(e){}
 }
 
 
@@ -5917,6 +5934,48 @@ function wpOfDay(d){
 }
 
 /* ── card ── */
+/* ══ SD-DAILY-SLOT ════════════════════════════════════════════════════════
+   One slot, two possible cards. The Sri Chakra card renders when the data
+   supports it; otherwise the Gita renders exactly as before. Nothing about
+   the Gita path changed — it is the floor.
+
+   THE TITHI COMES FROM THE ENGINE, never from Date.getDate(). The engine
+   gives a 1..30 index across both fortnights plus the paksha; the card wants
+   1..15 within the fortnight. If this card and the panchang strip disagreed
+   about the tithi on the same screen, that is the one thing a panchang user
+   would not forgive — so both read the same object.
+
+   The panchang arrives asynchronously, so this runs twice: at layout (Gita,
+   usually) and again from applyPanchang() once the real tithi is known. That
+   means a slow connection shows the Gita rather than nothing. */
+function sdNityaCtx(){
+  var pd = window._panchangData;
+  if(!pd || !pd.tithi || pd.tithi.index == null) return null;
+  var idx = parseInt(pd.tithi.index, 10);
+  if(!(idx >= 1 && idx <= 30)) return null;
+  var paksha = String(pd.tithi.paksha || '').toLowerCase();
+  if(paksha !== 'shukla' && paksha !== 'krishna') return null;
+  var label = '';
+  try{ label = (sdPaksha(pd.tithi.paksha) + ' ' + sdTithi(pd.tithi)).trim(); }catch(e){}
+  return { tithi: idx <= 15 ? idx : idx - 15,
+           paksha: paksha,
+           lang: (window.SD_LANG || 'hi'),
+           dateLabel: label };
+}
+/* Header, button and share text are localised inside nitya-card.js now — one
+   place, so they cannot drift. The dashboard just mounts. */
+function renderDailySlot(){
+  var el = document.getElementById('gitaMount');
+  if(!el) return;
+  var mounted = false;
+  try{
+    var ctx = sdNityaCtx();
+    if(ctx && typeof sdNityaMount === 'function') mounted = sdNityaMount(el, ctx);
+  }catch(e){}
+  if(mounted) return;
+  try{ renderGitaCard(); }catch(e){}
+}
+
 /* ══ SD-GITA ══════════════════════════════════════════════════════════════
    One verse per day of the month, the same one for everybody — which is what
    makes "did you see today's shloka?" a real conversation.
@@ -6283,7 +6342,7 @@ function applyHomeState(){
     document.body.dataset.home = returning ? 'returning' : 'first';
   }catch(e){}
   try{ paintJapStreak(); }catch(e){}
-  try{ renderGitaCard(); }catch(e){}
+  try{ renderDailySlot(); }catch(e){}
   try{ paintVedicNote(); }catch(e){}
   /* once per load, with the state — this is what tells us whether the
      two-state home screen actually changed behaviour */
@@ -8575,6 +8634,12 @@ window.mlStop=mlStop;
 <script src="birthdate-guard.js"></script>
 <script src="report-catalog.js"></script>
 <script src="daily-gita.js"></script>
+<!-- The daily Sri Chakra card. Order matters: draw → content → card.
+     If any of the three fails to load, sdNityaMount is undefined, the slot
+     falls back to the Gita, and nothing else on the page notices. -->
+<script src="srichakra-draw.js"></script>
+<script src="daily-nitya.js"></script>
+<script src="nitya-card.js"></script>
 <script src="nav-history.js"></script>
 <script>
 /* Tabs become history entries. Called after go() and openSadhana() exist, and
