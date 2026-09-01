@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v168';
+const CACHE_NAME = 'shubhdin-v169';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -13,6 +13,11 @@ const CORE_FILES = [
   /* today's verse — cached so the morning card is there on a weak
      connection, which is exactly when people open a devotional app */
   '/daily-gita.js',
+  /* the daily Sri Chakra card — cached so the morning card is there on a weak
+     connection, same reasoning as the verse */
+  '/srichakra-draw.js',
+  '/daily-nitya.js',
+  '/nitya-card.js',
   /* cached so error reporting survives a bad connection — the moments we
      most need to hear about are the ones where the network is failing */
   '/analytics.js',
