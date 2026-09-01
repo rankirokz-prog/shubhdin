@@ -5444,7 +5444,7 @@ function pgCacheKey(){
    is only usable if it is the current shape AND was built for the profile in
    effect now — otherwise it is recomputed rather than half-rendered. */
 function pgUsable(c){
-  return !!(c && c.v===2 && c.seg &&
+  return !!(c && c.v===3 && c.seg &&
             c.forNak===(U.nakshatra||'') && c.forRas===(U.rashi||''));
 }
 function pgSweepCache(){
@@ -5487,8 +5487,21 @@ function buildPayload(q){
     }
   }catch(e){}
   return {
-    v:2, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
+    /* v:3 — the cache shape changed. A v:2 cache is now rejected, which
+       matters: without the bump, a phone holding yesterday's cache would keep
+       serving an object with no tithi_index and the Sri Chakra card would
+       never appear, exactly as if the fix had not shipped. */
+    v:3, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
     tithi:(sdTithi(q.tithi)),
+    /* ══ SD-TITHI-RAW ══
+       Everything above is LOCALISED FOR DISPLAY — tithi is a string like
+       "తదియ" and tithi_paksha is "कृष्ण पक्ष". Neither can be computed with.
+       The Sri Chakra card needs the machine-readable pair, and without it
+       sdNityaCtx() returned null on every single load and the Gita showed
+       forever. Measured on the real page, after my own tests passed against a
+       shape I had injected by hand rather than the one this function builds. */
+    tithi_index:(q.tithi && q.tithi.index) || null,
+    paksha_key:((q.tithi && q.tithi.paksha) || ''),
     tithi_paksha:(q.tithi.paksha==='Krishna'?(A('dashbo.krishna_paksha')):(A('dashbo.shukla_paksha'))),
     tithi_end:pgFmt(q.tithi.end),
     nakshatra:(sdNak(q.nakshatra)),
@@ -5955,13 +5968,34 @@ function wpOfDay(d){
    means a slow connection shows the Gita rather than nothing. */
 function sdNityaCtx(){
   var pd = window._panchangData;
-  if(!pd || !pd.tithi || pd.tithi.index == null) return null;
-  var idx = parseInt(pd.tithi.index, 10);
+  if(!pd) return null;
+  /* the normalised object carries tithi_index / paksha_key; a raw engine
+     object carries tithi.index / tithi.paksha. Accept either, so this keeps
+     working whichever one it is handed. */
+  var rawIdx = (pd.tithi_index != null) ? pd.tithi_index
+             : (pd.tithi && pd.tithi.index != null ? pd.tithi.index : null);
+  var rawPak = pd.paksha_key || (pd.tithi && pd.tithi.paksha) || '';
+  if(rawIdx == null) return null;
+  var idx = parseInt(rawIdx, 10);
   if(!(idx >= 1 && idx <= 30)) return null;
-  var paksha = String(pd.tithi.paksha || '').toLowerCase();
+  var paksha = String(rawPak).toLowerCase();
   if(paksha !== 'shukla' && paksha !== 'krishna') return null;
   var label = '';
-  try{ label = (sdPaksha(pd.tithi.paksha) + ' ' + sdTithi(pd.tithi)).trim(); }catch(e){}
+  try{
+    if(typeof pd.tithi === 'string'){
+      /* tithi_paksha is a sheet lookup, and a miss comes back as
+         "[dashbo.krishna_paksha]". Drop a bracketed key rather than print it
+         on the card — third time this pattern has tried to reach a user. */
+      var pk = String(pd.tithi_paksha || '');
+      if(/^\[.*\]$/.test(pk)){
+        try{ pk = sdPaksha(rawPak) || ''; }catch(e){ pk = ''; }
+        if(/^\[.*\]$/.test(pk)) pk = '';
+      }
+      label = (pk + ' ' + pd.tithi).trim();
+    } else {
+      label = (sdPaksha(pd.tithi.paksha) + ' ' + sdTithi(pd.tithi)).trim();
+    }
+  }catch(e){}
   return { tithi: idx <= 15 ? idx : idx - 15,
            paksha: paksha,
            lang: (window.SD_LANG || 'hi'),
