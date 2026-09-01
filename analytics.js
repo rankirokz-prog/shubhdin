@@ -39,6 +39,7 @@
      silently. Add to this list deliberately, never casually, and never add
      anything that identifies a person. */
   var ALLOWED = {
+    src: 1,
     state: 1, card: 1, surface: 1, source: 1, report: 1, screen: 1,
     count: 1, ok: 1, reason: 1, method: 1, kind: 1, tab: 1,
     msg: 1, file: 1, line: 1, verse: 1, tithi: 1, paksha: 1, day: 1,
@@ -83,6 +84,22 @@
   }
 
   var SESSION = rand();
+
+  /* ══ REFERRAL SOURCE ══
+     The Kundli gift link carries ?src=kundli_share. Without something reading
+     it the tag is decorative — it would sit in the address bar and never reach
+     a table. Capture it ONCE per install, on first arrival, and attach it to
+     every event afterwards so v_daily can show what the viral loop actually
+     produced.
+     It is a short whitelisted token, never a full URL, so no query string a
+     user was sent can smuggle anything into the events table. */
+  var SRC = (function () {
+    try {
+      var m = String(location.search || '').match(/[?&]src=([a-z0-9_]{1,24})/i);
+      if (m) { localStorage.setItem('sd_src', m[1]); return m[1]; }
+      return localStorage.getItem('sd_src') || '';
+    } catch (e) { return ''; }
+  })();
 
   function ctx() {
     var lang = 'hi', ver = '', plat = 'browser';
@@ -146,11 +163,13 @@
       if (!event) return;
       var c = ctx();
       var q = readQ();
+      var p = clean(props);
+      if (SRC && !p.src) p.src = SRC;
       q.push({
         anon_id: anonId(),
         session_id: SESSION,
         event: String(event).slice(0, 60),
-        props: clean(props),
+        props: p,
         lang: c.lang,
         app_version: c.app_version,
         platform: c.platform
