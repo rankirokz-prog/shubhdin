@@ -13,9 +13,13 @@
      entry complete in the reader's language  → Nitya card
      otherwise                                → Gita card
 
-   ctx = { tithi: 1..15, paksha: 'shukla'|'krishna', lang: 'te', dateLabel: '...' }
-   tithi/paksha come from the engine's Vedic day (sunrise-anchored), the same
-   values the panchang strip already shows. Never from Date.getDate().
+   ctx = { tithi: 1..15, paksha: 'shukla'|'krishna', lang: 'te',
+           dateLabel: 'कृष्ण चतुर्थी',        // the strip's tithi text
+           date: Date | 'YYYY-MM-DD' }        // the strip's civil date for this Vedic day
+   tithi / paksha / date come from the engine's Vedic day (sunrise-anchored),
+   the same object the panchang strip renders from. Never from Date.getDate()
+   or new Date() — between midnight and sunrise they disagree, and a forwarded
+   card with the wrong date is worse than one with no date.
 
    No mantra. No remedy. No prescription. See the spec.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -25,14 +29,22 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   var g = typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {});
-  /* Shubh Din's string layer returns a MISSING key in brackets — "[gita.share]"
-     — which is truthy and not equal to the key, so a plain fallback never
-     fires. Measured twice now: the button rendered "[gita.share]" and the
-     heading "[nitya.today_title]". Treat a bracketed key as a miss.
-     (This fix and the table below were applied to the previous version of this
-     file and did not survive the update — worth carrying forward.) */
+  /* ══ SD-STRING-MISS ══════════════════════════════════════════════════════
+     THIS FIX HAS NOW BEEN LOST TO A FILE REPLACEMENT THREE TIMES. It belongs
+     in the upstream copy of this file, not re-applied at every merge.
+
+     Shubh Din's A() does not return the key on a miss. It returns the key IN
+     BRACKETS — "[nitya.today_title]" — and on some builds the key HUMANISED,
+     "Today title". Both are truthy and neither equals the key, so a plain
+     `v !== k` fallback never fires. Measured on the live phone twice: the
+     header rendered "[nitya.today_title]" and the button "[nitya.share]", and
+     the WhatsApp text would have carried a bracketed key into a family group.
+
+     sdHas() answers the real question exactly, so ask it. The two string
+     shapes are belt and braces for builds where sdHas is absent. */
   function A_(k, fb) {
     try {
+      if (typeof g.sdHas === 'function' && !g.sdHas(k)) return fb;
       if (typeof g.A === 'function') {
         var v = g.A(k);
         if (v && v !== k && !/^\[.*\]$/.test(v)) return v;
@@ -40,41 +52,32 @@
     } catch (e) {}
     return fb;
   }
-  /* Nine-language fallbacks until these keys reach the sheet. Without them a
-     Hindi reader gets an English heading — the fault this project spent a week
-     removing. Sheet values still win. */
-  var FB = {
-    'nitya.today_title': {en:'Today\u2019s Sacred Energy', hi:'आज की दिव्य ऊर्जा',
-      te:'నేటి శ్రీ చక్ర శక్తి', kn:'ಇಂದಿನ ಶ್ರೀ ಚಕ್ರ ಶಕ್ತಿ', ta:'இன்றைய ஸ்ரீ சக்ர சக்தி',
-      bn:'আজকের শ্রী চক্র শক্তি', mr:'आजची श्री चक्र ऊर्जा', gu:'આજની શ્રી ચક્ર ઊર્જા',
-      as:'আজিৰ শ্ৰী চক্ৰ শক্তি'},
-    /* The SAME strings the Gita button already uses. Those went through the
-       Bengali, Marathi and Gujarati reviewers and through Ram for te/kn/ta —
-       inventing a second wording here would mean two unreviewed variants of
-       one idea drifting apart. WhatsApp is named explicitly, which is what
-       Ram asked for. */
-    'gita.share': {en:'Share on WhatsApp', hi:'WhatsApp पर भेजें',
-      te:'వాట్సాప్‌లో పంచుకోండి', kn:'WhatsApp‑ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ', ta:'WhatsApp‑இல் பகிருங்கள்',
-      bn:'WhatsApp-এ পাঠান', mr:'WhatsApp‑वर पाठवा', gu:'WhatsApp પર મોકલો',
-      as:'WhatsApp‑ত শ্বেয়াৰ কৰক'},
-    'nitya.share_tag': {en:'Today in the Sri Chakra', hi:'आज श्री चक्र में',
-      te:'ఈ రోజు శ్రీ చక్రంలో', kn:'ಇಂದು ಶ್ರೀ ಚಕ್ರದಲ್ಲಿ', ta:'இன்று ஸ்ரீ சக்கரத்தில்',
-      bn:'আজ শ্রী চক্রে', mr:'आज श्री चक्रात', gu:'આજે શ્રી ચક્રમાં', as:'আজি শ্ৰী চক্ৰত'}
-  };
-  function AL_(k, lang, fb) {
-    /* Detecting a sheet MISS by inspecting the returned value has now failed
-       three ways: the key itself, the key in brackets, and — the one that
-       reached Ram's phone — the key HUMANISED, so 'nitya.today_title' came
-       back as the plausible-looking "Today title" and sailed past every guard.
-       sdHas() answers the real question exactly. Only trust A() when the sheet
-       actually holds the key. */
-    var have = true;
-    try { if (typeof g.sdHas === 'function') have = !!g.sdHas(k); } catch (e) {}
-    var v = have ? A_(k, null) : null;
+  /* string in the reader's language: app sheet first, then the nine-language table in daily-nitya.js, else '' — never English */
+  function S_(key, lang, sheetKey) {
+    var v = sheetKey ? A_(sheetKey, '') : '';
     if (v) return v;
-    var row = FB[k];
-    if (row) return row[lang] || row[(g.SD_LANG || 'hi')] || row.hi || fb;
-    return fb;
+    var t = g.SD_NITYA_STRINGS && g.SD_NITYA_STRINGS[key]; return (t && t[lang]) || '';
+  }
+  /* the civil date in the reader's language: "मंगलवार, 1 सितंबर 2026".
+     Uses the platform's own locale data; digits as the locale prefers. */
+  var LOCALE = { en: 'en-IN', hi: 'hi-IN', te: 'te-IN', kn: 'kn-IN', ta: 'ta-IN', bn: 'bn-IN', mr: 'mr-IN', gu: 'gu-IN', as: 'as-IN' };
+  function sdNityaDateText(ctx, lang, short) {
+    var d = ctx && ctx.date; if (!d) return '';
+    if (typeof d === 'string') { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d); d = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(d); }
+    if (!d || typeof d.getTime !== 'function' || isNaN(d.getTime())) return '';   // duck-typed: cross-realm Dates are not instanceof Date
+    try {
+      return new Intl.DateTimeFormat(LOCALE[lang] || 'en-IN', short ? { day: 'numeric', month: 'long', year: 'numeric' }
+                                                                     : { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+    } catch (e) { return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear(); }
+  }
+  /* "कृष्ण चतुर्थी · मंगलवार, 1 सितंबर 2026" — whichever parts exist */
+  function sdNityaWhen(ctx, lang, short) {
+    return [ctx.dateLabel, sdNityaDateText(ctx, lang, short)].filter(Boolean).join(' · ');
+  }
+  /* श्री … देवी — the honorific form, or the bare name if the template is missing */
+  function sdNityaName(entry, lang) {
+    var n = entry && entry.name && entry.name[lang]; if (!n) return '';
+    var h = S_('honorific', lang); return h ? h.replace('{name}', n) : n;
   }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
@@ -137,20 +140,20 @@
                                   state: pick.state, motion: pick.motion, lit: pick.lit, animate: true });
     var moon = g.sdSriChakra.moonSVG(pick.tithi, pick.paksha, 22);
     var motionLine = sdNityaMotionText(pick, L);
-    var title = AL_('nitya.today_title', ctx.lang, 'Today in the Sri Chakra');
-    var share = AL_('gita.share', ctx.lang, 'Share');
+    var title = S_('today_title', L, 'nitya.today_title') || e.name[L];
+    var share = S_('share', L, 'nitya.share') || A_('gita.share', '');
     return '<div class="nitya-card" data-key="' + esc(e.key) + '" data-station="' + pick.station + '">' +
-      '<div class="nitya-head">' + moon + '<span>' + esc(title) + (ctx.dateLabel ? ' <span class="nitya-date">· ' + esc(ctx.dateLabel) + '</span>' : '') + '</span></div>' +
+      '<div class="nitya-head">' + moon + '<span>' + esc(title) + (sdNityaWhen(ctx, L, true) ? ' <span class="nitya-date">· ' + esc(sdNityaWhen(ctx, L, true)) + '</span>' : '') + '</span></div>' +
       '<div class="nitya-body">' +
         '<div class="nitya-chakra" aria-hidden="true">' + svg + '</div>' +
         '<div class="nitya-text">' +
-          '<div class="nitya-name">' + esc(e.name[L]) + '</div>' +
+          '<div class="nitya-name">' + esc(sdNityaName(e, L)) + '</div>' +
           '<div class="nitya-digit">' + esc(e.digit[L]) + '</div>' +
           (motionLine ? '<div class="nitya-motion">' + esc(motionLine) + '</div>' : '') +
           '<div class="nitya-note">' + esc(e.note[L]) + '</div>' +
         '</div>' +
       '</div>' +
-      '<button type="button" class="nitya-share" onclick="sdNityaShare()">' + esc(share) + '</button>' +
+      (share ? '<button type="button" class="nitya-share" onclick="sdNityaShare()">' + esc(share) + '</button>' : '') +
     '</div>';
   }
 
@@ -170,9 +173,12 @@
   function sdNityaShareText(ctx) {
     var pick = sdNityaOfDay(ctx.tithi, ctx.paksha); if (!pick) return '';
     var e = pick.entry, L = ctx.lang; if (!sdNityaComplete(e, L)) return '';
-    var m = sdNityaMotionText(pick, L);
-    return e.name[L] + '\n' + e.digit[L] + (m ? '\n' + m : '') + '\n\n' + e.note[L] + '\n\n' +
-           AL_('nitya.share_tag', ctx.lang, 'Today in the Sri Chakra') + (ctx.dateLabel ? ' · ' + ctx.dateLabel : '') + '\nhttps://shubhdin.app';
+    var m = sdNityaMotionText(pick, L), title = S_('today_title', L, 'nitya.today_title'), from = S_('from_app', L);
+    /* WhatsApp preview shows the first line — make it the darshan, not the app */
+    var when = sdNityaWhen(ctx, L, false);
+    return '\uD83D\uDE4F ' + sdNityaName(e, L) + '\n' + (title ? title + '\n' : '') + (when ? when + '\n' : '') +
+           e.digit[L] + '\n' + (m ? m + '\n' : '') + '\n' + e.note[L] + '\n\n' +
+           (from ? from + ' · ' : '') + 'https://shubhdin.app';
   }
 
   /* ── share image: 1080×1150, chakra drawn from the SVG string, no fetch.
@@ -199,23 +205,28 @@
     function ready() {
       if (--left) return;
       URL.revokeObjectURL(url); URL.revokeObjectURL(url2); URL.revokeObjectURL(url3);
-      c.drawImage(img, 40, 50, 620, 620);
-      c.drawImage(moon, W - 40 - 96, 50, 96, 96);
-      c.save(); c.beginPath(); c.arc(W - 40 - 150, 50 + 620 - 150, 150, 0, Math.PI * 2); c.closePath(); c.clip();
-      c.drawImage(lens, W - 40 - 300, 50 + 620 - 300, 300, 300); c.restore();
-      c.beginPath(); c.arc(W - 40 - 150, 50 + 620 - 150, 150, 0, Math.PI * 2);
+      c.drawImage(img, 40, 90, 620, 620);
+      c.drawImage(moon, W - 40 - 96, 110, 96, 96);
+      c.save(); c.beginPath(); c.arc(W - 40 - 150, 90 + 620 - 150, 150, 0, Math.PI * 2); c.closePath(); c.clip();
+      c.drawImage(lens, W - 40 - 300, 90 + 620 - 300, 300, 300); c.restore();
+      c.beginPath(); c.arc(W - 40 - 150, 90 + 620 - 150, 150, 0, Math.PI * 2);
       c.strokeStyle = '#D4A843'; c.lineWidth = 3; c.stroke();
-      c.textAlign = 'center'; c.fillStyle = '#F1D27A';
+      c.textAlign = 'center';
+      var title = S_('today_title', L, 'nitya.today_title');
+      if (title) { c.fillStyle = 'rgba(241,210,122,0.85)'; c.font = '500 30px "Noto Serif", serif'; c.fillText(title, W / 2, 42); }
+      var when = sdNityaWhen(ctx, L, false);
+      if (when) { c.fillStyle = 'rgba(255,244,222,0.8)'; c.font = '400 26px "Noto Serif", serif'; c.fillText(when, W / 2, 78); }
+      c.fillStyle = '#F1D27A';
       c.font = '600 58px "Noto Serif", "Noto Serif Devanagari", "Noto Serif Telugu", serif';
-      c.fillText(e.name[L], W / 2, 790);
+      c.fillText(sdNityaName(e, L), W / 2, 800);
       c.fillStyle = 'rgba(255,244,222,0.85)'; c.font = '400 32px "Noto Serif", serif';
-      c.fillText(e.digit[L], W / 2, 845);
-      var ml = sdNityaMotionText(pick, L), y = 900;
+      c.fillText(e.digit[L], W / 2, 852);
+      var ml = sdNityaMotionText(pick, L), y = 906;
       if (ml) { c.fillStyle = '#F1D27A'; c.font = '500 30px "Noto Serif", serif'; wrap(c, ml, W / 2, y, 900, 40, 2); y += 84; }
       c.fillStyle = 'rgba(255,244,222,0.72)'; c.font = '400 30px "Noto Serif", serif';
       wrap(c, e.note[L], W / 2, y, 900, 42, ml ? 3 : 4);
       c.fillStyle = 'rgba(241,210,122,0.75)'; c.font = '500 28px sans-serif';
-      c.fillText((ctx.dateLabel ? ctx.dateLabel + '  ·  ' : '') + 'shubhdin.app', W / 2, 1105);
+      c.fillText((S_('from_app', L) ? S_('from_app', L) + '  ·  ' : '') + 'shubhdin.app', W / 2, 1110);
       try { cv.toBlob(function (b) { done(b); }, 'image/png'); } catch (err) { done(null); }
     }
     img.onload = lens.onload = moon.onload = ready;
@@ -250,7 +261,7 @@
     });
   }
 
-  return { sdNityaOfDay: sdNityaOfDay, sdNityaComplete: sdNityaComplete, sdNityaCardHTML: sdNityaCardHTML, sdNityaMotionText: sdNityaMotionText,
+  return { sdNityaOfDay: sdNityaOfDay, sdNityaComplete: sdNityaComplete, sdNityaCardHTML: sdNityaCardHTML, sdNityaMotionText: sdNityaMotionText, sdNityaName: sdNityaName, sdNityaDateText: sdNityaDateText, sdNityaWhen: sdNityaWhen,
            sdNityaMount: sdNityaMount, sdNityaShareText: sdNityaShareText, sdNityaImageBlob: sdNityaImageBlob,
            sdNityaShare: sdNityaShare };
 }));
