@@ -1601,13 +1601,16 @@ body[data-home="returning"] .streak{display:none;}
    than making the wrap worse. */
 .nitya-head{flex-wrap:wrap}
 .nitya-head .nitya-date{display:block;width:100%;margin-top:2px;font-size:11px}
-.nitya-body{display:flex;gap:12px;align-items:center}
+.nitya-body{display:flex;gap:14px;align-items:center}
 .nitya-chakra{flex:0 0 150px;width:150px;height:150px}
 .nitya-chakra svg{display:block;width:150px;height:150px}
 .nitya-text{flex:1;min-width:0}
-.nitya-name{font-size:19px;font-weight:600;color:#F1D27A;line-height:1.25}
+/* 18px and keep-all: the honorific "श्री महावज्रेश्वरी देवी" was breaking
+   into three lines beside the lens at 412px */
+.nitya-name{font-size:18px;font-weight:600;color:#F1D27A;line-height:1.25;word-break:keep-all}
 .nitya-digit{font-size:12.5px;color:rgba(255,244,222,.7);margin:3px 0 7px}
-.nitya-note{font-size:13.5px;line-height:1.55;color:#FFF4DE}
+/* the note now sits BELOW the lens row, full width — hence the top margin */
+.nitya-note{font-size:13.5px;line-height:1.55;color:#FFF4DE;margin-top:10px}
 /* the one hedged sentence under the digit — "held to leave the moon for the
    sun". Omitted entirely when a language has no template, never shown in
    English, so this rule may simply have nothing to style. */
@@ -5506,8 +5509,16 @@ function buildPayload(q){
        sdNityaCtx() returned null on every single load and the Gita showed
        forever. Measured on the real page, after my own tests passed against a
        shape I had injected by hand rather than the one this function builds. */
-    tithi_index:(q.tithi && q.tithi.index) || null,
+    tithi_index:(q.tithi && q.tithi.index != null ? q.tithi.index : null),
     paksha_key:((q.tithi && q.tithi.paksha) || ''),
+    /* A LOCALISED "<paksha> <tithi>" built here, where the raw engine object is
+       still in hand and the term bridge can translate it. Building it later
+       from the normalised fields produced "Krishna Panchami" in English next
+       to a Hindi date, because by then only raw strings survive. */
+    tithi_label:(function(){
+      try{ return (sdPaksha(q.tithi.paksha) + ' ' + sdTithi(q.tithi)).trim(); }
+      catch(e){ return ''; }
+    })(),
     tithi_paksha:(q.tithi.paksha==='Krishna'?(A('dashbo.krishna_paksha')):(A('dashbo.shukla_paksha'))),
     tithi_end:pgFmt(q.tithi.end),
     nakshatra:(sdNak(q.nakshatra)),
@@ -6004,7 +6015,8 @@ function sdNityaCtx(){
   if(engPak && engPak !== paksha) return null;
   var label = '';
   try{
-    if(typeof pd.tithi === 'string'){
+    if(pd.tithi_label){ label = pd.tithi_label; }        /* localised at the source */
+    else if(typeof pd.tithi === 'string'){
       /* tithi_paksha is a sheet lookup, and a miss comes back as
          "[dashbo.krishna_paksha]". Drop a bracketed key rather than print it
          on the card — third time this pattern has tried to reach a user. */
