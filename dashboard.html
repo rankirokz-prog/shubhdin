@@ -6014,20 +6014,18 @@ function sdNityaCtx(){
         if(/^\[.*\]$/.test(pk)) pk = '';
       }
       label = (pk + ' ' + pd.tithi).trim();
-      /* append the calendar date, in the same short form the Panchang Calendar
-         card already uses, so a forwarded screenshot says which morning it was */
-      try{
-        var _d=new Date();
-        label = label + ' · ' + _d.getDate() + ' ' +
-          ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][_d.getMonth()] +
-          ' ' + _d.getFullYear();
-      }catch(e){}
+      /* No date appended here. The card now receives ctx.date and formats it
+         itself, LOCALISED — "1 సెప్టెంబర్, 2026" rather than my English
+         "1 Sep 2026". Appending mine as well printed the date twice. */
     } else {
       label = (sdPaksha(pd.tithi.paksha) + ' ' + sdTithi(pd.tithi)).trim();
     }
   }catch(e){}
   return { tithi: tithiInPaksha,
            paksha: paksha,
+           /* the civil date of this Vedic day — the card and the share image
+              both stamp it, so a forwarded blessing says which morning it was */
+           date: new Date(),
            lang: (window.SD_LANG || 'hi'),
            dateLabel: label };
 }
