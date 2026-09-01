@@ -29,26 +29,13 @@
 }(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
   var g = typeof window !== 'undefined' ? window : (typeof self !== 'undefined' ? self : {});
-  /* ══ SD-STRING-MISS ══════════════════════════════════════════════════════
-     THIS FIX HAS NOW BEEN LOST TO A FILE REPLACEMENT THREE TIMES. It belongs
-     in the upstream copy of this file, not re-applied at every merge.
-
-     Shubh Din's A() does not return the key on a miss. It returns the key IN
-     BRACKETS — "[nitya.today_title]" — and on some builds the key HUMANISED,
-     "Today title". Both are truthy and neither equals the key, so a plain
-     `v !== k` fallback never fires. Measured on the live phone twice: the
-     header rendered "[nitya.today_title]" and the button "[nitya.share]", and
-     the WhatsApp text would have carried a bracketed key into a family group.
-
-     sdHas() answers the real question exactly, so ask it. The two string
-     shapes are belt and braces for builds where sdHas is absent. */
+  /* Shubh Din's A() does NOT return the key on a miss: it returns "[key]" or a
+     humanised "Today title". Both are truthy. Ask sdHas() first; belt-and-braces
+     reject bracketed values. (Merge side re-applied this three times — keep it.) */
   function A_(k, fb) {
     try {
       if (typeof g.sdHas === 'function' && !g.sdHas(k)) return fb;
-      if (typeof g.A === 'function') {
-        var v = g.A(k);
-        if (v && v !== k && !/^\[.*\]$/.test(v)) return v;
-      }
+      if (typeof g.A === 'function') { var v = g.A(k); if (v && v !== k && !/^\[.*\]$/.test(v)) return v; }
     } catch (e) {}
     return fb;
   }
@@ -120,9 +107,13 @@
     return t.replace('{name}', pick.entry.name[lang] || '');
   }
 
-  /* complete in this language = all three fields non-empty. No fallback. */
+  /* complete in this language = all three fields non-empty AND the language is
+     marked reviewed by a native reader. window.SD_NITYA_REVIEWED = { te: true, … }
+     lives in daily-nitya.js; a language absent from it, or false, shows the Gita.
+     Content that exists but nobody native has read is not shippable data. */
   function sdNityaComplete(entry, lang) {
     if (!entry || !lang) return false;
+    var R = g.SD_NITYA_REVIEWED; if (R && R[lang] !== true) return false;
     return ['name', 'digit', 'note'].every(function (f) {
       var v = entry[f] && entry[f][lang]; return typeof v === 'string' && v.trim().length > 0;
     });
@@ -143,7 +134,7 @@
     var title = S_('today_title', L, 'nitya.today_title') || e.name[L];
     var share = S_('share', L, 'nitya.share') || A_('gita.share', '');
     return '<div class="nitya-card" data-key="' + esc(e.key) + '" data-station="' + pick.station + '">' +
-      '<div class="nitya-head">' + moon + '<span>' + esc(title) + (sdNityaWhen(ctx, L, true) ? ' <span class="nitya-date">' + esc(sdNityaWhen(ctx, L, true)) + '</span>' : '') + '</span></div>' +
+      '<div class="nitya-head">' + moon + '<span>' + esc(title) + (sdNityaWhen(ctx, L, true) ? '<span class="nitya-date">' + esc(sdNityaWhen(ctx, L, true)) + '</span>' : '') + '</span></div>' +
       '<div class="nitya-body">' +
         '<div class="nitya-chakra" aria-hidden="true">' + svg + '</div>' +
         '<div class="nitya-text">' +
