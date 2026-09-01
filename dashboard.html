@@ -1595,6 +1595,12 @@ body[data-home="returning"] .streak{display:none;}
 .nitya-card{background:linear-gradient(160deg,#2A1400,#150900);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:14px 14px 12px;margin:10px 0}
 .nitya-head{font-size:12px;letter-spacing:.02em;color:#D4A843;margin-bottom:8px}
 .nitya-date{color:rgba(255,244,222,.55)}
+/* The tithi label already wraps to a second line on a 412px phone. The date is
+   added for people who screenshot and forward the card — a blessing with no
+   date on it is worth less the next morning — so it gets its own line rather
+   than making the wrap worse. */
+.nitya-head{flex-wrap:wrap}
+.nitya-head .nitya-date{display:block;width:100%;margin-top:2px;font-size:11px}
 .nitya-body{display:flex;gap:12px;align-items:center}
 .nitya-chakra{flex:0 0 150px;width:150px;height:150px}
 .nitya-chakra svg{display:block;width:150px;height:150px}
@@ -6008,6 +6014,14 @@ function sdNityaCtx(){
         if(/^\[.*\]$/.test(pk)) pk = '';
       }
       label = (pk + ' ' + pd.tithi).trim();
+      /* append the calendar date, in the same short form the Panchang Calendar
+         card already uses, so a forwarded screenshot says which morning it was */
+      try{
+        var _d=new Date();
+        label = label + ' · ' + _d.getDate() + ' ' +
+          ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][_d.getMonth()] +
+          ' ' + _d.getFullYear();
+      }catch(e){}
     } else {
       label = (sdPaksha(pd.tithi.paksha) + ' ' + sdTithi(pd.tithi)).trim();
     }
