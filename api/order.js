@@ -36,6 +36,8 @@
 //   );
 
 const crypto = require('crypto');
+// one session check for every api/ function — see lib/verify-user.js
+const { verifyUser: verifyUserWith } = require('../lib/verify-user.js');
 
 // ── PRICE AUTHORITY ──────────────────────────────────────────────────────────
 // This table is the ONLY place a price is decided. buy.html's CFG and
@@ -135,14 +137,9 @@ module.exports = async function handler(req, res) {
       )])
     });
   }
-  async function verifyUser(uid, token) {
-    try {
-      const who = await fetch(supabaseUrl + '/auth/v1/user', {
-        headers: { apikey: serviceKey, Authorization: 'Bearer ' + token }
-      }).then(r => r.json());
-      return who && who.id === uid;
-    } catch (e) { return false; }
-  }
+  /* the check itself lives in lib/verify-user.js, shared with save-user.js
+     and feedback.js — one implementation, three callers */
+  async function verifyUser(uid, token) { return verifyUserWith(supabaseUrl, serviceKey, uid, token); }
 
   // ── dispatch-gate helpers ──────────────────────────────────────────────
   const SD_LANGS = ['en','hi','te','kn','ta','bn','mr','gu','as'];
@@ -155,11 +152,19 @@ module.exports = async function handler(req, res) {
       .map(x => x.trim()).filter(Boolean).includes(uid);
   }
   function cleanPhone(p) {
-    const d = String(p || '').replace(/\D/g, '');
-    if (d.length === 10) return '91' + d;               // bare Indian number
-    if (d.length >= 11 && d.length <= 15) return d;     // already has country code
+    /* A4 · wa.me needs 91 + ten digits. Two formats India actually types
+       slipped through the old 11–15 length branch and reached the board as a
+       green tick: '09876543210' and '0091 98765 43210'. Both became
+       wa.me/0… — which resolves to nothing — on a PAID order. */
+    let d = String(p || '').replace(/\D/g, '');
+    if (d.length === 12 && d.startsWith('91')) return d;      // already correct
+    if (d.startsWith('00')) d = d.slice(2);                    // 0091… → 91…
+    if (d.length === 11 && d.startsWith('0')) d = d.slice(1);  // 0987… → 987…
+    if (d.length === 10) return '91' + d;
+    if (d.length >= 11 && d.length <= 15) return d;            // other countries
     return null;
   }
+
   // PDFs are keyed by language since v134: {report}-{lang}.pdf.
   //
   // This used to fall back to the legacy language-less path and hand it back
@@ -274,13 +279,56 @@ module.exports = async function handler(req, res) {
     if (!b.uid || !b.report) return res.status(400).json({ error: 'uid and report required' });
     const allowed = ['pending', 'approved', 'sent', 'problem'];
     if (!allowed.includes(b.dispatch_status)) return res.status(400).json({ error: 'bad dispatch_status' });
-    const patch = { dispatch_status: b.dispatch_status };
-    if (b.dispatch_status === 'sent') patch.sent_at = new Date().toISOString();
-    if (typeof b.note === 'string') patch.note = b.note.slice(0, 300);
+    const to = b.dispatch_status;
+
+    /* A3 · The state machine lives HERE, not in the board's disabled button.
+         pending → approved → sent, with 'problem' as a side flag from either
+         of the first two. 'sent' is terminal: ?list=1 hands out the download
+         only at exactly 'sent', so any move away from it takes a delivered
+         report off a paying customer. That needs an explicit unsend + reason,
+         and it is recorded. pending → sent directly is refused: it skips the
+         hand-check that pdfCheck exists for. */
+    let cur;
     try {
-      const r = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${b.uid}&report=eq.${encodeURIComponent(b.report)}&status=eq.paid`,
+      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${encodeURIComponent(b.report)}&status=eq.paid&select=dispatch_status,lang,phone,note`,
+        { headers: H }).then(r => r.json());
+      if (!Array.isArray(rows) || !rows.length) return res.status(404).json({ error: 'no paid order for that uid/report' });
+      cur = rows[0];
+    } catch (e) { return res.status(500).json({ error: 'read failed' }); }
+    const from = cur.dispatch_status || 'pending';
+    const NEXT = { pending: ['approved', 'problem'], approved: ['sent', 'problem'], problem: ['pending', 'approved'], sent: [] };
+    const patch = {};
+    if (to === from) {
+      /* idempotent: a replayed request changes nothing and says so */
+      if (typeof b.note === 'string') patch.note = b.note.slice(0, 300);
+      if (!Object.keys(patch).length) return res.status(200).json({ ok: true, dispatch_status: to, unchanged: true });
+    } else if (from === 'sent') {
+      if (b.unsend !== true || typeof b.reason !== 'string' || b.reason.trim().length < 3) {
+        return res.status(409).json({ error: 'order is sent', why: 'moving a delivered report backwards revokes the buyer\'s download; send unsend:true and a reason' });
+      }
+      patch.dispatch_status = to;
+      patch.note = ('unsent ' + new Date().toISOString().slice(0, 16) + ': ' + b.reason.trim() + (cur.note ? ' | ' + cur.note : '')).slice(0, 300);
+    } else if (!NEXT[from].includes(to)) {
+      return res.status(409).json({ error: 'bad transition', from: from, to: to, allowed: NEXT[from],
+        why: to === 'sent' ? 'approve first — sending skips the hand-check' : undefined });
+    } else {
+      patch.dispatch_status = to;
+      if (typeof b.note === 'string') patch.note = b.note.slice(0, 300);
+    }
+    if (to === 'sent') {
+      /* no exact-language PDF in the bucket, no 'sent' — the red tick, enforced */
+      const lang = SD_LANGS.includes(cur.lang) ? cur.lang : 'hi';
+      const pdf = await pdfCheck(b.uid, b.report, lang);
+      if (!pdf || pdf.exact !== true) {
+        return res.status(409).json({ error: 'no exact-language pdf', lang: lang,
+          found_lang: pdf ? pdf.found_lang : null, why: 'the buyer would receive a missing or wrong-language report' });
+      }
+      patch.sent_at = new Date().toISOString();
+    }
+    try {
+      const r = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${encodeURIComponent(b.report)}&status=eq.paid`,
         { method: 'PATCH', headers: H, body: JSON.stringify(patch) });
-      return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true, dispatch_status: b.dispatch_status } : { error: 'update failed' });
+      return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true, dispatch_status: to, from: from } : { error: 'update failed' });
     } catch (e) { return res.status(500).json({ error: 'update failed' }); }
   }
 
@@ -489,9 +537,14 @@ module.exports = async function handler(req, res) {
       const report = notes.report || q1.report;
       const expect = PRICES[report];
       if (!expect) return res.status(400).json({ error: 'not for sale' });
-      if (Math.round((pay.amount || 0) / 100) !== expect) {
-        return res.status(409).json({ error: 'amount mismatch', paid_amount: Math.round((pay.amount || 0) / 100), expected: expect });
+      /* B0 · compare in paise: Math.round(19850/100) is 199 and let fifty
+         paise short through, and !== refused money someone had over-sent.
+         Under-payment is refused; over-payment is accepted and logged. */
+      const paidPaise = Number(pay.amount || 0);
+      if (paidPaise < expect * 100) {
+        return res.status(409).json({ error: 'amount short', paid_paise: paidPaise, expected: expect });
       }
+      if (paidPaise > expect * 100) console.warn('[order] over-payment on ' + report + ' by ' + q1.uid + ': ' + paidPaise + ' paise vs ' + (expect * 100));
 
       const up = await upsertPaid(q1.uid, report, expect, pay.id,
         (pay && pay.notes) || {});
@@ -531,6 +584,14 @@ module.exports = async function handler(req, res) {
     try {
       const ev = req.body || {};
       const P = ev.payload || {};
+      /* A1 · Only two events mean "money moved". Anything else (payment.failed,
+         payment.authorized, order.paid, refund.*) is acknowledged with 200 so
+         Razorpay stops retrying — and recorded as nothing. Before this, any
+         signed event carrying a payment entity was treated as paid. */
+      const ACCEPT = { 'payment_link.paid': 1, 'payment.captured': 1 };
+      if (!ACCEPT[ev.event]) {
+        return res.status(200).json({ ok: true, ignored: 'event not a capture', event: ev.event || null });
+      }
       // payment_link.paid carries notes on the link. payment.captured often does
       // NOT — Razorpay does not always copy link notes onto the payment. If both
       // events are enabled, the captured one can arrive first with empty notes,
@@ -559,7 +620,24 @@ module.exports = async function handler(req, res) {
           why: 'event ' + (ev.event || '?') + ' carried no uid/report and the link could not be read',
           event: ev.event || null, has_link: !!linkEnt, has_payment: !!payEnt });
       }
-      await upsertPaid(notes.uid, notes.report, Math.round((ent.amount || 0) / 100), ent.id, notes);
+      /* A1 · The price authority applies here exactly as in ?confirm=1. A link
+         entity reports amount_paid; a payment entity reports amount. Short,
+         zero, or a payment that is not captured → acknowledge, record nothing.
+         What gets stored is the catalogue price, as ?confirm=1 stores it. */
+      const expect = PRICES[notes.report];
+      if (!expect) {
+        return res.status(200).json({ ok: true, ignored: 'not for sale', report: notes.report, event: ev.event });
+      }
+      if (payEnt && !linkEnt && payEnt.status !== 'captured') {
+        return res.status(200).json({ ok: true, ignored: 'payment not captured', status: payEnt.status || null, event: ev.event });
+      }
+      const paise = Number((linkEnt ? (linkEnt.amount_paid != null ? linkEnt.amount_paid : linkEnt.amount) : ent.amount) || 0);
+      /* compare in paise: Math.round(19850/100) is 199, which would wave
+         through fifty paise short — the round-2 sweep's exact case */
+      if (!(paise >= expect * 100)) {
+        return res.status(200).json({ ok: true, ignored: 'amount short', paid_paise: paise, expected: expect, report: notes.report, event: ev.event });
+      }
+      await upsertPaid(notes.uid, notes.report, expect, ent.id, notes);
       return res.status(200).json({ ok: true, marked: notes.report, event: ev.event || null });
     } catch (e) { return res.status(500).json({ error: String(e.message).slice(0, 150) }); }
   }
@@ -580,6 +658,9 @@ module.exports = async function handler(req, res) {
       await Promise.all(rows.map(async (r) => {
         r.lang = SD_LANGS.includes(r.lang) ? r.lang : 'hi';
         r.dispatch_status = r.dispatch_status || 'pending';
+        /* A4 · the board's phone tick: deliverable, not merely present */
+        r.phone_e164 = cleanPhone(r.phone);
+        r.phone_ok = /^91\d{10}$/.test(r.phone_e164 || '');
         const pdf = await pdfCheck(r.uid, r.report, r.lang);
         if (pdf) { r.pdf_url = pdf.url; r.pdf_bytes = pdf.bytes;
                    r.pdf_lang_scoped = pdf.exact; r.pdf_found_lang = pdf.found_lang; }
@@ -654,7 +735,7 @@ module.exports = async function handler(req, res) {
 
   // check
   try {
-    const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q.uid}&report=eq.${q.report}&status=eq.paid&select=order_code`,
+    const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(q.uid)}&report=eq.${encodeURIComponent(q.report)}&status=eq.paid&select=order_code`,
       { headers: H }).then(r => r.json());
     const paid = Array.isArray(rows) && rows.length > 0;
     return res.status(200).json({ paid, order_code: paid ? rows[0].order_code : null });
