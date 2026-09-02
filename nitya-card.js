@@ -191,7 +191,7 @@
   function sdNityaImageBlob(ctx, done) {
     var pick = sdNityaOfDay(ctx.tithi, ctx.paksha);
     if (!pick || !sdNityaComplete(pick.entry, ctx.lang)) return done(null);
-    var e = pick.entry, L = ctx.lang, W = 1080, H = 1150;
+    var e = pick.entry, L = ctx.lang, W = 1080, H = 1190;
     var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     var c = cv.getContext('2d');
     var bg = c.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2A1400'); bg.addColorStop(1, '#0F0700');
@@ -232,12 +232,18 @@
       /* 34px medium, not 30px light: WhatsApp recompresses a forwarded image and
          the readers are mostly over 50. This is the paragraph they actually read. */
       c.fillStyle = 'rgba(255,244,222,0.88)'; c.font = '500 34px "Noto Serif", "Noto Serif Devanagari", "Noto Serif Telugu", serif';
-      wrap(c, e.note[L], W / 2, y, 900, 48, ml ? 3 : 4);
+      var lastY = wrap(c, e.note[L], W / 2, y, 900, 48, ml ? 3 : 4);
       c.fillStyle = 'rgba(241,210,122,0.95)'; c.font = '600 30px sans-serif';
       /* A saved or re-forwarded image arrives with no message attached, so this
          line is the only thing telling a new viewer where the darshan came from.
          It was faint enough to disappear. Brand name in gold, domain beside it. */
-      c.fillText('\u2728 Shubh Din  \u2022  shubhdin.app', W / 2, 1110);
+      /* THE FOOTER FOLLOWS THE TEXT. It used to sit at a hardcoded y=1110,
+         which was fine at 30px/40 line-height — but the note is now 34px on a
+         48 line-height, and a four-line note in a long-worded language ran
+         straight into it with zero gap. Measured on a real render.
+         48px clear of the last line, and never past the bottom margin. */
+      c.fillText('\u2728 Shubh Din  \u2022  shubhdin.app', W / 2,
+                 Math.min(H - 34, Math.max(1110, lastY + 48)));
       try { cv.toBlob(function (b) { done(b); }, 'image/png'); } catch (err) { done(null); }
     }
     img.onload = lens.onload = moon.onload = ready;
@@ -253,6 +259,7 @@
       } else line = t;
     }
     if (line) c.fillText(line, x, y);
+    return y;          /* the y of the LAST line drawn — the caller needs it */
   }
 
   /* share button → image if the browser can share files, else text */
