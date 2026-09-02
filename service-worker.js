@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v189';
+const CACHE_NAME = 'shubhdin-v190';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -9,6 +9,18 @@ const CORE_FILES = [
   '/kundli.html',
   '/premium.html',
   '/reports.html',
+  /* ══ SD-OFFLINE-PAGES ══
+     buy.html was NOT here. The fetch handler falls back to /index.html for
+     anything uncached, so a buyer tapping Buy on a dead connection landed in
+     the ONBOARDING screen — which writes the same shubhdin_user key. The
+     legal pages Google Play requires to be reachable did the same. */
+  '/buy.html',
+  '/privacy-policy.html',
+  '/terms.html',
+  '/refund-policy.html',
+  '/contact.html',
+  '/about.html',
+  '/offline.html',
   '/report-catalog.js',
   /* today's verse — cached so the morning card is there on a weak
      connection, which is exactly when people open a devotional app */
@@ -115,7 +127,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
         }
         return response;
-      }).catch(() => caches.match(req).then(c => c || caches.match('/index.html')))
+      }).catch(() => caches.match(req).then(c => c || caches.match('/offline.html') || caches.match('/index.html')))
     );
     return;
   }
