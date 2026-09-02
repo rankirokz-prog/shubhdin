@@ -792,24 +792,69 @@ function limbRow(key,label,limb){
    "until {time}" with no way to move it relative to a name they never saw.
    One template per language, with BOTH slots in it, so word order belongs to
    the language instead of to the code. */
+/* ══ SD-PANCHANG-TIME ══════════════════════════════════════════════════════
+   Traditional almanacs never print 24-hour time. Kalnirnay, Dāte, Venkatrama
+   and Pambu all use a 12-hour clock with a one- or two-letter daypart prefix,
+   and "ధ్రువ 21:11 వరకు" reads as a train timetable to the audience this app
+   is for. This turns it into "ధ్రువ రా. 09:11 వరకు".
+
+   Windows: 00:00-05:59 pre-dawn · 06:00-11:59 morning · 12:00-15:59 afternoon
+            16:00-19:59 evening  · 20:00-23:59 night
+
+   ⚠ ASSAMESE NEEDS A NATIVE EYE. The spec gives পু. (পুৱা) for pre-dawn and
+   ৰা. (ৰাতিপুৱা) for morning. পুৱা is the ordinary word for MORNING and
+   ৰাতিপুৱা literally "night-dawn", i.e. daybreak — so these look swapped to
+   me. I have implemented the spec as written rather than overrule it, but
+   Assamese has never had a native reader and this is the line to ask about.
+   Swapping them is a two-word edit right here. */
+var SD_TIME_PREFIX = {
+  te:{dawn:'తె.',morn:'ఉ.',noon:'మ.',eve:'సా.',night:'రా.'},
+  kn:{dawn:'ಮುಂ.',morn:'ಬೆ.',noon:'ಮ.',eve:'ಸಂ.',night:'ರಾ.'},
+  ta:{dawn:'அ.',morn:'கா.',noon:'ம.',eve:'மா.',night:'இ.'},
+  hi:{dawn:'प्रा.',morn:'सु.',noon:'दो.',eve:'सां.',night:'रा.'},
+  mr:{dawn:'प.',morn:'स.',noon:'दु.',eve:'सं.',night:'रा.'},
+  gu:{dawn:'પ.',morn:'સ.',noon:'બ.',eve:'સા.',night:'રા.'},
+  bn:{dawn:'ভো.',morn:'স.',noon:'দু.',eve:'সং.',night:'রা.'},
+  /* SWAPPED on Ram's ruling. পুৱা is the ordinary word for MORNING;
+     ৰাতিপুৱা is literally "night-dawn", the pre-dawn transition. The spec had
+     them the wrong way round and this is now the reviewed order. */
+  as:{dawn:'ৰা.',morn:'পু.',noon:'দু.',eve:'গ.',night:'নি.'}
+};
+function sdFmtTime(t, lang){
+  if(!t) return '';
+  var m = String(t).match(/^(\d{1,2}):(\d{2})/);
+  if(!m) return t;                       /* not a clock value — leave it alone */
+  var h = parseInt(m[1],10), mm = m[2];
+  if(!(h>=0 && h<=23)) return t;
+  var L = lang || window.SD_LANG || 'hi';
+  var h12 = (h % 12) === 0 ? 12 : (h % 12);
+  var t12 = String(h12).padStart(2,'0') + ':' + mm;
+  if(L === 'en') return t12 + ' ' + (h >= 12 ? 'PM' : 'AM');
+  var band = h < 6 ? 'dawn' : h < 12 ? 'morn' : h < 16 ? 'noon' : h < 20 ? 'eve' : 'night';
+  var row = SD_TIME_PREFIX[L] || SD_TIME_PREFIX.hi;
+  return row[band] + ' ' + t12;
+}
+
 function limbUntil(name,time){
   try{ if(typeof sdHas==='function'&&sdHas('astrol.limb_until'))
         return AF('astrol.limb_until',{name:name,time:time}); }catch(e){}
   var L=(window.SD_LANG||'hi');
+  time = sdFmtTime(time, L);
   var T={en:'{name} until {time}',hi:'{name} {time} तक',te:'{name} {time} వరకు',
     kn:'{name} {time} ವರೆಗೆ',ta:'{name} {time} வரை',bn:'{name} {time} পর্যন্ত',
-    mr:'{name} {time} पर्यंत',gu:'{name} {time} સુધી',as:'{name} {time} লৈকে'};
+    mr:'{name} {time} पर्यंत',gu:'{name} {time} સુધી',as:'{name} {time} পৰ্যন্ত'};
   return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
 }
 function thenNextUntil(name,time){
   try{ if(typeof sdHas==='function'&&sdHas('astrol.then_next_until'))
         return AF('astrol.then_next_until',{next:name,time:time}); }catch(e){}
   var L=(window.SD_LANG||'hi');
+  time = sdFmtTime(time, L);
   var T={en:'then {name} until {time}',hi:'फिर {name} {time} तक',
     te:'ఆ తర్వాత {name} {time} వరకు',kn:'ಆನಂತರ {name} {time} ವರೆಗೆ',
     ta:'அதன் பிறகு {name} {time} வரை',bn:'তারপর {name} {time} পর্যন্ত',
     mr:'त्यानंतर {name} {time} पर्यंत',gu:'ત્યારબાદ {name} {time} સુધી',
-    as:'তাৰ পিছত {name} {time} লৈকে'};
+    as:'তাৰ পিছত {name} {time} পৰ্যন্ত'};
   return (T[L]||T.hi).replace('{name}',name).replace('{time}',time);
 }
 
