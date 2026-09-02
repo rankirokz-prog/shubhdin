@@ -7152,9 +7152,40 @@ function getOrCreateUID(){
   return uid;
 }
 
+/* ══ SD-OWNER-KEY ══════════════════════════════════════════════════════════
+   This page has NO Supabase session — no createClient, no getSession, no
+   token. Its uid is a random string in localStorage. So save-user could not
+   be protected with an access_token the way buy.html is: doing that would
+   have made every cloud save return 401 SILENTLY, because the call below
+   swallows errors. Signup would look fine and sync nothing.
+
+   Instead each install mints a secret beside its uid and sends it with every
+   write. The server stores only the sha256 and refuses writes that do not
+   present the matching key. A row with no stored hash is claimed by the first
+   key-bearing write, so existing installs transition on their next save with
+   nothing breaking.
+
+   The key lives in the same localStorage as the uid, so clearing site data
+   loses both together and the user simply becomes a new user — there is no
+   way to be locked out of your own row. */
+function getOrCreateKey(){
+  try{
+    var k = localStorage.getItem('shubhdin_wkey');
+    if(k && /^[0-9a-f]{32}$/.test(k)) return k;
+    var bytes = new Uint8Array(16);
+    if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+    else for(var i=0;i<16;i++) bytes[i] = Math.floor(Math.random()*256);
+    k = Array.prototype.map.call(bytes,function(b){
+      return ('0'+b.toString(16)).slice(-2); }).join('');
+    localStorage.setItem('shubhdin_wkey', k);
+    return k;
+  }catch(e){ return ''; }
+}
+
 async function saveToCloud(){
   try{
     const uid = getOrCreateUID();
+    const write_key = getOrCreateKey();
     const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
     const streak = JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');
     const sadhana = JSON.parse(localStorage.getItem('shubhdin_sadhana')||'null');
@@ -7163,6 +7194,7 @@ async function saveToCloud(){
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         uid,
+        write_key,
         name: u.name||'',
         lang: u.lang||'hi',
         city: u.city||'',
@@ -7176,8 +7208,17 @@ async function saveToCloud(){
         sadhana: sadhana,
         streak: streak.count||0,
       })
+    }).then(function(r){
+      /* A 401 here means another install claimed this uid's row before we
+         did. The user cannot tell — this call is best-effort and swallows
+         everything — so their sync would stop forever in silence. Report it
+         so it surfaces in v_errors_7d the same day. */
+      if(r && r.status === 401){
+        try{ sdTrack && sdTrack('js_error',{state:'save_user_401'}); sdFlush && sdFlush(true); }catch(e){}
+      }
+      return r;
     });
-  }catch(e){} // silent — cloud save is best-effort
+  }catch(e){} // silent — cloud save is best-effort, but a 401 is reported above
 }
 
 
@@ -7207,6 +7248,8 @@ async function submitFeedback(){
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
+        uid: getOrCreateUID(),
+        write_key: getOrCreateKey(),
         message: msg,
         rating: _fbRating,
         name: u.name||'',
