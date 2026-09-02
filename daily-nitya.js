@@ -154,7 +154,7 @@ window.SD_NITYA_CFG = { KRISHNA: 'tantraraja', BINDU_DAY: 'mahanitya' };
    FAMILY-SHARE-v1 then this file is NOT the one on the server, and no amount
    of reloading the app will change the button. That check takes ten seconds
    and settles "is it the code or the upload" without another round trip. */
-window.SD_NITYA_BUILD = 'SHARE-HOOK-v3';
+window.SD_NITYA_BUILD = 'SHARE-FOOTER-v4';
 
 window.SD_NITYA_REVIEWED = { en: true, hi: true, te: true, kn: true, ta: true,
                              bn: true, mr: true, gu: true, as: true };
@@ -184,7 +184,7 @@ window.SD_NITYA_STRINGS = {
      reason to tap. This names what is on the other side of the link. */
   hook:        { en: '\uD83C\uDF1F For your free 250+ page Kundli, daily Japam & auspicious timings:',
                  hi: '\uD83C\uDF1F निःशुल्क 250+ पेज की जन्म कुंडली, नित्य जप और आज के शुभ मुहूर्त के लिए:',
-                 te: '\uD83C\uDF1F ఉచిత 250+ పేజీల జన్మ కుండలి, నిత్య జపం & నేటి శుభ ముహూర్తాల కోసం:',
+                 te: '\uD83C\uDF1F మీ ఉచిత 250+ పేజీల జన్మ కుండలి, నిత్య జపం & నేటి శుభ ముహూర్తాల కోసం:',
                  kn: '\uD83C\uDF1F ಉಚಿತ 250+ ಪುಟಗಳ ಜನ್ಮ ಕುಂಡಲಿ, ನಿತ್ಯ ಜಪ ಮತ್ತು ಇಂದಿನ ಶುಭ ಮುಹೂರ್ತಗಳಿಗಾಗಿ:',
                  ta: '\uD83C\uDF1F இலவச 250+ பக்க ஜாதகம், நித்திய ஜபம் & இன்றைய நல்ல நேரத்திற்கு:',
                  bn: '\uD83C\uDF1F বিনামূল্যে ২৫০+ পৃষ্ঠার জন্মকোষ্ঠী, নিত্য জপ ও শুভ মুহূর্তের জন্য:',
