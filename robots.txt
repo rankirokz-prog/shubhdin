@@ -1,0 +1,15 @@
+# Shubh Din
+# Internal boards and test harnesses. Not a security control — the admin gate
+# is the control — but an internal page in Google results is an invitation.
+
+User-agent: *
+Disallow: /stats.html
+Disallow: /dispatch.html
+Disallow: /preflight.html
+Disallow: /theme-review.html
+Disallow: /kundli-report.html
+Disallow: /offline.html
+Disallow: /api/
+
+Allow: /
+Sitemap: https://www.shubhdin.app/sitemap.xml

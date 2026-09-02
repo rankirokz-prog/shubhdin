@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>शुभ दिन</title>
+<!--
+  The last-resort offline page.
+
+  It exists because the service worker used to fall back to /index.html for
+  any uncached page. A buyer tapping Buy on a dead connection landed in the
+  ONBOARDING screen — which writes the same shubhdin_user key. The app was
+  quietly substituting a plausible screen for the one that was asked for.
+
+  This page says what is true and nothing else. It must never imitate another
+  screen, and it must never write to localStorage.
+-->
+<style>
+  html,body{margin:0;height:100%}
+  body{background:#150900;color:#FFF4DE;font-family:'Poppins',system-ui,sans-serif;
+       display:flex;align-items:center;justify-content:center;padding:28px;text-align:center}
+  .w{max-width:340px}
+  .om{font-size:44px;color:#D4A843;opacity:.85;margin-bottom:14px}
+  h1{font-size:19px;font-weight:600;color:#F1D27A;margin:0 0 10px;line-height:1.35}
+  p{font-size:14px;line-height:1.6;color:rgba(255,244,222,.78);margin:0 0 8px}
+  .en{font-size:13px;color:rgba(255,244,222,.55);margin-top:14px}
+  a{display:inline-block;margin-top:22px;background:linear-gradient(120deg,#D4A843,#B8892F);
+    color:#1A0D00;text-decoration:none;font-weight:600;font-size:14px;
+    padding:12px 26px;border-radius:12px}
+</style>
+</head>
+<body>
+  <div class="w">
+    <div class="om">ॐ</div>
+    <h1>यह पृष्ठ अभी नहीं खुल सकता</h1>
+    <p>इंटरनेट कनेक्शन नहीं मिल रहा। कनेक्शन आने पर दोबारा कोशिश करें।</p>
+    <p class="en">This page needs a connection. Please try again once you are back online.</p>
+    <a href="/dashboard.html">होम पर जाएँ · Go to home</a>
+  </div>
+</body>
+</html>
