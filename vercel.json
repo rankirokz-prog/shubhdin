@@ -1,10 +1,10 @@
 {
   "functions": {
     "api/kundli-pdf.js": {
-      "maxDuration": 300
+      "maxDuration": 60
     },
     "api/report-pdf.js": {
-      "maxDuration": 300
+      "maxDuration": 60
     }
   }
 }
