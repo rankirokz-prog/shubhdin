@@ -2673,7 +2673,7 @@ function panTr(val, map){
 var name=''; try{ name=U.name||A('dashbo.friend'); }catch(e){ name=U.name||''; }
 
 // ── Day config ──
-const dow=sdDow();
+const dow=sdVedicDow();
 const D={
   0:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/surya.jpg',bg:'bg-sun',d_hi:'सूर्य देवता',d_en:'Surya Dev',nameKey:'deity.name_0',day_hi:'रविवार • स्वास्थ्य',day_en:'Sunday • Health',themeKey:'deity.theme_0',ico:'☀️',chant:'ॐ सूर्याय नमः',hook_hi:'आज सूर्य देव की आराधना करें — 28 बार जाप करें। स्वास्थ्य और ऊर्जा के लिए शुभ माना जाता है।',hook_en:'Pray to Surya Dev today — chant 28 times. Held to be auspicious for health and energy.',hookKey:'deity.hook_0',good:'7:00–8:30',avoid:'4:30–6:00',
     s:['आज रविवार है — सूर्य देवता का दिन। सुबह का समय सबसे शुभ है।','रविवार को सूर्य देवता की कृपा होती है। आज अच्छे काम का दिन है।','आज का शुभ समय सात बजे से साढ़े आठ तक है।','सूर्य देवता की शरण में आज का दिन शुरू करें।','आज रविवार — माता-पिता का आशीर्वाद लें।','रविवार को सूर्य उगता है नई उम्मीद लेकर।','आज का समय अच्छे कामों के लिए है।']},
@@ -2728,7 +2728,7 @@ const Rs=[
    what Drik Panchang does — "In Panchang day starts and ends with sunrise".
 
    One source of truth: every place that asks "what day is it" for devotional
-   purposes now calls sdDow(). The engine's own sunrise is used, so the app and
+   purposes now calls sdVedicDow(). The engine's own sunrise is used, so the app and
    the panchang can never disagree. No coordinates or no engine → fall back to
    the calendar day rather than guessing, exactly as everywhere else. */
 function sdVedic(){
@@ -2772,7 +2772,13 @@ function sdVedic(){
   try{ if(out.exact) window.__sdVedicCache={at:now, v:out}; }catch(e){}
   return out;
 }
-function sdDow(){ try{ return sdVedic().dow; }catch(e){ return new Date().getDay(); } }
+/* RENAMED from sdVedicDow(). There was already a sdDow(i, short) in this file — a
+   weekday NAME formatter — and declaring a second sdVedicDow() hoisted over it, so
+   every sdDow(dow,false) started returning a NUMBER instead of "Wednesday".
+   The vara row, the jap pill, the vrat labels and all seven calendar weekday
+   chips broke, and the chips all showed the same value because the new
+   function ignored its argument. Shipped and live. Never shadow. */
+function sdVedicDow(){ try{ return sdVedic().dow; }catch(e){ return new Date().getDay(); } }
 
 /* The line that makes it honest. Without it, someone opening at 5am on Sunday
    sees "Saturday" and thinks the app is broken. */
@@ -3258,9 +3264,9 @@ function updateStreak(){
 }
 
 // ── DAY MODE HELPERS ──
-function isShravan(d){ const dm=DAY_MODE[d!=null?d:sdDow()]; return dm&&dm.mode==='shravan'; }
-function getNames(d){ const dm=DAY_MODE[d!=null?d:sdDow()]; return dm&&dm.names?window[dm.names]:null; }
-function getTS(d){ const dm=DAY_MODE[d!=null?d:sdDow()]; return dm&&dm.ts?window[dm.ts]:null; }
+function isShravan(d){ const dm=DAY_MODE[d!=null?d:sdVedicDow()]; return dm&&dm.mode==='shravan'; }
+function getNames(d){ const dm=DAY_MODE[d!=null?d:sdVedicDow()]; return dm&&dm.names?window[dm.names]:null; }
+function getTS(d){ const dm=DAY_MODE[d!=null?d:sdVedicDow()]; return dm&&dm.ts?window[dm.ts]:null; }
 
 // ── JAPA ──
 const TOTAL=28,DOTS=27;
@@ -3447,7 +3453,7 @@ const LAKSHMI_NAMES=[
 const LAKSHMI_TS=[1.5,4.5,7.0,9.4,13.1,15.4,17.7,20.1,22.6,24.9,27.4,29.6,31.6,33.8,36.0,38.1,40.3,42.5,44.5,47.0,49.5,51.7,53.5,55.7,57.8,61.2,62.5,64.5,67.0,70.3,72.8,74.8,77.0,79.7,81.8,83.8,85.8,89.1,91.4,93.0,95.7,98.3,100.8,102.8,105.1,107.7,110.0,112.6,114.7,117.4,119.3,121.3,123.8,126.3,128.8,131.6,133.2,135.8,137.8,140.4,142.7,145.2,147.4,149.7,152.3,154.2,156.0,157.9,159.8,161.9,164.0,166.2,168.5,171.1,173.3,175.7,177.5,179.7,182.2,184.4,186.0,188.6,190.9,193.0,195.3,197.6,199.6,202.0,204.4,206.8,208.9,211.2,213.3,215.3,218.3,220.8,222.9,225.4,228.8,230.9,233.3,236.5,239.1,242.0,244.2,246.5,249.5,253.2];
 
 function buildMantra(){
-  const dow2=sdDow();
+  const dow2=sdVedicDow();
   let words;
   const _sn=getNames(dow2);
   if(isShravan(dow2)&&_sn){
@@ -3593,7 +3599,7 @@ function dotPop(idx) {
 }
 
 function startWordHighlight(){
-  const dow2=sdDow();
+  const dow2=sdVedicDow();
   // Friday: use current jap count to pick Lakshmi name
   let words;
   const _names=getNames(dow2);
@@ -3703,7 +3709,7 @@ function stopWordHighlight(){
     if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
     jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
   }
-  const words=MANTRA_WORDS[sdDow()]||[];
+  const words=MANTRA_WORDS[sdVedicDow()]||[];
   words.forEach((_,i)=>{
     const w=document.getElementById('jw'+i);
     if(w) animateWord(w,'idle');
@@ -4168,7 +4174,7 @@ function mpSeek(e){}
 // ── AUDIO SYSTEM ──
 let currentAudio=null;
 function getScriptVersion(){return Math.floor(Date.now()/(7*24*60*60*1000))%2===0?'a':'b';}
-function getDayKey(){return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][sdDow()];}
+function getDayKey(){return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][sdVedicDow()];}
 function getScriptUrl(){return 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/scripts/'+getDayKey()+'_'+getScriptVersion()+'.mp3';}
 /* PERSONALISED NAME AUDIO — REMOVED.
    This sent the user's NAME to ElevenLabs at runtime (/api/generate-name) to
@@ -4332,7 +4338,7 @@ function getDayType(){
 
 // Determine chant type for today's deity
 function getChantType(){
-  const day=sdDow();
+  const day=sdVedicDow();
   // Long chants: Shiva (Mon=1), Lakshmi (Fri=5)
   const longChantDays=[1,5];
   return longChantDays.includes(day)?'time':'count';
@@ -4502,7 +4508,7 @@ async function playPanchang(){
 
   // 5. JAP SUGGESTION — deity-specific
   const _deityMap={0:'surya',1:'shiva',2:'hanuman',3:'ganesh',4:'rama',5:'lakshmi',6:'shani'};
-  const _deityKey=_deityMap[sdDow()]||'shiva';
+  const _deityKey=_deityMap[sdVedicDow()]||'shiva';
   playlist.push(BASE+'jap_suggestions/'+_deityKey+'_jap_suggestion_'+rnd([1,2])+'.mp3');
 
   // 6. CLOSING
@@ -5740,7 +5746,7 @@ function applyPanchang(p){
     }
     // ── Choghadiya (calculated from sunrise/sunset) ──
     if(p.sunrise && p.sunset){
-      const dow2 = sdDow();
+      const dow2 = sdVedicDow();
       renderChoghadiya(p.sunrise, p.sunset);
     }
     // ── Vrat this week ──
@@ -5767,7 +5773,7 @@ function applyPanchang(p){
       // returns none. Say that rather than leaving a bare dash.
       var _ab=document.getElementById('abTime'), _abs=document.getElementById('abSub');
       if(_ab) _ab.textContent=A('dashbo.none_today');
-      if(_abs) _abs.textContent=(sdDow()===3)?(A('dashbo.wednesday')):'';
+      if(_abs) _abs.textContent=(sdVedicDow()===3)?(A('dashbo.wednesday')):'';
     }
     if(p.abhijit_muhurta){
       document.getElementById('goodTime').textContent=p.abhijit_muhurta;
@@ -7870,7 +7876,7 @@ function calSpiritualNote(phase, festival, date){
   if(isPurnima(phase,date)) return A('dashbo.auspicious_for_satyanarayan_vrat');
   if(isEkadashi(phase,date)) return A('dashbo.ekadashi_chant_hari_nam');
   if(festival && festival.t==='major') return A('dashbo.auspicious_for_special_prayers');
-  const d = sdDow();
+  const d = sdVedicDow();
   const hi=['☀️ सूर्यदेव की पूजा करें','🕉️ शिव की आराधना करें','🙏 हनुमान चालीसा पढ़ें','📿 गणेश मंत्र जप करें','🌸 विष्णु सहस्रनाम पाठ करें','🌺 माँ लक्ष्मी का ध्यान करें','🪔 शनिदेव को तेल चढ़ाएं'];
   const en=['☀️ Offer prayers to Surya Dev','🕉️ Ideal day to worship Shiva','🙏 Recite Hanuman Chalisa','📿 Chant Ganesh mantra','🌸 Read Vishnu Sahasranama','🌺 Worship Maa Lakshmi','🪔 Offer oil to Shani Dev'];
   return L3(hi[d], en[d], 'cal.tip_'+d);
@@ -8242,7 +8248,7 @@ function calcChoghadiya(sunrise, sunset, dow){
 
 function renderChoghadiya(sunrise, sunset){
   /* the choghadiya sequence is chosen by the VARA, which turns at sunrise */
-  const dow = sdDow();
+  const dow = sdVedicDow();
   const grid = document.getElementById('chogGrid');
   if(!grid) return;
   // Engine first — its slots come off this city's real sunrise and sunset.
@@ -8395,7 +8401,7 @@ function renderMuhurat(){
   const muh = document.getElementById('muhList');
   if(!muh) return;
   const phase = calMoonPhase(new Date());
-  const dow = sdDow();
+  const dow = sdVedicDow();
   const items = [
     {i:'\ud83c\udfe0',h:'\u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936',   e:'Griha Pravesh',  key:'griha'},
     {i:'\ud83d\ude97',h:'\u0935\u093e\u0939\u0928 \u0916\u0930\u0940\u0926',          e:'Vehicle',        key:'vehicle'},
@@ -8420,7 +8426,7 @@ function renderMuhurat(){
 }
 function showMuhuratDetail(key){
   const phase = calMoonPhase(new Date());
-  const dow = sdDow();
+  const dow = sdVedicDow();
   const st = muhuratStatus(key, phase, dow);
   const next = getNextGoodDates(key, 3);
   const abhijit = document.getElementById('goodTime')?.textContent||'';
