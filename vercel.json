@@ -1,17 +1,10 @@
 {
-  "crons": [
-    {
-      "path": "/api/panchang?cron=1&batch=1",
-      "schedule": "30 23 * * *"
-    },
-    {
-      "path": "/api/panchang?cron=1&batch=2",
-      "schedule": "32 23 * * *"
-    }
-  ],
   "functions": {
     "api/kundli-pdf.js": {
-      "maxDuration": 60
+      "maxDuration": 300
+    },
+    "api/report-pdf.js": {
+      "maxDuration": 300
     }
   }
 }
