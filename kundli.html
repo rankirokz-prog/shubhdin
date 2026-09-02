@@ -148,7 +148,22 @@ if(typeof window.A!=='function'){
     <div class="r-s" id="rdS">अष्टकवर्ग • योग • दोष • दशा–प्रत्यंतर • उपाय — 17 अध्याय, आपके जन्म विवरण से।</div>
     <div class="r-mail" id="rdMail"></div>
     <button class="btn" onclick="downloadKundli()" id="rdBtn">⬇️ PDF डाउनलोड करने के लिए यहाँ क्लिक करें</button>
-    <div style="margin-top:12px;font-size:11px;color:rgba(212,168,67,0.7);cursor:pointer;" onclick="viewKundli()" id="rdView">या स्क्रीन पर देखें →</div>
+    <!-- ══ SD-VIEW-ON-SCREEN ══════════════════════════════════════════════
+         This was an 11px text link at 0.7 opacity in a 17px tap target,
+         sitting between two full-width buttons. Measured contrast was 4.74:1,
+         which technically passes AA — so contrast was NOT the real problem.
+         The problem was that it was tiny and unclickable: 11px type and a
+         17px target where the accessible minimum is 48px, next to two
+         controls three times its size. It read as a caption, not an action.
+
+         Now a proper secondary control: outlined rather than filled, so it
+         stays below the gold download button in the hierarchy while being
+         unmistakably tappable. -->
+    <button id="rdView" onclick="viewKundli()"
+            style="margin-top:12px;width:100%;background:transparent;
+                   border:1px solid #F59E0B;color:#FDE68A;
+                   font-family:inherit;font-size:14px;font-weight:600;
+                   padding:13px 12px;border-radius:12px;cursor:pointer;">📱 या स्क्रीन पर पढ़ें →</button>
     <!-- ══ SD-KUNDLI-GIFT ══════════════════════════════════════════════════
          The moment the free Kundli lands is the one moment of real delight in
          this whole funnel, so it is the one moment worth asking for a share.
@@ -337,7 +352,27 @@ if(true){
      the one word here promising nothing a reader could check. */
   $('rdS').textContent=A('kundli.ashtakavarga_yogas_doshas_dasha_to');
   $('rdBtn').textContent=A('kundli.click_here_to_download_pdf');
-  $('rdView').textContent=A('kundli.or_view_on_screen');
+  /* The sheet key still holds the OLD wording ("view on screen"). Ram asked
+     for "read right on the screen" with a device icon, which is a different
+     intent — you are not previewing it, you are reading it here. Local table
+     wins until the sheet catches up.
+     ⚠ te is Ram's own wording. The other seven are composed to match and NEED
+     THEIR NATIVE REVIEWER, same rule as every other string. */
+  (function(){
+    var V = {
+      en:'\uD83D\uDCF1 Or read it right here \u2192',
+      hi:'\uD83D\uDCF1 या स्क्रीन पर ही पढ़ें \u2192',
+      te:'\uD83D\uDCF1 లేదా స్క్రీన్\u200cపైనే చదవండి \u2192',
+      kn:'\uD83D\uDCF1 ಅಥವಾ ಪರದೆಯಲ್ಲಿಯೇ ಓದಿ \u2192',
+      ta:'\uD83D\uDCF1 அல்லது திரையிலேயே படியுங்கள் \u2192',
+      bn:'\uD83D\uDCF1 অথবা স্ক্রিনেই পড়ুন \u2192',
+      mr:'\uD83D\uDCF1 किंवा स्क्रीनवरच वाचा \u2192',
+      gu:'\uD83D\uDCF1 અથવા સ્ક્રીન પર જ વાંચો \u2192',
+      as:'\uD83D\uDCF1 বা পৰ্দাতেই পঢ়ক \u2192'
+    };
+    var l = (window.SD_LANG || 'hi');
+    $('rdView').textContent = V[l] || V.hi;
+  })();
   $('rdTease').textContent=A('kundli.want_deeper_insight_on_marriage_ca');
 }
 
