@@ -805,20 +805,26 @@ body[data-home="returning"] .kh-btn{
    silently jumps AHEAD of order:1 — which is what happened first time round:
    the listen card and the streak strip landed above the Kundli bar. */
 body[data-home="returning"] #sdVedicNote{order:0;}
-body[data-home="returning"] #gitaMount{order:4;}
 body[data-home="returning"] #wpMount{order:9;}   /* card off; mount kept empty */
 body[data-home="returning"] .khero {order:1;}   /* one-line bar            */
-body[data-home="returning"] .jthumb{order:2;}   /* today's jap + streak    */
-body[data-home="returning"] .agate {order:3;}   /* today's astrology       */
+body[data-home="returning"] .jthumb{order:2;}   /* today's jap             */
+body[data-home="returning"] .prem  {order:3;}   /* premium                 */
+body[data-home="returning"] .agate {order:4;}   /* today's astrology       */
+body[data-home="returning"] #gitaMount{order:5;} /* Sri Chakra / Gita      */
 body[data-home="returning"] .lhero,
-body[data-home="returning"] .listen{order:5;}   /* listen to the panchang  */
-body[data-home="returning"] .prem  {order:6;}   /* premium                 */
-body[data-home="returning"] .hbody > div:not([class]):not([id]){order:5;}
+body[data-home="returning"] .listen{order:6;}   /* listen to the panchang  */
+body[data-home="returning"] .streak{order:7;}   /* the streak, at the foot */
+body[data-home="returning"] .hbody > div:not([class]):not([id]){order:6;}
 
-/* The standalone streak strip is redundant once the count sits on the jap
-   card itself, and it cost 53px of the first screen. Hidden in state B only;
-   state A is untouched. */
-body[data-home="returning"] .streak{display:none;}
+/* THE STREAK STRIP IS BACK IN STATE B.
+   I hid it here earlier, reasoning that the pill on the jap card carried the
+   count and the strip cost 53px of the first screen. That was the wrong trade:
+   the streak is a RETENTION mechanic and state B is the returning user — the
+   person the streak exists for. Optimising their screen for space by removing
+   the habit surface from the people building the habit had it backwards. The
+   10.5px pill is a status badge, not a hook.
+   It sits directly under the jap card, where the behaviour is. */
+body[data-home="returning"] .streak{display:flex;}
 
 /* the streak belongs where the jap is, not on a screen you have to reach */
 .jt-streak{position:absolute;top:10px;right:10px;z-index:6;
@@ -1592,7 +1598,11 @@ body[data-home="returning"] .streak{display:none;}
 
 /* ══ SD-NITYA · the daily Sri Chakra card ═════════════════════════════════
    Shares the gitaMount slot; renderDailySlot() decides which card renders. */
-.nitya-card{background:linear-gradient(160deg,#2A1400,#150900);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:14px 14px 12px;margin:10px 0}
+/* NO MARGIN. .hbody is a flex column with gap:8px, so every other card sits
+   exactly 8px from its neighbours. This card added 10px of its own on top,
+   which is why it floated 18px from the card above while everything else was
+   8px — measured, and it is what read as "abnormal gaps". */
+.nitya-card{background:linear-gradient(160deg,#2A1400,#150900);border:1px solid rgba(212,168,67,.35);border-radius:16px;padding:14px 14px 12px;margin:0}
 .nitya-head{font-size:12px;letter-spacing:.02em;color:#D4A843;margin-bottom:8px}
 .nitya-date{color:rgba(255,244,222,.55)}
 /* The tithi label already wraps to a second line on a 412px phone. The date is
@@ -1607,7 +1617,7 @@ body[data-home="returning"] .streak{display:none;}
 .nitya-text{flex:1;min-width:0}
 /* 18px and keep-all: the honorific "श्री महावज्रेश्वरी देवी" was breaking
    into three lines beside the lens at 412px */
-.nitya-name{font-size:18px;font-weight:600;color:#F1D27A;line-height:1.25;word-break:keep-all}
+.nitya-name{font-size:16.5px;font-weight:600;color:#F1D27A;line-height:1.28;word-break:keep-all}
 .nitya-digit{font-size:12.5px;color:rgba(255,244,222,.7);margin:3px 0 7px}
 /* the note now sits BELOW the lens row, full width — hence the top margin */
 .nitya-note{font-size:13.5px;line-height:1.55;color:#FFF4DE;margin-top:10px}
