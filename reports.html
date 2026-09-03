@@ -44,10 +44,6 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 .spin{display:inline-block;animation:sp 1s linear infinite;}
 @keyframes sp{to{transform:rotate(360deg);}}
 </style>
-<!-- analytics first: it also reports uncaught errors from the scripts below.
-     This is the page a buyer comes to for something they PAID for, so a
-     failure here should reach v_errors_7d the same day, not our WhatsApp. -->
-<script src="analytics.js"></script>
 <script src="font-loader.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
 <script>
@@ -92,7 +88,7 @@ if(typeof window.A!=='function'){
   <pre id="diagTxt" style="font-size:10px;color:#fff;font-family:monospace;white-space:pre-wrap;word-break:break-all;"></pre>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/vendor/supabase-2.114.0.js"></script>
 <script src="report-catalog.js"></script>
 <script>
 'use strict';
@@ -217,65 +213,9 @@ function fmtDate(d){
 }
 
 /* ── render ── */
-/* ══ SD-CATALOG-GUARD ══════════════════════════════════════════════════════
-   sdOwnedRead() and reportById() both live in report-catalog.js. If that file
-   fails to load — one missed upload, one bad cache, one dropped request on a
-   weak connection — this function threw on its FIRST LINE and the page showed
-   a header saying "Your purchased reports" above absolutely nothing. No list,
-   no message, no error. Measured: that is exactly what a paying customer saw.
-
-   Someone who paid ₹399 concludes their report is gone. Silent-plausible
-   output, on the one page where trust is all we have.
-
-   Now: say what happened and offer a retry. An honest failure a buyer can act
-   on beats a blank space every time. */
-function catalogReady(){
-  return typeof sdOwnedRead==='function' && typeof reportById==='function';
-}
-function catalogDownHTML(){
-  var L=(window.SD_LANG||'hi');
-  var M={en:'Could not load your reports just now.',
-    hi:'अभी आपकी रिपोर्ट्स लोड नहीं हो सकीं।',
-    te:'ప్రస్తుతం మీ రిపోర్ట్‌లు లోడ్ కాలేదు.',
-    kn:'ಸದ್ಯ ನಿಮ್ಮ ವರದಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.',
-    ta:'இப்போது உங்கள் அறிக்கைகளை ஏற்ற முடியவில்லை.',
-    bn:'এই মুহূর্তে আপনার রিপোর্ট লোড করা গেল না।',
-    mr:'सध्या तुमचे रिपोर्ट लोड होऊ शकले नाहीत.',
-    gu:'હાલ તમારા રિપોર્ટ લોડ થઈ શક્યા નથી.',
-    as:"এই মুহূৰ্তত আপোনাৰ ৰিপ'ৰ্ট ল'ড কৰিব পৰা নগ'ল।"};
-  var S={en:'Your reports are safe. Check your connection and try again.',
-    hi:'आपकी रिपोर्ट्स सुरक्षित हैं। कनेक्शन जांचकर फिर कोशिश करें।',
-    te:'మీ రిపోర్ట్‌లు సురక్షితంగా ఉన్నాయి. కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.',
-    kn:'ನಿಮ್ಮ ವರದಿಗಳು ಸುರಕ್ಷಿತವಾಗಿವೆ. ಸಂಪರ್ಕ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
-    ta:'உங்கள் அறிக்கைகள் பாதுகாப்பாக உள்ளன. இணைப்பைச் சரிபார்த்து மீண்டும் முயலுங்கள்.',
-    bn:'আপনার রিপোর্ট সুরক্ষিত আছে। সংযোগ দেখে আবার চেষ্টা করুন।',
-    mr:'तुमचे रिपोर्ट सुरक्षित आहेत. कनेक्शन तपासून पुन्हा प्रयत्न करा.',
-    gu:'તમારા રિપોર્ટ સુરક્ષિત છે. કનેક્શન તપાસીને ફરી પ્રયાસ કરો.',
-    as:"আপোনাৰ ৰিপ'ৰ্ট সুৰক্ষিত আছে। সংযোগ চাই পুনৰ চেষ্টা কৰক।"};
-  var R={en:'Try again',hi:'फिर कोशिश करें',te:'మళ్లీ ప్రయత్నించండి',kn:'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
-    ta:'மீண்டும் முயலுங்கள்',bn:'আবার চেষ্টা করুন',mr:'पुन्हा प्रयत्न करा',
-    gu:'ફરી પ્રયાસ કરો',as:'পুনৰ চেষ্টা কৰক'};
-  return '<div style="text-align:center;padding:38px 18px;">'
-   +'<div style="font-size:34px;margin-bottom:12px;">📁</div>'
-   +'<div style="font-size:14.5px;color:#FFF4DE;line-height:1.6;">'+(M[L]||M.hi)+'</div>'
-   +'<div style="font-size:12px;color:rgba(255,244,222,0.6);line-height:1.7;margin-top:8px;">'
-   +(S[L]||S.hi)+'</div>'
-   +'<button onclick="location.reload()" style="margin-top:18px;background:linear-gradient(120deg,#D4A843,#B8892F);'
-   +'color:#1A0D00;border:none;font-family:inherit;font-size:13px;font-weight:600;'
-   +'padding:11px 20px;border-radius:11px;cursor:pointer;">'+(R[L]||R.hi)+'</button></div>';
-}
 function render(){
-  var root=$('root');
-  if(!catalogReady()){
-    try{
-      $('hTitle').textContent=A('report.my_reports');
-      $('hSub').textContent=A('report.reports_you_own');
-    }catch(e){}
-    if(root) root.innerHTML=catalogDownHTML();
-    try{ sdTrack&&sdTrack('js_error',{msg:'report-catalog missing',file:'reports.html'}); }catch(e){}
-    return;
-  }
   var owned=sdOwnedRead().filter(function(o){return reportById(o.report);});
+  var root=$('root');
   $('hTitle').textContent=A('report.my_reports');
   $('hSub').textContent=A('report.reports_you_own');
 
@@ -358,9 +298,6 @@ function emptyHTML(){
 
 /* ── open: PDF first, exactly as the contract decides ── */
 async function openReport(id){
-  /* the moment a buyer asks for what they paid for. If this starts failing we
-     need to know from the data, not from a complaint. */
-  try{ sdTrack('report_open',{report:id}); }catch(e){}
   var btn=$('open-'+id), err=$('err-'+id);
   if(err){err.style.display='none';}
   var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
@@ -455,7 +392,6 @@ function isStandalone(){
       || window.navigator.standalone===true;
 }
 function openPdf(id,url){
-  try{ sdTrack('report_delivered',{report:id}); sdFlush(true); }catch(e){}
   try{
     var a=document.createElement('a');
     a.href=url; a.target='_blank'; a.rel='noopener';
@@ -481,9 +417,7 @@ function showManualLink(id,url){
         +A('kundli.downloads_sometimes_do_not_run_fro')+'</div>' : '');
   box.style.display='block';
 }
-function viewOnScreen(id){
-  try{ sdTrack('report_open',{report:id,source:'onscreen'}); sdFlush(true); }catch(e){}
-  location.href=id+'-report.html?autoview=1&lang='+encodeURIComponent(reportLang(id)); }
+function viewOnScreen(id){ location.href=id+'-report.html?autoview=1&lang='+encodeURIComponent(reportLang(id)); }
 /* Re-asks the server. Once the buy side returns pdf_url in the list=1 payload,
    this is all a new phone ever needs — the PDF was cached at first render. */
 async function checkAgain(id){
@@ -579,12 +513,7 @@ function showDiag(){
   document.getElementById('diagWrap').style.display='block';
 }
 /* ── boot ── */
-/* guarded: a throw here used to take the auth chain below it down too */
-try{ render(); }catch(e){ try{ console.error(e); }catch(x){} }
-try{
-  var _own=catalogReady()?sdOwnedRead().length:-1;
-  sdTrack('reports_view',{n:_own});
-}catch(e){}                                  // paint from localStorage immediately
+render();                                  // paint from localStorage immediately
 absorbHash().then(function(){
   return sb ? sb.auth.getSession() : null;   // no client → stay local-only
 }).then(function(r){
