@@ -42,23 +42,31 @@
     src: 1,
     state: 1, card: 1, surface: 1, source: 1, report: 1, screen: 1,
     count: 1, ok: 1, reason: 1, method: 1, kind: 1, tab: 1,
-    msg: 1, err: 1, file: 1, line: 1, verse: 1, tithi: 1, paksha: 1, day: 1,
+    msg: 1, file: 1, line: 1, verse: 1, tithi: 1, paksha: 1, day: 1,
     ms: 1, n: 1, from: 1, to: 1, value: 1
   };
   /* Belt and braces: even an allowed key is dropped if the VALUE looks
      personal. A phone number or a date of birth arriving in props means a
      call site is wrong, and the fix is to lose the event, not the privacy. */
-  /* C2a · what the door refuses, by shape. Phones, dates in either order
-     with -, / or . as the separator, emails, credential-shaped text and
-     JWTs. A value matching ANY of these drops the whole event. */
   var PHONEISH = /(?:\+?\d[\s-]?){9,}/;
-  var DATEISH  = /\b(19|20)\d{2}[-/.]\d{1,2}[-/.]\d{1,2}\b/;      // 1990-05-05, 1990.05.05
-  var DATEISH2 = /\b\d{1,2}[-/.]\d{1,2}[-/.](19|20)\d{2}\b/;      // 05.05.1990, 5/5/1990
+  /* DOTS TOO. "05.05.1990" is how a date of birth is typed in India and the
+     original pattern only knew - and /. Both orders, because an error string
+     may carry either. */
+  var DATEISH  = /\b(19|20)\d{2}[-/.]\d{1,2}[-/.]\d{1,2}\b/;
+  var DATEISH2 = /\b\d{1,2}[-/.]\d{1,2}[-/.](19|20)\d{2}\b/;
   var EMAILISH = /[^\s@]+@[^\s@]+\.[^\s@]+/;
-  var TOKENISH = /(access_token|refresh_token|apikey|api_key|bearer|authorization|write_key)\s*[=:]/i;
+  var TOKENISH = /(access_token|apikey|api_key|write_key|bearer|authorization)\s*[=:]/i;
   var JWTISH   = /\beyJ[A-Za-z0-9_-]{10,}/;
   function looksPersonal(s) {
-    return PHONEISH.test(s) || DATEISH.test(s) || DATEISH2.test(s) || EMAILISH.test(s) || TOKENISH.test(s) || JWTISH.test(s);
+    return PHONEISH.test(s) || DATEISH.test(s) || DATEISH2.test(s)
+        || EMAILISH.test(s) || TOKENISH.test(s) || JWTISH.test(s);
+  }
+
+  /* '' when the message looks personal — the event still goes, carrying
+     err/file/line, just without the text. */
+  function errShape(raw) {
+    if (looksPersonal(raw)) return '';
+    return raw.replace(/\d/g, '#').replace(/[^\x20-\x7E]/g, '').slice(0, 60);
   }
 
   function clean(props) {
@@ -191,27 +199,6 @@
 
   /* ── automatic events ────────────────────────────────────────────────── */
 
-  /* C2b · Error messages are the one field that can carry arbitrary user
-     data ("…at user Ram, dob 05.05.1990"), and a name cannot be caught by a
-     regex. So the raw message never leaves the device. What goes: the error
-     NAME, the first 60 characters with every digit masked to # and every
-     non-ASCII character removed (browser/engine messages are English; an
-     Indic-script name in a message is user data by definition), plus the
-     script and line. That still says WHICH error and WHERE — the diagnostic
-     value — and cannot say who. If even the masked text still looks
-     personal, the whole event is dropped by the door above. */
-  function errShape(msg) {
-    return String(msg || 'error').replace(/[^\x20-\x7E]/g, '').replace(/\d/g, '#').replace(/\s+/g, ' ').trim().slice(0, 60);
-  }
-  /* The door must see the RAW text: once digits are masked, "dob 05.05.1990"
-     reads as "dob ##.##.####" and no longer looks like a date — and the name
-     beside it would sail through. A personal-looking message is not sent at
-     all; the error name, file and line still are. */
-  function errProps(name, msg, file, line) {
-    var raw = String(msg || ''), p = { err: String(name || 'Error').slice(0, 40), file: file, line: line };
-    if (!looksPersonal(raw)) p.msg = errShape(raw);
-    return p;
-  }
   /* Errors are the highest-value signal in this app. Three features have
      already died silently to an uncaught throw; this is how we find the
      fourth before a user has to tell us. */
@@ -223,15 +210,31 @@
            the error view with noise and hide the real failures, which is the
            one thing this signal exists to prevent. */
         if (e && e.error && e.error.sdIntentional) return;
-        track('js_error', errProps((e && e.error && e.error.name), e && e.message,
-          String((e && e.filename) || '').split('/').pop().slice(0, 60), (e && e.lineno) || 0));
+        track('js_error', {
+          /* ══ SD-ERROR-SHAPE ══
+             A NAME CANNOT BE CAUGHT BY A REGEX, and an error message is the one
+             field that carries arbitrary user text. Reproduced: "Cannot read
+             properties of null at user Ram, dob 05.05.1990" passed every filter.
+
+             So the raw message never leaves the device. If it looks personal it
+             is dropped entirely and only err/file/line are sent — you still
+             learn WHICH error and WHERE, never WHO. Otherwise a digit-masked
+             60-character shape goes, which is enough to group errors.
+
+             The check runs on the RAW text on purpose. Masking first would turn
+             "dob 05.05.1990" into "dob ##.##.####", which no longer looks like a
+             date, and the name beside it would sail through. */
+          msg: errShape(String((e && e.message) || 'error')),
+          file: String((e && e.filename) || '').split('/').pop().slice(0, 60),
+          line: (e && e.lineno) || 0
+        });
         flush(false);
       } catch (x) {}
     });
     g.addEventListener('unhandledrejection', function (e) {
       try {
         var r = e && e.reason;
-        track('js_error', errProps((r && r.name) || 'Rejection', (r && r.message) || r || 'rejection', 'promise', 0));
+        track('js_error', { msg: errShape(String((r && r.message) || r || 'rejection')), file: 'promise' });
         flush(false);
       } catch (x) {}
     });
@@ -248,6 +251,5 @@
 
   g.sdTrack = track;
   g.sdFlush = flush;
-  g.SD_ANALYTICS = { version: 2, session: SESSION, queued: function () { return readQ().length; },
-                     /* exposed for the privacy gate only */ _clean: clean, _errShape: errShape };
+  g.SD_ANALYTICS = { version: 1, session: SESSION, queued: function () { return readQ().length; } };
 })(window);
