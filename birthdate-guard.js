@@ -51,14 +51,15 @@
     el.setAttribute('min', MIN);
     el.setAttribute('max', max);
     // A value already out of range (restored from storage, typed, pasted)
-    // is cleared rather than silently used to compute a chart.
-    if (el.value && el.value > max) {
+    // is cleared rather than silently used to compute a chart. Both ends:
+    // a pasted 1200-01-01 used to pass because only max was checked.
+    if (el.value && (el.value > max || el.value < MIN)) {
       el.value = '';
-      flag(el, true);
+      flag(el, true, el.value < MIN);
     }
   }
 
-  function flag(el, on) {
+  function flag(el, on, tooEarly) {
     el.style.borderColor = on ? '#E66E5A' : '';
     var id = 'bdWarn_' + (el.id || Math.random().toString(36).slice(2));
     var w = document.getElementById(id);
@@ -70,16 +71,16 @@
       (el.parentNode || document.body).insertBefore(w, el.nextSibling);
     }
     var hi = (document.documentElement.lang === 'hi');
-    w.textContent = hi
-      ? 'जन्म तिथि आज या उससे पहले की होनी चाहिए।'
-      : 'A birth date has to be today or earlier.';
+    w.textContent = tooEarly
+      ? (hi ? 'जन्म तिथि 1900 के बाद की होनी चाहिए।' : 'A birth date has to be after 1900.')
+      : (hi ? 'जन्म तिथि आज या उससे पहले की होनी चाहिए।' : 'A birth date has to be today or earlier.');
   }
 
   function check(e) {
     var el = e.target;
     if (!isBirthField(el)) return;
-    var bad = !!el.value && el.value > today();
-    flag(el, bad);
+    var late = !!el.value && el.value > today(), early = !!el.value && el.value < MIN, bad = late || early;
+    flag(el, bad, early);
     if (bad && e.type === 'change') el.value = '';
   }
 
@@ -110,4 +111,19 @@
   else boot();
 
   window.sdClampBirthDates = function () { sweep(document); };
+
+  /* F4 · `max` was stamped once at boot and never again. This is a PWA people
+     leave open for days: a parent registering a newborn the morning after
+     found "today" rejected with no explanation. Re-clamp whenever the page
+     comes back into view — and at the next local midnight while it stays open. */
+  try {
+    var again = function () { try { sweep(document); } catch (e) {} };
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') again(); });
+    window.addEventListener('focus', again);
+    window.addEventListener('pageshow', again);
+    (function midnight() {
+      var now = new Date(), next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 5);
+      setTimeout(function () { again(); midnight(); }, Math.max(1000, next - now));
+    })();
+  } catch (e) {}
 })();
