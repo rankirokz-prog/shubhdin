@@ -421,19 +421,46 @@ function cSearch(prefix,q){
   dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.4);font-size:13px;">'+(A('astrol.searching'))+'</div>';
   dd.style.display='block';
   _cT=setTimeout(function(){
-    fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&countrycodes=in&limit=6&format=json',{headers:{'Accept-Language':'en'}})
-    .then(function(r){return r.json();}).then(function(rs){
+    sdGeoSearch(q,6).then(function(rs){
       if(!rs.length){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(A('astrol.no_results'))+'</div>';return;}
-      dd.innerHTML=rs.map(function(r){
-        var name=r.display_name.split(',')[0].trim().replace(/'/g,'');
+      _geoHits[prefix]=rs;
+      dd.innerHTML=rs.map(function(r,i){
+        var name=r.display_name.split(',')[0].trim();
         var sub=r.display_name.split(',').slice(1,3).join(',').trim();
-        return '<div onclick="cPick(\''+prefix+'\',\''+name+'\','+r.lat+','+r.lon+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">'
-         +'<div style="font-size:14px;color:#fff;font-weight:600;">'+name+'</div>'
-         +'<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">'+sub+'</div></div>';
+        return '<div onclick="cPickIdx(\''+prefix+'\','+i+')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">'
+         +'<div style="font-size:14px;color:#fff;font-weight:600;">'+sdGeoEsc(name)+'</div>'
+         +'<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">'+sdGeoEsc(sub)+'</div></div>';
       }).join('');
     }).catch(function(){dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">'+(A('astrol.search_failed'))+'</div>';});
   },400);
 }
+var _geoHits={};
+function cPickIdx(prefix,i){var r=(_geoHits[prefix]||[])[i];if(!r)return;cPick(prefix,r.display_name.split(',')[0].trim(),r.lat,r.lon);}
+/* ── SD-GEO · one place search for the whole world, India first ──────────
+   Every Nominatim call carried &countrycodes=in: an overseas reader typed
+   their birth city, got nothing, and the coordinate guard (correctly) refused
+   to continue — a hard block on the market the engine was built for.
+   Policy: SD_GEO_SCOPE = 'in-first' (India results first, world fills the
+   rest) or 'world' (no preference). Results are returned as-is; callers keep
+   them in an array and select BY INDEX — third-party place names never enter
+   a JS string literal or raw HTML (N4: "N'Djamena" broke the picker). */
+var SD_GEO_SCOPE='in-first';
+function sdGeoSearch(q,limit,extra){
+  var base='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit='+(limit||6)+(extra||'');
+  var opt={headers:{'Accept-Language':'en'}};
+  var arr=function(x){return Array.isArray(x)?x:[];};
+  var world=function(){return fetch(base,opt).then(function(r){return r.json();}).then(arr);};
+  if(SD_GEO_SCOPE==='world') return world();
+  return fetch(base+'&countrycodes=in',opt).then(function(r){return r.json();}).then(arr).then(function(inr){
+    if(inr.length>=(limit||6)) return inr;
+    return world().then(function(w){
+      var seen={}; inr.forEach(function(r){seen[r.place_id]=1;});
+      return inr.concat(w.filter(function(r){return !seen[r.place_id];})).slice(0,limit||6);
+    }).catch(function(){return inr;});
+  });
+}
+function sdGeoEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
 function cPick(prefix,name,lat,lng){
   $('f_'+prefix+'place').value=name; CPICK[prefix]={lat:lat,lng:lng};
   $('cdd_'+prefix).style.display='none';
@@ -451,7 +478,7 @@ function cGps(){
   },function(){t.textContent=(A('kundli.permission_denied_search_instead'));});
 }
 async function geo(place){
-  try{var a=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(place)+'&countrycodes=in&limit=1&format=json').then(r=>r.json());
+  try{var a=await sdGeoSearch(place,1);
     if(a&&a[0])return{lat:parseFloat(a[0].lat),lng:parseFloat(a[0].lon)};}catch(e){}
   return null;
 }
