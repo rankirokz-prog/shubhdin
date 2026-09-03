@@ -44,6 +44,7 @@ const CORE_FILES = [
   '/panchang-engine.js',
   '/birthdate-guard.js',
   '/nav-history.js',
+  '/sd-tz.js',   /* F1: birth-zone conversion, used by every report page and the dashboard */
   /* Localisation. These were fetched from the network on every load and were
      absent offline — on a devotional app that is opened first thing in the
      morning, often on a weak connection, that is the difference between a
