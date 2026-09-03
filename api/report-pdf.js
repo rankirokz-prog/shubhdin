@@ -14,7 +14,6 @@ const REPORTS = {
   love:     'love-report.html',
   career:   'career-report.html',
   child:    'child-report.html',
-  muhurta:  'muhurta-report.html',
   annual:   'annual-report.html',
   forecast: 'forecast-report.html'
 };
