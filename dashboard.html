@@ -2887,16 +2887,15 @@ function greetMsg(){
 }
 
 // ── Streak ──
-function getStreak(){try{return Number(JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count)||0;}catch(e){return 0;}}   /* D5: a non-empty string count rendered as '"abc" दिन' */
-function updateStreak(){
-  const td=new Date().toDateString();
-  let d={};try{d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');}catch(e){}
-  if(d.lastDate===td)return;
-  const yd=new Date();yd.setDate(yd.getDate()-1);
-  d.count=d.lastDate===yd.toDateString()?(d.count||0)+1:1;
-  d.lastDate=td;
-  localStorage.setItem('shubhdin_streak',JSON.stringify(d));
-}
+/* F5 · THE EARLIER getStreak/updateStreak PAIR WAS REMOVED HERE.
+   Two declarations of each existed and the LATER one wins, so this pair never
+   ran — but the two versions stamped DIFFERENT field names: this one wrote
+   `lastDate`, the live one writes `date`. japDoneToday() reads either, and had
+   to, because rows written by old builds still carry `lastDate`.
+
+   That workaround stays. This dead pair does not — it is the same
+   duplicate-declaration class that produced the sdDow bug, where the shadowed
+   copy was harmless right up until it wasn't. */
 
 // ── Daily script (rotates by day of year) ──
 function getScript(){
