@@ -561,7 +561,16 @@ function checkAuthThen(){
 function googleSignIn(){
   var rto=location.origin+location.pathname;
   dlog('signIn click, redirectTo='+rto);
-  sbAuth().signInWithOAuth({provider:'google',options:{redirectTo:rto}})
+  sbAuth().signInWithOAuth({provider:'google',options:{redirectTo:rto,
+    /* GOOGLE'S OWN SIGN-IN PAGE IS NOT OUR TEXT.
+     A Telugu user was shown the consent screen in HINDI. No leak gate could
+     ever catch that — the words come from Google, and Google picks the
+     language from the user's Google account, not from our app. Indian
+     accounts very often default to Hindi.
+     `hl` is Google's interface-language parameter; Supabase passes
+     queryParams straight through to the provider URL. Unsupported codes fall
+     back on Google's side, so this can only improve matters. */
+  queryParams:{hl:(window.SD_LANG||'en')}}})
    .then(function(r){if(r.error){dlog('signIn ERROR: '+r.error.message);
      $('errAuth').textContent=r.error.message;$('errAuth').style.display='block';}
      else dlog('signIn: redirecting to Google…');});
