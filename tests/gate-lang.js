@@ -18,7 +18,10 @@ async function look(lang){
   await pg.goto('http://localhost:8112/dashboard.html',{waitUntil:'domcontentloaded'});
   await pg.waitForTimeout(4000);
   const r=await pg.evaluate(l=>{
-    const btn=document.querySelector('.gita-share'), head=document.querySelector('.gita-tag');
+    /* The daily slot holds EITHER card now — Sri Chakra when the data supports
+       it, Gita as the fallback. Read whichever is mounted. */
+    const btn=document.querySelector('.nitya-share')||document.querySelector('.gita-share'),
+          head=document.querySelector('.nitya-head')||document.querySelector('.gita-tag');
     window.SD_LANG=l;
     return {overflow:document.body.scrollWidth-document.body.clientWidth,
       btnH:btn?Math.round(btn.getBoundingClientRect().height):0,
@@ -26,6 +29,7 @@ async function look(lang){
       btn:btn?btn.textContent.trim():'',
       headH:head?Math.round(head.getBoundingClientRect().height):0,
       head:head?head.textContent.trim():'',
+      nitya:!!document.querySelector('.nitya-card'),
       gita:(typeof gitaShareText==='function')?gitaShareText():'',
       jap:(function(){let c='';window.doShare=function(t,x){c=x;};try{shareJap();}catch(e){}return c;})(),
       wp:(typeof shareWallpaperText==='function')?shareWallpaperText():'',
@@ -36,7 +40,10 @@ console.log('\n=== GUJARATI ===');
 const gu=await look('gu');
 T('no sideways scroll',gu.overflow<=2,'overflow '+gu.overflow+'px');
 T('share button on one line',gu.btnH<50,'"'+gu.btn+'" '+gu.btnW+'x'+gu.btnH+'px');
-T('heading does not wrap',gu.headH<26,'"'+gu.head+'"');
+/* The Sri Chakra heading is TWO lines by design — title, then tithi and
+   date, because the tithi label already wrapped at 412px. Only the
+   single-line Gita tag needs the tight bound. */
+T('heading does not wrap beyond its design',gu.headH<(gu.nitya?58:26),'\"'+gu.head+'\"');
 T('jap says સંપન્ન થઈ',/સંપન્ન થઈ/.test(gu.jap));
 T('jap says નિત્ય જપ',/નિત્ય જપ/.test(gu.jap));
 T('says જન્મકુંડળી',/જન્મકુંડળી/.test(gu.jap+gu.gita+gu.wp));
@@ -56,16 +63,24 @@ console.log('\n=== MARATHI ===');
 const m=await look('mr');
 T('no sideways scroll',m.overflow<=2,'overflow '+m.overflow+'px');
 T('share button on one line',m.btnH<50,'"'+m.btn+'" '+m.btnW+'x'+m.btnH+'px');
-T('heading does not wrap',m.headH<26,'"'+m.head+'"');
+/* The Sri Chakra heading is TWO lines by design — title, then tithi and date
+   on its own line, because the tithi label already wrapped at 412px. Only the
+   single-line Gita tag needs the tight bound. */
+T('heading does not wrap beyond its design',m.headH<(/दर्शन|દર્શન|darshan/i.test(m.head)?58:26),'"'+m.head+'"');
 T('jap says संपन्न झाली',/संपन्न झाली/.test(m.jap));
 T('jap says नित्य जपासाठी',/नित्य जपासाठी/.test(m.jap));
 T('jap says जन्मकुंडली',/जन्मकुंडली/.test(m.jap));
-T('gita heading is शुभाशीर्वाद',/शुभाशीर्वाद/.test(m.head),m.head);
+/* The Gita card no longer owns this slot — the Sri Chakra card renders when
+   the data supports it, and the Gita is the fallback. Accept either heading. */
+T('the daily card heading is Marathi',/शुभाशीर्वाद|श्री ?चक्र|दर्शन/.test(m.head),m.head);
 T('gita hook says जन्मकुंडली',/जन्मकुंडली/.test(m.gita));
 T('page count stays 250, not २५०',/250\+/.test(m.jap)&&!/२५०/.test(m.jap+m.gita));
 console.log('   rows: '+m.rows.join('  |  '));
-T('row order {name} {time} पर्यंत',/^तृतीया 08:51 पर्यंत$/.test(m.rows[0]),m.rows[0]);
-T('follow-on uses त्यानंतर',/^त्यानंतर चतुर्थी 07:42 पर्यंत$/.test(m.rows[1]),m.rows[1]);
+/* Times now carry a daypart prefix (स. = सकाळी) per the 12-hour panchang
+   spec — traditional almanacs never print 24-hour time. The ORDER is what this
+   asserts, so allow the prefix between name and time. */
+T('row order {name} {time} पर्यंत',/^तृतीया (\S+\.? )?0?8:51 पर्यंत$/.test(m.rows[0]),m.rows[0]);
+T('follow-on uses त्यानंतर',/^त्यानंतर चतुर्थी (\S+\.? )?0?7:42 पर्यंत$/.test(m.rows[1]),m.rows[1]);
 T('no-end-time form too',/^त्यानंतर बव$/.test(m.rows[2]),m.rows[2]);
 
 console.log('\n=== BENGALI (did the revert break anything?) ===');
