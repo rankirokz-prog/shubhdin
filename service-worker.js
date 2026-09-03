@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v191';
+const CACHE_NAME = 'shubhdin-v192';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -21,8 +21,8 @@ const CORE_FILES = [
   '/contact.html',
   '/about.html',
   '/offline.html',
-  /* supabase-js, vendored: pinned version, no CDN, works offline. The five
-     pages that need it (buy, reports, kundli, dispatch, stats) load this. */
+  /* vendored supabase — pinned, self-hosted, precached. Was a floating @2 from
+     jsDelivr with no integrity hash, on the pages that hold the session. */
   '/vendor/supabase-2.114.0.js',
   '/report-catalog.js',
   /* today's verse — cached so the morning card is there on a weak
@@ -130,7 +130,13 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
         }
         return response;
-      }).catch(() => caches.match(req).then(c => c || caches.match('/offline.html').then(o => o || caches.match('/index.html'))))
+      }).catch(() => caches.match(req)
+        .then(c => c || caches.match('/offline.html'))
+        /* NOT `c || caches.match(a) || caches.match(b)`. caches.match returns a
+           PROMISE, which is always truthy, so the second || is dead code and a
+           miss resolves to undefined — respondWith(undefined) is a network
+           error, not a fallback. Chain the awaits instead. */
+        .then(c => c || caches.match('/index.html')))
     );
     return;
   }
