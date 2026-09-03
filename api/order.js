@@ -409,7 +409,15 @@ module.exports = async function handler(req, res) {
           return res.status(502).json({ error: 'could not acknowledge purchase' });
       }
 
-      await upsertPaid(b.uid, b.report, PRICES[b.report], 'play:' + String(b.purchaseToken).slice(0, 24));
+      /* F2 · same rule as the webhook: a failed order write must not answer
+         paid:true — the app would consume the Play purchase and no order row
+         would exist behind it. 5xx; the app retries verification on next open. */
+      const upP = await upsertPaid(b.uid, b.report, PRICES[b.report], 'play:' + String(b.purchaseToken).slice(0, 24));
+      if (!upP || !upP.ok) {
+        let detail = ''; try { detail = (await upP.text()).slice(0, 200); } catch (e) {}
+        console.error('[play_verify] order write failed for ' + b.uid + '/' + b.report + ': ' + detail);
+        return res.status(503).json({ ok: false, error: 'order write failed', retry: true, source: 'google_play' });
+      }
       return res.status(200).json({ ok: true, paid: true, order_code: code(b.uid, b.report),
                                     source: 'google_play' });
     } catch (e) {
