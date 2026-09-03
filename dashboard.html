@@ -4171,11 +4171,16 @@ function mpStop(){if(_panchangAC){try{_panchangAC.close();}catch(e){}; _panchang
 function mpPrev(){mpStop();}function mpNext(){mpStop();}
 function mpSeek(e){}
 
-// ── AUDIO SYSTEM ──
-let currentAudio=null;
-function getScriptVersion(){return Math.floor(Date.now()/(7*24*60*60*1000))%2===0?'a':'b';}
-function getDayKey(){return ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][sdVedicDow()];}
-function getScriptUrl(){return 'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/scripts/'+getDayKey()+'_'+getScriptVersion()+'.mp3';}
+/* ── AUDIO SYSTEM ──
+   THE DAILY PANCHANG SCRIPT AUDIO IS GONE. getScriptUrl(), and the getDayKey()
+   and getScriptVersion() that fed it, built a per-weekday URL into
+   shubhdin-audio/scripts/ — but nothing had called getScriptUrl() since the
+   feature was withdrawn, so the whole chain was dead code that read like a
+   live player. Removed at Ram's decision along with api/generate-scripts.js,
+   which produced those files.
+
+   Still live and untouched: the Power of Chant story (stories/power_of_chant.mp3),
+   the mantra chants, the sadhana chants, and the problems audio. */
 /* PERSONALISED NAME AUDIO — REMOVED.
    This sent the user's NAME to ElevenLabs at runtime (/api/generate-name) to
    synthesise a per-person greeting clip. Removed at Ram's decision: the feature
