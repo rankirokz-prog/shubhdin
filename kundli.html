@@ -51,6 +51,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 .tease{margin-top:26px;border:1px dashed rgba(212,168,67,0.3);border-radius:14px;padding:12px;font-size:11px;color:rgba(255,244,222,0.6);cursor:pointer;}
 </style>
 <script src="font-loader.js"></script>
+<script src="sd-tz.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
 <script>
 /* Language tables must load BEFORE the page's own script runs. A dynamically
@@ -386,7 +387,7 @@ if(true){
 })();
 
 /* ── birth place: Nominatim search + GPS detect (same as onboarding) ── */
-var _kCity={lat:null,lng:null}, _kTimer=null;
+var _kCity={lat:null,lng:null,tz:null}, _kTimer=null;
 function kSearchCity(q){
   var dd=document.getElementById('kCityResults');
   _kCity.lat=null;_kCity.lng=null;
@@ -436,8 +437,10 @@ function sdGeoSearch(q,limit,extra){
 function sdGeoEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function kPickCity(name,lat,lng){
-  $('fPlace').value=name; _kCity.lat=lat; _kCity.lng=lng;
+  $('fPlace').value=name; _kCity.lat=lat; _kCity.lng=lng; _kCity.tz=null;
   document.getElementById('kCityResults').style.display='none';
+  /* F1: the birth place's IANA zone, once, at pick time */
+  sdTz.fetchZone(lat,lng).then(function(z){ if(+_kCity.lat===+lat)_kCity.tz=z; });
 }
 function kDetectLoc(){
   var t=document.getElementById('kGpsTxt');
@@ -483,13 +486,25 @@ function kGeocode(place){
 function submitDetails(){
   var d={name:$('fName').value.trim(),gender:$('fGender').value,dob:$('fDob').value,
          time:$('fTime').value,place:$('fPlace').value.trim(),lang:($('fLang')&&$('fLang').value)||window.SD_LANG||'hi'};
-  if(_kCity.lat){d.lat=_kCity.lat;d.lng=_kCity.lng;}
+  if(_kCity.lat){d.lat=_kCity.lat;d.lng=_kCity.lng;d.tz=_kCity.tz||undefined;}
   if(!d.name||!d.dob||!d.time||!d.place){$('errDetails').style.display='block';return;}
   /* WhatsApp opt-in: only validated when ticked; never blocks an unticked user */
   if($('fWa')&&$('fWa').checked){
     var wp=$('fWaPhone').value.replace(/\D/g,'');
     if(!(wp.length===10||(wp.length>=11&&wp.length<=15))){$('lbWaErr').style.display='block';return;}
     $('lbWaErr').style.display='none'; d.wa=true; d.phone=wp;
+  }
+  /* F1 · coordinates AND the birth zone, or nothing. Without the zone the
+     report would cast the entered time as IST — a 4–10 hour error abroad. */
+  if(isFinite(d.lat)&&isFinite(d.lng)&&!(window.sdTz&&sdTz.isZone(d.tz))){
+    var btz=$('btDetails'), lblz=btz?btz.textContent:'';
+    if(btz){btz.disabled=true;btz.textContent=A('buy.locating');}
+    sdTz.fetchZone(d.lat,d.lng).then(function(z){
+      if(btz){btz.disabled=false;btz.textContent=lblz;}
+      if(!z){var ez=$('errDetails');ez.textContent=A('buy.could_not_resolve_the_birth_place_');ez.style.display='block';dlog('tz guard: no zone for '+d.lat+','+d.lng+' — submit blocked');return;}
+      d.tz=z; kSaveAndGo(d);
+    });
+    return;
   }
   /* coordinates or nothing */
   if(!(isFinite(d.lat)&&isFinite(d.lng))){
@@ -506,7 +521,10 @@ function submitDetails(){
       }
       d.lat=g.lat; d.lng=g.lng;
       dlog('coord guard: geocoded '+d.lat.toFixed(3)+','+d.lng.toFixed(3));
-      kSaveAndGo(d);
+      sdTz.fetchZone(d.lat,d.lng).then(function(z){
+        if(!z){var ez=$('errDetails');ez.textContent=A('buy.could_not_resolve_the_birth_place_');ez.style.display='block';dlog('tz guard: no zone — submit blocked');return;}
+        d.tz=z; kSaveAndGo(d);
+      });
     });
     return;
   }
@@ -527,6 +545,7 @@ function kSaveAndGo(d){
     if(d.place)u.birth_place=d.place;
     if(isFinite(d.lat)){u.birth_lat=d.lat;u.lat=d.lat;}
     if(isFinite(d.lng)){u.birth_lng=d.lng;u.lng=d.lng;}
+    if(d.tz){u.birth_tz=d.tz;}
     localStorage.setItem('shubhdin_user',JSON.stringify(u));
   }catch(e){}
   checkAuthThen();
