@@ -637,7 +637,19 @@ module.exports = async function handler(req, res) {
       if (!(paise >= expect * 100)) {
         return res.status(200).json({ ok: true, ignored: 'amount short', paid_paise: paise, expected: expect, report: notes.report, event: ev.event });
       }
-      await upsertPaid(notes.uid, notes.report, expect, ent.id, notes);
+      /* E1 · If the order write fails, this MUST NOT be a 200: Razorpay treats
+         2xx as delivered and never retries, and the buyer's money has moved
+         with no order row behind it. A 5xx makes Razorpay retry (with backoff,
+         for ~24h); the on_conflict=uid,report upsert makes the retry write
+         exactly one row. Same rule ?confirm=1 already applies. */
+      let up;
+      try { up = await upsertPaid(notes.uid, notes.report, expect, ent.id, notes); }
+      catch (e) { up = { ok: false, status: 0, text: async () => String(e && e.message) }; }
+      if (!up || !up.ok) {
+        let detail = ''; try { detail = (await up.text()).slice(0, 200); } catch (e) {}
+        console.error('[webhook] order write failed for ' + notes.uid + '/' + notes.report + ' (' + (up && up.status) + '): ' + detail + ' — returning 503 so Razorpay retries');
+        return res.status(503).json({ ok: false, error: 'order write failed', retry: true, report: notes.report, event: ev.event || null });
+      }
       return res.status(200).json({ ok: true, marked: notes.report, event: ev.event || null });
     } catch (e) { return res.status(500).json({ error: String(e.message).slice(0, 150) }); }
   }
