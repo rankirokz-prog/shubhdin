@@ -83,7 +83,13 @@
      Taking it over explicitly: a NEW page always opens at the top, the way a
      normal web page does, and going BACK returns you to exactly where you were
      reading, which is the one case where keeping the offset is what you want. */
+  /* D5 · astrology.html called sdHashBack (which starts scrollMemory) AND
+     sdScrollRoutes — two managers, three scrollTo calls per navigation, two
+     position maps. Final positions agreed in testing, but only by luck on
+     short pages. One manager per page: whichever registers first owns the
+     window; the other becomes a no-op. */
   function scrollMemory(isBackRef) {
+    if (w.__sdScrollMgr) return; w.__sdScrollMgr = 'memory';
     var saved = {}, curr = (location.hash || '').slice(1) || 'hub';
     try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
 
@@ -199,6 +205,8 @@
      made before the router has rendered anything, and lands on the wrong
      place once the content changes height. */
   w.sdScrollRoutes = function (opts) {
+    if (w.__sdScrollMgr) { w.sdMarkBack = w.sdMarkBack || function () {}; return; }   // D5: another manager owns scroll
+    w.__sdScrollMgr = 'routes';
     opts = opts || {};
     var home = opts.home || 'hub';
     var POS = {}, cur = location.hash || ('#' + home), back = false;
