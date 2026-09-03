@@ -64,6 +64,7 @@
      it can be taken down by a throw in the main script, and nothing in the
      main script can be taken down by a throw in it. -->
 <script src="analytics.js"></script>
+<script src="sd-tz.js"></script>
 <script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
 (function(){try{
@@ -5432,6 +5433,29 @@ function pgSweepCache(){
     }
   }catch(e){}
 }
+/* F1 · tzOffsetHours for the DAILY panchang: the user's city zone at this
+   moment (DST-correct). Display-only, so a profile that has not been backfilled
+   yet keeps today's IST behaviour for one open rather than losing its panchang;
+   sdBackfillTz() below fills the zone on that same open. */
+function sdTzHours(){
+  try{ var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}'); var z=u.city_tz;
+    if(window.sdTz&&sdTz.isZone(z)){ var h=sdTz.offsetHoursAt(new Date(),z); if(h!=null) return h; } }catch(e){}
+  return 5.5;
+}
+/* Every stored profile predates city_tz. Fill it once, on this open, from the
+   coordinates already stored — then the rashi and the daily panchang use it. */
+async function sdBackfillTz(){
+  try{
+    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    if(!(isFinite(u.city_lat)&&isFinite(u.city_lon))||(window.sdTz&&sdTz.isZone(u.city_tz))) return false;
+    var z=await sdTz.fetchZone(u.city_lat,u.city_lon); if(!z) return false;
+    u.city_tz=z; localStorage.setItem('shubhdin_user',JSON.stringify(u)); if(window.U) U.city_tz=z;
+    try{ u.birth_cache_key=null; localStorage.setItem('shubhdin_user',JSON.stringify(u)); }catch(e){}
+    try{ if(typeof fetchBirthChart==='function') await fetchBirthChart(); }catch(e){}
+    try{ if(typeof saveToCloud==='function') saveToCloud(); }catch(e){}
+    return true;
+  }catch(e){ return false; }
+}
 function pgCoords(){
   return {lat:(U.city_lat!=null?U.city_lat:16.7107), lng:(U.city_lon!=null?U.city_lon:81.0952)};
 }
@@ -5545,7 +5569,7 @@ function panchakaLabel(v){
 function enginePanchang(){
   var PE=window.PanchangEngine; if(!PE) return null;
   var c=pgCoords();
-  return buildPayload(PE.getPanchang(new Date(),c.lat,c.lng,5.5));
+  return buildPayload(PE.getPanchang(new Date(),c.lat,c.lng,sdTzHours()));
 }
 async function fetchPanchang(){
   // Today's values do not change during the day, so a cache hit means Home
@@ -6731,13 +6755,15 @@ async function saveSettings(){
   const cityChanged = (oldCity !== newCity);
   if(window._selectedCityLat){
     u.city_lat = window._selectedCityLat; u.city_lon = window._selectedCityLon;
+    u.city_tz = window._selectedCityTz || (await sdTz.fetchZone(u.city_lat, u.city_lon)) || null;
+    if(!u.city_tz) delete u.city_tz;   /* F1: no zone → no zone; nothing assumes IST */
   } else if(cityChanged && newCity){
     const btn=document.getElementById('settSaveBtn'), lbl=btn?btn.textContent:'';
     if(btn){ btn.disabled=true; btn.textContent='…'; }
     const g = await settingsResolveCity(newCity);
     if(btn){ btn.disabled=false; btn.textContent=lbl; }
-    if(g){ u.city_lat=g.lat; u.city_lon=g.lon; }
-    else { delete u.city_lat; delete u.city_lon; }
+    if(g){ u.city_lat=g.lat; u.city_lon=g.lon; u.city_tz=(await sdTz.fetchZone(g.lat,g.lon))||null; if(!u.city_tz) delete u.city_tz; }
+    else { delete u.city_lat; delete u.city_lon; delete u.city_tz; }
   }
   u.dob  = newDob;
   var _tu=document.getElementById('settTobUnknown');
@@ -6815,7 +6841,14 @@ function computeBirthLocal(u){
   try{
     var lat=(u.birth_lat!=null?u.birth_lat:u.city_lat), lng=(u.birth_lng!=null?u.birth_lng:u.city_lon);
     if(lat==null||lng==null) return null;
-    var d=new Date(u.dob+'T'+(u.tob||'06:00')+':00+05:30');
+    /* F1 · the entered time is local to the BIRTH place. Before: '+05:30' was
+       appended to every tob, so an overseas user's rashi was cast 4–10 h off.
+       Zone precedence: birth_tz (from the free-kundli form) → city_tz. None →
+       return null: no reading rather than a confident wrong one. */
+    var zone=(window.sdTz&&sdTz.isZone(u.birth_tz))?u.birth_tz:((window.sdTz&&sdTz.isZone(u.city_tz))?u.city_tz:null);
+    if(!zone) return null;
+    var bi=sdTz.birthInstant(u.dob,(u.tob||'06:00'),zone); if(!bi) return null;
+    var d=bi.instant;
     var bc=PE.getBirthChart(d,lat,lng);
     var moon=bc.grahas.filter(function(g){return g.key==='moon';})[0];
     if(!moon) return null;
@@ -6843,6 +6876,7 @@ function computeBirthLocal(u){
 }
 // ── BIRTH CHART (local first, API only if the engine cannot load) ──
 async function fetchBirthChart(){
+  if(!window.__sdTzBackfilled){ window.__sdTzBackfilled=true; try{ await sdBackfillTz(); }catch(e){} }   /* F1: once per open */
   const u = {};
   try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
   if(!u.dob) return; // need at least DOB
@@ -7014,7 +7048,10 @@ function selectCity(name, lat, lon){
   document.getElementById('settCity').value = name.toLowerCase();
   window._selectedCityLat = parseFloat(lat);
   window._selectedCityLon = parseFloat(lon);
+  window._selectedCityTz = null;
   document.getElementById('cityDropdown').style.display='none';
+  /* F1: the city's IANA zone, once, at pick time */
+  sdTz.fetchZone(lat, lon).then(function(z){ if(window._selectedCityLat===parseFloat(lat)) window._selectedCityTz = z; });
 }
 
 document.addEventListener('click', function(e){
@@ -7174,6 +7211,7 @@ async function saveToCloud(){
         city: u.city||'',
         city_lat: u.city_lat||null,
         city_lon: u.city_lon||null,
+        city_tz: u.city_tz||null,
         dob: u.dob||null,
         tob: u.tob||null,
         rashi: u.rashi||null,
@@ -7272,7 +7310,7 @@ function calEngine(date){
   try{
     var c=pgCoords();
     var d=new Date(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0);
-    var p=PE.getPanchang(d,c.lat,c.lng,5.5);
+    var p=PE.getPanchang(d,c.lat,c.lng,sdTzHours());
     _calMemo[k]={tithiIdx:p.tithi.index, hi:p.tithi.hi, en:p.tithi.en,
                  paksha:p.tithi.paksha, nak:p.nakshatra.en};
   }catch(e){ _calMemo[k]=null; }
@@ -7501,10 +7539,10 @@ function calObservances(year,month){
   if(PE){
     try{
       var c=pgCoords(), pre=year+'-'+String(month+1).padStart(2,'0');
-      (PE.getVrats(year,c.lat,c.lng,5.5)||[]).forEach(function(v){
+      (PE.getVrats(year,c.lat,c.lng,sdTzHours())||[]).forEach(function(v){
         if(v.date.indexOf(pre)===0) put(v.date,{hi:v.hi,en:v.en,i:'🙏',cat:'vrat'});
       });
-      (PE.getFestivals(year,c.lat,c.lng,5.5)||[]).forEach(function(f){
+      (PE.getFestivals(year,c.lat,c.lng,sdTzHours())||[]).forEach(function(f){
         if(f.date.indexOf(pre)===0) put(f.date,{hi:f.hi,en:f.en,i:'🪔',cat:'major'});
       });
     }catch(e){}
@@ -7930,7 +7968,7 @@ function panchangForDate(date){
   var PE=window.PanchangEngine; if(!PE) return null;
   try{
     var c=pgCoords();
-    var out=buildPayload(PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,5.5));
+    var out=buildPayload(PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,sdTzHours()));
     try{ localStorage.setItem(ck,JSON.stringify(out)); }catch(e){}
     return out;
   }catch(e){ return null; }
@@ -7947,7 +7985,7 @@ function calGuidance(date,obs,q){
     var PE=window.PanchangEngine;
     if(PE){
       var c=pgCoords(), base=new Date(date.getFullYear(),date.getMonth(),date.getDate());
-      var nxt=(PE.getVrats(date.getFullYear(),c.lat,c.lng,5.5)||[])
+      var nxt=(PE.getVrats(date.getFullYear(),c.lat,c.lng,sdTzHours())||[])
         .filter(function(v){return /Ekadashi/i.test(v.en)&&new Date(v.date+'T00:00:00')>base;})
         .sort(function(a,b){return new Date(a.date)-new Date(b.date);})[0];
       if(nxt){
@@ -8309,8 +8347,8 @@ function getVratsThisWeek(){
     try{
       const c=pgCoords(), Y=today.getFullYear();
       const add=(arr,ico)=>(arr||[]).forEach(x=>{ (engineHits[x.date]=engineHits[x.date]||[]).push({h:x.hi,e:x.en,i:ico}); });
-      add(PE.getVrats(Y,c.lat,c.lng,5.5),'🙏');
-      add(PE.getFestivals(Y,c.lat,c.lng,5.5),'🪔');
+      add(PE.getVrats(Y,c.lat,c.lng,sdTzHours()),'🙏');
+      add(PE.getFestivals(Y,c.lat,c.lng,sdTzHours()),'🪔');
     }catch(e){}
   }
 
