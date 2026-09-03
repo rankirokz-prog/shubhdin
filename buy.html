@@ -8,6 +8,7 @@
 <!-- FIRST script on the money page. Errors here cost real revenue, so they
      must be reported the same day rather than found weeks later. -->
 <script src="analytics.js"></script>
+<script src="sd-tz.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -310,7 +311,8 @@ function person(prefix,label){
        +'<div style="font-size:11.5px;color:rgba(255,244,222,0.75);line-height:1.5;margin-bottom:8px;">'
        +(A('buy.city_lookup_is_unavailable_right_n'))+'</div>'
        +'<div class="two"><div><label>'+(A('buy.latitude'))+'</label><input id="f_'+prefix+'lat" type="number" step="0.0001" placeholder="16.4343"></div>'
-       +'<div><label>'+(A('buy.longitude'))+'</label><input id="f_'+prefix+'lng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>');
+       +'<div><label>'+(A('buy.longitude'))+'</label><input id="f_'+prefix+'lng" type="number" step="0.0001" placeholder="81.6985"></div></div></div>'
+     +'<input type="hidden" id="f_'+prefix+'tz">');
 }
 /* Varshaphal is cast for where the native is living when the year begins, so
    Annual needs a residence city as well as a birth place. It is prefilled from
@@ -382,22 +384,25 @@ function loadEngine(){
   });
   return _engineP;
 }
-/* Sunrise for a birth date at birth coordinates, as an IST HH:MM clock string —
-   IST because every report's birthUTC() parses the time field as IST.
-   Returns null rather than a guess if anything is off. */
-async function sunriseIST(dateStr,lat,lng){
-  if(!dateStr||!isFinite(lat)||!isFinite(lng))return null;
+/* F1 · Sunrise for a birth date at the birth coordinates, as a LOCAL HH:MM clock
+   string in the birth place's zone — the reports now parse birth times as
+   local-in-zone (btz), so this must write local too. Before: IST-formatted, and
+   the reports parsed IST, so the instant was right but a London buyer saw
+   "09:13" for a 04:43 sunrise. Returns null rather than a guess if anything is off. */
+async function sunriseLocal(dateStr,lat,lng,zone){
+  if(!dateStr||!isFinite(lat)||!isFinite(lng)||!(window.sdTz&&sdTz.isZone(zone)))return null;
   var PE=null;
   try{PE=await loadEngine();}catch(e){return null;} /* offline/404 → blocked, not thrown */
   if(!PE||typeof PE.getPanchang!=='function')return null;
   var dv=dateStr.split('-').map(Number);
   if(dv.length!==3||!dv.every(isFinite))return null;
-  var dayUTC=new Date(Date.UTC(dv[0],dv[1]-1,dv[2],6,0,0));
-  var p=PE.getPanchang(dayUTC,lat,lng);
+  var noonLocal=sdTz.localWallTimeToInstant(dv[0],dv[1],dv[2],12,0,zone); if(!noonLocal)return null;
+  var p=PE.getPanchang(noonLocal.instant,lat,lng,noonLocal.offsetMinutes/60);
   var sr=p&&p.sunrise;
   if(!(sr instanceof Date)||isNaN(sr.getTime()))return null;
-  var ist=new Date(sr.getTime()+5.5*3600000);
-  return ('0'+ist.getUTCHours()).slice(-2)+':'+('0'+ist.getUTCMinutes()).slice(-2);
+  var w=sdTz.instantToWall(sr,zone);
+  if(w.ymd!==dateStr)return null;   /* the sunrise must belong to the birth date */
+  return w.hhmm;
 }
 /* ── city search + GPS (same Nominatim mechanism as onboarding/kundli) ── */
 var CPICK={}, _cT=null;
@@ -462,8 +467,10 @@ function sdGeoSearch(q,limit,extra){
 function sdGeoEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function cPick(prefix,name,lat,lng){
-  $('f_'+prefix+'place').value=name; CPICK[prefix]={lat:lat,lng:lng};
+  $('f_'+prefix+'place').value=name; CPICK[prefix]={lat:lat,lng:lng,tz:null};
   $('cdd_'+prefix).style.display='none';
+  /* F1: zone once, at pick time; resolve() re-tries if this has not landed yet */
+  sdTz.fetchZone(lat,lng).then(function(z){ if(CPICK[prefix]&&+CPICK[prefix].lat===+lat){CPICK[prefix].tz=z;var h=$('f_'+prefix+'tz');if(h)h.value=z||'';} });
 }
 function cGps(){
   var t=$('cGpsTxt'); t.textContent=(A('kundli.detecting'));
@@ -520,15 +527,23 @@ async function submitDetails(){
      WRONG chart at Ram's town and nobody sees an error. So: resolve properly, or
      stop the sale. Precedence: city picked from dropdown → manual entry → geocode.
      Returns {lat,lng} or null; null reveals the manual block and blocks submit. */
+  /* F1 · coordinates AND the birth place's IANA zone. A place without a zone is
+     unresolved: the chart would silently assume IST (a 4–10 hour error abroad).
+     Same rule as a failed geocode — block, never guess. */
+  async function withZone(c){
+    if(!c)return null;
+    var z=await sdTz.fetchZone(c.lat,c.lng);
+    return z?{lat:c.lat,lng:c.lng,tz:z}:null;
+  }
   async function resolve(prefix,place){
-    if(CPICK[prefix])return{lat:+CPICK[prefix].lat,lng:+CPICK[prefix].lng};
+    if(CPICK[prefix]){var cp=CPICK[prefix]; if(cp.tz)return{lat:+cp.lat,lng:+cp.lng,tz:cp.tz}; return withZone({lat:+cp.lat,lng:+cp.lng});}
     var mlat=val('f_'+prefix+'lat'), mlng=val('f_'+prefix+'lng');
     if(mlat!==''&&mlng!==''){
       var la=parseFloat(mlat), ln=parseFloat(mlng);
-      if(isFinite(la)&&isFinite(ln)&&la>=-90&&la<=90&&ln>=-180&&ln<=180)return{lat:la,lng:ln};
+      if(isFinite(la)&&isFinite(ln)&&la>=-90&&la<=90&&ln>=-180&&ln<=180)return withZone({lat:la,lng:ln});
       return null; /* typed but out of range — treat as unresolved */
     }
-    if(place){var g=await geo(place); if(g&&isFinite(g.lat)&&isFinite(g.lng))return{lat:g.lat,lng:g.lng};}
+    if(place){var g=await geo(place); if(g&&isFinite(g.lat)&&isFinite(g.lng))return withZone({lat:g.lat,lng:g.lng});}
     return null;
   }
   function blockOn(prefixes){
@@ -542,13 +557,13 @@ async function submitDetails(){
     var rb=await resolve('b',d.bplace), rg=await resolve('g',d.gplace);
     var badT=[]; if(!rb)badT.push('b'); if(!rg)badT.push('g');
     if(badT.length){blockOn(badT);return;}
-    d.blat=rb.lat;d.blng=rb.lng;d.glat=rg.lat;d.glng=rg.lng;
+    d.blat=rb.lat;d.blng=rb.lng;d.glat=rg.lat;d.glng=rg.lng;d.btz=rb.tz;d.gtz=rg.tz;
     if(!d.bplace)d.bplace=rb.lat.toFixed(4)+', '+rb.lng.toFixed(4);
     if(!d.gplace)d.gplace=rg.lat.toFixed(4)+', '+rg.lng.toFixed(4);
   }else{
     var rp=await resolve('p',d.bplace);
     if(!rp){blockOn(['p']);return;}
-    d.blat=rp.lat;d.blng=rp.lng;
+    d.blat=rp.lat;d.blng=rp.lng;d.btz=rp.tz;
     if(!d.bplace)d.bplace=rp.lat.toFixed(4)+', '+rp.lng.toFixed(4);
   }
   /* ── unknown birth time → sunrise (Surya lagna) ────────────────────────────
@@ -557,12 +572,12 @@ async function submitDetails(){
      let a blank btime reach the report, where it would parse to NaN silently. */
   var srFail=false;
   if(C.two){
-    if(noTimeOn('b')){var sb1=await sunriseIST(d.bdate,d.blat,d.blng);
+    if(noTimeOn('b')){var sb1=await sunriseLocal(d.bdate,d.blat,d.blng,d.btz);
       if(sb1){d.btime=sb1;d.timeUnknownB=true;}else srFail=true;}
-    if(noTimeOn('g')){var sg1=await sunriseIST(d.gdate,d.glat,d.glng);
+    if(noTimeOn('g')){var sg1=await sunriseLocal(d.gdate,d.glat,d.glng,d.gtz);
       if(sg1){d.gtime=sg1;d.timeUnknownG=true;}else srFail=true;}
   }else if(noTimeOn('p')){
-    var sp1=await sunriseIST(d.bdate,d.blat,d.blng);
+    var sp1=await sunriseLocal(d.bdate,d.blat,d.blng,d.btz);
     if(sp1){d.btime=sp1;d.timeUnknown=true;}else srFail=true;
   }
   if(srFail){
