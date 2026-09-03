@@ -1015,7 +1015,6 @@
     user.city  = document.getElementById('userCity')?.value?.trim()
               || document.getElementById('userCityInput')?.value?.trim()
               || user.city  || '';
-    user.state = document.getElementById('userState')?.value         || user.state || '';
 
     /* ══ SD-CITY-COORD ══
        city_lat/city_lon were only ever set by GPS or by TAPPING a suggestion.
@@ -1029,9 +1028,7 @@
        rather than inventing a location. */
     if(user.city && (user.city_lat==null || user.city_lon==null)){
       try{
-        const _g = await fetch('https://nominatim.openstreetmap.org/search?q='
-                   +encodeURIComponent(user.city)+'&countrycodes=in&limit=1&format=json')
-                   .then(r=>r.json()).catch(()=>null);
+        const _g = await sdGeoSearch(user.city, 1).catch(()=>null);
         if(_g && _g[0]){
           const _la=parseFloat(_g[0].lat), _ln=parseFloat(_g[0].lon);
           if(isFinite(_la)&&isFinite(_ln)){ user.city_lat=_la; user.city_lon=_ln; }
@@ -1121,72 +1118,13 @@
   }
   function resetGPS() { document.getElementById('gpsTxt').textContent = (T[lang]||T.hi).gpsTxt; }
   // ── Cities by state ──
-  const citiesMap = {
-    AP: ['Visakhapatnam','Vijayawada','Guntur','Nellore','Kurnool','Rajahmundry','Eluru','Kakinada','Tirupati','Anantapur','Kadapa','Ongole','Srikakulam','Vizianagaram','Bhimavaram','Nandyal','Chittoor','Proddatur'],
-    TS: ['Hyderabad','Warangal','Nizamabad','Khammam','Karimnagar','Ramagundam','Mahbubnagar','Nalgonda','Adilabad','Suryapet','Miryalaguda','Siddipet'],
-    MH: ['Mumbai','Pune','Nagpur','Nashik','Aurangabad','Solapur','Amravati','Kolhapur','Nanded','Sangli','Jalgaon','Akola','Latur','Thane'],
-    DL: ['New Delhi','Delhi','Dwarka','Rohini','Noida','Gurgaon','Faridabad'],
-    KA: ['Bangalore','Mysore','Hubli','Dharwad','Mangalore','Belgaum','Gulbarga','Davangere','Shimoga','Tumkur','Bijapur','Raichur'],
-    TN: ['Chennai','Coimbatore','Madurai','Trichy','Salem','Tirunelveli','Vellore','Erode','Tirupur','Dindigul','Tanjore','Kanchipuram'],
-    GJ: ['Ahmedabad','Surat','Vadodara','Rajkot','Bhavnagar','Jamnagar','Gandhinagar','Junagadh','Anand','Nadiad','Morbi'],
-    RJ: ['Jaipur','Jodhpur','Udaipur','Kota','Bikaner','Ajmer','Alwar','Bharatpur','Sikar','Pali'],
-    UP: ['Lucknow','Kanpur','Agra','Varanasi','Allahabad','Meerut','Ghaziabad','Noida','Bareilly','Aligarh','Moradabad','Gorakhpur','Mathura'],
-    MP: ['Bhopal','Indore','Gwalior','Jabalpur','Ujjain','Sagar','Ratlam','Satna','Dewas','Rewa'],
-    WB: ['Kolkata','Howrah','Durgapur','Asansol','Siliguri','Bardhaman','Malda','Baharampur'],
-    KL: ['Thiruvananthapuram','Kochi','Kozhikode','Thrissur','Kollam','Palakkad','Alappuzha','Kannur','Kasaragod'],
-    PB: ['Ludhiana','Amritsar','Jalandhar','Patiala','Bathinda','Mohali','Hoshiarpur','Gurdaspur'],
-    HR: ['Faridabad','Gurgaon','Panipat','Ambala','Yamunanagar','Rohtak','Hisar','Karnal','Sonipat'],
-    BR: ['Patna','Gaya','Bhagalpur','Muzaffarpur','Darbhanga','Arrah','Bihar Sharif','Purnia'],
-    OD: ['Bhubaneswar','Cuttack','Rourkela','Berhampur','Sambalpur','Puri','Brahmapur'],
-    Other: ['Other City'],
-  };
-
-  function onStateChange() {
-    const state = document.getElementById('userState').value;
-    const cityWrap = document.getElementById('cityWrap');
-    const citySelect = document.getElementById('userCity');
-    const cityOpt = document.getElementById('cityOpt');
-
-    // Reset city
-    citySelect.innerHTML = '';
-
-    if (!state) {
-      const opt = document.createElement('option');
-      opt.value = ''; opt.textContent = 'पहले राज्य चुनें';
-      opt.id = 'cityOpt';
-      citySelect.appendChild(opt);
-      cityWrap.style.opacity = '0.35';
-      cityWrap.style.pointerEvents = 'none';
-      document.getElementById('btn4').disabled = true;
-      return;
-    }
-
-    // Add default option
-    const defOpt = document.createElement('option');
-    defOpt.value = '';
-    defOpt.textContent = lang === 'hi' ? 'शहर चुनें' : onbL() ? onbL().selectCity : 'Select city';
-    citySelect.appendChild(defOpt);
-
-    // Add cities for this state
-    const cities = citiesMap[state] || [];
-    cities.forEach(city => {
-      const opt = document.createElement('option');
-      opt.value = city; opt.textContent = city;
-      citySelect.appendChild(opt);
-    });
-
-    // Enable city dropdown
-    cityWrap.style.opacity = '1';
-    cityWrap.style.pointerEvents = 'auto';
-    document.getElementById('btn4').disabled = true;
-    citySelect.onchange = validateStep4;
-  }
-
-  function validateStep4() {
-    const city  = document.getElementById('userCity').value;
-    const state = document.getElementById('userState').value;
-    document.getElementById('btn4').disabled = !(city && state);
-  }
+  /* D4 · The state-then-city dropdown (a hardcoded states→cities table,
+     onStateChange, and a validateStep4 that required a state) was replaced by
+     the Nominatim city search. No #userState element exists; onStateChange
+     would have thrown on its first line and nothing called it; the dead
+     validateStep4 shadowed the live one below and made "is state required?"
+     unanswerable from the source. Removed. The live validateStep4 is the
+     city-only one. */
 
   // ── Welcome screen ──
   function buildWelcome() {
@@ -1268,24 +1206,53 @@ function searchCity(q){
   dd.style.display='block';
   _cityTimer = setTimeout(async ()=>{
     try{
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=in&limit=6&format=json`;
-      const res = await fetch(url, {headers:{'Accept-Language':'en'}});
-      const results = await res.json();
+      const results = await sdGeoSearch(q, 6);
       if(!results.length){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">No results found</div>'; return; }
-      dd.innerHTML = results.map(r => {
+      _geoHits = results;
+      dd.innerHTML = results.map((r, i) => {
         const name = r.display_name.split(',')[0].trim();
         const sub  = r.display_name.split(',').slice(1,3).join(',').trim();
-        return `<div onclick="pickCity('${name}',${r.lat},${r.lon},'${r.display_name.replace(/'/g,"\'")}')"
+        return `<div onclick="pickCityIdx(${i})"
           style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);"
           onmouseover="this.style.background='rgba(212,168,67,0.10)'"
           onmouseout="this.style.background=''">
-          <div style="font-size:14px;color:#fff;font-weight:600;">${name}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.40);margin-top:2px;">${sub}</div>
+          <div style="font-size:14px;color:#fff;font-weight:600;">${sdGeoEsc(name)}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.40);margin-top:2px;">${sdGeoEsc(sub)}</div>
         </div>`;
       }).join('');
     }catch(e){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">Search failed</div>'; }
   }, 400);
 }
+
+var _geoHits = [];
+function pickCityIdx(i){
+  const r = _geoHits[i]; if(!r) return;
+  pickCity(r.display_name.split(',')[0].trim(), r.lat, r.lon, r.display_name);
+}
+/* ── SD-GEO · one place search for the whole world, India first ──────────
+   Every Nominatim call carried &countrycodes=in: an overseas reader typed
+   their birth city, got nothing, and the coordinate guard (correctly) refused
+   to continue — a hard block on the market the engine was built for.
+   Policy: SD_GEO_SCOPE = 'in-first' (India results first, world fills the
+   rest) or 'world' (no preference). Results are returned as-is; callers keep
+   them in an array and select BY INDEX — third-party place names never enter
+   a JS string literal or raw HTML (N4: "N'Djamena" broke the picker). */
+var SD_GEO_SCOPE='in-first';
+function sdGeoSearch(q,limit,extra){
+  var base='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit='+(limit||6)+(extra||'');
+  var opt={headers:{'Accept-Language':'en'}};
+  var arr=function(x){return Array.isArray(x)?x:[];};
+  var world=function(){return fetch(base,opt).then(function(r){return r.json();}).then(arr);};
+  if(SD_GEO_SCOPE==='world') return world();
+  return fetch(base+'&countrycodes=in',opt).then(function(r){return r.json();}).then(arr).then(function(inr){
+    if(inr.length>=(limit||6)) return inr;
+    return world().then(function(w){
+      var seen={}; inr.forEach(function(r){seen[r.place_id]=1;});
+      return inr.concat(w.filter(function(r){return !seen[r.place_id];})).slice(0,limit||6);
+    }).catch(function(){return inr;});
+  });
+}
+function sdGeoEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function pickCity(name, lat, lon, full){
   document.getElementById('userCityInput').value = name;
