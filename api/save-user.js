@@ -9,6 +9,7 @@
 // a server-side coordinate guard: a city with no coordinates, or with the
 // Eluru default coordinates, is refused. Service key; RLS is on for users.
 const { checkOwner } = require('../lib/owner-key.js');
+const { isZone } = require('../lib/tz.js');
 
 const ELURU_LAT = 16.4343, ELURU_LON = 81.6985;   // the forbidden fallback
 const near = (a, b) => Math.abs(Number(a) - Number(b)) < 1e-3;
@@ -22,7 +23,7 @@ module.exports = async function handler(req, res) {
   if (!supabaseUrl || !supabaseKey) return res.status(500).json({ error: 'Missing Supabase config' });
 
   const src = (req.method === 'POST' ? req.body : req.query) || {};
-  const { uid, write_key, name, lang, city, city_lat, city_lon, dob, tob,
+  const { uid, write_key, name, lang, city, city_lat, city_lon, city_tz, dob, tob,
           rashi, nakshatra, nakshatra_pada, sadhana, streak } = src;
   if (!uid || typeof uid !== 'string' || uid.length > 64) return res.status(400).json({ error: 'uid required' });
 
@@ -40,12 +41,20 @@ module.exports = async function handler(req, res) {
     if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return res.status(400).json({ error: 'coordinates out of range' });
     if (near(lat, ELURU_LAT) && near(lon, ELURU_LON) && !/eluru/i.test(city))
       return res.status(400).json({ error: 'default coordinates refused', why: 'Eluru fallback coordinates with a different city name' });
+    /* F1 · the coordinate guard extends to the zone: a city with coordinates and
+       no IANA zone would make every birth time read as IST. Refuse; the client
+       resolves it via /api/tz (and the dashboard backfills old profiles). */
+    if (!isZone(city_tz))
+      return res.status(400).json({ error: 'city without timezone', why: 'resolve the city\'s IANA zone via /api/tz first — nothing may assume IST' });
+  } else if (city_tz !== undefined && city_tz !== null && city_tz !== '' && !isZone(city_tz)) {
+    return res.status(400).json({ error: 'bad timezone', why: 'IANA zone name expected, e.g. Asia/Kolkata' });
   }
 
   try {
     const row = {
       uid, name: typeof name === 'string' ? name.slice(0, 120) : name, lang, city: hasCity ? city.slice(0, 120) : city,
       city_lat: lat, city_lon: lon,
+      city_tz: hasCity ? city_tz : (city_tz || null),
       dob: dob || null, tob: tob || null,
       rashi: rashi || null, nakshatra: nakshatra || null, nakshatra_pada: nakshatra_pada || null,
       sadhana: sadhana ? JSON.stringify(sadhana) : null,
