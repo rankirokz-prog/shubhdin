@@ -74,8 +74,15 @@
     /* Put the face at the front of the stack for elements that carry Indic
        text, so it is actually used rather than merely downloaded. */
     var fams = want.map(function (f) { return '"' + CSS_NAME[f] + '"'; }).join(',');
+    /* D2 · For a language with its own face the rule may own the page. For
+       English there is no face of its own — only the Devanagari fallback
+       face, loaded so that mantra text (.dev) still shapes correctly. That
+       face must NOT be put in front of Poppins for the whole body, or every
+       English reader sees the UI in a Devanagari serif's Latin glyphs. So
+       for 'en' the rule is scoped to .dev; the load itself is unchanged. */
+    var sel = FACE[l] ? '.dev,[lang],body' : '.dev';
     var st = document.createElement('style');
-    st.textContent = '.dev,[lang],body{font-family:' + fams + ",'Poppins',sans-serif;}";
+    st.textContent = sel + '{font-family:' + fams + ",'Poppins',sans-serif;}";
     document.head.appendChild(st);
     return want;
   };
