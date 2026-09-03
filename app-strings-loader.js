@@ -51,7 +51,14 @@
      unit with the count; Hindi does not, which is why concatenation looked
      correct for so long. Keys are "<key>" and "<key>_one". */
   g.AP = function (key, n, vals, lang) {
-    var k = (Number(n) === 1 && g.A(key + '_one', lang) !== key + '_one') ? key + '_one' : key;
+    /* THE PROBE WAS ALWAYS TRUE. It compared A(key+'_one') against the raw
+       key — but the humaniser never returns the raw key, it strips the prefix
+       and replaces underscores, so 'jap.days_one' came back as "Days one" and
+       the comparison passed. Every language without a _one form then rendered
+       humanised English on a count of one: "Days one" on a Telugu screen.
+       This is the exact trap the sdHas() comment below warns about, and AP()
+       was the one caller not using it. */
+    var k = (Number(n) === 1 && g.sdHas(key + '_one', lang)) ? key + '_one' : key;
     var o = {}; if (vals) for (var p in vals) o[p] = vals[p];
     o.n = n;
     return g.AF(k, o, lang);
