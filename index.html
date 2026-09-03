@@ -7,6 +7,7 @@
      loop would be unmeasurable. It also reports uncaught errors from every
      script below, on the page that IS the acquisition funnel. -->
 <script src="analytics.js"></script>
+<script src="sd-tz.js"></script>
 <script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
 (function(){try{
@@ -1262,7 +1263,11 @@ function pickCity(name, lat, lon, full){
   user.city = name;
   user.city_lat = parseFloat(lat);
   user.city_lon = parseFloat(lon);
+  user.city_tz = null;
   validateStep4();
+  /* F1: the city's IANA zone, once. The chart and the daily panchang both need
+     it; without it nothing is guessed (the dashboard backfills if this misses). */
+  sdTz.fetchZone(user.city_lat, user.city_lon).then(function (z) { if (user.city === name) user.city_tz = z; });
 }
 
 function validateStep4(){
