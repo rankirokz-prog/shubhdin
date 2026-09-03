@@ -1,10 +1,18 @@
 {
   "functions": {
-    "api/kundli-pdf.js": {
-      "maxDuration": 60
-    },
-    "api/report-pdf.js": {
-      "maxDuration": 60
+    "api/kundli-pdf.js": { "maxDuration": 60 },
+    "api/report-pdf.js": { "maxDuration": 60 }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Permissions-Policy", "value": "geolocation=(self), camera=(), microphone=(), payment=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" }
+      ]
     }
-  }
+  ]
 }
