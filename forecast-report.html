@@ -272,7 +272,7 @@ table td.dash{ color:rgba(60,40,20,0.42); }
     <div><label>Birth Time (24h)</label><input id="btime" type="time" value="15:47"></div>
   </div>
   <div class="row">
-    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"></div>
+    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"><input type="hidden" id="btz"></div>
     <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
   </div>
   <label>Birth Place / जन्म स्थान</label><input id="bplace" value="Narasapur, AP">
@@ -291,6 +291,7 @@ table td.dash{ color:rgba(60,40,20,0.42); }
 
 <script src="astronomy.min.js"></script>
 <script src="panchang-engine.js"></script>
+<script src="sd-tz.js"></script>
 <script id="sd-ui-inline">
 /* INLINED from ui-strings.js — regenerate with: node embed-ui.js */
 // SHUBH DIN — shared UI/terms layer (multi-language)
@@ -447,13 +448,53 @@ function term(kind,val){if(!UI)UI=window.SD_UI||{};var m=UI[kind]&&UI[kind][val]
 
 var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
 function gname2(k){if(!k)return '';var t=term('planet',k);return t!==k?t:(k.charAt(0).toUpperCase()+k.slice(1));}
-function ist(d){return new Date(d.getTime()+5.5*3600000);}
-var RATING_COLOR={excellent:'#2B8B5A',good:'#5AA84B',mixed:'#E8A317',testing:'#E8730C',challenging:'#B8434A'};
-function birthUTC(){
-  var dv=document.getElementById('bdate').value.split('-').map(Number);
-  var tv=document.getElementById('btime').value.split(':').map(Number);
-  return new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000);
+/* ══ F1 · the birth moment, in the BIRTH PLACE's zone ═══════════════════
+   Every birth time used to be parsed as IST (…-5.5*3600000): a London buyer
+   typing 09:00 was cast at 03:30 London — four signs of Lagna. Now the zone
+   (IANA, e.g. Europe/London) arrives in the hidden #btz field, resolved once
+   at city-pick time, and the offset for THAT birth date comes from Intl via
+   sd-tz.js — DST and historical rules included. No zone → no chart: the page
+   shows why and stops, exactly as a failed geocode does. Never IST by default. */
+var BTZ=null, tz=5.5;  /* `tz` (hours) is read by the report's engine calls; set for real in birthUTC() */
+function sdZoneOf(id){var el=document.getElementById(id);var z=el&&el.value;return (window.sdTz&&sdTz.isZone(z))?z:null;}
+function sdTzBlock(why){
+  try{
+    var r=document.getElementById('report');
+    /* the reader's language or nothing: never an English sentence on a Telugu page */
+    var msg=(window.sdHas&&window.A&&sdHas('report.tz_missing'))?A('report.tz_missing'):'\u26A0';
+    try{ console.error('[SD-TZ] '+why); }catch(e){}
+    if(r)r.innerHTML='<div style="padding:28px 18px;font-family:serif;font-size:15px;color:#B3261E;text-align:center;">'+msg+'</div>';
+  }catch(e){}
 }
+function ist(d){ /* DISPLAY in birth-place local time (DST-correct per instant). Name kept: ~40 call sites. */
+  var z=BTZ||sdZoneOf('btz'); if(!z){sdTzBlock('birth time zone missing');throw new Error('SD-TZ: zone missing');}
+  return new Date(d.getTime()+sdTz.zoneOffsetMinutes(d,z)*60000);
+}
+function birthUTC(){
+  var z=sdZoneOf('btz');
+  if(!z){sdTzBlock('birth time zone missing \u2014 the birth place was not fully resolved');throw new Error('SD-TZ: birth time zone missing, refusing to guess');}
+  var r=sdTz.birthInstant(document.getElementById('bdate').value,document.getElementById('btime').value,z);
+  if(!r){sdTzBlock('birth moment could not be resolved');throw new Error('SD-TZ: bad birth date/time');}
+  BTZ=z; tz=r.offsetMinutes/60;
+  window.SD_BIRTH_TZ={zone:z,offsetMinutes:r.offsetMinutes,adjusted:r.adjusted};
+  return r.instant;
+}
+/* the zone label beside the birth time: "IST" only when it IS IST; otherwise the
+   zone's own abbreviation and offset (e.g. "BST (UTC+01:00)"), from Intl */
+function sdTzLabel(){
+  var t=window.SD_BIRTH_TZ; if(!t) return '';
+  if(t.zone==='Asia/Kolkata') return 'IST';
+  var abbr=''; try{ abbr=new Intl.DateTimeFormat('en-US',{timeZone:t.zone,timeZoneName:'short'}).formatToParts(new Date(document.getElementById('bdate').value+'T12:00:00Z')).filter(function(x){return x.type==='timeZoneName';})[0].value; }catch(e){}
+  return (abbr&&!/^GMT[+-]/.test(abbr)?abbr+' ':'')+'(UTC'+sdTz.fmtOffset(t.offsetMinutes)+')';
+}
+/* the DST line for the report (Ram's ruling: gap → forward, overlap → first; both SAID, never silent) */
+function sdTzNote(){
+  var a=window.SD_BIRTH_TZ&&SD_BIRTH_TZ.adjusted; if(!a)return '';
+  var k='report.tz_adjusted_'+a; if(!(window.sdHas&&window.A&&sdHas(k)))return '';
+  return '<p style="font-size:11.5px;color:#8B5A2B;margin:6px 0 0;">'+A(k)+'</p>';
+}
+var RATING_COLOR={excellent:'#2B8B5A',good:'#5AA84B',mixed:'#E8A317',testing:'#E8730C',challenging:'#B8434A'};
+
 function confirmStep(){
   var _yNow=new Date().getFullYear();
   var _el=document.getElementById('startyr');
@@ -523,12 +564,12 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
     +'<h1 style="font-size:31px;margin:10px 0;">'+U('forecast.titleCover')+'<br><span style="font-size:18px;color:var(--soft);">'+CTX.startYear+' – '+(CTX.startYear+9)+'</span></h1>'
     +'<div class="sub" style="font-size:14px;">'+U('forecast.subtitle')+' · '+U('brand.name')+'</div>'
     +'<div style="font-size:25px;color:#8B2B33;font-weight:700;margin:22px 0 2px;">'+CTX.name+'</div>'
-    +'<div class="sub">'+CTX.startYear+' – '+(CTX.startYear+9)+' &nbsp;·&nbsp; '+U('forecast.moonSign')+': '+term('rashi',fc.moonRashi.en)+'</div>'
+    +'<div class="sub">'+CTX.startYear+' – '+(CTX.startYear+9)+' &nbsp;·&nbsp; '+U('forecast.moonSign')+': '+term('rashi',fc.moonRashi.en)+'</div>'+sdTzNote()
     +(fc.currentDasha?'<div class="idcard" style="margin-top:24px;min-width:300px;"><div class="t">'+T(L.period)+'</div><div class="v">'+gname2(fc.currentDasha.maha)+' – '+gname2(fc.currentDasha.antar)+'</div></div>':'')+'</div>');
 
   // ---- JANMA PARICHAY (universal opener, 2pp) ----
   (function(){
-    // TZ: this report has no tz variable — birthUTC() hardcodes IST (5.5).
+    // TZ: `tz` (hours) is set by birthUTC() from the birth zone (F1); 5.5 below is unreachable once it has run.
     // Read a tz field if the host report has one, else fall back to IST, which
     // is what the birth time was entered in. Assuming a tz binding existed made
     // the whole block throw and, because a bare catch swallowed it, emit
@@ -538,7 +579,7 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
     // generate() where this block runs — two different functions. Reaching for
     // it threw a ReferenceError. Compute the chart locally instead. Likewise
     // there is no tz binding anywhere in this report: birthUTC() hardcodes
-    // IST (5.5), so that is the honest fallback.
+    // (kept only as a guard; birthUTC() throws before any chart if the zone is missing)
     // SCOPE VARIES BY REPORT — verified per file, not assumed:
     //   career/child expose b, lat, lng directly inside generate()
     //   muhurta namespaces them as CTX.b, CTX.lat, CTX.lng
@@ -778,7 +819,7 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
     var _b = (typeof b !== 'undefined' && b) ? b
            : ((typeof CTX !== 'undefined' && CTX) ? CTX.b : null);
     if(!_b) return;
-    try{ g = PE.getMonthlyGochar(new Date(), 12, 5.5, { date: _b }); }catch(e){ return; }
+    try{ g = PE.getMonthlyGochar(new Date(), 12, tz, { date: _b }); }catch(e){ return; }   /* F1: birth zone, not IST */
     if(!g || !g.months || !g.months.length) return;
     var EN_MON = ['January','February','March','April','May','June',
                   'July','August','September','October','November','December'];
