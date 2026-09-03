@@ -245,7 +245,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
     <div><label>Birth Time (24h) / जन्म समय</label><input id="btime" type="time" value="15:47" step="60"></div>
   </div>
   <div class="row">
-    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"></div>
+    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"><input type="hidden" id="btz"></div>
     <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
   </div>
   <label>Birth Place (label only) / जन्म स्थान</label><input id="bplace" type="text" value="Narasapur, AP">
@@ -265,6 +265,7 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
 
 <script src="astronomy.min.js"></script>
 <script src="panchang-engine.js"></script>
+<script src="sd-tz.js"></script>
 <script id="sd-ui-inline">
 /* INLINED from ui-strings.js — regenerate with: node embed-ui.js */
 // SHUBH DIN — shared UI/terms layer (multi-language)
@@ -503,14 +504,54 @@ function archName(k,a){var ov=window.SD_UI&&SD_UI.arch&&SD_UI.arch[k];if(ov&&ov[
 function gicon(k){return (GR_ICON[k]||'')+' '+gname(k);}
 function stars(n){var f='',e='';for(var i=0;i<n;i++)f+='\u2605';for(var j=n;j<5;j++)e+='\u2606';return '<span style="color:#E8730C;letter-spacing:2px;">'+f+'</span><span style="color:#D4A843;letter-spacing:2px;">'+e+'</span>';}
 function dms(x){var d=Math.floor(x),m=Math.floor((x-d)*60),s=Math.round(((x-d)*60-m)*60);if(s===60){s=0;m++;}if(m===60){m=0;d++;}return d+'°'+String(m).padStart(2,'0')+'′'+String(s).padStart(2,'0')+'″';}
-function ist(d){return new Date(d.getTime()+5.5*3600000);}
+/* ══ F1 · the birth moment, in the BIRTH PLACE's zone ═══════════════════
+   Every birth time used to be parsed as IST (…-5.5*3600000): a London buyer
+   typing 09:00 was cast at 03:30 London — four signs of Lagna. Now the zone
+   (IANA, e.g. Europe/London) arrives in the hidden #btz field, resolved once
+   at city-pick time, and the offset for THAT birth date comes from Intl via
+   sd-tz.js — DST and historical rules included. No zone → no chart: the page
+   shows why and stops, exactly as a failed geocode does. Never IST by default. */
+var BTZ=null, tz=5.5;  /* `tz` (hours) is read by the report's engine calls; set for real in birthUTC() */
+function sdZoneOf(id){var el=document.getElementById(id);var z=el&&el.value;return (window.sdTz&&sdTz.isZone(z))?z:null;}
+function sdTzBlock(why){
+  try{
+    var r=document.getElementById('report');
+    /* the reader's language or nothing: never an English sentence on a Telugu page */
+    var msg=(window.sdHas&&window.A&&sdHas('report.tz_missing'))?A('report.tz_missing'):'\u26A0';
+    try{ console.error('[SD-TZ] '+why); }catch(e){}
+    if(r)r.innerHTML='<div style="padding:28px 18px;font-family:serif;font-size:15px;color:#B3261E;text-align:center;">'+msg+'</div>';
+  }catch(e){}
+}
+function ist(d){ /* DISPLAY in birth-place local time (DST-correct per instant). Name kept: ~40 call sites. */
+  var z=BTZ||sdZoneOf('btz'); if(!z){sdTzBlock('birth time zone missing');throw new Error('SD-TZ: zone missing');}
+  return new Date(d.getTime()+sdTz.zoneOffsetMinutes(d,z)*60000);
+}
+function birthUTC(){
+  var z=sdZoneOf('btz');
+  if(!z){sdTzBlock('birth time zone missing \u2014 the birth place was not fully resolved');throw new Error('SD-TZ: birth time zone missing, refusing to guess');}
+  var r=sdTz.birthInstant(document.getElementById('bdate').value,document.getElementById('btime').value,z);
+  if(!r){sdTzBlock('birth moment could not be resolved');throw new Error('SD-TZ: bad birth date/time');}
+  BTZ=z; tz=r.offsetMinutes/60;
+  window.SD_BIRTH_TZ={zone:z,offsetMinutes:r.offsetMinutes,adjusted:r.adjusted};
+  return r.instant;
+}
+/* the zone label beside the birth time: "IST" only when it IS IST; otherwise the
+   zone's own abbreviation and offset (e.g. "BST (UTC+01:00)"), from Intl */
+function sdTzLabel(){
+  var t=window.SD_BIRTH_TZ; if(!t) return '';
+  if(t.zone==='Asia/Kolkata') return 'IST';
+  var abbr=''; try{ abbr=new Intl.DateTimeFormat('en-US',{timeZone:t.zone,timeZoneName:'short'}).formatToParts(new Date(document.getElementById('bdate').value+'T12:00:00Z')).filter(function(x){return x.type==='timeZoneName';})[0].value; }catch(e){}
+  return (abbr&&!/^GMT[+-]/.test(abbr)?abbr+' ':'')+'(UTC'+sdTz.fmtOffset(t.offsetMinutes)+')';
+}
+/* the DST line for the report (Ram's ruling: gap → forward, overlap → first; both SAID, never silent) */
+function sdTzNote(){
+  var a=window.SD_BIRTH_TZ&&SD_BIRTH_TZ.adjusted; if(!a)return '';
+  var k='report.tz_adjusted_'+a; if(!(window.sdHas&&window.A&&sdHas(k)))return '';
+  return '<p style="font-size:11.5px;color:#8B5A2B;margin:6px 0 0;">'+A(k)+'</p>';
+}
 function fT(d){return d?ist(d).toISOString().slice(11,16):'\u2014';}
 function fD(d){var dt=ist(d),a=(window.SD_UI&&SD_UI.monFull&&SD_UI.monFull[LANG]);if(LANG!=='en'&&a)return String(dt.getUTCDate()).padStart(2,'0')+' '+a[dt.getUTCMonth()]+' '+dt.getUTCFullYear();return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});}
-function birthUTC(){
-  var dv=document.getElementById('bdate').value.split('-').map(Number);
-  var tv=document.getElementById('btime').value.split(':').map(Number);
-  return new Date(Date.UTC(dv[0],dv[1]-1,dv[2],tv[0],tv[1],0)-5.5*3600000);
-}
+
 function confirmStep(){
   var PE=window.PanchangEngine;
   var b=birthUTC(),lat=+document.getElementById('blat').value,lng=+document.getElementById('blng').value;
@@ -546,7 +587,7 @@ function generate(){
   var place=document.getElementById('bplace').value||'';
   var moon=bc.grahas.find(function(g){return g.key==='moon';});
   var dayUTC=new Date(Date.UTC(ist(b).getUTCFullYear(),ist(b).getUTCMonth(),ist(b).getUTCDate(),6,0,0));
-  var p=PE.getPanchang(dayUTC,lat,lng);
+  var p=PE.getPanchang(b,lat,lng,tz);   /* F1: the birth instant in the birth zone, not an IST-anchored UTC-06:00 */
   var dz=PE.getVimshottariDasha(b);
   var dos=PE.getDoshas(b,lat,lng);
   var yg=PE.getYogas(b,lat,lng);
@@ -612,7 +653,7 @@ function generate(){
     +'<div class="sdsealwrap">'+sdSeal()+'</div><h1>'+T(L.reportTitle)+'</h1>'
     +'<div class="sub" style="font-size:15px;">'+T(L.by)+'</div>'
     +'<div class="name">'+name+'</div>'
-    +'<div class="bd">'+fD(b)+' · '+fT(b)+' IST<br>'+place+' ('+lat.toFixed(4)+', '+lng.toFixed(4)+')</div>'
+    +'<div class="bd">'+fD(b)+' · '+fT(b)+' '+sdTzLabel()+'<br>'+place+' ('+lat.toFixed(4)+', '+lng.toFixed(4)+')</div>'+sdTzNote()
     +'<div class="cardrow" style="margin-top:34px;width:100%;">'
     +'<div class="idcard"><div class="t">'+T(L.yourLagna)+'</div><div class="v">'+term('rashi',bc.lagna.en)+' '+dms(bc.lagna.degreesInRashi)+'</div></div>'
     +'<div class="idcard"><div class="t">'+T(L.yourNak)+'</div><div class="v">'+term('nakshatra',moon.nakshatra.en)+' · '+term('rashi',moon.rashi.en)+'</div></div>'
@@ -927,7 +968,7 @@ function generate(){
     paginateRows('<tr><th>'+U('kundli.k081')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>',hRows,26,U('kundli.k082'));
   }catch(e){}
   try{
-    var lt=PE.getLagnaTable(dayUTC,lat,lng);
+    var lt=PE.getLagnaTable(dayUTC,lat,lng,tz);   /* F1: civil day + offset of the birth zone */
     var lRows=lt.map(function(x){return '<tr'+(x.rashiIndex===bc.lagna.rashiIndex?' style="background:#F8EFD8;font-weight:700;"':'')+'><td>'+term('rashi',x.en)+'</td><td>'+fT(x.start)+'</td><td>'+fT(x.end)+'</td></tr>';});
     var cRows=[]; (p.choghadiya.day||[]).concat(p.choghadiya.night||[]).forEach(function(x){cRows.push('<tr><td>'+term('chogh',x.en)+'</td><td>'+fT(x.start)+'</td><td>'+fT(x.end)+'</td></tr>');});
     pg('<h2 class="sec">'+U('kundli.k083')+'</h2><table><tr><th>'+U('kundli.k084')+'</th><th>'+T(L.from)+'</th><th>'+T(L.to)+'</th></tr>'+lRows.join('')+'</table>'
@@ -1022,6 +1063,7 @@ function generate(){
       set('pname',d.name); set('pgender',d.gender);
       set('bdate',d.dob); set('btime',d.time); set('bplace',d.place);
       if(d.lat)set('blat',d.lat); if(d.lng)set('blng',d.lng);
+      if(d.tz)set('btz',d.tz);   /* F1: IANA zone resolved at city-pick */
     }
     var wantPdf =location.search.indexOf('autopdf=1')>-1;
     var wantView=location.search.indexOf('autoview=1')>-1;
