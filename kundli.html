@@ -188,7 +188,7 @@ if(typeof window.A!=='function'){
      loop would be unmeasurable. It also reports uncaught errors from every
      script below, on the page that IS the acquisition funnel. -->
 <script src="analytics.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/vendor/supabase-2.114.0.js"></script>
 <script>
 var SD_LANGS_NATIVE={en:'English',hi:'हिंदी',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',mr:'मराठी',gu:'ગુજરાતી',bn:'বাংলা',as:'অসমীয়া'};
 function sdLangOptions(sel){var cur=(window.SD_LANG||'hi');if(!SD_LANGS_NATIVE[cur])cur='hi';return Object.keys(SD_LANGS_NATIVE).map(function(l){return '<option value="'+l+'"'+(l===cur?' selected':'')+'>'+SD_LANGS_NATIVE[l]+'</option>';}).join('');}
