@@ -2887,7 +2887,7 @@ function greetMsg(){
 }
 
 // ── Streak ──
-function getStreak(){try{return JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count||0;}catch(e){return 0;}}
+function getStreak(){try{return Number(JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count)||0;}catch(e){return 0;}}   /* D5: a non-empty string count rendered as '"abc" दिन' */
 function updateStreak(){
   const td=new Date().toDateString();
   let d={};try{d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');}catch(e){}
@@ -3253,7 +3253,7 @@ function renderStreakCard(){
   }
   if(unit)unit.textContent=goal;
 }
-function getStreak(){try{return JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count||0;}catch(e){return 0;}}
+function getStreak(){try{return Number(JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count)||0;}catch(e){return 0;}}   /* D5: a non-empty string count rendered as '"abc" दिन' */
 function updateStreak(){
   const today=new Date().toDateString();
   let d={};try{d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');}catch(e){}
@@ -4761,8 +4761,6 @@ function personaliseMarg(){
     if(el)el.textContent=A(v.key);if(es)es.textContent=A(subs[k].key);
   }
   const _t2=document.getElementById('tl2');if(_t2)_t2.textContent=A('dashbo.guidance');
-  const tls=document.getElementById('tl-sadhana');if(tls)tls.textContent=A('dashbo.sadhana');
-  const stt=document.getElementById('sadTitle');if(stt)stt.innerHTML=A('dashbo.my_sadhana');
   // Named explicitly so nobody thinks the app lost their jap streak.
   const ssl=document.getElementById('sadStreakLbl');if(ssl)ssl.textContent=plural(1, A('dashbo.n_day_sadhana_streak'), A('dashbo.day_sadhana_streak'));
   const stl=document.getElementById('sadTodayLbl');if(stl)stl.textContent=A('dashbo.today_s_goal_2');
@@ -5137,15 +5135,11 @@ function continueSadhana(){
   // Set dynamic target from saved sadhana
   // Get target from saved sadhana OR look up from PROB_CONTENT
   window._sadTarget = s.targetCount || (PROB_CONTENT[s.key]&&PROB_CONTENT[s.key].count) || 28;
-  const _bh=document.getElementById('sadJBelowHint');if(_bh){_bh.style.display='block';_bh.style.opacity='1';_bh.textContent=A('dashbo.tap_after_each_chant');}
-  const totEl=document.getElementById('sadJTotal');if(totEl)totEl.textContent='/ '+(window._sadTarget);
 
   // Set mantra from sadhana data
   const mEl = document.getElementById('sadJMantra');
   if(mEl) mEl.textContent = s.mantra || 'ॐ नमो नारायणाय';
 
-  const bh=document.getElementById('sadJBelowHint');
-  if(bh){bh.style.display='block';bh.style.opacity='1';bh.style.animation='sadIdleGlow2 1.8s ease-in-out infinite';bh.textContent=A('dashbo.tap_after_each_chant_alt');}
   const th=document.getElementById('sadJTapHint');
   if(th){th.style.display='block';th.style.opacity='1';}
 
@@ -5280,8 +5274,6 @@ function sadJTap(){
       const sdBk=document.getElementById('sdBtnBack');if(sdBk)sdBk.textContent=A('dashbo.return_to_sadhana');
       completeSadhanaDay();
       const sk=getSadhana();
-      const strEl=document.getElementById('sadJDoneStreak');
-      if(strEl&&sk)strEl.textContent='🔥 '+plural(sk.streak, A('dashbo.n_day'), A('dashbo.n_days'));
       // Translate completion page
       document.getElementById('sdLine1')?.textContent==='';if(document.getElementById('sdLine1'))document.getElementById('sdLine1').textContent=A('dashbo.sadhana_complete');
       if(document.getElementById('sdLine2'))document.getElementById('sdLine2').textContent=AF('dashbo.n_chants_completed',{n:(window._sadTarget||28)});
@@ -5289,71 +5281,26 @@ function sadJTap(){
       if(document.getElementById('sadJStreakShow'))document.getElementById('sadJStreakShow').textContent=A('dashbo.practice_continues');
       if(document.getElementById('sdBtnMore'))document.getElementById('sdBtnMore').textContent=A('dashbo.chant_more_2');
       if(document.getElementById('sdBtnBack'))document.getElementById('sdBtnBack').textContent=A('dashbo.return_to_sadhana');
-      const dtl=document.getElementById('sadDoneTitle');if(dtl)dtl.textContent=A('dashbo.sadhana_complete_alt');
-      const dsl=document.getElementById('sadDoneSub');if(dsl)dsl.textContent=AF('dashbo.you_completed_n_chants',{n:(window._sadTarget||28)});
-      const djl=document.getElementById('sadDoneJapLbl');if(djl)djl.textContent=A('dashbo.today_s_chants');
       /* sadDoneBackBtn was removed from the markup; this line set text on a node
          that never exists. Harmless at runtime, but it put a second Hindi value
          ("साधना सहेजें और लौटें" — save AND return) against the same English as the
          live button ("साधना पर लौटें" — just return), which surfaced in the
          extraction as a conflict and would have been paid to translate into
          seven languages. Dead code, deleted. */
-      const dmtl=document.getElementById('sadDoneMainTitle');if(dmtl)dmtl.textContent=A('dashbo.sadhana_complete_2');
       /* The sadhana "done" screen was removed; these labels set text on
          elements that no longer exist — sadDoneStreakLbl, sadDoneJrnLbl and
          sadDoneMoreBtn were each referenced exactly once, here. Dead at
          runtime, but each carried a second Hindi value against a live English
          string and showed up as a translation conflict. Deleted with the
          screen they belonged to. */
-      const dmsg=document.getElementById('sadDoneSubMsg');if(dmsg)dmsg.textContent=AF('dashbo.n_chants_completed_fire',{n:(window._sadTarget||28)});
-      const dvow=document.getElementById('sadDoneVow');if(dvow)dvow.textContent=A('dashbo.you_completed_today_s_spiritual_go');
-      const dbl=document.getElementById('sadDoneBlessing');if(dbl)dbl.textContent=A('dashbo.may_divine_grace_be_with_you');
-      const prEl=document.getElementById('sadJDoneProgress');if(prEl&&sk)prEl.textContent='Day '+sk.daysDone.length+' / '+sk.totalDays;
     },900);
   }
 }
 
 
-function buildMalaDots(){
-  const canvas=document.getElementById('sjCanvas');if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const _tgt2=window._sadTarget||28;
-  const W=220,H=220,cx=110,cy=110,R=100;
-  ctx.clearRect(0,0,W,H);
-  // Background ring
-  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);
-  ctx.strokeStyle='rgba(212,168,67,0.20)';ctx.lineWidth=4;ctx.stroke();
-  // Progress arc
-  if(sadJCount>0){
-    const pct=sadJCount/_tgt2;
-    const grd=ctx.createLinearGradient(cx-R,cy,cx+R,cy);
-    grd.addColorStop(0,'#FF6B1A');grd.addColorStop(1,'#D4A843');
-    ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+(Math.PI*2*pct));
-    ctx.strokeStyle=grd;ctx.lineWidth=5;ctx.lineCap='round';ctx.stroke();
-  }
-  // Dots
-  const total=_tgt2;
-  const activeBead=sadJCount>0?sadJCount-1:0;
-  for(let i=0;i<total;i++){
-    const angle=((i/total)*Math.PI*2)-(Math.PI/2);
-    const x=cx+R*Math.cos(angle);
-    const y=cy+R*Math.sin(angle);
-    const filled=sadJCount>(i);
-    const isActive=(i===activeBead&&sadJCount<_tgt2&&sadJCount>0);
-    if(isActive){
-      ctx.shadowColor='rgba(255,215,0,0.80)';ctx.shadowBlur=10;
-      ctx.beginPath();ctx.arc(x,y,5.5,0,Math.PI*2);
-      ctx.fillStyle='#FFD700';ctx.fill();ctx.shadowBlur=0;
-    } else if(filled){
-      ctx.shadowColor='rgba(212,168,67,0.50)';ctx.shadowBlur=6;
-      ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
-      ctx.fillStyle='#D4A843';ctx.fill();ctx.shadowBlur=0;
-    } else {
-      ctx.beginPath();ctx.arc(x,y,2.5,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,0.12)';ctx.fill();
-    }
-  }
-}
+/* D4/R6 · buildMalaDots() drew onto #sjCanvas, which no longer exists in the
+   markup — the function returned at its first line on every call. Removed,
+   with its 39 lines. */
 
 function sadJUpdate(){
   const _tgt=window._sadTarget||28;
@@ -6748,9 +6695,7 @@ function settSelectLang(l){
       the PDF another. */
 async function settingsResolveCity(name){
   try{
-    const r = await fetch('https://nominatim.openstreetmap.org/search?q='
-              +encodeURIComponent(name)+'&countrycodes=in&limit=1&format=json')
-              .then(x=>x.json()).catch(()=>null);
+    const r = await sdGeoSearch(name, 1).catch(()=>null);
     if(r && r[0]){
       const la=parseFloat(r[0].lat), ln=parseFloat(r[0].lon);
       if(isFinite(la)&&isFinite(ln)) return {lat:la,lon:ln};
@@ -7017,23 +6962,48 @@ function filterCities(q){
   dd.style.display='block';
   _citySearchTimer = setTimeout(async ()=>{
     try{
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&countrycodes=in&limit=6&format=json&addressdetails=1`;
-      const res = await fetch(url, { headers:{ 'Accept-Language':'en' } });
-      const results = await res.json();
+      const results = await sdGeoSearch(q, 6, '&addressdetails=1');
       if(!results.length){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.90);font-size:13px;">No results</div>'; return; }
-      dd.innerHTML = results.map(r => {
-        const label = r.display_name.split(',').slice(0,3).join(', ');
-        return `<div onclick="selectCity('${r.display_name.split(',')[0].trim()}',${r.lat},${r.lon})"
+      _geoHits = results;
+      dd.innerHTML = results.map((r, i) => {
+        return `<div onclick="selectCityIdx(${i})"
           style="padding:10px 14px;color:rgba(255,255,255,0.80);font-size:13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);line-height:1.4;"
           onmouseover="this.style.background='rgba(212,168,67,0.10)'"
           onmouseout="this.style.background=''">
-          <div style="font-weight:600;">${r.display_name.split(',')[0].trim()}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,0.90);margin-top:2px;">${r.display_name.split(',').slice(1,3).join(',').trim()}</div>
+          <div style="font-weight:600;">${sdGeoEsc(r.display_name.split(',')[0].trim())}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.90);margin-top:2px;">${sdGeoEsc(r.display_name.split(',').slice(1,3).join(',').trim())}</div>
         </div>`;
       }).join('');
     }catch(e){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.90);font-size:13px;">Search failed</div>'; }
   }, 400);
 }
+
+var _geoHits = [];
+function selectCityIdx(i){ const r=_geoHits[i]; if(!r) return; selectCity(r.display_name.split(',')[0].trim(), r.lat, r.lon); }
+/* ── SD-GEO · one place search for the whole world, India first ──────────
+   Every Nominatim call carried &countrycodes=in: an overseas reader typed
+   their birth city, got nothing, and the coordinate guard (correctly) refused
+   to continue — a hard block on the market the engine was built for.
+   Policy: SD_GEO_SCOPE = 'in-first' (India results first, world fills the
+   rest) or 'world' (no preference). Results are returned as-is; callers keep
+   them in an array and select BY INDEX — third-party place names never enter
+   a JS string literal or raw HTML (N4: "N'Djamena" broke the picker). */
+var SD_GEO_SCOPE='in-first';
+function sdGeoSearch(q,limit,extra){
+  var base='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit='+(limit||6)+(extra||'');
+  var opt={headers:{'Accept-Language':'en'}};
+  var arr=function(x){return Array.isArray(x)?x:[];};
+  var world=function(){return fetch(base,opt).then(function(r){return r.json();}).then(arr);};
+  if(SD_GEO_SCOPE==='world') return world();
+  return fetch(base+'&countrycodes=in',opt).then(function(r){return r.json();}).then(arr).then(function(inr){
+    if(inr.length>=(limit||6)) return inr;
+    return world().then(function(w){
+      var seen={}; inr.forEach(function(r){seen[r.place_id]=1;});
+      return inr.concat(w.filter(function(r){return !seen[r.place_id];})).slice(0,limit||6);
+    }).catch(function(){return inr;});
+  });
+}
+function sdGeoEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function selectCity(name, lat, lon){
   document.getElementById('settCityInput').value = name;
