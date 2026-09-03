@@ -3,7 +3,8 @@
   "private": true,
   "dependencies": {
     "puppeteer-core": "25.6.0",
-    "@sparticuz/chromium": "149.0.0"
+    "@sparticuz/chromium": "149.0.0",
+    "tz-lookup": "^6.1.25"
   },
   "engines": {
     "node": "22.x"
