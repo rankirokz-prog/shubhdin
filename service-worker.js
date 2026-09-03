@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v190';
+const CACHE_NAME = 'shubhdin-v191';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -21,6 +21,9 @@ const CORE_FILES = [
   '/contact.html',
   '/about.html',
   '/offline.html',
+  /* supabase-js, vendored: pinned version, no CDN, works offline. The five
+     pages that need it (buy, reports, kundli, dispatch, stats) load this. */
+  '/vendor/supabase-2.114.0.js',
   '/report-catalog.js',
   /* today's verse — cached so the morning card is there on a weak
      connection, which is exactly when people open a devotional app */
@@ -127,7 +130,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
         }
         return response;
-      }).catch(() => caches.match(req).then(c => c || caches.match('/offline.html') || caches.match('/index.html')))
+      }).catch(() => caches.match(req).then(c => c || caches.match('/offline.html').then(o => o || caches.match('/index.html'))))
     );
     return;
   }
