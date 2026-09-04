@@ -2488,8 +2488,41 @@ const H=lang==='hi';
    summary — and each rendered H?hi:en, so a Telugu reader saw English on
    their own calendar. Order: the row's own key, then the vrat/festival table
    (which already holds 61 names in nine languages), then the pair. */
+/* ══ SD-FESTIVAL-ALIAS ══════════════════════════════════════════════════════
+   THE ENGINE'S NAME AND THE SHEET'S KEY DID NOT MATCH, so every festival name
+   fell through to HINDI on a Telugu screen — even though the Telugu string was
+   sitting in the sheet the whole time. A devotee opening a devotional app on
+   Krishna Janmashtami saw कृष्ण जन्माष्टमी, not శ్రీకృష్ణ జన్మాష్టమి.
+
+   The engine says "Krishna Janmashtami" → slug krishna_janmashtami.
+   The sheet has cal.name_janmashtami. Never met. Same for six more:
+   maha_shivaratri vs maha_shivratri, rama_navami vs ram_navami,
+   "Vijayadashami (Dussehra)" vs dussehra, "Diwali (Lakshmi Puja)" vs diwali,
+   "Ugadi / Gudi Padwa" vs ugadi, "Dev Uthani Ekadashi" vs
+   haribodhini_ekadashi.
+
+   Aliases first, then the plain slug. Adding the missing names to the sheet
+   under the engine's own slug will make each alias redundant — that is the
+   proper fix and it is a translation batch, not code. */
+var SD_FEST_ALIAS = {
+  'Krishna Janmashtami'      : 'janmashtami',
+  'Maha Shivaratri'          : 'maha_shivratri',
+  'Rama Navami'              : 'ram_navami',
+  'Vijayadashami (Dussehra)' : 'dussehra',
+  'Diwali (Lakshmi Puja)'    : 'diwali',
+  'Ugadi / Gudi Padwa'       : 'ugadi',
+  'Dev Uthani Ekadashi'      : 'haribodhini_ekadashi',
+  'Vat Savitri Vrat'         : 'vat_savitri',
+  'Sharad Navratri Begins'   : 'navratri_begins'
+  /* NOT Makar Sankranti → 'pongal'. Pongal is the TAMIL name; the Telugu is
+     సంక్రాంతి and the Assamese মাঘ বিহু. Aliasing them together would show a
+     Telugu devotee the Tamil festival name — a different wrongness, not a fix.
+     Sankranti needs its own key in each language. It is in the review batch. */
+};
 function sdCalName(e){
   if(!e) return '';
+  if(e.en && SD_FEST_ALIAS[e.en] && typeof sdHas==='function'
+     && sdHas('cal.name_'+SD_FEST_ALIAS[e.en])) return A('cal.name_'+SD_FEST_ALIAS[e.en]);
   if(e.en && typeof sdHas==='function' && sdHas('cal.name_'+sdSlug(e.en))) return A('cal.name_'+sdSlug(e.en));
   if(e.key && typeof A==='function' && typeof sdHas==='function' && sdHas(e.key)) return A(e.key);
   /* only ask the vrat table for names it holds — a civil holiday is not a miss */
