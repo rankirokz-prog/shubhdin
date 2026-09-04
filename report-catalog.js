@@ -173,7 +173,7 @@
     tagline:    { key: 'kundli.computed_from_your_birth_moment_no', hi: 'आपके जन्म क्षण से गणना — कोई टेम्पलेट नहीं', en: 'Computed from your birth moment, not a template' },
     features: [
       { key: 'kundli.full_lifetime_vimshottari_dasha_do', hi: 'पूरे जीवन की विंशोत्तरी दशा — अंतर्दशा तक', en: 'Full lifetime Vimshottari dasha, down to antardasha' },
-      { key: 'kundli.30_years_of_yearly_outlook_2026_20', hi: '30 वर्ष का वार्षिक फल — 2026 से 2055 तक', en: '30 years of yearly outlook, 2026 → 2055' },
+      { key: 'kundli.30_years_of_yearly_outlook_2026_20', hi: '30 वर्ष का वार्षिक फल', en: '30 years of yearly outlook' },
       { key: 'kundli.complete_ashtakavarga_sarvashtakav', hi: 'संपूर्ण अष्टकवर्ग — सर्वाष्टकवर्ग और सातों भिन्नाष्टकवर्ग', en: 'Complete Ashtakavarga — Sarvashtakavarga and all 7 Bhinnashtakavargas' },
       { key: 'kundli.sade_sati_periods_dated', hi: 'साढ़े साती के काल, तिथियों सहित', en: 'Sade Sati periods, dated' },
       { key: 'kundli.yogas_and_doshas_with_honest_conte', hi: 'योग और दोष — ईमानदार संदर्भ के साथ', en: 'Yogas and doshas, with honest context' },
