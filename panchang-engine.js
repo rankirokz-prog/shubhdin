@@ -805,37 +805,150 @@
   //   'moonrise' = tithi at moonrise (Karwa Chauth)
   //   sankranti  = Sun entering a sidereal rashi (Makar Sankranti = 270 deg)
   // ALL DATES PENDING Ram's validation against Drik's festival calendar.
+  /* ══════════════════════════════════════════════════════════════════════
+     FESTIVAL_RULES — v2 (regional coverage)
+
+     Every rule carries:
+       key       stable id → the name comes from the string sheet as
+                 cal.name_<key> in all nine languages; en/hi here are fallbacks
+       regions   where it is observed. 'all' = pan-India. Otherwise state
+                 codes: ap ts ka tn wb mh gj as north. `except` removes.
+                 The CLIENT maps language → regions (REGIONS_FOR_LANG below);
+                 the engine only filters on what it is given.
+       verify    true = the rule is my best reading of the tradition and a
+                 native reviewer / printed panchangam must confirm it before it
+                 is trusted (the spec's ❓). Absent = confident (✅).
+
+     Rule types (the anchor machinery underneath is unchanged):
+       (default)               amanta month + paksha + tithi, resolved by anchor
+       sankranti               solar ingress at `deg`
+       solar_offset            sankranti at `deg` ± `offsetDays`
+       solar_day               nth day of the solar month that begins at `deg`
+       weekday_before_tithi    last `weekday` on/before the tithi day
+       nakshatra_on_tithi      day within ±2 of the tithi day whose `anchor`
+                               moment has moon in `nak`
+       span                    start tithi → end tithi, ONE row with `end`
+       after                   `days` after the row of rule `base`
+       gregorian               fixed month/day
+       easter                  Western Easter ± `offsetDays`
+
+     Amanta month index: 0 Chaitra 1 Vaishakha 2 Jyeshtha 3 Ashadha 4 Shravana
+     5 Bhadrapada 6 Ashwin 7 Kartika 8 Margashira 9 Pausha 10 Magha 11 Phalguna
+     ══════════════════════════════════════════════════════════════════════ */
+  var ALL = ['all'];
   var FESTIVAL_RULES = [
-    { en: 'Makar Sankranti', hi: '\u092E\u0915\u0930 \u0938\u0902\u0915\u094D\u0930\u093E\u0902\u0924\u093F', rule: 'sankranti', deg: 270, approxMonth: 0, approxDay: 14 },
-    { en: 'Vasant Panchami', hi: '\u0935\u0938\u0902\u0924 \u092A\u0902\u091A\u092E\u0940', month: 10, paksha: 'S', tithi: 5, anchor: 'udaya' },
-    { en: 'Maha Shivaratri', hi: '\u092E\u0939\u093E\u0936\u093F\u0935\u0930\u093E\u0924\u094D\u0930\u093F', month: 10, paksha: 'K', tithi: 14, anchor: 'nishita' },
-    { en: 'Holika Dahan', hi: '\u0939\u094B\u0932\u093F\u0915\u093E \u0926\u0939\u0928', month: 11, paksha: 'S', tithi: 15, anchor: 'pradosh' },
-    { en: 'Holi', hi: '\u0939\u094B\u0932\u0940', month: 11, paksha: 'S', tithi: 15, anchor: 'pradosh', nextDay: 1 },
-    { en: 'Ugadi / Gudi Padwa', hi: '\u0909\u0917\u093E\u0926\u093F / \u0917\u0941\u0921\u093C\u0940 \u092A\u0921\u093C\u0935\u093E', month: 0, paksha: 'S', tithi: 1, anchor: 'udaya' },
-    { en: 'Rama Navami', hi: '\u0930\u093E\u092E \u0928\u0935\u092E\u0940', month: 0, paksha: 'S', tithi: 9, anchor: 'madhyahna' },
-    { en: 'Hanuman Jayanti', hi: '\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month: 0, paksha: 'S', tithi: 15, anchor: 'udaya' },
-    { en: 'Akshaya Tritiya', hi: '\u0905\u0915\u094D\u0937\u092F \u0924\u0943\u0924\u0940\u092F\u093E', month: 1, paksha: 'S', tithi: 3, anchor: 'madhyahna' },
-    { en: 'Vat Savitri Vrat', hi: '\u0935\u091F \u0938\u093E\u0935\u093F\u0924\u094D\u0930\u0940 \u0935\u094D\u0930\u0924', month: 1, paksha: 'K', tithi: 15, anchor: 'udaya' },
-    { en: 'Guru Purnima', hi: '\u0917\u0941\u0930\u0941 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month: 3, paksha: 'S', tithi: 15, anchor: 'udaya' },
-    { en: 'Nag Panchami', hi: '\u0928\u093E\u0917 \u092A\u0902\u091A\u092E\u0940', month: 4, paksha: 'S', tithi: 5, anchor: 'udaya' },
-    { en: 'Raksha Bandhan', hi: '\u0930\u0915\u094D\u0937\u093E \u092C\u0902\u0927\u0928', month: 4, paksha: 'S', tithi: 15, anchor: 'aparahna', avoidBhadra: true },
-    { en: 'Krishna Janmashtami', hi: '\u0915\u0943\u0937\u094D\u0923 \u091C\u0928\u094D\u092E\u093E\u0937\u094D\u091F\u092E\u0940', month: 4, paksha: 'K', tithi: 8, anchor: 'nishita' },
-    { en: 'Ganesh Chaturthi', hi: '\u0917\u0923\u0947\u0936 \u091A\u0924\u0941\u0930\u094D\u0925\u0940', month: 5, paksha: 'S', tithi: 4, anchor: 'madhyahna' },
-    { en: 'Anant Chaturdashi', hi: '\u0905\u0928\u0902\u0924 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month: 5, paksha: 'S', tithi: 14, anchor: 'udaya' },
-    { en: 'Sharad Navratri Begins', hi: '\u0936\u093E\u0930\u0926\u0940\u092F \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F \u092A\u094D\u0930\u093E\u0930\u0902\u092D', month: 6, paksha: 'S', tithi: 1, anchor: 'udaya' },
-    { en: 'Durga Ashtami', hi: '\u0926\u0941\u0930\u094D\u0917\u093E \u0905\u0937\u094D\u091F\u092E\u0940', month: 6, paksha: 'S', tithi: 8, anchor: 'udaya' },
-    { en: 'Maha Navami', hi: '\u092E\u0939\u093E \u0928\u0935\u092E\u0940', month: 6, paksha: 'S', tithi: 9, anchor: 'aparahna' },
-    { en: 'Vijayadashami (Dussehra)', hi: '\u0935\u093F\u091C\u092F\u093E\u0926\u0936\u092E\u0940 (\u0926\u0936\u0939\u0930\u093E)', month: 6, paksha: 'S', tithi: 10, anchor: 'aparahna' },
-    { en: 'Karwa Chauth', hi: '\u0915\u0930\u0935\u093E \u091A\u094C\u0925', month: 6, paksha: 'K', tithi: 4, anchor: 'moonrise' },
-    { en: 'Dhanteras', hi: '\u0927\u0928\u0924\u0947\u0930\u0938', month: 6, paksha: 'K', tithi: 13, anchor: 'pradosh' },
-    { en: 'Naraka Chaturdashi', hi: '\u0928\u0930\u0915 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month: 6, paksha: 'K', tithi: 14, anchor: 'arunodaya' },
-    { en: 'Diwali (Lakshmi Puja)', hi: '\u0926\u0940\u092A\u093E\u0935\u0932\u0940 (\u0932\u0915\u094D\u0937\u094D\u092E\u0940 \u092A\u0942\u091C\u093E)', month: 6, paksha: 'K', tithi: 15, anchor: 'pradosh' },
-    { en: 'Govardhan Puja', hi: '\u0917\u094B\u0935\u0930\u094D\u0927\u0928 \u092A\u0942\u091C\u093E', month: 7, paksha: 'S', tithi: 1, anchor: 'aparahna' },
-    { en: 'Bhai Dooj', hi: '\u092D\u093E\u0908 \u0926\u0942\u091C', month: 7, paksha: 'S', tithi: 2, anchor: 'aparahna' },
-    { en: 'Chhath Puja', hi: '\u091B\u0920 \u092A\u0942\u091C\u093E', month: 7, paksha: 'S', tithi: 6, anchor: 'udaya' },
-    { en: 'Dev Uthani Ekadashi', hi: '\u0926\u0947\u0935 \u0909\u0920\u0928\u0940 \u090F\u0915\u093E\u0926\u0936\u0940', month: 7, paksha: 'S', tithi: 11, anchor: 'udaya' },
-    { en: 'Kartika Purnima', hi: '\u0915\u093E\u0930\u094D\u0924\u093F\u0915 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month: 7, paksha: 'S', tithi: 15, anchor: 'udaya' },
+    /* ── solar ── */
+    { key:'makar_sankranti', en:'Makar Sankranti', hi:'\u092E\u0915\u0930 \u0938\u0902\u0915\u094D\u0930\u093E\u0902\u0924\u093F', rule:'sankranti', deg:270, approxMonth:0, approxDay:14, regions:ALL },
+    { key:'bhogi',     en:'Bhogi',     hi:'\u092D\u094B\u0917\u0940',       rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:-1, regions:['ap','ts','tn','ka'] },
+    { key:'kanuma',    en:'Kanuma',    hi:'\u0915\u0928\u0941\u092E\u093E', rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:1,  regions:['ap','ts'] },
+    { key:'mukkanuma', en:'Mukkanuma', hi:'\u092E\u0941\u0915\u094D\u0915\u0928\u0941\u092E\u093E', rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:2, regions:['ap'], verify:true },
+    { key:'pongal',    en:'Pongal (Bhogi to Kaanum)', hi:'\u092A\u094B\u0902\u0917\u0932', rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:-1, spanDays:4, regions:['tn'] },
+    { key:'magh_bihu', en:'Magh Bihu', hi:'\u092E\u093E\u0918 \u092C\u093F\u0939\u0942', rule:'sankranti', deg:270, approxMonth:0, approxDay:14, regions:['as'] },
+    { key:'tamil_new_year', en:'Puthandu (Tamil New Year)', hi:'\u0924\u092E\u093F\u0932 \u0928\u0935 \u0935\u0930\u094D\u0937', rule:'sankranti', deg:0, approxMonth:3, approxDay:14, regions:['tn'] },
+    { key:'poila_boishakh', en:'Poila Boishakh', hi:'\u092A\u094B\u0907\u0932\u093E \u092C\u094B\u0907\u0936\u093E\u0916', rule:'solar_offset', deg:0, approxMonth:3, approxDay:14, offsetDays:1, regions:['wb'], verify:true },
+    { key:'bohag_bihu', en:'Bohag Bihu', hi:'\u092C\u094B\u0939\u093E\u0917 \u092C\u093F\u0939\u0942', rule:'solar_offset', deg:0, approxMonth:3, approxDay:14, offsetDays:0, spanDays:2, regions:['as'], verify:true },
+    { key:'kati_bihu', en:'Kati Bihu', hi:'\u0915\u093E\u0924\u093F \u092C\u093F\u0939\u0942', rule:'solar_offset', deg:180, approxMonth:9, approxDay:17, offsetDays:1, regions:['as'], verify:true },
+    { key:'aadi_perukku', en:'Aadi Perukku', hi:'\u0906\u0921\u093C\u0940 \u092A\u0947\u0930\u0941\u0915\u094D\u0915\u0941', rule:'solar_day', deg:90, approxMonth:6, approxDay:16, day:18, regions:['tn'], verify:true },
+
+    /* ── Magha / Phalguna ── */
+    { key:'ratha_saptami', en:'Ratha Saptami', hi:'\u0930\u0925 \u0938\u092A\u094D\u0924\u092E\u0940', month:10, paksha:'S', tithi:7, anchor:'udaya', regions:['ap','ts','ka','tn','mh'] },
+    { key:'vasant_panchami', en:'Vasant Panchami', hi:'\u0935\u0938\u0902\u0924 \u092A\u0902\u091A\u092E\u0940', month:10, paksha:'S', tithi:5, anchor:'udaya', regions:ALL },
+    { key:'maha_shivaratri', en:'Maha Shivaratri', hi:'\u092E\u0939\u093E\u0936\u093F\u0935\u0930\u093E\u0924\u094D\u0930\u093F', month:10, paksha:'K', tithi:14, anchor:'nishita', regions:ALL },
+    { key:'holika_dahan', en:'Holika Dahan', hi:'\u0939\u094B\u0932\u093F\u0915\u093E \u0926\u0939\u0928', month:11, paksha:'S', tithi:15, anchor:'pradosh', regions:['north','gj','mh'] },
+    { key:'holi', en:'Holi', hi:'\u0939\u094B\u0932\u0940', month:11, paksha:'S', tithi:15, anchor:'pradosh', nextDay:1, regions:ALL },
+
+    /* ── Chaitra ── */
+    { key:'ugadi', en:'Ugadi / Gudi Padwa', hi:'\u0909\u0917\u093E\u0926\u093F / \u0917\u0941\u0921\u093C\u0940 \u092A\u0921\u093C\u0935\u093E', month:0, paksha:'S', tithi:1, anchor:'udaya', regions:ALL },
+    { key:'chaitra_navratri', en:'Chaitra Navratri', hi:'\u091A\u0948\u0924\u094D\u0930 \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F', rule:'span', month:0, paksha:'S', tithi:1, endPaksha:'S', endTithi:9, anchor:'udaya', endAnchor:'madhyahna', regions:['north','gj','mh'] },
+    { key:'rama_navami', en:'Rama Navami', hi:'\u0930\u093E\u092E \u0928\u0935\u092E\u0940', month:0, paksha:'S', tithi:9, anchor:'madhyahna', regions:ALL },
+    { key:'mahavir_jayanti', en:'Mahavir Jayanti', hi:'\u092E\u0939\u093E\u0935\u0940\u0930 \u091C\u092F\u0902\u0924\u0940', month:0, paksha:'S', tithi:13, anchor:'udaya', regions:ALL, verify:true },
+    /* Hanuman Jayanti differs by region (Drik/Wikipedia 2026: north 2 Apr, Telugu
+       12 May, Kannada 3 Dec, Tamil 19 Dec). One key per tradition. */
+    { key:'hanuman_jayanti', en:'Hanuman Jayanti', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month:0, paksha:'S', tithi:15, anchor:'udaya', regions:ALL, except:['ap','ts','ka','tn'] },
+    { key:'hanuman_jayanti_te', en:'Hanuman Jayanti (Telugu)', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month:1, paksha:'K', tithi:10, anchor:'udaya', regions:['ap','ts'] },
+    { key:'hanuman_jayanti_kn', en:'Hanuman Jayanti (Kannada)', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month:8, paksha:'S', tithi:13, anchor:'udaya', regions:['ka'], verify:true },
+    { key:'hanuman_jayanti_ta', en:'Hanuman Jayanti (Tamil)', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', rule:'nakshatra_in_solar_month', nak:18, near:'new', deg:240, approxMonth:11, approxDay:16, anchor:'udaya', regions:['tn'], verify:true },
+
+    /* ── Vaishakha / Jyeshtha ── */
+    { key:'akshaya_tritiya', en:'Akshaya Tritiya', hi:'\u0905\u0915\u094D\u0937\u092F \u0924\u0943\u0924\u0940\u092F\u093E', month:1, paksha:'S', tithi:3, anchor:'madhyahna', regions:ALL },
+    { key:'buddha_purnima', en:'Buddha Purnima', hi:'\u092C\u0941\u0926\u094D\u0927 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month:1, paksha:'S', tithi:15, anchor:'udaya', regions:ALL },
+    { key:'vat_savitri', en:'Vat Savitri Vrat', hi:'\u0935\u091F \u0938\u093E\u0935\u093F\u0924\u094D\u0930\u0940 \u0935\u094D\u0930\u0924', month:1, paksha:'K', tithi:15, anchor:'udaya', regions:['north'] },
+    { key:'jamai_sasthi', en:'Jamai Sasthi', hi:'\u091C\u093E\u092E\u093E\u0908 \u0937\u0937\u094D\u0920\u0940', month:2, paksha:'S', tithi:6, anchor:'udaya', regions:['wb'], verify:true },
+    { key:'vat_purnima', en:'Vat Purnima', hi:'\u0935\u091F \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month:2, paksha:'S', tithi:15, anchor:'udaya', regions:['mh','gj'] },
+
+    /* ── Ashadha / Shravana ── */
+    { key:'bonalu', en:'Bonalu (Ashada, Sundays)', hi:'\u092C\u094B\u0928\u093E\u0932\u0942', rule:'span', month:3, paksha:'S', tithi:1, endPaksha:'K', endTithi:15, anchor:'udaya', regions:['ts'], verify:true },
+    { key:'guru_purnima', en:'Guru Purnima', hi:'\u0917\u0941\u0930\u0941 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month:3, paksha:'S', tithi:15, anchor:'udaya', regions:ALL },
+    { key:'nag_panchami', en:'Nag Panchami', hi:'\u0928\u093E\u0917 \u092A\u0902\u091A\u092E\u0940', month:4, paksha:'S', tithi:5, anchor:'udaya', regions:ALL },
+    { key:'varalakshmi_vratam', en:'Varalakshmi Vratam', hi:'\u0935\u0930\u0932\u0915\u094D\u0937\u094D\u092E\u0940 \u0935\u094D\u0930\u0924', rule:'weekday_before_tithi', weekday:5, month:4, paksha:'S', tithi:15, anchor:'udaya', regions:['ap','ts','ka','tn'] },
+    { key:'raksha_bandhan', en:'Raksha Bandhan', hi:'\u0930\u0915\u094D\u0937\u093E \u092C\u0902\u0927\u0928', month:4, paksha:'S', tithi:15, anchor:'aparahna', avoidBhadra:true, regions:ALL },
+    { key:'janmashtami', en:'Krishna Janmashtami', hi:'\u0915\u0943\u0937\u094D\u0923 \u091C\u0928\u094D\u092E\u093E\u0937\u094D\u091F\u092E\u0940', month:4, paksha:'K', tithi:8, anchor:'nishita', regions:ALL },
+    { key:'dahi_handi', en:'Dahi Handi', hi:'\u0926\u0939\u0940 \u0939\u093E\u0902\u0921\u0940', rule:'after', base:'janmashtami', days:1, regions:['mh'] },
+    { key:'polala_amavasya', en:'Polala Amavasya', hi:'\u092A\u094B\u0932\u093E\u0932\u093E \u0905\u092E\u093E\u0935\u0938\u094D\u092F\u093E', month:4, paksha:'K', tithi:15, anchor:'udaya', regions:['ap','ts'], verify:true },
+
+    /* ── Bhadrapada ── */
+    { key:'ganesh_chaturthi', en:'Ganesh Chaturthi', hi:'\u0917\u0923\u0947\u0936 \u091A\u0924\u0941\u0930\u094D\u0925\u0940', month:5, paksha:'S', tithi:4, anchor:'madhyahna', regions:ALL },
+    { key:'ganesh_utsav', en:'Ganeshotsav (10 days)', hi:'\u0917\u0923\u0947\u0936\u094B\u0924\u094D\u0938\u0935', rule:'span', month:5, paksha:'S', tithi:4, endPaksha:'S', endTithi:14, anchor:'madhyahna', endAnchor:'udaya', regions:['mh'] },
+    { key:'jyeshtha_gauri', en:'Jyeshtha Gauri Puja', hi:'\u091C\u094D\u092F\u0947\u0937\u094D\u0920\u093E \u0917\u094C\u0930\u0940 \u092A\u0942\u091C\u093E', rule:'nakshatra_on_tithi', nak:16, month:5, paksha:'S', tithi:7, anchor:'udaya', regions:['mh'], verify:true },
+    { key:'anant_chaturdashi', en:'Anant Chaturdashi', hi:'\u0905\u0928\u0902\u0924 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month:5, paksha:'S', tithi:14, anchor:'udaya', regions:ALL },
+    { key:'pitru_paksha', en:'Pitru Paksha', hi:'\u092A\u093F\u0924\u0943 \u092A\u0915\u094D\u0937', rule:'span', month:5, paksha:'S', tithi:15, endPaksha:'K', endTithi:15, anchor:'aparahna', endAnchor:'aparahna', regions:ALL },
+    { key:'mahalaya_amavasya', en:'Mahalaya Amavasya', hi:'\u092E\u0939\u093E\u0932\u092F\u093E \u0905\u092E\u093E\u0935\u0938\u094D\u092F\u093E', month:5, paksha:'K', tithi:15, anchor:'aparahna', regions:ALL },
+    { key:'bathukamma', en:'Bathukamma', hi:'\u092C\u0924\u0941\u0915\u092E\u094D\u092E\u093E', rule:'span', month:5, paksha:'K', tithi:15, endMonth:6, endPaksha:'S', endTithi:8, anchor:'udaya', regions:['ts'], verify:true },
+
+    /* ── Ashwin ── */
+    { key:'sharad_navratri', en:'Sharad Navratri', hi:'\u0936\u093E\u0930\u0926\u0940\u092F \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F', rule:'span', month:6, paksha:'S', tithi:1, endPaksha:'S', endTithi:9, anchor:'udaya', endAnchor:'aparahna', regions:ALL },
+    { key:'durga_puja', en:'Durga Puja', hi:'\u0926\u0941\u0930\u094D\u0917\u093E \u092A\u0942\u091C\u093E', rule:'span', month:6, paksha:'S', tithi:6, endPaksha:'S', endTithi:10, anchor:'udaya', endAnchor:'aparahna', regions:['wb','as','north'] },
+    { key:'durga_ashtami', en:'Durga Ashtami', hi:'\u0926\u0941\u0930\u094D\u0917\u093E \u0905\u0937\u094D\u091F\u092E\u0940', month:6, paksha:'S', tithi:8, anchor:'udaya', regions:ALL },
+    { key:'maha_navami', en:'Maha Navami', hi:'\u092E\u0939\u093E \u0928\u0935\u092E\u0940', month:6, paksha:'S', tithi:9, anchor:'aparahna', regions:ALL },
+    { key:'vijayadashami', en:'Vijayadashami (Dussehra)', hi:'\u0935\u093F\u091C\u092F\u093E\u0926\u0936\u092E\u0940 (\u0926\u0936\u0939\u0930\u093E)', month:6, paksha:'S', tithi:10, anchor:'aparahna', regions:ALL },
+    /* Sharad Purnima is the udaya Purnima; Kojagara / Kojagari Lakshmi Puja is
+       the NIGHT the Purnima covers midnight — Drik lists them a day apart in
+       2027 (15 Oct / 14 Oct). Bengali Lakshmi Puja is Kojagari, not Diwali. */
+    { key:'sharad_purnima', en:'Sharad Purnima', hi:'\u0936\u0930\u0926 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month:6, paksha:'S', tithi:15, anchor:'moonrise', regions:ALL },
+    { key:'kojagari_lakshmi_puja', en:'Kojagari Lakshmi Puja', hi:'\u0915\u094B\u091C\u093E\u0917\u0930\u0940 \u0932\u0915\u094D\u0937\u094D\u092E\u0940 \u092A\u0942\u091C\u093E', month:6, paksha:'S', tithi:15, anchor:'nishita', regions:['wb','north','as'] },
+    { key:'atla_taddi', en:'Atla Taddi', hi:'\u0905\u091F\u094D\u0932\u093E \u0924\u0926\u094D\u0926\u0940', month:6, paksha:'K', tithi:3, anchor:'moonrise', regions:['ap','ts'] },
+    { key:'karwa_chauth', en:'Karwa Chauth', hi:'\u0915\u0930\u0935\u093E \u091A\u094C\u0925', month:6, paksha:'K', tithi:4, anchor:'moonrise', regions:['north'] },
+    { key:'dhanteras', en:'Dhanteras', hi:'\u0927\u0928\u0924\u0947\u0930\u0938', month:6, paksha:'K', tithi:13, anchor:'pradosh', regions:ALL },
+    { key:'naraka_chaturdashi', en:'Naraka Chaturdashi', hi:'\u0928\u0930\u0915 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month:6, paksha:'K', tithi:14, anchor:'arunodaya', regions:ALL, except:['tn'] },
+    { key:'deepavali_tn', en:'Deepavali (Naraka Chaturdashi)', hi:'\u0926\u0940\u092A\u093E\u0935\u0932\u0940', month:6, paksha:'K', tithi:14, anchor:'arunodaya', regions:['tn'] },
+    { key:'diwali', en:'Diwali (Lakshmi Puja)', hi:'\u0926\u0940\u092A\u093E\u0935\u0932\u0940 (\u0932\u0915\u094D\u0937\u094D\u092E\u0940 \u092A\u0942\u091C\u093E)', month:6, paksha:'K', tithi:15, anchor:'pradosh', regions:ALL, except:['wb'] },
+    { key:'kali_puja', en:'Kali Puja', hi:'\u0915\u093E\u0932\u0940 \u092A\u0942\u091C\u093E', month:6, paksha:'K', tithi:15, anchor:'nishita', regions:['wb','as'] },
+
+    /* ── Kartika ── */
+    { key:'govardhan_puja', en:'Govardhan Puja', hi:'\u0917\u094B\u0935\u0930\u094D\u0927\u0928 \u092A\u0942\u091C\u093E', month:7, paksha:'S', tithi:1, anchor:'udaya', regions:['north','gj'] },
+    { key:'bestu_varas', en:'Bestu Varas (Gujarati New Year)', hi:'\u092C\u0947\u0938\u094D\u0924\u0941 \u0935\u0930\u0938', month:7, paksha:'S', tithi:1, anchor:'udaya', regions:['gj'] },
+    { key:'bali_pratipada', en:'Bali Pratipada (Diwali Padwa)', hi:'\u092C\u0932\u093F \u092A\u094D\u0930\u0924\u093F\u092A\u0926\u093E', month:7, paksha:'S', tithi:1, anchor:'udaya', regions:['mh','ka'], verify:true },
+    /* Bhai Dooj: Dwitiya at aparahna, and when it covers aparahna on BOTH days the
+       LATER day is taken (Drik's stated rule) — the opposite of Vijayadashami. */
+    { key:'bhai_dooj', en:'Bhai Dooj', hi:'\u092D\u093E\u0908 \u0926\u0942\u091C', month:7, paksha:'S', tithi:2, anchor:'aparahna', paraviddha:true, regions:ALL },
+    { key:'nagula_chavithi', en:'Nagula Chavithi', hi:'\u0928\u093E\u0917\u0941\u0932\u093E \u091A\u0935\u093F\u0925\u0940', month:7, paksha:'S', tithi:4, anchor:'udaya', regions:['ap','ts'] },
+    { key:'labh_pancham', en:'Labh Pancham', hi:'\u0932\u093E\u092D \u092A\u0902\u091A\u092E', month:7, paksha:'S', tithi:5, anchor:'udaya', regions:['gj'], verify:true },
+    { key:'chhath_puja', en:'Chhath Puja', hi:'\u091B\u0920 \u092A\u0942\u091C\u093E', month:7, paksha:'S', tithi:6, anchor:'udaya', regions:['north'] },
+    { key:'dev_uthani_ekadashi', en:'Dev Uthani Ekadashi', hi:'\u0926\u0947\u0935 \u0909\u0920\u0928\u0940 \u090F\u0915\u093E\u0926\u0936\u0940', month:7, paksha:'S', tithi:11, anchor:'udaya', regions:ALL },
+    { key:'kartika_purnima', en:'Kartika Purnima', hi:'\u0915\u093E\u0930\u094D\u0924\u093F\u0915 \u092A\u0942\u0930\u094D\u0923\u093F\u092E\u093E', month:7, paksha:'S', tithi:15, anchor:'udaya', regions:ALL },
+    { key:'guru_nanak_jayanti', en:'Guru Nanak Jayanti', hi:'\u0917\u0941\u0930\u0941 \u0928\u093E\u0928\u0915 \u091C\u092F\u0902\u0924\u0940', month:7, paksha:'S', tithi:15, anchor:'udaya', regions:ALL },
+    { key:'karthigai_deepam', en:'Karthigai Deepam', hi:'\u0915\u093E\u0930\u094D\u0924\u093F\u0917\u0948 \u0926\u0940\u092A\u092E', rule:'nakshatra_in_solar_month', nak:2, deg:210, approxMonth:10, approxDay:16, anchor:'pradosh', regions:['tn','ka'], verify:true },
+
+    /* ── Margashira / Pausha ── */
+    { key:'subrahmanya_shashti', en:'Subrahmanya Shashti', hi:'\u0938\u0941\u092C\u094D\u0930\u0939\u094D\u092E\u0923\u094D\u092F \u0937\u0937\u094D\u0920\u0940', month:8, paksha:'S', tithi:6, anchor:'udaya', regions:['ap','ts','ka','tn'] },
+    /* Vaikunta Ekadashi — TWO readings exist: the solar one (the Shukla Ekadashi
+       inside Dhanu / Margazhi — Tamil, and how Drik describes it) and the Telugu
+       one (Pushya Shukla Ekadashi). They coincide most years; in 2027 the solar
+       rule yields NONE (Pushya S11 falls on 18 Jan, after Makar Sankranti) and
+       2028 yields two. Ram's Telugu reviewer decides; solar is implemented. */
+    { key:'vaikunta_ekadashi', en:'Vaikunta Ekadashi', hi:'\u0935\u0948\u0915\u0941\u0902\u0920 \u090F\u0915\u093E\u0926\u0936\u0940', rule:'tithi_in_solar_month', deg:240, approxMonth:11, approxDay:16, paksha:'S', tithi:11, anchor:'udaya', regions:['ap','ts','ka','tn'], verify:true },
+    { key:'thaipusam', en:'Thaipusam', hi:'\u0925\u0948\u092A\u0942\u0938\u092E', rule:'nakshatra_in_solar_month', nak:7, deg:270, approxMonth:0, approxDay:14, anchor:'udaya', regions:['tn'], verify:true },
+    { key:'panguni_uthiram', en:'Panguni Uthiram', hi:'\u092A\u0902\u0917\u0941\u0928\u0940 \u0909\u0925\u093F\u0930\u092E', rule:'nakshatra_in_solar_month', nak:11, deg:330, approxMonth:2, approxDay:14, anchor:'udaya', regions:['tn'], verify:true },
+
+    /* ── Gregorian / Christian ── */
+    { key:'christmas', en:'Christmas', hi:'\u0915\u094D\u0930\u093F\u0938\u092E\u0938', rule:'gregorian', gMonth:12, gDay:25, regions:ALL },
+    { key:'good_friday', en:'Good Friday', hi:'\u0917\u0941\u0921 \u092B\u094D\u0930\u093E\u0907\u0921\u0947', rule:'easter', offsetDays:-2, regions:ALL }
   ];
+
+  /* Language → regions. The app knows the reader's language, which is a far
+     better signal than coordinates (a Telugu family in New Jersey wants Telugu
+     festivals). English readers get everything. Override in Settings later. */
+  var REGIONS_FOR_LANG = { te:['ap','ts'], kn:['ka'], ta:['tn'], bn:['wb'], mr:['mh'], gu:['gj'], as:['as'], hi:['north'], en:['all'] };
 
   function elongAt(ms) {
     var e = (moonSidereal(new Date(ms)) - sunSidereal(new Date(ms))) % 360;
@@ -973,32 +1086,188 @@
   }
 
   // Public: festival calendar for a CE year.
-  function getFestivals(yearCE, lat, lng, tzOffsetHours) {
+  /* Western Easter (Meeus/Jones/Butcher), as a UTC day */
+  function easterMs(y) {
+    var a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+        g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4,
+        l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451),
+        mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1;
+    return Date.UTC(y, mo - 1, da);
+  }
+  function moonNakAt(ms) { return Math.floor(moonSidereal(new Date(ms)) / (360 / 27)); }
+
+  /* getFestivals(year, lat, lng, tz, opts)
+       opts.regions  array of region codes (or ['all']) — the CLIENT derives it
+                     from the language with REGIONS_FOR_LANG. Absent = everything.
+     Each row: { date, en, hi, key, regions } and, for spans, `end` and
+     `span:true`. A span is ONE row, not N. Existing rows keep their exact
+     { date, en, hi } so anything that read them still does. */
+  function getFestivals(yearCE, lat, lng, tzOffsetHours, opts) {
     var tz = (tzOffsetHours == null) ? 5.5 : tzOffsetHours;
+    var want = (opts && opts.regions) ? opts.regions : null;
     var months = buildMonthTable(yearCE);
-    var out = [];
+    var out = [], byKey = {};
     function dateStr(ms) { return new Date(ms + tz * 3600000).toISOString().slice(0, 10); }
+    function localDay0(ms) { var d = new Date(ms + tz * 3600000); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - tz * 3600000; }
+    function dowOf(dayMs) { return new Date(dayMs + tz * 3600000).getUTCDay(); }
+    function visible(F) {
+      if (!want) return true;
+      if (F.except && want.some(function (r) { return F.except.indexOf(r) >= 0; }) && want.indexOf('all') < 0) return false;
+      if (F.regions.indexOf('all') >= 0) return true;
+      if (want.indexOf('all') >= 0) return true;
+      return want.some(function (r) { return F.regions.indexOf(r) >= 0; });
+    }
+    function tithiWindow(M, paksha, tithi) {
+      var idx = (paksha === 'S') ? tithi - 1 : 14 + tithi;
+      var Ts = (idx === 0) ? M.start : bisectElong(M.start, M.end, idx * 12);
+      var Te = (idx === 29) ? M.end : bisectElong(Ts + 60000, M.end, (idx + 1) * 12);
+      return { Ts: Ts, Te: Te };
+    }
+    /* does the anchor window of this civil day overlap the tithi? (madhyahna / aparahna) */
+    function windowQualifies(dayMs, Ts, Te, anchor) {
+      var noon = new Date(dayMs + 6 * 3600000), sr = findSunrise(noon, lat, lng, tz), ss = findSunset(noon, lat, lng, tz);
+      if (!sr || !ss) return false;
+      var D5 = (ss.getTime() - sr.getTime()) / 5, wi = (anchor === 'madhyahna') ? 2 : 3;
+      var wS = sr.getTime() + wi * D5, wE = sr.getTime() + (wi + 1) * D5;
+      return wS < Te && wE > Ts;
+    }
+    /* the day a plain tithi rule lands on, within one month entry */
+    function tithiDay(M, paksha, tithi, anchor, avoidBhadra, paraviddha) {
+      var w = tithiWindow(M, paksha, tithi);
+      var d = anchorDay(w.Ts, w.Te, anchor || 'udaya', lat, lng, tz, !!avoidBhadra);
+      /* paraviddha: if the NEXT day's window also qualifies, that day wins */
+      if (paraviddha && (anchor === 'aparahna' || anchor === 'madhyahna') && windowQualifies(d + 86400000, w.Ts, w.Te, anchor)) d += 86400000;
+      return d;
+    }
+    function monthsOf(index) { return months.filter(function (M) { return M.index === index && !M.adhik; }); }
+    function emit(F, dayMs, endMs) {
+      var ds = dateStr(dayMs);
+      if (ds.slice(0, 4) !== String(yearCE)) return;
+      var row = { date: ds, en: F.en, hi: F.hi, key: F.key, regions: F.regions.slice() };
+      if (F.verify) row.verify = true;
+      if (endMs != null) { row.end = dateStr(endMs); row.span = true; }
+      out.push(row); byKey[F.key] = byKey[F.key] || []; byKey[F.key].push(row);
+    }
+    /* pass 1: everything except 'after' (which needs another rule's result) */
     for (var fi = 0; fi < FESTIVAL_RULES.length; fi++) {
       var F = FESTIVAL_RULES[fi];
-      if (F.rule === 'sankranti') {
-        var cross = sidSunCross(F.deg, Date.UTC(yearCE, F.approxMonth, F.approxDay));
-        var dsk = dateStr(cross);
-        if (dsk.slice(0, 4) === String(yearCE)) out.push({ date: dsk, en: F.en, hi: F.hi });
-        continue;
-      }
-      for (var mi = 0; mi < months.length; mi++) {
-        var M = months[mi];
-        if (M.index !== F.month || M.adhik) continue;
-        var idx = (F.paksha === 'S') ? F.tithi - 1 : 14 + F.tithi;
-        var Ts = (idx === 0) ? M.start : bisectElong(M.start, M.end, idx * 12);
-        var Te = (idx === 29) ? M.end : bisectElong(Ts + 60000, M.end, (idx + 1) * 12);
-        var dayMs = anchorDay(Ts, Te, F.anchor || 'udaya', lat, lng, tz, !!F.avoidBhadra);
-        if (F.nextDay) dayMs += 86400000;
-        var ds = dateStr(dayMs);
-        if (ds.slice(0, 4) === String(yearCE)) out.push({ date: ds, en: F.en, hi: F.hi });
-      }
+      if (F.rule === 'after') continue;
+      if (!visible(F)) continue;
+      try {
+        if (F.rule === 'sankranti' || F.rule === 'solar_offset') {
+          var cross = sidSunCross(F.deg, Date.UTC(yearCE, F.approxMonth, F.approxDay));
+          var d0 = localDay0(cross) + (F.offsetDays || 0) * 86400000;
+          emit(F, d0, F.spanDays ? d0 + (F.spanDays - 1) * 86400000 : null);
+        } else if (F.rule === 'solar_day') {
+          /* day 1 of a solar month is the ingress day if the ingress comes
+             before local sunset, else the next day (Tamil almanac rule) */
+          var cr = sidSunCross(F.deg, Date.UTC(yearCE, F.approxMonth, F.approxDay));
+          var dIng = localDay0(cr); var ss = findSunset(new Date(dIng + 6 * 3600000), lat, lng, tz);
+          var day1 = (ss && cr < ss.getTime()) ? dIng : dIng + 86400000;
+          emit(F, day1 + (F.day - 1) * 86400000, null);
+        } else if (F.rule === 'gregorian') {
+          emit(F, Date.UTC(yearCE, F.gMonth - 1, F.gDay) - tz * 3600000 + 6 * 3600000 - 6 * 3600000, null);
+        } else if (F.rule === 'easter') {
+          emit(F, easterMs(yearCE) + (F.offsetDays || 0) * 86400000 - tz * 3600000, null);
+        } else if (F.rule === 'tithi_in_solar_month') {
+          /* the tithi (e.g. Shukla Ekadashi) whose day falls inside the solar
+             month beginning at `deg` — Vaikunta Ekadashi is the S11 within Dhanu */
+          var mm = months;
+          for (var mi = 0; mi < mm.length; mi++) {
+            var dd = tithiDay(mm[mi], F.paksha, F.tithi, F.anchor);
+            var sunDeg = sunSidereal(new Date(dd + 6 * 3600000));
+            var inMonth = ((sunDeg - F.deg + 360) % 360) < 30;
+            if (inMonth) emit(F, dd, null);
+          }
+        } else if (F.rule === 'nakshatra_in_solar_month') {
+          /* the day inside the SOLAR month beginning at `deg` whose anchor moment
+             has the moon in `nak`, choosing the one nearest the full moon —
+             Thaipusam (Pusam in Thai), Panguni Uthiram (Uthiram in Panguni),
+             Karthigai Deepam (Krittika in Karthigai). A solar month, not a tithi. */
+          /* a solar month can straddle the CE year (Margazhi: Dec→Jan), so the
+             month that began LAST December is evaluated too; emit() keeps only
+             dates inside yearCE, so nothing is doubled */
+          [yearCE - 1, yearCE].forEach(function (yy) {
+          var ingress = sidSunCross(F.deg, Date.UTC(yy, F.approxMonth, F.approxDay));
+          var nextIngress = sidSunCross((F.deg + 30) % 360, ingress + 30 * 86400000);
+          /* 1. find every OCCURRENCE of the nakshatra inside the solar month (a
+                nakshatra lasts ~1 day; one sample per day can miss it entirely) */
+          var occ = [], inN = moonNakAt(ingress) === F.nak, a0 = inN ? ingress : null;
+          for (var t = ingress + 1800000; t <= nextIngress + 86400000; t += 1800000) {
+            var now = moonNakAt(t) === F.nak;
+            if (now && !inN) a0 = t; else if (!now && inN) { occ.push([a0, t]); }
+            inN = now;
+          }
+          if (inN && a0 != null) occ.push([a0, nextIngress]);
+          /* 2. the occurrence nearest the full moon */
+          var pick = null, ps = 1e9;
+          occ.forEach(function (o) { var mid = (o[0] + o[1]) / 2; if (mid < ingress || mid > nextIngress) return;
+            var el = elongAt(mid), sc = (F.near === 'new') ? Math.min(el, 360 - el) : Math.abs(el - 180);   // nearest new or full moon
+            if (sc < ps) { ps = sc; pick = o; } });
+          if (pick) {
+            /* 3. the day whose anchor moment falls inside it; else the day holding its midpoint */
+            var dayPick = null;
+            for (var dd0 = localDay0(pick[0]) - 86400000; dd0 <= localDay0(pick[1]) + 86400000 && dayPick == null; dd0 += 86400000) {
+              var nn = new Date(dd0 + 6 * 3600000), pt = null;
+              if (F.anchor === 'pradosh') { var s1 = findSunset(nn, lat, lng, tz); pt = s1 ? s1.getTime() + 3600000 : null; }
+              else { var r1 = findSunrise(nn, lat, lng, tz); pt = r1 ? r1.getTime() : null; }
+              if (pt != null && pt >= pick[0] && pt < pick[1]) dayPick = dd0;
+            }
+            if (dayPick == null) dayPick = localDay0((pick[0] + pick[1]) / 2);
+            emit(F, dayPick, null);
+          }
+          });
+        } else if (F.rule === 'weekday_before_tithi') {
+          monthsOf(F.month).forEach(function (M) {
+            var d = tithiDay(M, F.paksha, F.tithi, F.anchor);
+            while (dowOf(d) !== F.weekday) d -= 86400000;          // last <weekday> on/before the tithi day
+            emit(F, d, null);
+          });
+        } else if (F.rule === 'nakshatra_on_tithi') {
+          monthsOf(F.month).forEach(function (M) {
+            var d = tithiDay(M, F.paksha, F.tithi, F.anchor);
+            var best = null, bestDist = 9;
+            for (var k = -2; k <= 2; k++) {
+              var cand = d + k * 86400000, point = null, noon = new Date(cand + 6 * 3600000);
+              if (F.anchor === 'pradosh') { var sp = findSunset(noon, lat, lng, tz); point = sp ? sp.getTime() + 3600000 : null; }
+              else { var su = findSunrise(noon, lat, lng, tz); point = su ? su.getTime() : null; }
+              if (point == null) continue;
+              if (moonNakAt(point) === F.nak && Math.abs(k) < bestDist) { best = cand; bestDist = Math.abs(k); }
+            }
+            if (best != null) emit(F, best, null);
+          });
+        } else if (F.rule === 'span') {
+          monthsOf(F.month).forEach(function (M) {
+            var sd = tithiDay(M, F.paksha, F.tithi, F.anchor, F.avoidBhadra);
+            var ME = M;
+            if (F.endMonth != null && F.endMonth !== F.month) { var nx = monthsOf(F.endMonth).filter(function (X) { return X.start >= M.end - 86400000; }); if (!nx.length) return; ME = nx[0]; }
+            var ed = tithiDay(ME, F.endPaksha || F.paksha, F.endTithi, F.endAnchor || F.anchor);
+            emit(F, sd, ed);
+          });
+        } else {
+          monthsOf(F.month).forEach(function (M) {
+            var dayMs = tithiDay(M, F.paksha, F.tithi, F.anchor, F.avoidBhadra, F.paraviddha);
+            if (F.nextDay) dayMs += 86400000;
+            emit(F, dayMs, null);
+          });
+        }
+      } catch (e) { /* one bad rule must not take the calendar down */ }
     }
-    out.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+    /* pass 2: rules relative to another rule's day */
+    for (var fj = 0; fj < FESTIVAL_RULES.length; fj++) {
+      var G = FESTIVAL_RULES[fj];
+      if (G.rule !== 'after' || !visible(G)) continue;
+      var baseRows = byKey[G.base] || [];
+      if (!baseRows.length) {            // base filtered out by region → resolve it silently
+        var B = FESTIVAL_RULES.filter(function (x) { return x.key === G.base; })[0];
+        if (B) monthsOf(B.month).forEach(function (M) { baseRows.push({ _ms: tithiDay(M, B.paksha, B.tithi, B.anchor, B.avoidBhadra) }); });
+      }
+      baseRows.forEach(function (r) {
+        var ms = r._ms != null ? r._ms : (Date.UTC(+r.date.slice(0, 4), +r.date.slice(5, 7) - 1, +r.date.slice(8, 10)) - tz * 3600000);
+        emit(G, ms + G.days * 86400000, null);
+      });
+    }
+    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.key < b.key ? -1 : 1); });
     return out;
   }
 
@@ -3348,6 +3617,8 @@
     getMuddaDasha, getSahams, findVarshaPravesh,
     getHolikaDahanMuhurta,
     getFestivals,
+    REGIONS_FOR_LANG,
+    FESTIVAL_RULES,
     getVrats,
     getLagna,
     getLagnaTable,
