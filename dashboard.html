@@ -8474,39 +8474,108 @@ function renderVrats(){
 // ══════════════════════════════
 //   MUHURAT OCCASIONS
 // ══════════════════════════════
+/* ══ SD-MUHURTA-V2 ═══════════════════════════════════════════════════════════
+   WHAT THIS REPLACED, and why it had to.
+
+   The old version scored every occasion on three things: paksha, a short list
+   of bad tithis, and the weekday. It NEVER LOOKED AT THE NAKSHATRA. So Bharani
+   — prohibited for gruha pravesha in every classical text — scored the same as
+   Rohini, and 26 Oct came out ★★★ on Bharani AND Pratipada together.
+
+   Worse, its tithi came from calMoonPhase(): a mean-lunation approximation off
+   hardcoded new-moon anchors, the same 29.53-day estimate this codebase
+   replaced everywhere else. So the input was approximate and the most
+   important input was missing.
+
+   This version reads the REAL engine — true tithi, true nakshatra, true vedic
+   weekday — and applies the classical filters.
+
+   ── THE DESIGN DECISION THAT MATTERS ──
+   Nakshatras are a PERMIT LIST, not a ban list. A day is offered only if its
+   nakshatra is named as suitable. That is how gruha pravesha is actually
+   chosen, and it fails the safe way: an unlisted nakshatra means "not offered",
+   never "offered by default". Missing a good day costs nothing. Offering a
+   forbidden one costs a family's housewarming.
+
+   Expect FAR fewer green days — two to four a month rather than fifteen. That
+   is the correct answer, not a regression. The old card looked generous because
+   it was barely checking anything.
+
+   ⚠ EVERY LIST BELOW NEEDS A REVIEWER WHO KNOWS THE SHASTRA. They follow the
+   commonly cited sets (Muhurta Chintamani lineage) but texts differ, and this
+   is religious guidance, not arithmetic. `verify:true` says so on each rule. */
+var _NAK = {ashwini:0,bharani:1,krittika:2,rohini:3,mrigashira:4,ardra:5,punarvasu:6,
+  pushya:7,ashlesha:8,magha:9,purvaphalguni:10,uttaraphalguni:11,hasta:12,chitra:13,
+  swati:14,vishakha:15,anuradha:16,jyeshtha:17,mula:18,purvashadha:19,uttarashadha:20,
+  shravana:21,dhanishta:22,shatabhisha:23,purvabhadrapada:24,uttarabhadrapada:25,revati:26};
+var N=_NAK;
+/* Rikta tithis (4, 9, 14 of either fortnight) are forbidden for auspicious
+   beginnings; so are Pratipada, Ashtami and Amavasya for gruha pravesha. */
+var RIKTA=[4,9,14];
+var MUHURTA_RULES={
+  griha:{ verify:true,
+    nak:[N.rohini,N.mrigashira,N.uttaraphalguni,N.chitra,N.anuradha,N.uttarashadha,
+         N.dhanishta,N.shatabhisha,N.uttarabhadrapada,N.revati],
+    badTithi:RIKTA.concat([1,8,15,30]),        /* + pratipada, ashtami, purnima-amavasya edges */
+    weekday:[1,3,4,5],                          /* Mon Wed Thu Fri */
+    shuklaOnly:true },
+  vehicle:{ verify:true,
+    nak:[N.ashwini,N.rohini,N.mrigashira,N.punarvasu,N.pushya,N.hasta,N.chitra,
+         N.swati,N.anuradha,N.dhanishta,N.shatabhisha,N.revati],
+    badTithi:RIKTA.concat([8,30]),
+    weekday:[1,3,4,5], shuklaOnly:false },
+  business:{ verify:true,
+    nak:[N.ashwini,N.rohini,N.mrigashira,N.pushya,N.uttaraphalguni,N.hasta,N.chitra,
+         N.anuradha,N.uttarashadha,N.uttarabhadrapada,N.revati],
+    badTithi:RIKTA.concat([1,8,30]),
+    weekday:[1,3,4,5], shuklaOnly:false },
+  newstart:{ verify:true,
+    nak:[N.ashwini,N.rohini,N.mrigashira,N.pushya,N.uttaraphalguni,N.hasta,N.chitra,
+         N.swati,N.anuradha,N.uttarashadha,N.uttarabhadrapada,N.revati],
+    badTithi:RIKTA.concat([8,30]),
+    weekday:[1,3,4,5], shuklaOnly:false }
+};
+/* the real panchang for a date, or null — never an approximation */
+function muhurtaDay(date){
+  try{
+    var PE=window.PanchangEngine; if(!PE) return null;
+    var c=pgCoords();
+    var p=PE.getPanchang(date||new Date(), c.lat, c.lng, sdTzHours());
+    if(!p||!p.tithi||!p.nakshatra) return null;
+    var idx=p.tithi.index;                       /* 0-29, zero-based */
+    return { nak:p.nakshatra.index,
+             tin:(idx%15)+1,                     /* tithi within its fortnight, 1-15 */
+             shukla:idx<=14,
+             amavasya:idx===29, purnima:idx===14,
+             dow:(p.weekday&&typeof p.weekday.index==='number')?p.weekday.index:new Date().getDay() };
+  }catch(e){ return null; }
+}
 function muhuratStatus(key, phase, dow){
-  const isS = phase < 14.77;
-  const isAm = isAmavasya(phase,null);
-  const isEk = isEkadashi(phase,null);
-  const ti = Math.floor(phase / _SYNODIC * 30) % 30;
-  const badT = [7,13,22,28].includes(ti);
-  if(key==='griha'){
-    const gd=[1,3,4,5].includes(dow);
-    if(isAm||badT)   return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0906\u091c \u0917\u0943\u0939 \u092a\u094d\u0930\u0935\u0947\u0936 \u0905\u0936\u0941\u092d', le:'\ud83d\udd34 Better to wait', se:'Inauspicious tithi today', lk:'strength.better_to_wait', sk:'strength.sub_inauspicious_tithi_today'};
-    if(isS&&gd)      return{s:'green', lh:'\ud83d\udfe2 \u0906\u091c \u0936\u0941\u092d \u0939\u0948', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0936\u0941\u092d \u0935\u093e\u0930', le:'\ud83d\udfe2 Good today', se:'Shukla Paksha + good weekday', lk:'strength.good_today', sk:'strength.sub_shukla_paksha_good_weekday'};
-    if(isS)          return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948', sh:'\u0935\u093e\u0930 \u0914\u0930 \u092c\u0947\u0939\u0924\u0930 \u0939\u094b \u0938\u0915\u0924\u093e', le:'\ud83d\udfe1 Average today', se:'Weekday could be better', lk:'strength.average_today', sk:'strength.sub_weekday_could_be_better'};
-                     return{s:'red',   lh:'\ud83d\udd34 \u092a\u094d\u0930\u0924\u0940\u0915\u094d\u0937\u093e \u0915\u0930\u0947\u0902', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Better to wait', se:'Best in Shukla Paksha', lk:'strength.better_to_wait', sk:'strength.sub_best_in_shukla_paksha'};
-  }
-  if(key==='vehicle'){
-    const gd=[2,3].includes(dow);
-    if(isAm)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u091f\u093e\u0932\u0947\u0902', sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e \u2014 \u0935\u093e\u0939\u0928 \u0928 \u0932\u0947\u0902', le:'\ud83d\udd34 Avoid today', se:'Amavasya \u2014 not for vehicles', lk:'strength.avoid_today', sk:'strength.sub_amavasya_not_for_vehicles'};
-    if(gd&&!badT)    return{s:'green', lh:'\ud83d\udfe2 \u0905\u091a\u094d\u091b\u093e \u0926\u093f\u0928', sh:'\u092e\u0902\u0917\u0932/\u092c\u0941\u0927 \u0935\u093e\u0930 \u2014 \u0936\u0941\u092d', le:'\ud83d\udfe2 Good today', se:'Mars/Mercury day \u2014 ideal', lk:'strength.good_today_2', sk:'strength.sub_mars_mercury_day_ideal'};
-    if(badT)         return{s:'yellow',lh:'\ud83d\udfe1 \u0938\u093e\u092e\u093e\u0928\u094d\u092f \u0926\u093f\u0928', sh:'\u0930\u093e\u0939\u0941 \u0915\u093e\u0932 \u0938\u0947 \u092c\u091a\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Avoid Rahu Kaal', lk:'strength.average_today_2', sk:'strength.sub_avoid_rahu_kaal'};
-                     return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915-\u0920\u093e\u0915', sh:'\u0909\u0924\u094d\u0924\u0930\u093e/\u0939\u0938\u094d\u0924 \u0928\u0915\u094d\u0937\u0924\u094d\u0930 \u0926\u0947\u0916\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Uttara/Hasta Nakshatra preferred', lk:'strength.average_today_3', sk:'strength.sub_uttara_hasta_nakshatra_preferred'};
-  }
-  if(key==='business'){
-    if(isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0928\u0939\u0940\u0902', sh:'\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not today', se:'Ekadashi \u2014 avoid new starts', lk:'strength.not_today', sk:'strength.sub_ekadashi_avoid_new_starts'};
-    if(dow===3&&isS) return{s:'green', lh:'\ud83d\udfe2 \u092c\u0947\u0939\u0924\u0930\u0940\u0928 \u0926\u093f\u0928', sh:'\u092c\u0941\u0927\u0935\u093e\u0930 + \u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u0909\u0924\u094d\u0924\u092e', le:'\ud83d\udfe2 Excellent today', se:'Wednesday + Shukla Paksha', lk:'strength.excellent_today', sk:'strength.sub_wednesday_shukla_paksha'};
-    if(dow===3||isS) return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948', sh:'\u0905\u092d\u093f\u091c\u093f\u0924 \u092e\u0941\u0939\u0942\u0930\u094d\u0924 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Best in Abhijit Muhurta', lk:'strength.average_today', sk:'strength.sub_best_in_abhijit_muhurta'};
-                     return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928', sh:'\u0932\u093e\u092d \u091a\u094c\u0918\u0921\u093c\u093f\u092f\u093e \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udfe1 Average today', se:'Best in Labh Choghadiya', lk:'strength.average_today_4', sk:'strength.sub_best_in_labh_choghadiya'};
-  }
-  if(key==='newstart'){
-    if(isAm||isEk)         return{s:'red',   lh:'\ud83d\udd34 \u0906\u091c \u0909\u091a\u093f\u0924 \u0928\u0939\u0940\u0902', sh:'\u0905\u092e\u093e\u0935\u0938\u094d\u092f\u093e/\u090f\u0915\u093e\u0926\u0936\u0940 \u2014 \u0928\u092f\u093e \u0915\u093e\u092e \u0928 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902', le:'\ud83d\udd34 Not ideal', se:'Amavasya/Ekadashi \u2014 avoid new starts', lk:'strength.not_ideal', sk:'strength.sub_amavasya_ekadashi_avoid_new_starts'};
-    if(isS&&![0,6].includes(dow)) return{s:'green', lh:'\ud83d\udfe2 \u0936\u0941\u092d \u0906\u0930\u0902\u092d', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 + \u0938\u092a\u094d\u0924\u093e\u0939 \u0915\u093e \u0926\u093f\u0928', le:'\ud83d\udfe2 Good to start', se:'Shukla Paksha weekday \u2014 auspicious', lk:'strength.good_to_start', sk:'strength.sub_shukla_paksha_weekday_auspicious'};
-    if(isS)                return{s:'yellow',lh:'\ud83d\udfe1 \u0920\u0940\u0915 \u0939\u0948', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u2014 \u092e\u0902\u0917\u0932-\u0936\u0928\u093f \u091b\u094b\u0921\u093c\u0915\u0930', le:'\ud83d\udfe1 Average today', se:'Shukla Paksha \u2014 avoid Tue/Sat', lk:'strength.average_today', sk:'strength.sub_shukla_paksha_avoid_tue_sat'};
-                           return{s:'yellow',lh:'\ud83d\udfe1 \u0914\u0938\u0924 \u0926\u093f\u0928', sh:'\u0936\u0941\u0915\u094d\u0932 \u092a\u0915\u094d\u0937 \u092e\u0947\u0902 \u0936\u0941\u0930\u0942 \u0915\u0930\u0928\u093e \u092c\u0947\u0939\u0924\u0930', le:'\ud83d\udfe1 Average today', se:'Better in Shukla Paksha', lk:'strength.average_today_4', sk:'strength.sub_better_in_shukla_paksha'};
-  }
-  return{s:'yellow',lh:'\ud83d\udfe1', sh:'', le:'\ud83d\udfe1', se:'', lk:'strength.', sk:'strength.sub_blank'};
+  var R=MUHURTA_RULES[key]; var d=muhurtaDay();
+  /* No engine yet, or no rule: say nothing rather than guess. The old code
+     guessed, and that is how a prohibited day earned three stars. */
+  if(!R||!d) return {s:'yellow', lh:'—', sh:'', le:'—', se:'',
+                     lk:'strength.checking', sk:''};
+  var nakOk = R.nak.indexOf(d.nak)>=0;
+  var tithiOk = R.badTithi.indexOf(d.tin)<0 && !d.amavasya;
+  var dowOk = R.weekday.indexOf(d.dow)>=0;
+  var pakshaOk = R.shuklaOnly ? d.shukla : true;
+  if(!tithiOk || d.amavasya)
+    return {s:'red', lh:'🔴 प्रतीक्षा करें', sh:'आज तिथि अशुभ',
+            le:'🔴 Better to wait', se:'Tithi not suitable today',
+            lk:'strength.better_to_wait', sk:'strength.sub_inauspicious_tithi_today'};
+  if(!nakOk)
+    return {s:'red', lh:'🔴 प्रतीक्षा करें', sh:'आज का नक्षत्र उपयुक्त नहीं',
+            le:'🔴 Better to wait', se:'Nakshatra not suitable today',
+            lk:'strength.better_to_wait', sk:'strength.sub_nakshatra_not_suitable'};
+  if(nakOk && tithiOk && dowOk && pakshaOk)
+    return {s:'green', lh:'🟢 आज शुभ है', sh:'नक्षत्र, तिथि और वार तीनों अनुकूल',
+            le:'🟢 Good today', se:'Nakshatra, tithi and weekday all suitable',
+            lk:'strength.good_today', sk:'strength.sub_nak_tithi_weekday_all_good'};
+  return {s:'yellow', lh:'🟡 ठीक है', sh:(!dowOk?'वार और बेहतर हो सकता':'पक्ष और बेहतर हो सकता'),
+          le:'🟡 Average today', se:(!dowOk?'Weekday could be better':'Paksha could be better'),
+          lk:'strength.average_today',
+          sk:(!dowOk?'strength.sub_weekday_could_be_better':'strength.sub_paksha_could_be_better')};
 }
 
 function getNextGoodDates(key, count){
