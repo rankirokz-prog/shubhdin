@@ -2521,6 +2521,14 @@ var SD_FEST_ALIAS = {
 };
 function sdCalName(e){
   if(!e) return '';
+  /* FESTIVAL v2: every engine rule now carries a stable `fkey`, and its name is
+     cal.name_<fkey> in nine languages. That is the route from here on.
+     The alias table below is the INTERIM path — it exists only because the
+     engine's slug and the sheet's key never matched, which is why every
+     festival rendered in Hindi on a Telugu screen. Once the sheet carries a
+     cal.name_ entry for all 75 keys, delete the alias table and the slug
+     lookup with it. Order matters: fkey, then alias, then slug. */
+  if(e.fkey && typeof sdHas==='function' && sdHas('cal.name_'+e.fkey)) return A('cal.name_'+e.fkey);
   if(e.en && SD_FEST_ALIAS[e.en] && typeof sdHas==='function'
      && sdHas('cal.name_'+SD_FEST_ALIAS[e.en])) return A('cal.name_'+SD_FEST_ALIAS[e.en]);
   if(e.en && typeof sdHas==='function' && sdHas('cal.name_'+sdSlug(e.en))) return A('cal.name_'+sdSlug(e.en));
@@ -7575,8 +7583,13 @@ function calObservances(year,month){
       (PE.getVrats(year,c.lat,c.lng,sdTzHours())||[]).forEach(function(v){
         if(v.date.indexOf(pre)===0) put(v.date,{hi:v.hi,en:v.en,i:'🙏',cat:'vrat'});
       });
-      (PE.getFestivals(year,c.lat,c.lng,sdTzHours())||[]).forEach(function(f){
-        if(f.date.indexOf(pre)===0) put(f.date,{hi:f.hi,en:f.en,i:'🪔',cat:'major'});
+      /* FESTIVAL v2: the reader's LANGUAGE decides the region (a Telugu family in
+         New Jersey wants Telugu festivals). A span (Navratri, Pitru Paksha) is
+         one row with `end`; it is put on its start day and carried on its end day. */
+      var _rg=(PE.REGIONS_FOR_LANG&&PE.REGIONS_FOR_LANG[window.SD_LANG||'hi'])||['all'];
+      (PE.getFestivals(year,c.lat,c.lng,sdTzHours(),{regions:_rg})||[]).forEach(function(f){
+        if(f.date.indexOf(pre)===0) put(f.date,{hi:f.hi,en:f.en,fkey:f.key,end:f.end||null,i:'🪔',cat:'major'});
+        if(f.end&&f.end!==f.date&&f.end.indexOf(pre)===0) put(f.end,{hi:f.hi,en:f.en,fkey:f.key,spanEnd:true,i:'🪔',cat:'major'});
       });
     }catch(e){}
   }
@@ -8381,7 +8394,8 @@ function getVratsThisWeek(){
       const c=pgCoords(), Y=today.getFullYear();
       const add=(arr,ico)=>(arr||[]).forEach(x=>{ (engineHits[x.date]=engineHits[x.date]||[]).push({h:x.hi,e:x.en,i:ico}); });
       add(PE.getVrats(Y,c.lat,c.lng,sdTzHours()),'🙏');
-      add(PE.getFestivals(Y,c.lat,c.lng,sdTzHours()),'🪔');
+      var _rg2=(PE.REGIONS_FOR_LANG&&PE.REGIONS_FOR_LANG[window.SD_LANG||'hi'])||['all'];
+      (PE.getFestivals(Y,c.lat,c.lng,sdTzHours(),{regions:_rg2})||[]).forEach(x=>{ (engineHits[x.date]=engineHits[x.date]||[]).push({h:x.hi,e:x.en,fkey:x.key,i:'🪔'}); });
     }catch(e){}
   }
 
@@ -8427,7 +8441,7 @@ function renderVrats(){
         <div style="font-size:8px;color:${v.isToday?'var(--gold)':'rgba(255,255,255,0.35)'};margin-top:2px;font-weight:600;">${v.label}</div>
       </div>
       <div style="flex:1;">
-        ${v.dayVrats.map(vt=>`<div style="font-size:13px;color:rgba(255,255,255,0.80);font-weight:500;">${sdCalName({hi:vt.h,en:vt.e})}</div>`).join('')}
+        ${v.dayVrats.map(vt=>`<div style="font-size:13px;color:rgba(255,255,255,0.80);font-weight:500;">${sdCalName({hi:vt.h,en:vt.e,fkey:vt.fkey})}</div>`).join('')}
       </div>
       <div style="font-size:20px;color:rgba(255,255,255,0.80);font-weight:300;">${v.date}</div>
     </div>`).join('');
@@ -8505,7 +8519,7 @@ function renderMuhurat(){
     const nextHtml = next.length ? `<div style="font-size:9px;color:rgba(255,255,255,0.90);margin-top:5px;">${A('dashbo.next')} <span style="color:rgba(212,168,67,0.78);">${next.join(' \u2022 ')}</span></div>` : '';
     return `<div style="background:${BG[st.s]};border:1px solid ${BR[st.s]};border-radius:12px;padding:11px 8px;text-align:center;cursor:pointer;" onclick="showMuhuratDetail('${m.key}')">
       <div style="font-size:20px;margin-bottom:4px;">${m.i}</div>
-      <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${sdCalName({hi:m.h,en:m.e})}</div>
+      <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);margin-bottom:5px;">${sdCalName({hi:m.h,en:m.e,fkey:m.fkey})}</div>
       <div style="font-size:10px;font-weight:700;color:${CL[st.s]};">${L3(st.lh,st.le,st.lk)}</div>
       <div style="font-size:8px;color:rgba(255,255,255,0.74);margin-top:2px;">${L3(st.sh,st.se,st.sk)}</div>
       ${nextHtml}
