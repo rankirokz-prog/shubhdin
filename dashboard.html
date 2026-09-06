@@ -5500,7 +5500,31 @@ async function sdBackfillTz(){
 function pgCoords(){
   return {lat:(U.city_lat!=null?U.city_lat:16.7107), lng:(U.city_lon!=null?U.city_lon:81.0952)};
 }
+/* ══ SD-PGFMT-ZONE ══════════════════════════════════════════════════════════
+   getHours() READS THE DEVICE'S TIMEZONE, NOT THE CITY'S.
+
+   The engine computes every window as a real instant and is given the right
+   timezone, so its arithmetic was never wrong. This formatter then threw that
+   away and rendered the instant in whatever zone the phone happened to be in.
+
+   On an Indian phone with a Dallas profile that is +10:30: sunrise printed as
+   17:35, Abhijit at 23:30, Rahu Kaal in the middle of the night. Every time on
+   the panchang goes through this one function — sunrise, sunset, Rahu Kaal,
+   Gulika, Yamaganda, Abhijit, Brahma Muhurta, Choghadiya, Hora, varjyam,
+   amrit kaal, and every tithi/nakshatra end time.
+
+   It is invisible to a user in India, whose device zone and city zone agree —
+   which is exactly why it survived every test until someone set a US city. */
 function pgFmt(x){ if(!x) return ''; var d=new Date(x);
+  try{
+    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    if(u.city_tz && window.sdTz && sdTz.isZone(u.city_tz)){
+      var w=sdTz.instantToWall(d, u.city_tz);
+      if(w && w.hhmm) return w.hhmm;
+    }
+  }catch(e){}
+  /* No zone on the profile — the device's clock is the only thing left, and
+     for a user in their own city it is right. */
   return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 function pgRange(w){ return w?(pgFmt(w.start)+'–'+pgFmt(w.end)):''; }
 /* Shape engine output into the flat form this page already renders, so every
