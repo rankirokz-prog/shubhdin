@@ -838,13 +838,20 @@
   var ALL = ['all'];
   var FESTIVAL_RULES = [
     /* ── solar ── */
-    { key:'makar_sankranti', en:'Makar Sankranti', hi:'\u092E\u0915\u0930 \u0938\u0902\u0915\u094D\u0930\u093E\u0902\u0924\u093F', rule:'sankranti', deg:270, approxMonth:0, approxDay:14, regions:ALL },
-    { key:'bhogi',     en:'Bhogi',     hi:'\u092D\u094B\u0917\u0940',       rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:-1, regions:['ap','ts','tn','ka'] },
-    { key:'kanuma',    en:'Kanuma',    hi:'\u0915\u0928\u0941\u092E\u093E', rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:1,  regions:['ap','ts'] },
-    { key:'mukkanuma', en:'Mukkanuma', hi:'\u092E\u0941\u0915\u094D\u0915\u0928\u0941\u092E\u093E', rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:2, regions:['ap'], verify:true },
-    { key:'pongal',    en:'Pongal (Bhogi to Kaanum)', hi:'\u092A\u094B\u0902\u0917\u0932', rule:'solar_offset', deg:270, approxMonth:0, approxDay:14, offsetDays:-1, spanDays:4, regions:['tn'] },
-    { key:'magh_bihu', en:'Magh Bihu', hi:'\u092E\u093E\u0918 \u092C\u093F\u0939\u0942', rule:'sankranti', deg:270, approxMonth:0, approxDay:14, regions:['as'] },
-    { key:'tamil_new_year', en:'Puthandu (Tamil New Year)', hi:'\u0924\u092E\u093F\u0932 \u0928\u0935 \u0935\u0930\u094D\u0937', rule:'sankranti', deg:0, approxMonth:3, approxDay:14, regions:['tn'] },
+        /* ══ SD-SANKRANTI-CUTOFF ══ Ram's ruling, confirmed against Drik: the solar
+       month begins on the crossing day when the crossing is BEFORE local sunset,
+       and on the following day when it is after. Drik: 14 Jan 2026 (crossing
+       15:03 IST, before sunset) and 15 Jan 2027 (21:05 IST, after sunset).
+       All five rules below hang off that one day so they move together; it is
+       the `solar_day` rule the Tamil New Year already used. day:1 is that day,
+       day:0 the eve (Bhogi), day:2/3 the days after. */
+    { key:'makar_sankranti', en:'Makar Sankranti', hi:'\u092E\u0915\u0930 \u0938\u0902\u0915\u094D\u0930\u093E\u0902\u0924\u093F', rule:'solar_day', deg:270, approxMonth:0, approxDay:14, day:1, regions:ALL },
+    { key:'bhogi',     en:'Bhogi',     hi:'\u092D\u094B\u0917\u0940',       rule:'solar_day', deg:270, approxMonth:0, approxDay:14, day:0, regions:['ap','ts','tn','ka'] },
+    { key:'kanuma',    en:'Kanuma',    hi:'\u0915\u0928\u0941\u092E\u093E', rule:'solar_day', deg:270, approxMonth:0, approxDay:14, day:2, regions:['ap','ts'] },
+    { key:'mukkanuma', en:'Mukkanuma', hi:'\u092E\u0941\u0915\u094D\u0915\u0928\u0941\u092E\u093E', rule:'solar_day', deg:270, approxMonth:0, approxDay:14, day:3, regions:['ap'], verify:true },
+    { key:'pongal',    en:'Pongal (Bhogi to Kaanum)', hi:'\u092A\u094B\u0902\u0917\u0932', rule:'solar_day', deg:270, approxMonth:0, approxDay:14, day:1, spanDays:4, regions:['tn'] },   /* Thai Pongal (the solar-month day 1) to Kaanum; Bhogi is the separate row above */
+    { key:'magh_bihu', en:'Magh Bihu', hi:'\u092E\u093E\u0918 \u092C\u093F\u0939\u0942', rule:'sunrise_after_sankranti', deg:270, approxMonth:0, approxDay:14, regions:['as'] },   /* Ram: 15 Jan 2026 — the feast follows Uruka night */
+    { key:'tamil_new_year', en:'Puthandu (Tamil New Year)', hi:'\u0924\u092E\u093F\u0932 \u0928\u0935 \u0935\u0930\u094D\u0937', rule:'solar_day', deg:0, approxMonth:3, approxDay:14, day:1, regions:['tn'] },
     { key:'poila_boishakh', en:'Poila Boishakh', hi:'\u092A\u094B\u0907\u0932\u093E \u092C\u094B\u0907\u0936\u093E\u0916', rule:'solar_offset', deg:0, approxMonth:3, approxDay:14, offsetDays:1, regions:['wb'], verify:true },
     { key:'bohag_bihu', en:'Bohag Bihu', hi:'\u092C\u094B\u0939\u093E\u0917 \u092C\u093F\u0939\u0942', rule:'solar_offset', deg:0, approxMonth:3, approxDay:14, offsetDays:0, spanDays:2, regions:['as'], verify:true },
     { key:'kati_bihu', en:'Kati Bihu', hi:'\u0915\u093E\u0924\u093F \u092C\u093F\u0939\u0942', rule:'solar_offset', deg:180, approxMonth:9, approxDay:17, offsetDays:1, regions:['as'], verify:true },
@@ -854,12 +861,20 @@
     { key:'ratha_saptami', en:'Ratha Saptami', hi:'\u0930\u0925 \u0938\u092A\u094D\u0924\u092E\u0940', month:10, paksha:'S', tithi:7, anchor:'udaya', regions:['ap','ts','ka','tn','mh'] },
     { key:'vasant_panchami', en:'Vasant Panchami', hi:'\u0935\u0938\u0902\u0924 \u092A\u0902\u091A\u092E\u0940', month:10, paksha:'S', tithi:5, anchor:'udaya', regions:ALL },
     { key:'maha_shivaratri', en:'Maha Shivaratri', hi:'\u092E\u0939\u093E\u0936\u093F\u0935\u0930\u093E\u0924\u094D\u0930\u093F', month:10, paksha:'K', tithi:14, anchor:'nishita', regions:ALL },
+    /* Ram's ruling: 3 / 4 March 2026. Purnima touches the pradosh window on two
+       consecutive evenings; every published almanac takes the LATER. Same
+       paraviddha shape as Bhai Dooj, now applied to the pradosh anchor. */
     { key:'holika_dahan', en:'Holika Dahan', hi:'\u0939\u094B\u0932\u093F\u0915\u093E \u0926\u0939\u0928', month:11, paksha:'S', tithi:15, anchor:'pradosh', regions:['north','gj','mh'] },
+    /* HELD: Ram ruled 3 Mar 2026 and the almanacs agree, but plain pradosh gives
+       2 Mar. Adding avoidBhadra moves 2026 to the 3rd correctly and then moves
+       2027 and 2028 a day late — so the coarse "any Bhadra overlap" test is
+       wrong; the tradition shifts only when Bhadra occupies the pradosh window
+       itself. That sub-rule needs the muhurta detail, not another anchor. */
     { key:'holi', en:'Holi', hi:'\u0939\u094B\u0932\u0940', month:11, paksha:'S', tithi:15, anchor:'pradosh', nextDay:1, regions:ALL },
 
     /* ── Chaitra ── */
     { key:'ugadi', en:'Ugadi / Gudi Padwa', hi:'\u0909\u0917\u093E\u0926\u093F / \u0917\u0941\u0921\u093C\u0940 \u092A\u0921\u093C\u0935\u093E', month:0, paksha:'S', tithi:1, anchor:'udaya', regions:ALL },
-    { key:'chaitra_navratri', en:'Chaitra Navratri', hi:'\u091A\u0948\u0924\u094D\u0930 \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F', rule:'span', month:0, paksha:'S', tithi:1, endPaksha:'S', endTithi:9, anchor:'udaya', endAnchor:'madhyahna', regions:['north','gj','mh'] },
+    { key:'chaitra_navratri', en:'Chaitra Navratri', hi:'\u091A\u0948\u0924\u094D\u0930 \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F', rule:'span', month:0, paksha:'S', tithi:1, endPaksha:'S', endTithi:9, anchor:'udaya', endAnchor:'udaya', regions:['north','gj','mh'] },
     { key:'rama_navami', en:'Rama Navami', hi:'\u0930\u093E\u092E \u0928\u0935\u092E\u0940', month:0, paksha:'S', tithi:9, anchor:'madhyahna', regions:ALL },
     { key:'mahavir_jayanti', en:'Mahavir Jayanti', hi:'\u092E\u0939\u093E\u0935\u0940\u0930 \u091C\u092F\u0902\u0924\u0940', month:0, paksha:'S', tithi:13, anchor:'udaya', regions:ALL, verify:true },
     /* Hanuman Jayanti differs by region (Drik/Wikipedia 2026: north 2 Apr, Telugu
@@ -889,15 +904,15 @@
     /* ── Bhadrapada ── */
     { key:'ganesh_chaturthi', en:'Ganesh Chaturthi', hi:'\u0917\u0923\u0947\u0936 \u091A\u0924\u0941\u0930\u094D\u0925\u0940', month:5, paksha:'S', tithi:4, anchor:'madhyahna', regions:ALL },
     { key:'ganesh_utsav', en:'Ganeshotsav (10 days)', hi:'\u0917\u0923\u0947\u0936\u094B\u0924\u094D\u0938\u0935', rule:'span', month:5, paksha:'S', tithi:4, endPaksha:'S', endTithi:14, anchor:'madhyahna', endAnchor:'udaya', regions:['mh'] },
-    { key:'jyeshtha_gauri', en:'Jyeshtha Gauri Puja', hi:'\u091C\u094D\u092F\u0947\u0937\u094D\u0920\u093E \u0917\u094C\u0930\u0940 \u092A\u0942\u091C\u093E', rule:'nakshatra_on_tithi', nak:16, month:5, paksha:'S', tithi:7, anchor:'udaya', regions:['mh'], verify:true },
+    { key:'jyeshtha_gauri', en:'Jyeshtha Gauri Puja', hi:'\u091C\u094D\u092F\u0947\u0937\u094D\u0920\u093E \u0917\u094C\u0930\u0940 \u092A\u0942\u091C\u093E', rule:'nakshatra_on_tithi', nak:17, month:5, paksha:'S', tithi:7, anchor:'udaya', regions:['mh'], verify:true },   /* Avahana is on Anuradha; the PUJA the festival is named for is on Jyeshtha */
     { key:'anant_chaturdashi', en:'Anant Chaturdashi', hi:'\u0905\u0928\u0902\u0924 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month:5, paksha:'S', tithi:14, anchor:'udaya', regions:ALL },
     { key:'pitru_paksha', en:'Pitru Paksha', hi:'\u092A\u093F\u0924\u0943 \u092A\u0915\u094D\u0937', rule:'span', month:5, paksha:'S', tithi:15, endPaksha:'K', endTithi:15, anchor:'aparahna', endAnchor:'aparahna', regions:ALL },
     { key:'mahalaya_amavasya', en:'Mahalaya Amavasya', hi:'\u092E\u0939\u093E\u0932\u092F\u093E \u0905\u092E\u093E\u0935\u0938\u094D\u092F\u093E', month:5, paksha:'K', tithi:15, anchor:'aparahna', regions:ALL },
     { key:'bathukamma', en:'Bathukamma', hi:'\u092C\u0924\u0941\u0915\u092E\u094D\u092E\u093E', rule:'span', month:5, paksha:'K', tithi:15, endMonth:6, endPaksha:'S', endTithi:8, anchor:'udaya', regions:['ts'], verify:true },
 
     /* ── Ashwin ── */
-    { key:'sharad_navratri', en:'Sharad Navratri', hi:'\u0936\u093E\u0930\u0926\u0940\u092F \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F', rule:'span', month:6, paksha:'S', tithi:1, endPaksha:'S', endTithi:9, anchor:'udaya', endAnchor:'aparahna', regions:ALL },
-    { key:'durga_puja', en:'Durga Puja', hi:'\u0926\u0941\u0930\u094D\u0917\u093E \u092A\u0942\u091C\u093E', rule:'span', month:6, paksha:'S', tithi:6, endPaksha:'S', endTithi:10, anchor:'udaya', endAnchor:'aparahna', regions:['wb','as','north'] },
+    { key:'sharad_navratri', en:'Sharad Navratri', hi:'\u0936\u093E\u0930\u0926\u0940\u092F \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F', rule:'span', month:6, paksha:'S', tithi:1, spanDays:9, anchor:'udaya', regions:ALL },
+    { key:'durga_puja', en:'Durga Puja', hi:'\u0926\u0941\u0930\u094D\u0917\u093E \u092A\u0942\u091C\u093E', rule:'span', month:6, paksha:'S', tithi:6, spanDays:5, anchor:'udaya', regions:['wb','as','north'] },   /* Shashthi to Dashami = five days */
     { key:'durga_ashtami', en:'Durga Ashtami', hi:'\u0926\u0941\u0930\u094D\u0917\u093E \u0905\u0937\u094D\u091F\u092E\u0940', month:6, paksha:'S', tithi:8, anchor:'udaya', regions:ALL },
     { key:'maha_navami', en:'Maha Navami', hi:'\u092E\u0939\u093E \u0928\u0935\u092E\u0940', month:6, paksha:'S', tithi:9, anchor:'aparahna', regions:ALL },
     { key:'vijayadashami', en:'Vijayadashami (Dussehra)', hi:'\u0935\u093F\u091C\u092F\u093E\u0926\u0936\u092E\u0940 (\u0926\u0936\u0939\u0930\u093E)', month:6, paksha:'S', tithi:10, anchor:'aparahna', regions:ALL },
@@ -1127,6 +1142,10 @@
     function windowQualifies(dayMs, Ts, Te, anchor) {
       var noon = new Date(dayMs + 6 * 3600000), sr = findSunrise(noon, lat, lng, tz), ss = findSunset(noon, lat, lng, tz);
       if (!sr || !ss) return false;
+      if (anchor === 'pradosh') {                       // 2h24m from sunset
+        var pS = ss.getTime(), pE = ss.getTime() + 2.4 * 3600000;
+        return pS < Te && pE > Ts;
+      }
       var D5 = (ss.getTime() - sr.getTime()) / 5, wi = (anchor === 'madhyahna') ? 2 : 3;
       var wS = sr.getTime() + wi * D5, wE = sr.getTime() + (wi + 1) * D5;
       return wS < Te && wE > Ts;
@@ -1136,7 +1155,9 @@
       var w = tithiWindow(M, paksha, tithi);
       var d = anchorDay(w.Ts, w.Te, anchor || 'udaya', lat, lng, tz, !!avoidBhadra);
       /* paraviddha: if the NEXT day's window also qualifies, that day wins */
-      if (paraviddha && (anchor === 'aparahna' || anchor === 'madhyahna') && windowQualifies(d + 86400000, w.Ts, w.Te, anchor)) d += 86400000;
+      if (paraviddha) {
+        if ((anchor === 'aparahna' || anchor === 'madhyahna' || anchor === 'pradosh') && windowQualifies(d + 86400000, w.Ts, w.Te, anchor)) d += 86400000;
+      }
       return d;
     }
     function monthsOf(index) { return months.filter(function (M) { return M.index === index && !M.adhik; }); }
@@ -1158,13 +1179,20 @@
           var cross = sidSunCross(F.deg, Date.UTC(yearCE, F.approxMonth, F.approxDay));
           var d0 = localDay0(cross) + (F.offsetDays || 0) * 86400000;
           emit(F, d0, F.spanDays ? d0 + (F.spanDays - 1) * 86400000 : null);
+        } else if (F.rule === 'sunrise_after_sankranti') {
+          var cs = sidSunCross(F.deg, Date.UTC(yearCE, F.approxMonth, F.approxDay));
+          var dcand = localDay0(cs);
+          var sr0 = findSunrise(new Date(dcand + 6 * 3600000), lat, lng, tz);
+          if (sr0 && sr0.getTime() < cs) dcand += 86400000;     // crossing after today's sunrise → tomorrow
+          emit(F, dcand, null);
         } else if (F.rule === 'solar_day') {
           /* day 1 of a solar month is the ingress day if the ingress comes
              before local sunset, else the next day (Tamil almanac rule) */
           var cr = sidSunCross(F.deg, Date.UTC(yearCE, F.approxMonth, F.approxDay));
           var dIng = localDay0(cr); var ss = findSunset(new Date(dIng + 6 * 3600000), lat, lng, tz);
           var day1 = (ss && cr < ss.getTime()) ? dIng : dIng + 86400000;
-          emit(F, day1 + (F.day - 1) * 86400000, null);
+          var d1 = day1 + ((F.day == null ? 1 : F.day) - 1) * 86400000;
+          emit(F, d1, F.spanDays ? d1 + (F.spanDays - 1) * 86400000 : null);
         } else if (F.rule === 'gregorian') {
           emit(F, Date.UTC(yearCE, F.gMonth - 1, F.gDay) - tz * 3600000 + 6 * 3600000 - 6 * 3600000, null);
         } else if (F.rule === 'easter') {
@@ -1238,7 +1266,11 @@
           });
         } else if (F.rule === 'span') {
           monthsOf(F.month).forEach(function (M) {
-            var sd = tithiDay(M, F.paksha, F.tithi, F.anchor, F.avoidBhadra);
+            var sd = tithiDay(M, F.paksha, F.tithi, F.anchor, F.avoidBhadra, F.paraviddha);
+            /* spanDays: the almanacs count Navratri and Durga Puja as a fixed
+               number of CIVIL days from the opening day, not "until tithi N" —
+               which is why a skipped tithi used to shorten them by a day. */
+            if (F.spanDays) { emit(F, sd, sd + (F.spanDays - 1) * 86400000); return; }
             var ME = M;
             if (F.endMonth != null && F.endMonth !== F.month) { var nx = monthsOf(F.endMonth).filter(function (X) { return X.start >= M.end - 86400000; }); if (!nx.length) return; ME = nx[0]; }
             var ed = tithiDay(ME, F.endPaksha || F.paksha, F.endTithi, F.endAnchor || F.anchor);
