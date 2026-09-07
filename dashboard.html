@@ -8518,7 +8518,12 @@ var MUHURTA_RULES={
          N.dhanishta,N.shatabhisha,N.uttarabhadrapada,N.revati],
     badTithi:RIKTA.concat([1,8,15,30]),        /* + pratipada, ashtami, purnima-amavasya edges */
     weekday:[1,3,4,5],                          /* Mon Wed Thu Fri */
-    shuklaOnly:true },
+    /* RAM'S RULING. Shukla-only gave 22 green days a year — correct but so
+       sparse that whole months came back empty, and an empty calendar sends a
+       devotee to another app rather than making them wait. Krishna paksha up
+       to Dashami is well supported across the regional schools; the Rikta
+       tithis stay excluded in BOTH fortnights, which is the part that matters. */
+    shuklaOnly:false, krishnaMaxTithi:10 },
   vehicle:{ verify:true,
     nak:[N.ashwini,N.rohini,N.mrigashira,N.punarvasu,N.pushya,N.hasta,N.chitra,
          N.swati,N.anuradha,N.dhanishta,N.shatabhisha,N.revati],
@@ -8535,23 +8540,35 @@ var MUHURTA_RULES={
     badTithi:RIKTA.concat([8,30]),
     weekday:[1,3,4,5], shuklaOnly:false }
 };
-/* the real panchang for a date, or null — never an approximation */
+/* the real panchang for a date, or null — never an approximation.
+   Cached per day: getNextGoodDates walks 90 days across four occasions, and
+   without this that is 360 engine runs on every render. */
+var _muhCache={};
 function muhurtaDay(date){
   try{
     var PE=window.PanchangEngine; if(!PE) return null;
+    var d=date||new Date();
+    var ck=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
+    if(_muhCache[ck]!==undefined) return _muhCache[ck];
     var c=pgCoords();
-    var p=PE.getPanchang(date||new Date(), c.lat, c.lng, sdTzHours());
-    if(!p||!p.tithi||!p.nakshatra) return null;
+    var p=PE.getPanchang(d, c.lat, c.lng, sdTzHours());
+    if(!p||!p.tithi||!p.nakshatra){ _muhCache[ck]=null; return null; }
     var idx=p.tithi.index;                       /* 0-29, zero-based */
-    return { nak:p.nakshatra.index,
+    var out={ nak:p.nakshatra.index,
              tin:(idx%15)+1,                     /* tithi within its fortnight, 1-15 */
              shukla:idx<=14,
              amavasya:idx===29, purnima:idx===14,
-             dow:(p.weekday&&typeof p.weekday.index==='number')?p.weekday.index:new Date().getDay() };
+             dow:(p.weekday&&typeof p.weekday.index==='number')?p.weekday.index:d.getDay() };
+    _muhCache[ck]=out; return out;
   }catch(e){ return null; }
 }
-function muhuratStatus(key, phase, dow){
-  var R=MUHURTA_RULES[key]; var d=muhurtaDay();
+/* THE SECOND ARGUMENT IS A DATE. It used to be a moon-phase number, and when I
+   first rewrote this function I ignored it and always scored TODAY — so
+   getNextGoodDates walked ninety days and got the same answer ninety times,
+   which is why the list still looked full of dates. */
+function muhuratStatus(key, when, dow){
+  var R=MUHURTA_RULES[key];
+  var d=muhurtaDay((when instanceof Date)?when:null);
   /* No engine yet, or no rule: say nothing rather than guess. The old code
      guessed, and that is how a prohibited day earned three stars. */
   if(!R||!d) return {s:'yellow', lh:'—', sh:'', le:'—', se:'',
@@ -8559,7 +8576,8 @@ function muhuratStatus(key, phase, dow){
   var nakOk = R.nak.indexOf(d.nak)>=0;
   var tithiOk = R.badTithi.indexOf(d.tin)<0 && !d.amavasya;
   var dowOk = R.weekday.indexOf(d.dow)>=0;
-  var pakshaOk = R.shuklaOnly ? d.shukla : true;
+  var pakshaOk = R.shuklaOnly ? d.shukla
+               : (R.krishnaMaxTithi ? (d.shukla || d.tin<=R.krishnaMaxTithi) : true);
   if(!tithiOk || d.amavasya)
     return {s:'red', lh:'🔴 प्रतीक्षा करें', sh:'आज तिथि अशुभ',
             le:'🔴 Better to wait', se:'Tithi not suitable today',
@@ -8584,8 +8602,9 @@ function getNextGoodDates(key, count){
   const today = new Date();
   for(let i=1; i<=90 && dates.length < count; i++){
     const d = new Date(today.getTime() + i*86400000);
-    const ph = calMoonPhase(d);
-    if(muhuratStatus(key, ph, d.getDay()).s === 'green') dates.push(d);
+    /* pass the DATE, not a moon-phase number — the scorer reads the real
+       engine for that day now. */
+    if(muhuratStatus(key, d, d.getDay()).s === 'green') dates.push(d);
   }
   const MEN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const MHI = ['\u091c\u0928','\u092b\u0930','\u092e\u093e\u0930','\u0905\u092a\u094d\u0930','\u092e\u0908','\u091c\u0942\u0928','\u091c\u0941\u0932','\u0905\u0917','\u0938\u093f\u0924','\u0905\u0915\u094d\u091f','\u0928\u0935','\u0926\u093f\u0938'];
