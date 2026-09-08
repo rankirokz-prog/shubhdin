@@ -2441,14 +2441,23 @@
       var nak = p.nakshatra.segments[0].index;
       var wd = p.vara.index;
       var tithiNum = p.tithi.segments[0].number || tithiNumberFromName(p.tithi.segments[0].en, p.tithi.paksha);
-      // nakshatra
-      if (rule.goodNak.indexOf(nak) >= 0) { score += 3; plus.push({en:'Auspicious nakshatra ('+p.nakshatra.segments[0].en+')', hi:'\u0936\u0941\u092D \u0928\u0915\u094D\u0937\u0924\u094D\u0930 ('+p.nakshatra.segments[0].hi+')'}); }
-      // weekday
-      if (rule.badDays.indexOf(wd) >= 0) { score -= 3; minus.push({en:'Unfavourable weekday ('+p.vara.en+')', hi:'\u0905\u0936\u0941\u092D \u0935\u093E\u0930 ('+p.vara.hi+')'}); }
-      else if (rule.goodDays.indexOf(wd) >= 0) { score += 2; plus.push({en:'Favourable weekday ('+p.vara.en+')', hi:'\u0936\u0941\u092D \u0935\u093E\u0930 ('+p.vara.hi+')'}); }
-      // tithi
-      if (rule.badTithi.indexOf(tithiNum) >= 0) { score -= 2; minus.push({en:'Avoid tithi ('+p.tithi.segments[0].en+')', hi:'\u0924\u094D\u092F\u093E\u091C\u094D\u092F \u0924\u093F\u0925\u093F ('+p.tithi.segments[0].hi+')'}); }
-      else if (rule.goodTithi.indexOf(tithiNum) >= 0) { score += 2; plus.push({en:'Auspicious tithi ('+p.tithi.segments[0].en+')', hi:'\u0936\u0941\u092D \u0924\u093F\u0925\u093F ('+p.tithi.segments[0].hi+')'}); }
+
+      // SD-MUHURTA-GATE (Sep 2026): eligibility is decided BEFORE ranking.
+      // These are hard classical gates, not score penalties. Personal strengths
+      // (Tarabalam / Chandrabalam) may rank a permitted day but can never buy a
+      // prohibited nakshatra, tithi, Amavasya or weekday back into the results.
+      if (rule.goodNak.indexOf(nak) < 0) continue;
+      if (rule.badTithi.indexOf(tithiNum) >= 0) continue;
+      if (tithiNum === 30 || p.tithi.segments[0].en === 'Amavasya') continue;
+      if (rule.badDays.indexOf(wd) >= 0) continue;
+
+      // nakshatra — every survivor is in the activity's permit list
+      score += 3;
+      plus.push({en:'Auspicious nakshatra ('+p.nakshatra.segments[0].en+')', hi:'\u0936\u0941\u092D \u0928\u0915\u094D\u0937\u0924\u094D\u0930 ('+p.nakshatra.segments[0].hi+')'});
+      // weekday — prohibited weekdays were gated above; favourable ones rank higher
+      if (rule.goodDays.indexOf(wd) >= 0) { score += 2; plus.push({en:'Favourable weekday ('+p.vara.en+')', hi:'\u0936\u0941\u092D \u0935\u093E\u0930 ('+p.vara.hi+')'}); }
+      // tithi — prohibited tithis were gated above; favourable ones rank higher
+      if (rule.goodTithi.indexOf(tithiNum) >= 0) { score += 2; plus.push({en:'Auspicious tithi ('+p.tithi.segments[0].en+')', hi:'\u0936\u0941\u092D \u0924\u093F\u0925\u093F ('+p.tithi.segments[0].hi+')'}); }
       // Bhadra (Vishti karana)
       if (p.karana.segments[0].en === 'Vishti') { score -= 2; minus.push({en:'Bhadra (Vishti karana) present', hi:'\u092D\u0926\u094D\u0930\u093E (\u0935\u093F\u0937\u094D\u091F\u093F \u0915\u0930\u0923)'}); }
       // USER tarabalam: is the day's nakshatra good for THIS person?
@@ -2471,7 +2480,9 @@
         var ps = new Date(p.panchaka.start).getTime(), pe = new Date(p.panchaka.end).getTime();
         if (t >= ps && t <= pe) { score -= 2; minus.push({en:'Panchaka period ('+p.panchaka.type+')', hi:'\u092A\u0902\u091A\u0915 \u0915\u093E\u0932 ('+p.panchaka.type+')'}); }
       }
-      if (score >= 6) results.push({ date: new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate())),
+      // Every day that reaches here has passed the mandatory gates. Score now
+      // controls ordering only; it is not a second eligibility test.
+      results.push({ date: new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate())),
         score: score, weekday: p.vara, nakshatra: p.nakshatra.segments[0], tithi: p.tithi.segments[0], paksha: p.tithi.paksha,
         plus: plus, minus: minus, abhijit: p.abhijit, amritKaal: p.amritKaal });
     }
@@ -2483,7 +2494,11 @@
     var names = ['Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi'];
     var idx = names.indexOf(name);
     if (idx < 0) { if (name==='Purnima') return 15; if (name==='Amavasya') return 30; return 1; }
-    return paksha === 'Krishna' ? idx + 16 : idx + 1;
+    // Muhurta rule tables use the traditional tithi ordinal inside a paksha
+    // (Chaturthi=4, Navami=9, Chaturdashi=14) for BOTH Shukla and Krishna.
+    // The old Krishna branch returned 16..29, so Krishna-paksha good/bad tithi
+    // rules silently never matched. Amavasya stays 30 as the explicit exception.
+    return idx + 1;
   }
 
   // ---- Ten-Year Forecast: per-year composite ---------------------------------

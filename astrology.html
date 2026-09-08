@@ -1272,7 +1272,7 @@ function vMuhurtaRun(key){
 
   var days=MUH_DAYS[key]||90, sortBy=MUH_SORT[key]||'score';
   var res=null;
-  try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),12); }catch(e){}
+  try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),50); }catch(e){}
 
   var controls='<div class="subh">'+A('astrol.search_window')+'</div>'
    +'<div class="xgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:9px;">'
