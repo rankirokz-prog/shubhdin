@@ -2421,8 +2421,15 @@
       needTara: true, needChandra: true, avoidPanchaka: false
     }
   };
-  function findMuhurta(activity, birthDate, lat, lng, fromDate, toDate, maxResults) {
+  function findMuhurta(activity, birthDate, lat, lng, fromDate, toDate, maxResults, tzOffsetHours) {
     var rule = MUHURTA_RULES[activity]; if (!rule) return null;
+    function offsetAt(d) {
+      var v = (typeof tzOffsetHours === 'function') ? tzOffsetHours(d) : tzOffsetHours;
+      if (v == null) v = 5.5; // backward compatibility for existing India-only callers
+      v = Number(v);
+      if (!isFinite(v) || v < -14 || v > 14) throw new Error('PanchangEngine.findMuhurta: tzOffsetHours out of range [-14,14]');
+      return v;
+    }
     // user's birth nakshatra + moon rashi
     var bMoon = getGrahas(birthDate).find(function(g){return g.key==='moon';});
     // find via sidereal moon
@@ -2431,11 +2438,16 @@
     var birthRashi = Math.floor(ms / 30) % 12;
     var results = [];
     var oneDay = 86400000;
-    var start = new Date(Date.UTC(fromDate.getUTCFullYear(), fromDate.getUTCMonth(), fromDate.getUTCDate(), 1, 0, 0));
-    for (var t = start.getTime(); t <= toDate.getTime(); t += oneDay) {
-      var day = new Date(t + 6*3600000); // midday-ish for stable panchang
+    var firstOff=offsetAt(fromDate);
+    var localFrom=new Date(fromDate.getTime()+firstOff*3600000);
+    var startCivil=Date.UTC(localFrom.getUTCFullYear(),localFrom.getUTCMonth(),localFrom.getUTCDate());
+    for (var civil = startCivil; civil <= toDate.getTime()+14*3600000; civil += oneDay) {
+      var civilDay=new Date(civil), approx=new Date(civil+12*3600000);
+      var tz=offsetAt(approx);
+      var day = new Date(civil+12*3600000-tz*3600000); // local noon, DST-aware through resolver
+      if(day>toDate) break;
       var p;
-      try { p = getPanchang(new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 6, 0, 0)), lat, lng); }
+      try { p = getPanchang(day, lat, lng, tz); }
       catch(e){ continue; }
       var score = 0, plus = [], minus = [];
       var nak = p.nakshatra.segments[0].index;
@@ -2478,11 +2490,11 @@
       // Panchaka (for griha pravesh)
       if (rule.avoidPanchaka && p.panchaka && p.panchaka.type && p.panchaka.type !== 'None') {
         var ps = new Date(p.panchaka.start).getTime(), pe = new Date(p.panchaka.end).getTime();
-        if (t >= ps && t <= pe) { score -= 2; minus.push({en:'Panchaka period ('+p.panchaka.type+')', hi:'\u092A\u0902\u091A\u0915 \u0915\u093E\u0932 ('+p.panchaka.type+')'}); }
+        if (day.getTime() >= ps && day.getTime() <= pe) { score -= 2; minus.push({en:'Panchaka period ('+p.panchaka.type+')', hi:'\u092A\u0902\u091A\u0915 \u0915\u093E\u0932 ('+p.panchaka.type+')'}); }
       }
       // Every day that reaches here has passed the mandatory gates. Score now
       // controls ordering only; it is not a second eligibility test.
-      results.push({ date: new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate())),
+      results.push({ date: new Date(civil),
         score: score, weekday: p.vara, nakshatra: p.nakshatra.segments[0], tithi: p.tithi.segments[0], paksha: p.tithi.paksha,
         plus: plus, minus: minus, abhijit: p.abhijit, amritKaal: p.amritKaal });
     }

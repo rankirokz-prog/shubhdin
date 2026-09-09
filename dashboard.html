@@ -6868,8 +6868,8 @@ async function saveSettings(){
 /* ══════════════════════════════════════════════════════════════════
    BIRTH CHART — computed on this device, not guessed and not fetched.
 
-   The old path had two problems. It called /api/birth-chart, so with no
-   network the app fell back to getRashi(), which is a TROPICAL sun-sign
+   The old network path had two problems. With no network the app fell back
+   to getRashi(), which is a TROPICAL sun-sign
    lookup off Gregorian date cutoffs — the opposite of the "गणना से,
    अनुमान से नहीं" printed on these screens. And a user's rashi is the
    most identity-level fact in the app, so silently wrong is the worst
@@ -6939,7 +6939,7 @@ function computeBirthLocal(u){
             source:'engine'};
   }catch(e){ return null; }
 }
-// ── BIRTH CHART (local first, API only if the engine cannot load) ──
+// ── BIRTH CHART (on-device engine only; no third-party astrology API) ──
 async function fetchBirthChart(){
   if(!window.__sdTzBackfilled){ window.__sdTzBackfilled=true; try{ await sdBackfillTz(); }catch(e){} }   /* F1: once per open */
   const u = {};
@@ -6951,7 +6951,8 @@ async function fetchBirthChart(){
   const cacheKey = u.dob+'_'+u.tob+'_'+(u.city||'delhi');
   if(u.birth_cache_key === cacheKey && u.nakshatra) return;
 
-  // 1 · on-device first
+  // On-device only. If the engine or required location/zone is unavailable,
+  // leave the identity fields unset rather than fetching or guessing.
   try{
     await ensureEngine();
     const local = computeBirthLocal(u);
@@ -6971,32 +6972,7 @@ async function fetchBirthChart(){
       }catch(e){}
       return;
     }
-  }catch(e){ /* engine unavailable — fall through to the network */ }
-  // 2 · network fallback, only if the engine could not answer
-  try{
-    /* Never fabricate a location. A rashi computed at Delhi for someone born
-       in Eluru is not a fallback, it is a wrong answer presented as a fact —
-       and the user has no way to tell. No coordinates means no chart. */
-    const lat = (u.birth_lat!=null?u.birth_lat:u.city_lat);
-    const lon = (u.birth_lng!=null?u.birth_lng:u.city_lon);
-    if(lat==null||lon==null){ console.log('birth chart: no coordinates on the profile — not guessing'); return; }
-    const res = await fetch(`/api/birth-chart?dob=${u.dob}&tob=${u.tob}&lat=${lat}&lon=${lon}`);
-    const data = await res.json();
-    if(!data.success) return;
-
-    // Save to localStorage
-    /* the API answers in English already, but normalise defensively so this
-       path can never reintroduce a localised value into a key field */
-    u.nakshatra      = (data.nakshatra&&(data.nakshatra.en||data.nakshatra))||'';
-    u.nakshatra_pada = data.nakshatra_pada;
-    u.rashi          = (data.rashi&&(data.rashi.en||data.rashi))||'';
-    u.lagna          = (data.lagna&&(data.lagna.en||data.lagna))||'';
-    u.birth_cache_key = cacheKey;
-    localStorage.setItem('shubhdin_user', JSON.stringify(u));
-
-    // Update UI
-    updateBirthChips(data);
-  }catch(e){ console.log('Birth chart error:', e); }
+  }catch(e){ console.log('Local birth-chart engine unavailable:', e); }
 }
 
 // When the time was unknown we substituted sunrise, so anything that depends

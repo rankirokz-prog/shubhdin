@@ -245,6 +245,7 @@ if(typeof window.A!=='function'){
 <script src="panchang-terms.js"></script>
 <script src="vrat-names.js"></script>
 <script src="panchang-terms-bridge.js"></script>
+<script src="sd-tz.js"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -287,6 +288,25 @@ var SD_COORD_FALLBACK = !(isFinite(parseFloat(U.city_lat)) && isFinite(parseFloa
 var LAT = SD_COORD_FALLBACK ? 23.1793 : parseFloat(U.city_lat);
 var LNG = SD_COORD_FALLBACK ? 75.7849 : parseFloat(U.city_lon);
 var CITY = SD_COORD_FALLBACK ? A('astrol.ujjain') : (U.city || A('astrol.ujjain'));
+var CITY_TZ = SD_COORD_FALLBACK ? 'Asia/Kolkata' :
+  ((window.sdTz&&sdTz.isZone(U.city_tz)) ? U.city_tz : null);
+function zoneOffsetAt(d,zone){
+  var z=zone||CITY_TZ;
+  if(!z||!window.sdTz||!sdTz.isZone(z)) throw new Error('Time zone unavailable');
+  return sdTz.offsetHoursAt(d,z);
+}
+function civilInstant(ymd,hhmm,zone){
+  return (window.sdTz&&sdTz.birthInstant(ymd,hhmm||'12:00',zone||CITY_TZ)||{}).instant||null;
+}
+/* Older profiles may have coordinates but predate city_tz. Resolve the IANA
+   zone once; never infer a permanent offset from longitude or silently use IST. */
+var SD_TZ_READY=null;
+if(!CITY_TZ&&!SD_COORD_FALLBACK&&window.sdTz){
+  SD_TZ_READY=sdTz.fetchZone(LAT,LNG).then(function(z){
+    if(!z)throw new Error('zone lookup failed');
+    U.city_tz=z; localStorage.setItem('shubhdin_user',JSON.stringify(U)); location.reload();
+  });
+}
 
 /* And say it on the screen, once, where it cannot be missed. */
 (function(){
@@ -392,15 +412,15 @@ function fmt(tpl, vals){
 }
 
 
-/* ── time helpers (IST display always) ───────────────────── */
-function fT(d){if(!d)return '—';return new Date(d).toLocaleTimeString('en-IN',{timeZone:'Asia/Kolkata',hour12:false,hour:'2-digit',minute:'2-digit'});}
+/* ── time helpers (the selected city's IANA zone) ────────── */
+function fT(d){if(!d)return '—';return new Date(d).toLocaleTimeString('en-IN',{timeZone:CITY_TZ||'UTC',hour12:false,hour:'2-digit',minute:'2-digit'});}
 function fR(a,b){return fT(a)+'–'+fT(b);}
 function mins(ms){var m=Math.max(0,Math.round(ms/60000));var h=Math.floor(m/60);m%=60;return h ? AF('astrol.h_h_m_m', {h:h, m:m})
            : fmt(plural(m, A('astrol.n_min'), A('astrol.n_min')), {n:m});}
 
 /* ── today's panchang (one engine call, cached) ──────────── */
 var P=null;
-function panchang(){if(!P)P=PE.getPanchang(new Date(),LAT,LNG);return P;}
+function panchang(){if(!P){var n=new Date();P=PE.getPanchang(n,LAT,LNG,zoneOffsetAt(n));}return P;}
 
 /* ── rashi table (display labels) ────────────────────────── */
 /* Column 1 is the Sanskrit name — Mesha, Vrishabha — which is exactly the key
@@ -565,7 +585,7 @@ function vHub(){
   var p=panchang();
   var hc=p.hinduCalendar, cur=currentSeg(), ng=nextGood();
   var d=new Date();
-  var greg=d.toLocaleDateString(sdLocale(),{timeZone:'Asia/Kolkata',weekday:'short',day:'numeric',month:'short'});
+  var greg=d.toLocaleDateString(sdLocale(),{timeZone:CITY_TZ||'UTC',weekday:'short',day:'numeric',month:'short'});
   var hindu=(sdMasa(hc.purnimantaMonth))+' • '+sdPaksha(p.tithi.paksha)+' '+(sdTithi(p.tithi));
 
   /* personal tara chip (moat teaser) */
@@ -706,7 +726,7 @@ function vRashi(i){
                :A('astrol.a_neutral_day_keep_big_decisions_t');
   var ds=p.dishaShool;
   app.innerHTML=pgHead(A('astrol.rashifal'),AF('astrol.today_date',
-        {date:new Date().toLocaleDateString(sdLocale(),{timeZone:'Asia/Kolkata',day:'numeric',month:'short'})}),'rashifal')
+        {date:new Date().toLocaleDateString(sdLocale(),{timeZone:CITY_TZ||'UTC',day:'numeric',month:'short'})}),'rashifal')
    +'<div class="card"><div class="verdict">'
    +'<div class="v-em">'+RASHI[i][3]+'</div>'
    +'<div class="v-name dev">'+sdRashi(RASHI[i][1])+(i===mine?' <span class="tag g">'+A('astrol.your_rashi')+'</span>':'')+'</div>'
@@ -946,10 +966,10 @@ function xt(ico,name,sub,href){
    +'<div class="xt-n dev">'+name+'</div><div class="xt-s">'+sub+'</div></div>';
 }
 function todayObservance(){
-  var d=new Date(), key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  var d=new Date(), wall=sdTz.instantToWall(d,CITY_TZ), key=wall.ymd, yr=wall.y, off=zoneOffsetAt(d);
   var hits=[];
-  try{ PE.getVrats(d.getFullYear(),LAT,LNG,5.5).forEach(function(v){ if(v.date===key) hits.push({i:'🙏',n:sdVrat(v)}); }); }catch(e){}
-  try{ PE.getFestivals(d.getFullYear(),LAT,LNG,5.5).forEach(function(f){ if(f.date===key) hits.push({i:'🪔',n:sdVrat(f)}); }); }catch(e){}
+  try{ PE.getVrats(yr,LAT,LNG,off).forEach(function(v){ if(v.date===key) hits.push({i:'🙏',n:sdVrat(v)}); }); }catch(e){}
+  try{ PE.getFestivals(yr,LAT,LNG,off).forEach(function(f){ if(f.date===key) hits.push({i:'🪔',n:sdVrat(f)}); }); }catch(e){}
   if(!hits.length) return '';
   return '<div class="grid">'+hits.map(function(x){
     return '<div class="sec" onclick="location.hash=\'#vrats\'"><div class="s-ico">'+x.i+'</div>'
@@ -1019,7 +1039,8 @@ function bpRead(slot){
     return {name:u.name||'', dob:u.dob, tob:u.tob||'12:00',
             place:u.birth_place||u.city||'',
             lat:(u.birth_lat!=null?u.birth_lat:u.city_lat),
-            lng:(u.birth_lng!=null?u.birth_lng:u.city_lon)};
+            lng:(u.birth_lng!=null?u.birth_lng:u.city_lon),
+            tz:(window.sdTz&&sdTz.isZone(u.birth_tz))?u.birth_tz:u.city_tz};
   }
   try{return JSON.parse(localStorage.getItem('sd_bp_'+slot)||'null');}catch(e){return null;}
 }
@@ -1028,13 +1049,14 @@ function bpWrite(slot,pr){
     var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
     if(pr.name) u.name=pr.name;
     u.dob=pr.dob; u.tob=pr.tob; u.birth_place=pr.place; u.birth_lat=pr.lat; u.birth_lng=pr.lng;
+    if(pr.tz) u.birth_tz=pr.tz; else delete u.birth_tz;
     if(u.city_lat==null){u.city_lat=pr.lat; u.city_lon=pr.lng; u.city=u.city||pr.place;}
     localStorage.setItem('shubhdin_user',JSON.stringify(u)); U=u;
     return;
   }
   localStorage.setItem('sd_bp_'+slot,JSON.stringify(pr));
 }
-function bpDate(pr){ return pr? new Date(pr.dob+'T'+(pr.tob||'12:00')+':00+05:30') : null; }
+function bpDate(pr){ return pr&&pr.tz?civilInstant(pr.dob,pr.tob||'12:00',pr.tz):null; }
 function bpLine(pr){
   if(!pr) return '';
   var d=new Date(pr.dob+'T00:00:00');
@@ -1051,7 +1073,7 @@ var BP_TITLES={
 function vBpForm(slot){
   slot=slot||'self'; BP_SLOT=slot;
   var pr=bpRead(slot)||{}, ti=BP_TITLES[slot]||BP_TITLES.self;
-  BP_PICK={lat:pr.lat,lng:pr.lng};
+  BP_PICK={lat:pr.lat,lng:pr.lng,tz:pr.tz};
   var why = slot==='self'
     ? A('shared.with_your_birth_details_every_calc')
     : A('astrol.guna_milan_is_computed_from_the_mo');
@@ -1097,8 +1119,9 @@ function bpPickCity(nm,lat,lng){
   document.getElementById('bpPlace').value=nm;
   BP_PICK={lat:parseFloat(lat),lng:parseFloat(lng)};
   document.getElementById('bpDD').style.display='none';
+  sdTz.fetchZone(BP_PICK.lat,BP_PICK.lng).then(function(z){BP_PICK.tz=z;});
 }
-function bpSave(){
+async function bpSave(){
   function v(id){var e=document.getElementById(id);return e?e.value.trim():'';}
   var err=document.getElementById('bpErr');
   var dob=v('bpDob'), tob=v('bpTob'), place=v('bpPlace');
@@ -1107,10 +1130,12 @@ function bpSave(){
   if(!place) return fail(A('astrol.please_enter_the_birth_place'));
   if(BP_PICK.lat==null){
     var old=bpRead(BP_SLOT);
-    if(old&&old.place===place&&old.lat!=null) BP_PICK={lat:old.lat,lng:old.lng};
+    if(old&&old.place===place&&old.lat!=null) BP_PICK={lat:old.lat,lng:old.lng,tz:old.tz};
     else return fail(A('astrol.pick_the_city_from_the_list_coordi'));
   }
-  bpWrite(BP_SLOT,{name:v('bpName'),dob:dob,tob:tob,place:place,lat:BP_PICK.lat,lng:BP_PICK.lng});
+  if(!BP_PICK.tz) BP_PICK.tz=await sdTz.fetchZone(BP_PICK.lat,BP_PICK.lng);
+  if(!BP_PICK.tz) return fail(A('astrol.search_failed'));
+  bpWrite(BP_SLOT,{name:v('bpName'),dob:dob,tob:tob,place:place,lat:BP_PICK.lat,lng:BP_PICK.lng,tz:BP_PICK.tz});
   location.hash=BP_RET;
 }
 /* ═════════ MATCH KUNDALI ═════════ */
@@ -1158,7 +1183,7 @@ function useMine(slot){
 }
 function copySelf(slot){
   var me=bpRead('self'); if(!me) return;
-  bpWrite(slot,{name:me.name,dob:me.dob,tob:me.tob,place:me.place,lat:me.lat,lng:me.lng});
+  bpWrite(slot,{name:me.name,dob:me.dob,tob:me.tob,place:me.place,lat:me.lat,lng:me.lng,tz:me.tz});
   route();
 }
 function vMatchResult(){
@@ -1208,7 +1233,7 @@ function vMatchResult(){
 function vPick(iso){
   var d=iso?new Date(iso+'T12:00:00'):new Date();
   var val=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  var q; try{ q=PE.getPanchang(new Date(val+'T06:00:00'),LAT,LNG,5.5); }catch(e){ q=null; }
+  var q; try{var pd=civilInstant(val,'12:00');q=PE.getPanchang(pd,LAT,LNG,zoneOffsetAt(pd));}catch(e){ q=null; }
   var body='';
   if(q){
     var hc=q.hinduCalendar;
@@ -1252,7 +1277,8 @@ function vMuhurtaPick(){
 }
 function birthDT(){
   if(!U.dob) return null;
-  return new Date(U.dob+'T'+(U.tob||'12:00')+':00+05:30');
+  var z=(window.sdTz&&sdTz.isZone(U.birth_tz))?U.birth_tz:CITY_TZ;
+  return z?civilInstant(U.dob,U.tob||'12:00',z):null;
 }
 function vMuhurtaRun(key){
   var m=MUH_META[key]; if(!m) return vMuhurtaPick();
@@ -1272,7 +1298,8 @@ function vMuhurtaRun(key){
 
   var days=MUH_DAYS[key]||90, sortBy=MUH_SORT[key]||'score';
   var res=null;
-  try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),50); }catch(e){}
+  try{ res=PE.findMuhurta(key,bpDate(pr),LAT,LNG,new Date(),new Date(Date.now()+days*86400000),50,
+    function(d){return zoneOffsetAt(d);}); }catch(e){}
 
   var controls='<div class="subh">'+A('astrol.search_window')+'</div>'
    +'<div class="xgrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:9px;">'
@@ -1307,7 +1334,9 @@ function vMuhurtaRun(key){
 
   function card(r,rank){
     var d=new Date(r.date), flawed=!!(r.minus||[]).length, tr=tier(r.score,flawed);
-    var when=d.toLocaleDateString(sdLocale(),{weekday:'short',day:'numeric',month:'short'});
+    /* Engine returns a UTC-midnight civil-date marker. Render that marker in
+       UTC so a negative-offset city cannot display the previous date. */
+    var when=d.toLocaleDateString(sdLocale(),{timeZone:'UTC',weekday:'short',day:'numeric',month:'short'});
     var stars='★'.repeat(tr.n)+'☆'.repeat(3-tr.n);
     var plus=(r.plus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(150,220,170,0.88);line-height:1.6;">✓ '+sdReason(x)+'</div>';}).join('');
     var minus=(r.minus||[]).map(function(x){return '<div style="font-size:10.5px;color:rgba(240,150,130,0.88);line-height:1.6;">⚠ '+sdReason(x)+'</div>';}).join('');
@@ -1379,7 +1408,7 @@ function window_(r,key,ico,label){
   }
   var day=new Date(r.date), pieces;
   try{
-    var dp=PE.getPanchang(day,LAT,LNG,5.5);
+    var dp=PE.getPanchang(day,LAT,LNG,zoneOffsetAt(day));
     pieces=cutBad(+new Date(w.start),+new Date(w.end),badWindows(dp));
   }catch(e){ pieces=[{s:+new Date(w.start),e:+new Date(w.end)}]; }
   if(!pieces.length)
@@ -1504,7 +1533,7 @@ function tobUnknownNote(){
    +A('astrol.your_birth_time_is_unknown_so_sunr')+'</div>';
 }
 function vLagna(){
-  var tbl=[]; try{ tbl=PE.getLagnaTable(new Date(),LAT,LNG,5.5)||[]; }catch(e){}
+  var now=new Date(),tbl=[]; try{ tbl=PE.getLagnaTable(now,LAT,LNG,zoneOffsetAt(now))||[]; }catch(e){}
   var now=Date.now(),rows='';
   tbl.forEach(function(l){
     var a=new Date(l.start).getTime(), b=new Date(l.end).getTime(), live=now>=a&&now<b;
@@ -1542,12 +1571,12 @@ function obsList(list,icon,emptyMsg){
   }).join('')+'</div>';
 }
 function vVrats(){
-  var l=[]; try{ l=PE.getVrats(new Date().getFullYear(),LAT,LNG,5.5)||[]; }catch(e){}
+  var now=new Date(),yr=sdTz.instantToWall(now,CITY_TZ).y,l=[]; try{ l=PE.getVrats(yr,LAT,LNG,zoneOffsetAt(now))||[]; }catch(e){}
   app.innerHTML=pgHead(A('astrol.vrats'),A('astrol.upcoming_fasts_computed'),'#explore')
    +obsList(l,'🙏',A('astrol.no_further_vrats_this_year'));
 }
 function vFest(){
-  var l=[]; try{ l=PE.getFestivals(new Date().getFullYear(),LAT,LNG,5.5)||[]; }catch(e){}
+  var now=new Date(),yr=sdTz.instantToWall(now,CITY_TZ).y,l=[]; try{ l=PE.getFestivals(yr,LAT,LNG,zoneOffsetAt(now))||[]; }catch(e){}
   app.innerHTML=pgHead(A('astrol.festivals'),A('astrol.upcoming_festivals_this_year'),'#explore')
    +obsList(l,'🪔',A('astrol.no_further_festivals_this_year'));
 }
@@ -1561,7 +1590,8 @@ function vFest(){
     if(!U.dob || (U.rashi && U.nakshatra)) return;
     var lat=(U.birth_lat!=null?U.birth_lat:U.city_lat), lng=(U.birth_lng!=null?U.birth_lng:U.city_lon);
     if(lat==null||lng==null) return;
-    var d=new Date(U.dob+'T'+(U.tob||'06:00')+':00+05:30');
+    var z=(window.sdTz&&sdTz.isZone(U.birth_tz))?U.birth_tz:CITY_TZ;
+    var d=z?civilInstant(U.dob,U.tob||'06:00',z):null; if(!d)return;
     var bc=PE.getBirthChart(d,lat,lng);
     var moon=bc.grahas.filter(function(g){return g.key==='moon';})[0];
     if(!moon) return;
@@ -1570,7 +1600,10 @@ function vFest(){
     localStorage.setItem('shubhdin_user',JSON.stringify(U));
   }catch(e){}
 })();
-route();
+if(SD_TZ_READY){
+  app.innerHTML='<div class="note" style="margin-top:35vh">Resolving your city time zone…</div>';
+  SD_TZ_READY.catch(function(){app.innerHTML='<div class="note" style="margin-top:35vh">Unable to resolve this city’s time zone. Please select the city again.</div>';});
+}else route();
 </script>
 <script src="birthdate-guard.js"></script>
 <script src="nav-history.js"></script>
