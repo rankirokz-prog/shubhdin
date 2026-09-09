@@ -361,6 +361,10 @@ function t(hi,en){return H?hi:en;}
    old rule, so Hindi and English are untouched. */
 var SD_IS_TE=(window.SD_LANG==='te');
 function L3(hi,en,key){ return (key&&typeof sdHas==='function'&&sdHas(key))?A(key):(H?hi:en); }
+function sdFestivalName(f){
+  var k=f&&f.key?'cal.name_'+f.key:'';
+  return (k&&typeof sdHas==='function'&&sdHas(k))?A(k):sdVrat(f);
+}
 /* Muhurta reasons come from the engine as composed hi/en sentences. Rebuild
    them from the English shape and the bridge, so the term inside is localised. */
 function sdReason(x){
@@ -969,7 +973,8 @@ function todayObservance(){
   var d=new Date(), wall=sdTz.instantToWall(d,CITY_TZ), key=wall.ymd, yr=wall.y, off=zoneOffsetAt(d);
   var hits=[];
   try{ PE.getVrats(yr,LAT,LNG,off).forEach(function(v){ if(v.date===key) hits.push({i:'🙏',n:sdVrat(v)}); }); }catch(e){}
-  try{ PE.getFestivals(yr,LAT,LNG,off).forEach(function(f){ if(f.date===key) hits.push({i:'🪔',n:sdVrat(f)}); }); }catch(e){}
+  try{ var rg=(PE.REGIONS_FOR_LANG&&PE.REGIONS_FOR_LANG[window.SD_LANG||'hi'])||['all'];
+    PE.getFestivals(yr,LAT,LNG,off,{regions:rg}).forEach(function(f){ if(f.date===key) hits.push({i:'🪔',n:sdFestivalName(f)}); }); }catch(e){}
   if(!hits.length) return '';
   return '<div class="grid">'+hits.map(function(x){
     return '<div class="sec" onclick="location.hash=\'#vrats\'"><div class="s-ico">'+x.i+'</div>'
@@ -1556,7 +1561,8 @@ function vLagna(){
    +'<div class="seglist">'+(rows||'<div class="note">—</div>')+'</div>'
    +'<div class="note">'+A('explor.lagna_is_what_a_muhurta_is_finally')+'</div>';
 }
-function obsList(list,icon,emptyMsg){
+function obsList(list,icon,emptyMsg,nameFn){
+  nameFn=nameFn||sdVrat;
   var today=new Date(); today.setHours(0,0,0,0);
   var up=list.filter(function(x){return new Date(x.date+'T00:00:00')>=today;}).slice(0,24);
   if(!up.length) return '<div class="note">'+emptyMsg+'</div>';
@@ -1566,7 +1572,7 @@ function obsList(list,icon,emptyMsg){
     var days=Math.round((d-today)/86400000);
     var rel=days===0?A('dashbo.today_3'):days===1?A('dashbo.tomorrow'):plural(days, A('astrol.in_n_day'), A('astrol.in_n_days'));
     return '<div class="sgrow'+(days===0?' now':'')+'"><div class="sg-d" style="background:#D4A843"></div>'
-      +'<div class="sg-n dev">'+icon+' '+sdVrat(x)+'</div>'
+      +'<div class="sg-n dev">'+icon+' '+nameFn(x)+'</div>'
       +'<div class="sg-t">'+when+' · '+rel+'</div></div>';
   }).join('')+'</div>';
 }
@@ -1576,9 +1582,9 @@ function vVrats(){
    +obsList(l,'🙏',A('astrol.no_further_vrats_this_year'));
 }
 function vFest(){
-  var now=new Date(),yr=sdTz.instantToWall(now,CITY_TZ).y,l=[]; try{ l=PE.getFestivals(yr,LAT,LNG,zoneOffsetAt(now))||[]; }catch(e){}
+  var now=new Date(),yr=sdTz.instantToWall(now,CITY_TZ).y,l=[]; try{ var rg=(PE.REGIONS_FOR_LANG&&PE.REGIONS_FOR_LANG[window.SD_LANG||'hi'])||['all']; l=PE.getFestivals(yr,LAT,LNG,zoneOffsetAt(now),{regions:rg})||[]; }catch(e){}
   app.innerHTML=pgHead(A('astrol.festivals'),A('astrol.upcoming_festivals_this_year'),'#explore')
-   +obsList(l,'🪔',A('astrol.no_further_festivals_this_year'));
+   +obsList(l,'🪔',A('astrol.no_further_festivals_this_year'),sdFestivalName);
 }
 
 /* The engine is already on this page, so a user who has given a birth date

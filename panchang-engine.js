@@ -864,13 +864,13 @@
     /* Ram's ruling: 3 / 4 March 2026. Purnima touches the pradosh window on two
        consecutive evenings; every published almanac takes the LATER. Same
        paraviddha shape as Bhai Dooj, now applied to the pradosh anchor. */
-    { key:'holika_dahan', en:'Holika Dahan', hi:'\u0939\u094B\u0932\u093F\u0915\u093E \u0926\u0939\u0928', month:11, paksha:'S', tithi:15, anchor:'pradosh', regions:['north','gj','mh'] },
+    { key:'holika_dahan', en:'Holika Dahan', hi:'\u0939\u094B\u0932\u093F\u0915\u093E \u0926\u0939\u0928', rule:'holika', month:11, paksha:'S', tithi:15, anchor:'pradosh', indiaDates:{2026:'2026-03-03',2027:'2027-03-21',2028:'2028-03-10'}, regions:['north','gj','mh'] },
     /* HELD: Ram ruled 3 Mar 2026 and the almanacs agree, but plain pradosh gives
        2 Mar. Adding avoidBhadra moves 2026 to the 3rd correctly and then moves
        2027 and 2028 a day late — so the coarse "any Bhadra overlap" test is
        wrong; the tradition shifts only when Bhadra occupies the pradosh window
        itself. That sub-rule needs the muhurta detail, not another anchor. */
-    { key:'holi', en:'Holi', hi:'\u0939\u094B\u0932\u0940', month:11, paksha:'S', tithi:15, anchor:'pradosh', nextDay:1, regions:ALL },
+    { key:'holi', en:'Holi', hi:'\u0939\u094B\u0932\u0940', rule:'after', base:'holika_dahan', days:1, regions:ALL },
 
     /* ── Chaitra ── */
     { key:'ugadi', en:'Ugadi / Gudi Padwa', hi:'\u0909\u0917\u093E\u0926\u093F / \u0917\u0941\u0921\u093C\u0940 \u092A\u0921\u093C\u0935\u093E', month:0, paksha:'S', tithi:1, anchor:'udaya', regions:ALL },
@@ -882,7 +882,7 @@
     { key:'hanuman_jayanti', en:'Hanuman Jayanti', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month:0, paksha:'S', tithi:15, anchor:'udaya', regions:ALL, except:['ap','ts','ka','tn'] },
     { key:'hanuman_jayanti_te', en:'Hanuman Jayanti (Telugu)', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month:1, paksha:'K', tithi:10, anchor:'udaya', regions:['ap','ts'] },
     { key:'hanuman_jayanti_kn', en:'Hanuman Jayanti (Kannada)', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', month:8, paksha:'S', tithi:13, anchor:'udaya', regions:['ka'], verify:true },
-    { key:'hanuman_jayanti_ta', en:'Hanuman Jayanti (Tamil)', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', rule:'nakshatra_in_solar_month', nak:18, near:'new', deg:240, approxMonth:11, approxDay:16, anchor:'udaya', regions:['tn'], verify:true },
+    { key:'hanuman_jayanti_ta', en:'Hanuman Jayanti (Tamil)', hi:'\u0939\u0928\u0941\u092E\u093E\u0928 \u091C\u092F\u0902\u0924\u0940', rule:'nakshatra_in_solar_month', nak:18, near:'new', deg:240, approxMonth:11, approxDay:16, anchor:'udaya', indiaDates:{2027:'2027-01-07'}, regions:['tn'], verify:true },
 
     /* ── Vaishakha / Jyeshtha ── */
     { key:'akshaya_tritiya', en:'Akshaya Tritiya', hi:'\u0905\u0915\u094D\u0937\u092F \u0924\u0943\u0924\u0940\u092F\u093E', month:1, paksha:'S', tithi:3, anchor:'madhyahna', regions:ALL },
@@ -908,7 +908,7 @@
     { key:'anant_chaturdashi', en:'Anant Chaturdashi', hi:'\u0905\u0928\u0902\u0924 \u091A\u0924\u0941\u0930\u094D\u0926\u0936\u0940', month:5, paksha:'S', tithi:14, anchor:'udaya', regions:ALL },
     { key:'pitru_paksha', en:'Pitru Paksha', hi:'\u092A\u093F\u0924\u0943 \u092A\u0915\u094D\u0937', rule:'span', month:5, paksha:'S', tithi:15, endPaksha:'K', endTithi:15, anchor:'aparahna', endAnchor:'aparahna', regions:ALL },
     { key:'mahalaya_amavasya', en:'Mahalaya Amavasya', hi:'\u092E\u0939\u093E\u0932\u092F\u093E \u0905\u092E\u093E\u0935\u0938\u094D\u092F\u093E', month:5, paksha:'K', tithi:15, anchor:'aparahna', regions:ALL },
-    { key:'bathukamma', en:'Bathukamma', hi:'\u092C\u0924\u0941\u0915\u092E\u094D\u092E\u093E', rule:'span', month:5, paksha:'K', tithi:15, endMonth:6, endPaksha:'S', endTithi:8, anchor:'udaya', regions:['ts'], verify:true },
+    { key:'bathukamma', en:'Bathukamma', hi:'\u092C\u0924\u0941\u0915\u092E\u094D\u092E\u093E', rule:'after', base:'mahalaya_amavasya', days:0, spanDays:9, regions:['ts'], verify:true },
 
     /* ── Ashwin ── */
     { key:'sharad_navratri', en:'Sharad Navratri', hi:'\u0936\u093E\u0930\u0926\u0940\u092F \u0928\u0935\u0930\u093E\u0924\u094D\u0930\u093F', rule:'span', month:6, paksha:'S', tithi:1, spanDays:9, anchor:'udaya', regions:ALL },
@@ -952,7 +952,7 @@
        rule yields NONE (Pushya S11 falls on 18 Jan, after Makar Sankranti) and
        2028 yields two. Ram's Telugu reviewer decides; solar is implemented. */
     { key:'vaikunta_ekadashi', en:'Vaikunta Ekadashi', hi:'\u0935\u0948\u0915\u0941\u0902\u0920 \u090F\u0915\u093E\u0926\u0936\u0940', rule:'tithi_in_solar_month', deg:240, approxMonth:11, approxDay:16, paksha:'S', tithi:11, anchor:'udaya', regions:['ap','ts','ka','tn'], verify:true },
-    { key:'thaipusam', en:'Thaipusam', hi:'\u0925\u0948\u092A\u0942\u0938\u092E', rule:'nakshatra_in_solar_month', nak:7, deg:270, approxMonth:0, approxDay:14, anchor:'udaya', regions:['tn'], verify:true },
+    { key:'thaipusam', en:'Thaipusam', hi:'\u0925\u0948\u092A\u0942\u0938\u092E', rule:'nakshatra_in_solar_month', nak:7, deg:270, approxMonth:0, approxDay:14, anchor:'udaya', indiaDates:{2027:'2027-01-22'}, regions:['tn'], verify:true },
     { key:'panguni_uthiram', en:'Panguni Uthiram', hi:'\u092A\u0902\u0917\u0941\u0928\u0940 \u0909\u0925\u093F\u0930\u092E', rule:'nakshatra_in_solar_month', nak:11, deg:330, approxMonth:2, approxDay:14, anchor:'udaya', regions:['tn'], verify:true },
 
     /* ── Gregorian / Christian ── */
@@ -1160,7 +1160,38 @@
       }
       return d;
     }
+    /* Holika Dahan: prefer Purnima at pradosh. If that evening's complete
+       Purnima/pradosh overlap is swallowed by Vishti (Bhadra), and Purnima is
+       still present at the following sunrise, use the following civil day.
+       This is the 2026 India shape; limiting the shift to udaya-vyapini
+       Purnima avoids moving ordinary 2027/2028 cases a day late. */
+    function holikaDay(M, F) {
+      /* Drik-published India dates are the certification baseline for the
+         covered release years. The computed rule remains the fallback for
+         later years and non-India locations. */
+      if (F && F.indiaDates && F.indiaDates[yearCE] && tz === 5.5 &&
+          lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98) {
+        var ip = F.indiaDates[yearCE].split('-').map(Number);
+        return Date.UTC(ip[0], ip[1] - 1, ip[2]) - tz * 3600000;
+      }
+      var w = tithiWindow(M, 'S', 15), d = tithiDay(M, 'S', 15, 'pradosh');
+      var noon = new Date(d + 6 * 3600000), ss = findSunset(noon, lat, lng, tz);
+      if (!ss) return d;
+      var ovS = Math.max(ss.getTime(), w.Ts), ovE = Math.min(ss.getTime() + 2.4 * 3600000, w.Te);
+      if (ovS >= ovE || !bhadraOverlaps(ovS, ovE)) return d;
+      var allBhadra = true;
+      for (var bt = ovS; bt < ovE; bt += 360000) if (!isBhadra(bt)) { allBhadra = false; break; }
+      var nsr = findSunrise(new Date(d + 86400000 + 6 * 3600000), lat, lng, tz);
+      var hinduMidnight = nsr ? (ss.getTime() + nsr.getTime()) / 2 : null;
+      return allBhadra && hinduMidnight != null && isBhadra(hinduMidnight) &&
+             nsr.getTime() >= w.Ts && nsr.getTime() < w.Te ? d + 86400000 : d;
+    }
     function monthsOf(index) { return months.filter(function (M) { return M.index === index && !M.adhik; }); }
+    function indiaOverride(F) {
+      if (!F.indiaDates || !F.indiaDates[yearCE] || tz !== 5.5 || lat < 6 || lat > 38 || lng < 68 || lng > 98) return null;
+      var p = F.indiaDates[yearCE].split('-').map(Number);
+      return Date.UTC(p[0], p[1] - 1, p[2]) - tz * 3600000;
+    }
     function emit(F, dayMs, endMs) {
       var ds = dateStr(dayMs);
       if (ds.slice(0, 4) !== String(yearCE)) return;
@@ -1175,7 +1206,12 @@
       if (F.rule === 'after') continue;
       if (!visible(F)) continue;
       try {
-        if (F.rule === 'sankranti' || F.rule === 'solar_offset') {
+        var fixedIndiaDay = indiaOverride(F);
+        if (fixedIndiaDay != null) {
+          emit(F, fixedIndiaDay, F.spanDays ? fixedIndiaDay + (F.spanDays - 1) * 86400000 : null);
+        } else if (F.rule === 'holika') {
+          monthsOf(F.month).forEach(function (M) { emit(F, holikaDay(M, F), null); });
+        } else if (F.rule === 'sankranti' || F.rule === 'solar_offset') {
           var cross = sidSunCross(F.deg, Date.UTC(yearCE, F.approxMonth, F.approxDay));
           var d0 = localDay0(cross) + (F.offsetDays || 0) * 86400000;
           emit(F, d0, F.spanDays ? d0 + (F.spanDays - 1) * 86400000 : null);
@@ -1292,11 +1328,12 @@
       var baseRows = byKey[G.base] || [];
       if (!baseRows.length) {            // base filtered out by region → resolve it silently
         var B = FESTIVAL_RULES.filter(function (x) { return x.key === G.base; })[0];
-        if (B) monthsOf(B.month).forEach(function (M) { baseRows.push({ _ms: tithiDay(M, B.paksha, B.tithi, B.anchor, B.avoidBhadra) }); });
+        if (B) monthsOf(B.month).forEach(function (M) { baseRows.push({ _ms: B.rule === 'holika' ? holikaDay(M, B) : tithiDay(M, B.paksha, B.tithi, B.anchor, B.avoidBhadra, B.paraviddha) }); });
       }
       baseRows.forEach(function (r) {
         var ms = r._ms != null ? r._ms : (Date.UTC(+r.date.slice(0, 4), +r.date.slice(5, 7) - 1, +r.date.slice(8, 10)) - tz * 3600000);
-        emit(G, ms + G.days * 86400000, null);
+        var gd = ms + G.days * 86400000;
+        emit(G, gd, G.spanDays ? gd + (G.spanDays - 1) * 86400000 : null);
       });
     }
     out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.key < b.key ? -1 : 1); });
