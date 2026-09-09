@@ -586,6 +586,20 @@ function southSVG(lagnaR,place,title){
 }
 function generate(){
   var PE=window.PanchangEngine,C=window.SD_CONTENT;
+  /* Replace the youth-oriented "competition is food/protein" idiom with
+     formal, age-neutral copy in every report language. */
+  var rahu6Formal={
+    en:'Rahu in the 6th brings a strong instinct for overcoming obstacles - competition is faced strategically, problems are investigated closely, and service through foreign or technical systems can suit you.',
+    hi:'षष्ठ भाव में राहु बाधाओं को रणनीति से पार करने की प्रवृत्ति देता है - आप प्रतिस्पर्धा का चतुराई से सामना करते हैं, समस्याओं की गहराई से जाँच करते हैं और विदेशी या तकनीकी प्रणालियों में सेवा आपके अनुकूल हो सकती है।',
+    te:'ఆరవ భావంలో రాహువు అడ్డంకులను వ్యూహాత్మకంగా అధిగమించే స్వభావాన్ని ఇస్తాడు - పోటీ పరిస్థితులను చాకచక్యంగా ఎదుర్కొంటారు, సమస్యలను లోతుగా పరిశీలిస్తారు; విదేశీ లేదా సాంకేతిక వ్యవస్థల్లో సేవ మీకు అనుకూలంగా ఉండవచ్చు.',
+    kn:'ಷಷ್ಠ ಭಾವದಲ್ಲಿರುವ ರಾಹು ಅಡ್ಡಿಗಳನ್ನು ತಂತ್ರದಿಂದ ಮೀರುವ ಸ್ವಭಾವ ನೀಡುತ್ತಾನೆ - ಸ್ಪರ್ಧೆಯನ್ನು ಜಾಣ್ಮೆಯಿಂದ ಎದುರಿಸುತ್ತೀರಿ, ಸಮಸ್ಯೆಗಳನ್ನು ಆಳವಾಗಿ ಪರಿಶೀಲಿಸುತ್ತೀರಿ; ವಿದೇಶಿ ಅಥವಾ ತಾಂತ್ರಿಕ ವ್ಯವಸ್ಥೆಗಳ ಸೇವೆ ನಿಮಗೆ ಹೊಂದಬಹುದು.',
+    ta:'ஆறாம் பாவத்தில் ராகு தடைகளைத் திட்டமிட்டு கடக்கும் இயல்பைத் தருகிறார் - போட்டியைச் சாதுர்யமாக எதிர்கொள்வீர்கள், சிக்கல்களை ஆழமாக ஆராய்வீர்கள்; வெளிநாட்டு அல்லது தொழில்நுட்ப அமைப்புகளில் சேவை உங்களுக்கு ஏற்றதாக இருக்கலாம்.',
+    bn:'ষষ্ঠ ভাবে রাহু বাধা কৌশলে অতিক্রম করার প্রবণতা দেন - প্রতিযোগিতার মোকাবিলা বুদ্ধি দিয়ে করেন, সমস্যাকে গভীরভাবে খতিয়ে দেখেন; বিদেশি বা প্রযুক্তি ব্যবস্থায় কাজ আপনার উপযোগী হতে পারে।',
+    mr:'षष्ठ भावातील राहू अडथळे युक्तीने पार करण्याची वृत्ती देतो - तुम्ही स्पर्धेला चातुर्याने सामोरे जाता, समस्यांचा खोलवर अभ्यास करता; परदेशी किंवा तांत्रिक व्यवस्थांतील सेवा तुम्हाला मानवू शकते.',
+    gu:'ષષ્ઠ ભાવનો રાહુ અવરોધોને વ્યૂહથી પાર કરવાની વૃત્તિ આપે છે - તમે સ્પર્ધાનો ચતુરાઈથી સામનો કરો છો, સમસ્યાની ઊંડાણથી તપાસ કરો છો; વિદેશી કે ટેકનોલોજી વ્યવસ્થામાં સેવા તમને અનુકૂળ થઈ શકે છે.',
+    as:'ষষ্ঠ ভাৱৰ ৰাহুৱে বাধা কৌশলেৰে পাৰ হোৱাৰ প্ৰৱণতা দিয়ে - আপুনি প্ৰতিযোগিতাৰ বুদ্ধিৰে মোকাবিলা কৰে, সমস্যাক গভীৰভাৱে পৰীক্ষা কৰে; বিদেশী বা প্ৰযুক্তিগত ব্যৱস্থাত সেৱা আপোনাৰ বাবে উপযোগী হ’ব পাৰে।'
+  };
+  if(C.grahaBhava&&C.grahaBhava.rahu&&C.grahaBhava.rahu[5])C.grahaBhava.rahu[5]=rahu6Formal;
   var b=CTX.b,lat=CTX.lat,lng=CTX.lng,bc=CTX.bc;
   var name=document.getElementById('pname').value||'—';
   var place=document.getElementById('bplace').value||'';
@@ -879,22 +893,63 @@ function generate(){
     pg(head+blocks.slice(0,4).join(''));
     if(blocks.length>4)pg('<h2 class="sec" style="font-size:17px;">'+gname(md.lord)+' '+U('kundli.k062')+'</h2>'+blocks.slice(4).join(''));
   });
-  cover(2,U('kundli.k063'),U('kundli.k064'));
-  // ---- DETAILED PRATYANTAR PREDICTIONS (711 dated composed blocks, ~95pp) ----
+  /* Pratyantar copy is deliberately simple, formal and fully localised. The
+     chart facts below choose the sentence; no prose or prediction is invented
+     at render time. */
+  var PR_I18N={
+    en:{title:'Your next 10 years - detailed periods',subtitle:'Dated Pratyantar guidance personalised from the natal house, planetary condition, relationship and Ashtakavarga support.',context:'Chart focus: {planet} is in house {house} ({theme}), so this period especially activates that area of life.',caution:'Caution: support is mixed ({reason}). Move slowly, verify important decisions and keep a practical margin.',support:'Support is comparatively steady here. Consistent effort is more useful than forcing quick results.',lowSupport:'low Ashtakavarga support',mixedLords:'conflicting planetary relationship',riskMoney:'Risk flag: expenses or financial uncertainty can rise. Avoid speculative investments and keep an emergency reserve.',riskWork:'Risk flag: workload, disputes or neglected routines can create pressure. Record commitments and protect rest.',riskRelationship:'Risk flag: misunderstandings or unequal expectations are possible. Discuss commitments and contracts without haste.',riskCareer:'Risk flag: professional pressure or reputation concerns can increase. Avoid abrupt resignation and undocumented promises.',riskEnergy:'Risk flag: energy may fluctuate. Protect sleep and routine; seek qualified care for any persistent health concern.'},
+    hi:{title:'आपके अगले 10 वर्ष - विस्तृत दशा काल',subtitle:'जन्म भाव, ग्रह स्थिति, ग्रह-संबंध और अष्टकवर्ग बल से व्यक्तिगत प्रत्यंतर मार्गदर्शन।',context:'कुंडली संकेत: {planet} आपके {house} भाव ({theme}) में है, इसलिए इस काल में जीवन का यह क्षेत्र विशेष रूप से सक्रिय रहेगा।',caution:'सावधानी: सहयोग मिश्रित है ({reason})। धीरे चलें, महत्वपूर्ण निर्णय जाँचें और व्यावहारिक गुंजाइश रखें।',support:'यहाँ सहयोग अपेक्षाकृत स्थिर है। शीघ्र फल को बाध्य करने से अधिक उपयोगी नियमित प्रयास रहेगा।',lowSupport:'अष्टकवर्ग सहयोग कम',mixedLords:'ग्रहों का परस्पर संबंध चुनौतीपूर्ण',riskMoney:'जोखिम संकेत: खर्च या आर्थिक अनिश्चितता बढ़ सकती है। सट्टा निवेश से बचें और आपात निधि रखें।',riskWork:'जोखिम संकेत: काम का बोझ, विवाद या बिगड़ी दिनचर्या दबाव बढ़ा सकती है। वचन लिखित रखें और विश्राम बचाएँ।',riskRelationship:'जोखिम संकेत: गलतफहमी या असमान अपेक्षाएँ संभव हैं। प्रतिबद्धता और अनुबंध पर बिना जल्दबाजी बात करें।',riskCareer:'जोखिम संकेत: पेशेवर दबाव या प्रतिष्ठा की चिंता बढ़ सकती है। अचानक इस्तीफे और बिना लिखित वादों से बचें।',riskEnergy:'जोखिम संकेत: ऊर्जा में उतार-चढ़ाव हो सकता है। नींद और दिनचर्या सँभालें; लगातार स्वास्थ्य समस्या में योग्य चिकित्सक से मिलें।'},
+    te:{title:'రాబోయే 10 సంవత్సరాలు - సూక్ష్మ దశా కాలాలు',subtitle:'జన్మ భావం, గ్రహ స్థితి, గ్రహ సంబంధం, అష్టకవర్గ బలం ఆధారంగా వ్యక్తిగత ప్రత్యంతర మార్గదర్శనం.',context:'జాతక సూచన: {planet} మీ {house}వ భావంలో ({theme}) ఉన్నందున, ఈ కాలంలో ఆ జీవిత రంగం ప్రత్యేకంగా చురుకవుతుంది.',caution:'జాగ్రత్త: ఈ కాలంలో సహకారం మిశ్రమంగా ఉంది ({reason}). తొందరపడకుండా, ముఖ్య నిర్ణయాలను సరిచూసుకుని, కొంత వెసులుబాటు ఉంచండి.',support:'ఈ కాలంలో సహకారం తగినంత స్థిరంగా ఉంది. త్వరగా ఫలితం రావాలని ఒత్తిడి చేయడం కంటే నిలకడైన ప్రయత్నం మేలు.',lowSupport:'అష్టకవర్గ బలం తక్కువ',mixedLords:'గ్రహాల పరస్పర సంబంధం అనుకూలంగా లేదు',riskMoney:'రిస్క్ సూచన: ఖర్చులు లేదా ఆర్థిక అనిశ్చితి పెరగవచ్చు. ఊహాజనిత పెట్టుబడులకు దూరంగా ఉండి, అత్యవసర నిధి ఉంచండి.',riskWork:'రిస్క్ సూచన: పనిభారం, వివాదాలు లేదా అస్తవ్యస్తమైన దినచర్య ఒత్తిడి కలిగించవచ్చు. బాధ్యతలను రాతపూర్వకంగా ఉంచి, విశ్రాంతిని నిర్లక్ష్యం చేయవద్దు.',riskRelationship:'రిస్క్ సూచన: అపార్థాలు లేదా అసమాన అంచనాలు రావచ్చు. బంధాలు, ఒప్పందాల విషయంలో తొందరపడకుండా మాట్లాడండి.',riskCareer:'రిస్క్ సూచన: వృత్తిపరమైన ఒత్తిడి లేదా పేరు ప్రతిష్ఠపై ఆందోళన పెరగవచ్చు. హఠాత్తుగా ఉద్యోగం మానడం, రాతపూర్వకత లేని హామీలు వద్దు.',riskEnergy:'రిస్క్ సూచన: శక్తి స్థాయి మారుతూ ఉండవచ్చు. నిద్ర, దినచర్యను కాపాడుకోండి; ఆరోగ్య సమస్య కొనసాగితే అర్హత కలిగిన వైద్యుడిని సంప్రదించండి.'},
+    kn:{title:'ಮುಂದಿನ 10 ವರ್ಷಗಳು - ಸೂಕ್ಷ್ಮ ದಶಾ ಅವಧಿಗಳು',subtitle:'ಜನ್ಮಭಾವ, ಗ್ರಹಸ್ಥಿತಿ, ಗ್ರಹಸಂಬಂಧ ಮತ್ತು ಅಷ್ಟಕವರ್ಗ ಬಲದ ಆಧಾರದ ವೈಯಕ್ತಿಕ ಪ್ರತ್ಯಂತರ ಮಾರ್ಗದರ್ಶನ.',context:'ಜಾತಕ ಸೂಚನೆ: {planet} ನಿಮ್ಮ {house}ನೇ ಭಾವದಲ್ಲಿ ({theme}) ಇರುವುದರಿಂದ ಈ ಅವಧಿಯಲ್ಲಿ ಆ ಜೀವನ ಕ್ಷೇತ್ರ ಹೆಚ್ಚು ಸಕ್ರಿಯವಾಗುತ್ತದೆ.',caution:'ಎಚ್ಚರಿಕೆ: ಬೆಂಬಲ ಮಿಶ್ರವಾಗಿದೆ ({reason}). ಆತುರಪಡದೆ ಪ್ರಮುಖ ನಿರ್ಧಾರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ, ಪ್ರಾಯೋಗಿಕ ಅವಕಾಶ ಇಡಿ.',support:'ಈ ಅವಧಿಯಲ್ಲಿ ಬೆಂಬಲ ತುಲನಾತ್ಮಕವಾಗಿ ಸ್ಥಿರವಾಗಿದೆ. ತ್ವರಿತ ಫಲವನ್ನು ಒತ್ತಾಯಿಸುವುದಕ್ಕಿಂತ ನಿರಂತರ ಪ್ರಯತ್ನ ಉತ್ತಮ.',lowSupport:'ಅಷ್ಟಕವರ್ಗ ಬೆಂಬಲ ಕಡಿಮೆ',mixedLords:'ಗ್ರಹಗಳ ಪರಸ್ಪರ ಸಂಬಂಧ ಸವಾಲಿನದು',riskMoney:'ಅಪಾಯ ಸೂಚನೆ: ಖರ್ಚು ಅಥವಾ ಹಣಕಾಸಿನ ಅನಿಶ್ಚಿತತೆ ಹೆಚ್ಚಬಹುದು. ಊಹಾತ್ಮಕ ಹೂಡಿಕೆ ತಪ್ಪಿಸಿ ತುರ್ತು ನಿಧಿ ಇಡಿ.',riskWork:'ಅಪಾಯ ಸೂಚನೆ: ಕೆಲಸದ ಒತ್ತಡ, ವಿವಾದ ಅಥವಾ ಅಸ್ತವ್ಯಸ್ತ ದಿನಚರಿ ಒತ್ತಡ ತರಬಹುದು. ಬದ್ಧತೆಗಳನ್ನು ದಾಖಲಿಸಿ ವಿಶ್ರಾಂತಿಯನ್ನು ಕಾಪಾಡಿ.',riskRelationship:'ಅಪಾಯ ಸೂಚನೆ: ತಪ್ಪು ತಿಳುವಳಿಕೆ ಅಥವಾ ಅಸಮಾನ ನಿರೀಕ್ಷೆಗಳು ಬರಬಹುದು. ಸಂಬಂಧ ಮತ್ತು ಒಪ್ಪಂದಗಳ ಬಗ್ಗೆ ಆತುರವಿಲ್ಲದೆ ಮಾತನಾಡಿ.',riskCareer:'ಅಪಾಯ ಸೂಚನೆ: ವೃತ್ತಿ ಒತ್ತಡ ಅಥವಾ ಪ್ರತಿಷ್ಠೆಯ ಚಿಂತೆ ಹೆಚ್ಚಬಹುದು. ಹಠಾತ್ ರಾಜೀನಾಮೆ ಮತ್ತು ಲಿಖಿತವಲ್ಲದ ಭರವಸೆ ತಪ್ಪಿಸಿ.',riskEnergy:'ಅಪಾಯ ಸೂಚನೆ: ಶಕ್ತಿ ಏರುಪೇರಾಗಬಹುದು. ನಿದ್ರೆ ಮತ್ತು ದಿನಚರಿ ಕಾಪಾಡಿ; ಸಮಸ್ಯೆ ಮುಂದುವರಿದರೆ ಅರ್ಹ ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸಿ.'},
+    ta:{title:'அடுத்த 10 ஆண்டுகள் - நுண் தசைக் காலங்கள்',subtitle:'பிறப்புப் பாவம், கிரக நிலை, கிரக உறவு மற்றும் அஷ்டகவர்க்க பலத்தின் அடிப்படையிலான தனிப்பட்ட பிரத்யந்தர வழிகாட்டல்.',context:'ஜாதகக் குறிப்பு: {planet} உங்கள் {house}ஆம் பாவத்தில் ({theme}) இருப்பதால் இந்தக் காலத்தில் அந்த வாழ்க்கைப் பகுதி அதிகம் செயல்படும்.',caution:'கவனம்: ஆதரவு கலவையாக உள்ளது ({reason}). அவசரப்படாமல் முக்கிய முடிவுகளைச் சரிபார்த்து நடைமுறை இடைவெளி வையுங்கள்.',support:'இந்தக் காலத்தில் ஆதரவு ஒப்பீட்டளவில் நிலையாக உள்ளது. விரைவான பலனை வற்புறுத்துவதைவிட தொடர்ச்சியான முயற்சி சிறந்தது.',lowSupport:'அஷ்டகவர்க்க ஆதரவு குறைவு',mixedLords:'கிரகங்களின் பரஸ்பர உறவு சவாலானது',riskMoney:'அபாயக் குறிப்பு: செலவு அல்லது நிதி நிச்சயமின்மை அதிகரிக்கலாம். ஊக முதலீட்டைத் தவிர்த்து அவசர நிதி வைத்திருங்கள்.',riskWork:'அபாயக் குறிப்பு: பணிச்சுமை, முரண்பாடு அல்லது ஒழுங்கற்ற நடைமுறை அழுத்தம் தரலாம். பொறுப்புகளைப் பதிவு செய்து ஓய்வைக் காக்கவும்.',riskRelationship:'அபாயக் குறிப்பு: தவறான புரிதல் அல்லது சமமற்ற எதிர்பார்ப்பு வரலாம். உறவு மற்றும் ஒப்பந்தங்களை அவசரமின்றிப் பேசுங்கள்.',riskCareer:'அபாயக் குறிப்பு: தொழில் அழுத்தம் அல்லது நற்பெயர் குறித்த கவலை உயரலாம். திடீர் ராஜினாமா மற்றும் எழுதாத வாக்குறுதிகளைத் தவிர்க்கவும்.',riskEnergy:'அபாயக் குறிப்பு: சக்தி ஏற்ற இறக்கமாக இருக்கலாம். தூக்கம், ஒழுங்கைக் காக்கவும்; பிரச்சினை நீடித்தால் தகுதியான மருத்துவரை அணுகவும்.'},
+    bn:{title:'আগামী ১০ বছর - সূক্ষ্ম দশার সময়কাল',subtitle:'জন্মভাব, গ্রহের অবস্থা, পারস্পরিক সম্পর্ক ও অষ্টকবর্গ বলের ভিত্তিতে ব্যক্তিগত প্রত্যন্তর নির্দেশনা।',context:'কোষ্ঠীর ইঙ্গিত: {planet} আপনার {house} নম্বর ভাবে ({theme}) থাকায় এই সময়ে জীবনের ওই ক্ষেত্রটি বিশেষভাবে সক্রিয় হবে।',caution:'সতর্কতা: সহায়তা মিশ্র ({reason})। তাড়াহুড়ো না করে গুরুত্বপূর্ণ সিদ্ধান্ত যাচাই করুন এবং বাস্তবসম্মত অবকাশ রাখুন।',support:'এই সময়ে সহায়তা তুলনামূলকভাবে স্থির। দ্রুত ফল চাপিয়ে দেওয়ার চেয়ে নিয়মিত চেষ্টা বেশি উপকারী।',lowSupport:'অষ্টকবর্গ সহায়তা কম',mixedLords:'গ্রহগুলির পারস্পরিক সম্পর্ক কঠিন',riskMoney:'ঝুঁকির ইঙ্গিত: খরচ বা আর্থিক অনিশ্চয়তা বাড়তে পারে। জল্পনামূলক বিনিয়োগ এড়িয়ে জরুরি তহবিল রাখুন।',riskWork:'ঝুঁকির ইঙ্গিত: কাজের চাপ, বিরোধ বা এলোমেলো রুটিন সমস্যা বাড়াতে পারে। দায়বদ্ধতা লিখিত রাখুন এবং বিশ্রাম রক্ষা করুন।',riskRelationship:'ঝুঁকির ইঙ্গিত: ভুল বোঝাবুঝি বা অসম প্রত্যাশা হতে পারে। সম্পর্ক ও চুক্তির বিষয়ে তাড়াহুড়ো না করে কথা বলুন।',riskCareer:'ঝুঁকির ইঙ্গিত: পেশাগত চাপ বা সুনাম নিয়ে উদ্বেগ বাড়তে পারে। হঠাৎ পদত্যাগ ও অলিখিত প্রতিশ্রুতি এড়ান।',riskEnergy:'ঝুঁকির ইঙ্গিত: শক্তির ওঠানামা হতে পারে। ঘুম ও রুটিন রক্ষা করুন; সমস্যা চললে যোগ্য চিকিৎসকের পরামর্শ নিন।'},
+    mr:{title:'पुढील १० वर्षे - सूक्ष्म दशाकाल',subtitle:'जन्मभाव, ग्रहस्थिती, ग्रहसंबंध आणि अष्टकवर्ग बळावर आधारित वैयक्तिक प्रत्यंतर मार्गदर्शन.',context:'पत्रिकेचा संकेत: {planet} तुमच्या {house}व्या भावात ({theme}) असल्यामुळे या काळात जीवनाचे हे क्षेत्र विशेष सक्रिय राहील.',caution:'सावधगिरी: आधार मिश्र आहे ({reason}). घाई न करता महत्त्वाचे निर्णय तपासा आणि व्यवहार्य राखीव जागा ठेवा.',support:'या काळात आधार तुलनेने स्थिर आहे. झटपट निकालाचा आग्रह धरण्यापेक्षा सातत्यपूर्ण प्रयत्न अधिक उपयोगी.',lowSupport:'अष्टकवर्गाचा आधार कमी',mixedLords:'ग्रहांचा परस्पर संबंध आव्हानात्मक',riskMoney:'जोखमीचा संकेत: खर्च किंवा आर्थिक अनिश्चितता वाढू शकते. सट्टेबाज गुंतवणूक टाळा आणि आपत्कालीन निधी ठेवा.',riskWork:'जोखमीचा संकेत: कामाचा भार, वाद किंवा विस्कळीत दिनक्रम ताण वाढवू शकतो. बांधिलकी नोंदवा आणि विश्रांती जपा.',riskRelationship:'जोखमीचा संकेत: गैरसमज किंवा असमान अपेक्षा संभवतात. नाती आणि करारांबाबत घाई न करता बोला.',riskCareer:'जोखमीचा संकेत: व्यावसायिक ताण किंवा प्रतिष्ठेची चिंता वाढू शकते. अचानक राजीनामा आणि अलिखित आश्वासने टाळा.',riskEnergy:'जोखमीचा संकेत: ऊर्जेत चढउतार होऊ शकतो. झोप व दिनक्रम जपा; समस्या टिकल्यास पात्र डॉक्टरांचा सल्ला घ्या.'},
+    gu:{title:'આવનારા ૧૦ વર્ષ - સૂક્ષ્મ દશાકાળ',subtitle:'જન્મભાવ, ગ્રહસ્થિતિ, ગ્રહસંબંધ અને અષ્ટકવર્ગ બળ આધારિત વ્યક્તિગત પ્રત્યંતર માર્ગદર્શન.',context:'કુંડળીનો સંકેત: {planet} તમારા {house}મા ભાવમાં ({theme}) હોવાથી આ સમયમાં જીવનનું આ ક્ષેત્ર વિશેષ સક્રિય રહેશે.',caution:'સાવચેતી: સહકાર મિશ્ર છે ({reason}). ઉતાવળ કર્યા વિના મહત્વના નિર્ણય તપાસો અને વ્યવહારુ અવકાશ રાખો.',support:'આ સમયમાં સહકાર તુલનાત્મક રીતે સ્થિર છે. ઝડપી પરિણામ માટે દબાણ કરતાં સતત પ્રયત્ન વધુ ઉપયોગી છે.',lowSupport:'અષ્ટકવર્ગ સહકાર ઓછો',mixedLords:'ગ્રહોનો પરસ્પર સંબંધ પડકારજનક',riskMoney:'જોખમ સંકેત: ખર્ચ અથવા નાણાકીય અનિશ્ચિતતા વધી શકે. સટ્ટાકીય રોકાણ ટાળો અને આપત્કાલીન ભંડોળ રાખો.',riskWork:'જોખમ સંકેત: કામનો ભાર, વિવાદ અથવા અવ્યવસ્થિત દિનચર્યા દબાણ વધારી શકે. જવાબદારીઓ લખિત રાખો અને આરામ જાળવો.',riskRelationship:'જોખમ સંકેત: ગેરસમજ અથવા અસમાન અપેક્ષા થઈ શકે. સંબંધ અને કરાર વિશે ઉતાવળ વિના વાત કરો.',riskCareer:'જોખમ સંકેત: વ્યવસાયિક દબાણ અથવા પ્રતિષ્ઠાની ચિંતા વધી શકે. અચાનક રાજીનામું અને અલિખિત વચન ટાળો.',riskEnergy:'જોખમ સંકેત: ઊર્જામાં ચઢાવ-ઉતાર થઈ શકે. ઊંઘ અને દિનચર્યા જાળવો; સમસ્યા ચાલુ રહે તો યોગ્ય ડૉક્ટરની સલાહ લો.'},
+    as:{title:'অহা ১০ বছৰ - সূক্ষ্ম দশাৰ সময়',subtitle:'জন্মভাৱ, গ্ৰহস্থিতি, গ্ৰহ-সম্বন্ধ আৰু অষ্টকবৰ্গ বলৰ আধাৰত ব্যক্তিগত প্ৰত্যন্তৰ পথনিৰ্দেশনা।',context:'কুণ্ডলীৰ সংকেত: {planet} আপোনাৰ {house} নং ভাৱত ({theme}) থকাৰ বাবে এই সময়ত জীৱনৰ সেই ক্ষেত্ৰটো বিশেষভাৱে সক্ৰিয় হ’ব।',caution:'সাৱধানতা: সহায় মিশ্ৰ ({reason})। খৰখেদা নকৰি গুৰুত্বপূৰ্ণ সিদ্ধান্ত পৰীক্ষা কৰক আৰু ব্যৱহাৰিক অৱকাশ ৰাখক।',support:'এই সময়ত সহায় তুলনামূলকভাৱে স্থিৰ। সোনকালে ফল পাবলৈ জোৰ দিয়াতকৈ নিয়মীয়া চেষ্টা অধিক উপকাৰী।',lowSupport:'অষ্টকবৰ্গ সহায় কম',mixedLords:'গ্ৰহসমূহৰ পাৰস্পৰিক সম্বন্ধ প্ৰত্যাহ্বানজনক',riskMoney:'বিপদৰ সংকেত: খৰচ বা আৰ্থিক অনিশ্চয়তা বাঢ়িব পাৰে। জল্পনামূলক বিনিয়োগ এৰাই জৰুৰী পুঁজি ৰাখক।',riskWork:'বিপদৰ সংকেত: কামৰ বোজা, বিবাদ বা বিশৃংখল দিনচৰ্যাই চাপ বঢ়াব পাৰে। দায়িত্ব লিখিত ৰাখক আৰু বিশ্ৰাম সুৰক্ষিত কৰক।',riskRelationship:'বিপদৰ সংকেত: ভুল বুজাবুজি বা অসম আশা হ’ব পাৰে। সম্পৰ্ক আৰু চুক্তিৰ কথা খৰখেদা নকৰি আলোচনা কৰক।',riskCareer:'বিপদৰ সংকেত: পেছাগত চাপ বা সুনামৰ চিন্তা বাঢ়িব পাৰে। হঠাৎ পদত্যাগ আৰু অলিখিত প্ৰতিশ্ৰুতি এৰাওক।',riskEnergy:'বিপদৰ সংকেত: শক্তিৰ উঠা-নমা হ’ব পাৰে। টোপনি আৰু দিনচৰ্যা ঠিক ৰাখক; সমস্যা থাকিলে যোগ্য চিকিৎসকৰ পৰামৰ্শ লওক.'}
+  };
+  function prText(key,map){
+    var pack=PR_I18N[LANG]||PR_I18N.en, s=pack[key]||PR_I18N.en[key]||'';
+    return s.replace(/\{(\w+)\}/g,function(_,k){return map&&map[k]!=null?map[k]:_;});
+  }
+  cover(2,prText('title'),prText('subtitle'));
+  // ---- DETAILED PRATYANTAR PREDICTIONS (current + next 10 years) ----
   var MAITRI_T={sun:{sun:2,moon:2,mars:2,mercury:1,jupiter:2,venus:0,saturn:0},moon:{sun:2,moon:2,mars:1,mercury:2,jupiter:1,venus:1,saturn:1},mars:{sun:2,moon:2,mars:2,mercury:0,jupiter:2,venus:1,saturn:1},mercury:{sun:2,moon:0,mars:1,mercury:2,jupiter:1,venus:2,saturn:1},jupiter:{sun:2,moon:2,mars:2,mercury:0,jupiter:2,venus:0,saturn:1},venus:{sun:0,moon:0,mars:1,mercury:2,jupiter:1,venus:2,saturn:2},saturn:{sun:0,moon:0,mars:0,mercury:2,jupiter:1,venus:2,saturn:2},rahu:{sun:0,moon:0,mars:1,mercury:2,jupiter:1,venus:2,saturn:2},ketu:{sun:1,moon:1,mars:2,mercury:1,jupiter:2,venus:1,saturn:1}};
+  var prWindowStart=new Date(),prWindowEnd=new Date(prWindowStart.getTime());
+  prWindowEnd.setUTCFullYear(prWindowEnd.getUTCFullYear()+10);
   dz.mahadashas.forEach(function(md){
     md.antardashas.forEach(function(a){
       var prs=PE.dashaSubPeriods(a.lord,a.start.getTime(),a.end.getTime())
-        .filter(function(pr){return pr.end.getTime()>a.start.getTime();});
+        .filter(function(pr){return pr.end.getTime()>a.start.getTime()&&pr.end>prWindowStart&&pr.start<prWindowEnd;});
+      if(!prs.length)return;
       var blocks=prs.map(function(pr){
         var rel=(MAITRI_T[md.lord]&&MAITRI_T[md.lord][pr.lord]!==undefined)?MAITRI_T[md.lord][pr.lord]:1;
         if(pr.lord===md.lord)rel=2;
+        var prG=bc.grahas.find(function(g){return g.key===pr.lord;});
+        var prD=(yg.dignities.find(function(d){return d.key===pr.lord;})||{}).dignity;
+        var prSav=prG?av.sav[prG.rashi.index]:28, reasons=[];
+        if(prD==='Debilitated')reasons.push(term('dignity',prD));
+        if(prG&&prG.combust)reasons.push(U('kundli.k022'));
+        if(prG&&prG.retrograde&&pr.lord!=='rahu'&&pr.lord!=='ketu')reasons.push(U('kundli.k021'));
+        if(prSav<=22)reasons.push(prText('lowSupport'));
+        if(rel===0)reasons.push(prText('mixedLords'));
+        var h=prG?prG.house:1, theme=TT(C.bhava[h-1])||String(h);
+        var chartContext=prText('context',{planet:gname(pr.lord),house:h,theme:theme});
+        var balance=reasons.length?prText('caution',{reason:reasons.join(', ')}):prText('support');
+        var risk='';
+        if(reasons.length){
+          if(h===2||h===8||h===12)risk=prText('riskMoney');
+          else if(h===6)risk=prText('riskWork');
+          else if(h===7)risk=prText('riskRelationship');
+          else if(h===10||h===11)risk=prText('riskCareer');
+          else if(h===1)risk=prText('riskEnergy');
+        }
         return '<div style="border-bottom:1px dashed #E4D3AE;padding:7px 2px;font-size:13.5px;line-height:1.65;">'
           +'<span class="prhead"><b>'+gname(md.lord)+' – '+gname(a.lord)+' – '+gname(pr.lord)+'</b> '
           +'<span style="font-size:11.5px;color:#8B5A2B;">('+fD(pr.start)+' → '+fD(pr.end)+')</span></span>'
           +U('kundli.k065')+T(C.prFlavor[pr.lord])+'. '
           +T(C.prTone[String(rel)])+'. '
           +U('kundli.k066')+T(C.prGuide[pr.lord])+'.'
+          +'<br><span style="color:#5C1A1B;">'+chartContext+' '+balance+(risk?' '+risk:'')+'</span>'
           +'</div>';
       });
       for(var i=0;i<blocks.length;i+=5){
