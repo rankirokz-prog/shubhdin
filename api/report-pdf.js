@@ -17,6 +17,7 @@ const REPORTS = {
   annual:   'annual-report.html',
   forecast: 'forecast-report.html'
 };
+const { open: openSnapshot } = require('../lib/report-vault.js');
 
 let _stack = null;
 function loadStack() {
@@ -43,10 +44,10 @@ module.exports = async function handler(req, res) {
   const serviceKey  = process.env.SUPABASE_SERVICE_KEY;
   if (!supabaseUrl || !serviceKey) return res.status(500).json({ error: 'Missing Supabase config' });
 
-  const { report, uid, access_token, details } = req.body || {};
-  const lang = pickLang(req.body && req.body.lang, details && details.lang);
+  let { report, uid, access_token, details } = req.body || {};
+  let lang = pickLang(req.body && req.body.lang, details && details.lang);
   if (!REPORTS[report]) return res.status(400).json({ error: 'unknown report' });
-  if (!uid || !details) return res.status(400).json({ error: 'uid and details required' });
+  if (!uid) return res.status(400).json({ error: 'uid required' });
 
   // ── auth: caller must be this Supabase user ──
   try {
@@ -66,22 +67,51 @@ module.exports = async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: 'order check failed' }); }
   }
 
-  const BUCKET = 'shubhdin-audio';
+  // A different device sends no details. Recover the immutable encrypted
+  // snapshot captured before checkout; never accept replacement client data
+  // once a paid order exists.
+  try {
+    const rows = await fetch(`${supabaseUrl}/rest/v1/report_drafts?uid=eq.${uid}&report=eq.${report}&select=details_enc,lang&limit=1`, {
+      headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey }
+    }).then(r => r.json());
+    if (Array.isArray(rows) && rows[0] && rows[0].details_enc) {
+      details = openSnapshot(rows[0].details_enc);
+      lang = pickLang(rows[0].lang, details && details.lang, lang);
+    } else if (!details) return res.status(409).json({ error: 'report snapshot unavailable' });
+  } catch (e) {
+    if (!details) return res.status(500).json({ error: 'could not restore report details' });
+  }
+
+  const BUCKET = 'shubhdin-reports';
   // one file per (report, language); a buyer who opens the same purchase in
   // another language gets a fresh render, the same-language request is instant
   const path = `reports/${uid}/${report}-${lang}.pdf`;
-  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${path}`;
-  const dlUrl = publicUrl + `?download=Shubh-Din-${report}-${lang}.pdf`;
+  const objectUrl = `${supabaseUrl}/storage/v1/object/${BUCKET}/${path}`;
+  async function signedUrl() {
+    const r = await fetch(`${supabaseUrl}/storage/v1/object/sign/${BUCKET}/${path}`, {
+      method: 'POST', headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey,
+        'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 3600 })
+    });
+    const j = await r.json();
+    if (!r.ok || !j.signedURL) throw new Error('could not sign PDF');
+    return supabaseUrl + '/storage/v1' + j.signedURL;
+  }
 
   // ── cached? ──
   try {
-    const head = await fetch(publicUrl, { method: 'HEAD' });
-    if (head.ok) return res.status(200).json({ ready: true, url: dlUrl, lang, cached: true });
+    const head = await fetch(objectUrl, { method: 'HEAD', headers: {
+      apikey: serviceKey, Authorization: 'Bearer ' + serviceKey } });
+    if (head.ok) return res.status(200).json({ ready: true, url: await signedUrl(), lang,
+      cached: true, expires_at: new Date(Date.now()+55*60*1000).toISOString() });
   } catch (e) {}
 
   // ── render ──
   let browser = null;
   try {
+    await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${uid}&report=eq.${report}`, {
+      method:'PATCH', headers:{ apikey:serviceKey, Authorization:'Bearer '+serviceKey,
+        'Content-Type':'application/json' },
+      body:JSON.stringify({generation_status:'generating',generation_error:null}) });
     const { chromium, puppeteer } = await loadStack();
     browser = await puppeteer.launch({
       args: chromium.args,
@@ -122,9 +152,17 @@ module.exports = async function handler(req, res) {
       body: pdf
     });
     if (!up.ok) return res.status(500).json({ error: 'storage upload failed' });
-    return res.status(200).json({ ready: true, url: dlUrl, lang, bytes: pdf.length });
+    await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${uid}&report=eq.${report}`, {
+      method:'PATCH', headers:{ apikey:serviceKey, Authorization:'Bearer '+serviceKey,
+        'Content-Type':'application/json' }, body:JSON.stringify({generation_status:'ready',
+          generation_error:null,generated_at:new Date().toISOString(),pdf_path:path}) });
+    return res.status(200).json({ ready: true, url: await signedUrl(), lang, bytes: pdf.length,
+      expires_at: new Date(Date.now()+55*60*1000).toISOString() });
   } catch (e) {
     if (browser) { try { await browser.close(); } catch (x) {} }
+    try { await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${uid}&report=eq.${report}`, {
+      method:'PATCH',headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey,'Content-Type':'application/json'},
+      body:JSON.stringify({generation_status:'failed',generation_error:String(e.message).slice(0,180)}) }); } catch(x){}
     return res.status(500).json({ error: 'render failed', detail: String(e.message).slice(0, 200) });
   }
 };
