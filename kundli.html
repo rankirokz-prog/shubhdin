@@ -93,7 +93,7 @@ if(typeof window.A!=='function'){
   <select id="fGender"><option value="male">पुरुष / Male</option><option value="female">महिला / Female</option></select>
   <label id="lbDob">जन्म तिथि</label><input id="fDob" type="date" min="1900-01-01" data-birthdate="1">
   <label id="lbTime">जन्म समय</label><input id="fTime" type="time">
-  <div id="timeHint" style="font-size:10px;color:rgba(255,255,255,.52);margin-top:-7px;margin-bottom:8px;">Check the AM/PM shown by your phone carefully.</div>
+  <div id="timeHint" style="font-size:10px;color:rgba(255,255,255,.58);line-height:1.55;margin:6px 2px 10px;">Check that the birth time is correct (24-hour format).</div>
   <label id="lbPlace">जन्म स्थान</label>
   <div style="position:relative;">
     <input id="fPlace" type="text" placeholder="शहर खोजें… / Search city" autocomplete="off" oninput="kSearchCity(this.value)">
@@ -336,15 +336,15 @@ if(true){
   (function(){var l=$('fLang');if(l){l.innerHTML=sdLangOptions();}$('lbLang').textContent=A('shared.report_language');$('lbLangHint').textContent=A('shared.report_language_hint');})();(function(){var g=$('fGender');if(g&&g.options.length>1){g.options[0].textContent=A('kundli.male');g.options[1].textContent=A('kundli.female');}var p=$('fPlace');if(p)p.placeholder=A('shared.search_city');})();$('lbGender').textContent=A('buy.gender');$('lbDob').textContent=A('kundli.date_of_birth');
   $('lbTime').textContent=A('kundli.time_of_birth');$('lbPlace').textContent=A('kundli.place_of_birth');
   (function(){var e=$('timeHint'),l=window.SD_LANG||'hi',m={
-    en:'Check the AM/PM shown by your phone carefully.',
-    hi:'फ़ोन पर दिख रहे AM/PM को ध्यान से जाँचें।',
-    te:'మీ ఫోన్‌లో కనిపించే AM/PMను జాగ్రత్తగా చూసుకోండి.',
-    kn:'ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ಕಾಣುವ AM/PM ಅನ್ನು ಗಮನವಾಗಿ ಪರಿಶೀಲಿಸಿ.',
-    ta:'உங்கள் தொலைபேசியில் காட்டப்படும் AM/PM-ஐ கவனமாகச் சரிபாருங்கள்.',
-    bn:'ফোনে দেখানো AM/PM ভালো করে যাচাই করুন।',
-    mr:'फोनवर दिसणारे AM/PM नीट तपासा.',
-    gu:'તમારા ફોનમાં દેખાતું AM/PM ધ્યાનથી તપાસો.',
-    as:'ফোনত দেখুওৱা AM/PM ভালদৰে পৰীক্ষা কৰক।'};if(e)e.textContent=m[l]||m.en;})();
+    en:'Check that the birth time is correct (24-hour format).',
+    hi:'जन्म समय सही है या नहीं जाँचें (24 घंटे के प्रारूप में)।',
+    te:'పుట్టిన సమయం సరిగ్గా ఉందో జాగ్రత్తగా చూసుకోండి (24 గంటల పద్ధతిలో).',
+    kn:'ಹುಟ್ಟಿದ ಸಮಯ ಸರಿಯಾಗಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ (24 ಗಂಟೆಗಳ ಮಾದರಿಯಲ್ಲಿ).',
+    ta:'பிறந்த நேரம் சரியாக உள்ளதா எனச் சரிபாருங்கள் (24 மணி நேர முறையில்).',
+    bn:'জন্মসময় সঠিক আছে কি না দেখুন (২৪ ঘণ্টার বিন্যাসে)।',
+    mr:'जन्मवेळ बरोबर आहे का ते तपासा (२४ तासांच्या स्वरूपात).',
+    gu:'જન્મ સમય સાચો છે કે નહીં તે તપાસો (24-કલાકના બંધારણમાં).',
+    as:'জন্মৰ সময় শুদ্ধ আছে নে পৰীক্ষা কৰক (২৪ ঘণ্টীয়া ৰূপত)।'};if(e)e.textContent=m[l]||m.en;})();
   try{$('lbWa').textContent='📱 '+SDX('wa_optin');$('lbWaErr').textContent=SDX('phone_err');$('fWaPhone').placeholder='98XXXXXXXX';}catch(e){}
   $('btDetails').textContent=A('kundli.create_my_kundli');$('errDetails').textContent=A('buy.please_fill_all_details');
   $('auT').textContent=A('kundli.protect_your_kundli');
