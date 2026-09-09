@@ -743,7 +743,8 @@ fetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
       +'&phone='+encodeURIComponent((details()||{}).phone||'')
       +'&lang='+encodeURIComponent((details()||{}).lang||window.SD_LANG||'hi')
       +'&access_token='+encodeURIComponent(SESSION.access_token),
-    {method:'POST'})
+    {method:'POST',headers:{'Content-Type':'application/json'},
+     body:JSON.stringify({details:details(),lang:(details()||{}).lang||window.SD_LANG||'hi'})})
    .then(apiJson).then(function(j){
      if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();return;}
      if(j&&j.ok&&j.url){bdlog('payment link created');ORDER_CODE=j.order_code||ORDER_CODE;location.href=j.url;return;}

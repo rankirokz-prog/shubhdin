@@ -306,6 +306,19 @@ function dlog(m){try{var a=JSON.parse(localStorage.getItem('shubhdin_auth_debug'
   var pnl=document.getElementById('dbgPanel');if(pnl)renderDbg();}
 function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
   try{pnl.textContent=JSON.parse(localStorage.getItem('shubhdin_auth_debug')||'[]').join('\n');}catch(e){}}
+/* Google login belongs to the whole account. Restore paid ownership here so a
+   new device's Premium and My Reports screens become correct immediately. */
+function syncPaidOwnership(){try{sbAuth().getSession().then(function(r){
+  var s=r.data&&r.data.session;if(!s)return;
+  fetch('/api/order?list=1&uid='+s.user.id+'&access_token='+encodeURIComponent(s.access_token))
+  .then(function(x){return x.json();}).then(function(j){if(!j||!Array.isArray(j.reports))return;
+    var a=[];try{a=JSON.parse(localStorage.getItem('sd_owned_reports')||'[]');if(!Array.isArray(a))a=[];}catch(e){a=[];}
+    j.reports.forEach(function(o){var f=a.filter(function(x){return x&&x.report===o.report;})[0];
+      if(!f){f={report:o.report};a.push(f);}f.order_code=o.order_code;f.date=(o.paid_at||'').slice(0,10);
+      f.lang=o.lang;f.dispatch_status=o.dispatch_status;f.generation_status=o.generation_status;
+      if(o.pdf_url){f.pdf_url=o.pdf_url;f.pdf_expires_at=o.pdf_expires_at||null;}
+    });localStorage.setItem('sd_owned_reports',JSON.stringify(a));
+  });});}catch(e){}}
 dlog('KUNDLI boot K9 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
 sbAuth().onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
 
@@ -629,6 +642,7 @@ function startPrep(user){
   if(email){try{var u2=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');u2.email=email;
     localStorage.setItem('shubhdin_user',JSON.stringify(u2));}catch(e){}}
   requestServerPdf();
+  syncPaidOwnership();
   var T=30000, steps=(typeof sdHas==='function'&&sdHas('kundli.step_1'))?[1,2,3,4,5,6].map(function(n){return A('kundli.step_'+n);}):(H?STEPS_HI:STEPS_EN), t0=Date.now();
   var iv=setInterval(function(){
     var f=Math.min(1,(Date.now()-t0)/T);

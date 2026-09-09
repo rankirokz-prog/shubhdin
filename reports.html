@@ -172,14 +172,16 @@ function reportLang(id){
 }
 
 /* Merge semantics per the contract: never overwrite an existing pdf_url. */
-function ownedWrite(report,orderCode,pdfUrl,date,lang){
+function ownedWrite(report,orderCode,pdfUrl,date,lang,pdfExpiresAt,dispatchStatus,generationStatus){
   try{
     var a=sdOwnedRead(), f=null;
     for(var i=0;i<a.length;i++) if(a[i].report===report){f=a[i];break;}
     if(!f){ f={report:report,date:date||new Date().toISOString().slice(0,10)}; a.push(f); }
     if(orderCode) f.order_code=orderCode;
-    if(pdfUrl && !f.pdf_url) f.pdf_url=pdfUrl;
+    if(pdfUrl){ f.pdf_url=pdfUrl; f.pdf_expires_at=pdfExpiresAt||null; }
     if(lang) f.lang=lang;   /* remembered so a re-render never guesses */
+    if(dispatchStatus) f.dispatch_status=dispatchStatus;
+    if(generationStatus) f.generation_status=generationStatus;
     localStorage.setItem('sd_owned_reports',JSON.stringify(a));
   }catch(e){}
 }
@@ -193,7 +195,7 @@ function ownedWrite(report,orderCode,pdfUrl,date,lang){
 function dropPdfUrl(id){
   try{
     var a=sdOwnedRead(), changed=false;
-    for(var i=0;i<a.length;i++) if(a[i].report===id && a[i].pdf_url){ delete a[i].pdf_url; changed=true; }
+    for(var i=0;i<a.length;i++) if(a[i].report===id && a[i].pdf_url){ delete a[i].pdf_url; delete a[i].pdf_expires_at; changed=true; }
     if(changed) localStorage.setItem('sd_owned_reports',JSON.stringify(a));
   }catch(e){}
 }
@@ -303,13 +305,27 @@ async function openReport(id){
   var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
   if(!rec) return;
 
+  // A PDF may be pre-generated for Ram's review, but payment alone must not
+  // bypass the approved→sent delivery gate.
+  if(rec.dispatch_status!=='sent' && SESSION){
+    await restoreFromServer();
+    rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
+  }
+  if(rec.dispatch_status && rec.dispatch_status!=='sent'){
+    showErr(err,A('report.no_pdf_is_ready_yet_open_it_once_o'));
+    return;
+  }
+
   /* 1 · This device knows a URL — but knowing one is not the same as it still
      working. Supabase signed URLs expire, so a link stored weeks ago can 404.
      Navigating blind meant the buyer tapped and nothing happened, with no
      message and no way forward: the "some reports don't download" case.
      Verify first; if it is dead, drop it and fall through to the paths that
      can produce a fresh one. */
-  if(rec.pdf_url){ openPdf(id,rec.pdf_url); return; }
+  if(rec.pdf_url && rec.pdf_expires_at && Date.parse(rec.pdf_expires_at)>Date.now()){
+    openPdf(id,rec.pdf_url); return;
+  }
+  if(rec.pdf_url) dropPdfUrl(id);
 
   /* 2 · No local URL. Order matters here: a missing sd_buy_<report> is the
      more specific blocker, because being signed in does not help render a
@@ -326,24 +342,7 @@ async function openReport(id){
     var fresh=sdOwnedRead().filter(function(o){return o.report===id;})[0];
     if(fresh&&fresh.pdf_url){ openPdf(id,fresh.pdf_url); return; }
   }
-  var d=buyDetails(id);
-  if(!d){
-    /* Ownership self-heals from the server; sd_buy_<report> does not, so this
-       device can OPEN an existing PDF but cannot ask the server to render one.
-       "Contact support" was the wrong ending — support is Ram on WhatsApp at
-       the petrol bunk, and every such message is his evening. Explain the
-       mechanism so the buyer can resolve it themselves. */
-    /* No server PDF and no local details: nothing here can produce the file.
-       An earlier version offered a "re-enter your details" button that went to
-       the buy form — buy.html's check=1 returns paid:true for an owner and
-       skips payment, so it worked. It was removed: the report is sold for ONE
-       chart, and that button would have let a single purchase generate charts
-       for anyone whose birth details the buyer chose to type. A rare stranded
-       buyer is a support case; unlimited free reports would not be rare. */
-    showErr(err,A('report.no_pdf_and_no_details_on_this_phone'));
-    var again=$('again-'+id); if(again) again.style.display='block';
-    return;
-  }
+  var d=buyDetails(id); // null on a new device; the server restores the locked snapshot
   if(!SESSION){
     showErr(err,A('report.please_sign_in_to_prepare_this_rep'));
     return;
@@ -354,11 +353,11 @@ async function openReport(id){
   try{
     var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({report:id,uid:SESSION.user.id,access_token:SESSION.access_token,
-                           details:d,lang:reportLang(id)})});   /* was H?'hi':'en' — the v134
+                           details:d||null,lang:reportLang(id)})});   /* was H?'hi':'en' — the v134
                              clamp, which silently re-rendered a Telugu report in English */
     var j=await apiJson(r);
     if(j&&j.ready&&j.url){
-      ownedWrite(id,rec.order_code,j.url,rec.date,reportLang(id));   // backfill for next time
+      ownedWrite(id,rec.order_code,j.url,rec.date,reportLang(id),j.expires_at);   // backfill for next time
       btn.disabled=false; btn.textContent=label;
       render();                                        // chips must reflect the new state
       openPdf(id,j.url);
@@ -479,7 +478,8 @@ async function restoreFromServer(){
            storage path and returns a URL only when a PDF genuinely exists, so its
            presence means "openable right now". Passing null here silently threw
            that away — "Check again" fetched the answer and discarded it. */
-        ownedWrite(o.report,o.order_code,o.pdf_url||null,(o.paid_at||'').slice(0,10),o.lang);
+        ownedWrite(o.report,o.order_code,o.pdf_url||null,(o.paid_at||'').slice(0,10),o.lang,
+                   o.pdf_expires_at,o.dispatch_status,o.generation_status);
         // A URL the server no longer returns is a file that no longer exists.
         // Without this, one written in an older session could never be cleared
         // and the buyer would tap a dead link forever with no way back.
