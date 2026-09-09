@@ -210,7 +210,7 @@ REPORTS.forEach(function(r){
     ? '<span class="cta" style="background:linear-gradient(120deg,#4A7C59,#2E7D46);color:#EAFFEF;">'+A('prem.openYourReport')+'</span>'
     : '<span class="was">₹'+r.was+'</span><span class="now">₹'+r.now+'</span>'
       +'<span class="off">'+reportDiscount(r.id)+'</span>'
-      +'<span class="cta">'+(r.hero?A('prem.getMyReport'):A('prem.view'))+'</span>';
+      +'<span class="cta">'+A('prem.getMyReport')+'</span>';
   var ownedTag = owned
     ? '<div data-owned-badge style="position:absolute;top:12px;right:12px;background:rgba(74,124,89,0.90);color:#EAFFEF;'
       +'font-size:9.5px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:20px;">'+A('prem.owned')+'</div>' : '';

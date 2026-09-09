@@ -479,7 +479,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
   display:inline-block;
   font-size:40px;letter-spacing:3px;
   color:rgba(255,255,255,0.88);
-  opacity:0.45;
+  opacity:0.72;
   transform:scale(1);
   text-shadow:none;
   transition:opacity 0.25s ease-in-out, color 0.25s ease-in-out,
@@ -487,7 +487,7 @@ body{height:100vh;height:100dvh;font-family:'Poppins',sans-serif;overflow:hidden
 }
 .j-word{
   display:inline-block;cursor:default;
-  opacity:0.32;
+  opacity:0.68;
   color:rgba(255,255,255,0.80);
   transform:scale(1);
   /* NO transition here — animation handles active state */
@@ -1734,6 +1734,7 @@ body[data-home="returning"] .streak{display:flex;}
 .ml-s{font-size:9.5px;color:rgba(255,244,222,0.45);margin-top:1px;}
 .ml-back{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;color:rgba(212,168,67,0.85);font-size:18px;cursor:pointer;flex-shrink:0;}
 .ml-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ml-grid .ml-god:last-child:nth-child(odd){grid-column:1/-1;}
 .ml-god{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(212,168,67,0.28);cursor:pointer;aspect-ratio:4/4.6;transition:transform .12s;}
 .ml-god:active{transform:scale(0.96);}
 .ml-god img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
@@ -2619,7 +2620,14 @@ function t2(hi, en){ return H ? hi : en; }
 var SD_IS_TE = (window.SD_LANG === 'te');
 function L3(hi, en, key){ return (key && typeof sdHas==='function' && sdHas(key)) ? A(key) : (H ? hi : en); }
 function sdSlug(en){ return String(en||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,34); }
-function sdMon(i, short){ return A('cal.month'+(short?'_short':'')+'_'+(i+1)); }
+function sdMon(i, short){
+  if((window.SD_LANG||'hi')==='te'){
+    var full=['జనవరి','ఫిబ్రవరి','మార్చి','ఏప్రిల్','మే','జూన్','జూలై','ఆగస్టు','సెప్టెంబర్','అక్టోబర్','నవంబర్','డిసెంబర్'];
+    var abbr=['జన.','ఫిబ్ర.','మార్చి','ఏప్రి.','మే','జూన్','జూలై','ఆగ.','సెప్.','అక్టో.','నవం.','డిసె.'];
+    return (short?abbr:full)[i];
+  }
+  return A('cal.month'+(short?'_short':'')+'_'+(i+1));
+}
 function sdDow(i, short){
   var EN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   if(!short) return sdVara(EN[i]);
@@ -3376,8 +3384,51 @@ const MANTRA_WORDS={
   3:['ॐ','श्रीं','ह्रीं','क्लीं','ग्लौं','गं','गणपतये','वर','वरद','सर्वजनं','मे','वशमानय','स्वाहा'],
   4:['श्री','राम','जय','राम','जय','जय','राम'],
   5:['ॐ','महालक्ष्म्यै','नमः'], // cycles through 108 names — one per jap
-  6:['ॐ','शनैश्चराय','विद्महे','सूर्यपुत्राय','धीमहि','तन्नः','मन्दः','प्रचोदयात्'],
+  6:['ॐ','शनैश्चराय','विद्महे','सूर्यपुत्राय','धीमहि','तन्नो','मन्दः','प्रचोदयात्'],
 };
+
+/* Sanskrit stays Sanskrit; only its writing system follows the reader.
+   Character-level Brahmic transliteration preserves word count, so audio
+   timestamps and word highlighting remain aligned in every language. */
+const MANTRA_SCRIPT_MAP={
+ te:{'ॐ':'ఓం','अ':'అ','आ':'ఆ','इ':'ఇ','ई':'ఈ','उ':'ఉ','ऊ':'ఊ','ऋ':'ఋ','ए':'ఏ','ऐ':'ఐ','ओ':'ఓ','औ':'ఔ','क':'క','ख':'ఖ','ग':'గ','घ':'ఘ','ङ':'ఙ','च':'చ','छ':'ఛ','ज':'జ','झ':'ఝ','ञ':'ఞ','ट':'ట','ठ':'ఠ','ड':'డ','ढ':'ఢ','ण':'ణ','त':'త','थ':'థ','द':'ద','ध':'ధ','न':'న','प':'ప','फ':'ఫ','ब':'బ','भ':'భ','म':'మ','य':'య','र':'ర','ल':'ల','व':'వ','श':'శ','ष':'ష','स':'స','ह':'హ','ळ':'ళ','ा':'ా','ि':'ి','ी':'ీ','ु':'ు','ू':'ూ','ृ':'ృ','े':'ే','ै':'ై','ो':'ో','ौ':'ౌ','ं':'ం','ः':'ః','ँ':'ఁ','्':'్','ऽ':'ఽ'},
+ kn:{'ॐ':'ಓಂ','अ':'ಅ','आ':'ಆ','इ':'ಇ','ई':'ಈ','उ':'ಉ','ऊ':'ಊ','ऋ':'ಋ','ए':'ಏ','ऐ':'ಐ','ओ':'ಓ','औ':'ಔ','क':'ಕ','ख':'ಖ','ग':'ಗ','घ':'ಘ','ङ':'ಙ','च':'ಚ','छ':'ಛ','ज':'ಜ','झ':'ಝ','ञ':'ಞ','ट':'ಟ','ठ':'ಠ','ड':'ಡ','ढ':'ಢ','ण':'ಣ','त':'ತ','थ':'ಥ','द':'ದ','ध':'ಧ','न':'ನ','प':'ಪ','फ':'ಫ','ब':'ಬ','भ':'ಭ','म':'ಮ','य':'ಯ','र':'ರ','ल':'ಲ','व':'ವ','श':'ಶ','ष':'ಷ','स':'ಸ','ह':'ಹ','ळ':'ಳ','ा':'ಾ','ि':'ಿ','ी':'ೀ','ु':'ು','ू':'ೂ','ृ':'ೃ','े':'ೇ','ै':'ೈ','ो':'ೋ','ौ':'ೌ','ं':'ಂ','ः':'ಃ','ँ':'ಂ','्':'್','ऽ':'ಽ'},
+ gu:{'ॐ':'ૐ','अ':'અ','आ':'આ','इ':'ઇ','ई':'ઈ','उ':'ઉ','ऊ':'ઊ','ऋ':'ઋ','ए':'એ','ऐ':'ઐ','ओ':'ઓ','औ':'ઔ','क':'ક','ख':'ખ','ग':'ગ','घ':'ઘ','ङ':'ઙ','च':'ચ','छ':'છ','ज':'જ','झ':'ઝ','ञ':'ઞ','ट':'ટ','ठ':'ઠ','ड':'ડ','ढ':'ઢ','ण':'ણ','त':'ત','थ':'થ','द':'દ','ध':'ધ','न':'ન','प':'પ','फ':'ફ','ब':'બ','भ':'ભ','म':'મ','य':'ય','र':'ર','ल':'લ','व':'વ','श':'શ','ष':'ષ','स':'સ','ह':'હ','ळ':'ળ','ा':'ા','ि':'િ','ी':'ી','ु':'ુ','ू':'ૂ','ृ':'ૃ','े':'ે','ै':'ૈ','ो':'ો','ौ':'ૌ','ं':'ં','ः':'ઃ','ँ':'ઁ','्':'્','ऽ':'ઽ'},
+ bn:{'ॐ':'ওঁ','अ':'অ','आ':'আ','इ':'ই','ई':'ঈ','उ':'উ','ऊ':'ঊ','ऋ':'ঋ','ए':'এ','ऐ':'ঐ','ओ':'ও','औ':'ঔ','क':'ক','ख':'খ','ग':'গ','घ':'ঘ','ङ':'ঙ','च':'চ','छ':'ছ','ज':'জ','झ':'ঝ','ञ':'ঞ','ट':'ট','ठ':'ঠ','ड':'ড','ढ':'ঢ','ण':'ণ','त':'ত','थ':'থ','द':'দ','ध':'ধ','न':'ন','प':'প','फ':'ফ','ब':'ব','भ':'ভ','म':'ম','य':'য','र':'র','ल':'ল','व':'ব','श':'শ','ष':'ষ','स':'স','h':'হ','ळ':'ল','ा':'া','ि':'ি','ी':'ী','ु':'ু','ू':'ূ','ृ':'ৃ','े':'ে','ै':'ৈ','ो':'ো','ौ':'ৌ','ं':'ং','ः':'ঃ','ँ':'ঁ','्':'্','ऽ':'ঽ'},
+ ta:{'ॐ':'ஓம்','अ':'அ','आ':'ஆ','इ':'இ','ई':'ஈ','उ':'உ','ऊ':'ஊ','ऋ':'ரு','ए':'ஏ','ऐ':'ஐ','ओ':'ஓ','औ':'ஔ','क':'க','ख':'க','ग':'க','घ':'க','ङ':'ங','च':'ச','छ':'ச','ज':'ஜ','झ':'ஜ','ञ':'ஞ','ट':'ட','ठ':'ட','ड':'ட','ढ':'ட','ण':'ண','त':'த','थ':'த','द':'த','ध':'த','न':'ந','प':'ப','फ':'ப','ब':'ப','भ':'ப','म':'ம','य':'ய','र':'ர','ल':'ல','व':'வ','श':'ஶ','ष':'ஷ','स':'ஸ','ह':'ஹ','ळ':'ள','ा':'ா','ि':'ி','ी':'ீ','ु':'ு','ू':'ூ','ृ':'்ரு','े':'ே','ै':'ை','ो':'ோ','ौ':'ௌ','ं':'ம்','ः':'ஃ','ँ':'ம்','्':'்','ऽ':'ऽ'}
+};
+const MANTRA_LATIN={
+ 0:['Namah','Suryaya','Shantaya','Sarvaroga','Nivarine','Ayurarogya','Aishvaryam','Dehi Deva','Jagatpate'],
+ 1:['Om','Tryambakam','Yajamahe','Sugandhim','Pushtivardhanam','Urvarukamiva','Bandhanat','Mrityormukshiya','Mamritat'],
+ 2:['Om','Namo','Hanumate','Rudravataraya','Sarvashatru','Samharanaya','Sarvaroga','Haraya','Sarvavashikaranaya','Ramadutaya','Svaha'],
+ 3:['Om','Shrim','Hrim','Klim','Glaum','Gam','Ganapataye','Vara','Varada','Sarvajanam','Me','Vashamanaya','Svaha'],
+ 4:['Shri','Rama','Jaya','Rama','Jaya','Jaya','Rama'],
+ 5:['Om','Mahalakshmyai','Namah'],
+ 6:['Om','Shanaishcharaya','Vidmahe','Suryaputraya','Dhimahi','Tanno','Mandah','Prachodayat']
+};
+function mantraScriptText(s,l){
+  l=l||window.SD_LANG||'hi'; if(l==='hi'||l==='mr') return s;
+  var originalLang=l; if(l==='as') l='bn'; var map=MANTRA_SCRIPT_MAP[l];
+  var out=map ? Array.from(String(s)).map(function(c){
+    if(originalLang==='as'&&c==='र') return 'ৰ';
+    if(originalLang==='as'&&c==='व') return 'ৱ';
+    return map[c]||c;
+  }).join('') : s;
+  /* Native orthography normally writes the homorganic nasal before द with
+     anusvara in these scripts, rather than exposing the Sanskrit न् conjunct. */
+  if(originalLang==='te') out=out.replace(/మన్దః/g,'మందః');
+  if(originalLang==='kn') out=out.replace(/ಮನ್ದಃ/g,'ಮಂದಃ');
+  if(originalLang==='gu') out=out.replace(/મન્દઃ/g,'મંદઃ');
+  return out;
+}
+function mantraWords(d){
+  var l=window.SD_LANG||'hi';
+  if(l==='en') return (MANTRA_LATIN[d]||MANTRA_WORDS[d]||[]).slice();
+  return (MANTRA_WORDS[d]||[]).map(w=>mantraScriptText(w,l));
+}
+function localizedMantra(dev,latin){
+  return (window.SD_LANG||'hi')==='en' ? (latin||dev) : mantraScriptText(dev);
+}
 
 // Friday special: 108 Lakshmi names — one name per jap cycle
 const LAKSHMI_NAMES=[
@@ -3500,7 +3551,7 @@ function buildMantra(){
   if(isShravan(dow2)&&_sn){
     words=['ॐ', _sn[0], 'नमः'];
   } else {
-    words=MANTRA_WORDS[dow2]||['ॐ','नमः'];
+    words=mantraWords(dow2);
   }
   buildMantraForWords(words);
 }
@@ -3583,7 +3634,7 @@ function updateJ(){
       const scMan=document.getElementById('jdscMantra');
       const dtypes={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
       if(scTop) scTop.textContent=(window.SD_LANG!=='en')?(isFriNow?A('dashbo.share_lakshmi_line'):AF('dashbo.share_jap_line',{mantra:(ML_TITLES[dow]&&sdHas(ML_TITLES[dow].key)?A(ML_TITLES[dow].key):dtypes[dow])})):'🙏 28 chants completed today';
-      if(scMan) scMan.textContent=mantras_display[dow]||'ॐ नमः';
+      if(scMan) scMan.textContent=localizedMantra(mantras_display[dow]||'ॐ नमः',(MANTRA_LATIN[dow]||[]).join(' '));
       // Show overlay
       document.getElementById('jdone').classList.add('show');
       // Play OM sound (bell tone via AudioContext)
@@ -3648,7 +3699,7 @@ function startWordHighlight(){
     const nameIdx=jCount%_names.length;
     words=['ॐ', _names[nameIdx], 'नमः'];
   } else {
-    words=MANTRA_WORDS[dow2]||['ॐ','नमः'];
+    words=mantraWords(dow2);
   }
 
   currentWordIdx = -1; // -1 so first word ALWAYS triggers
@@ -3750,7 +3801,7 @@ function stopWordHighlight(){
     if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
     jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
   }
-  const words=MANTRA_WORDS[sdVedicDow()]||[];
+  const words=mantraWords(sdVedicDow());
   words.forEach((_,i)=>{
     const w=document.getElementById('jw'+i);
     if(w) animateWord(w,'idle');
@@ -3791,7 +3842,7 @@ function toggleJap(){
         // Rebuild mantra for Friday name cycling
         if(isShravan()){
           const nameIdx=jCount%LAKSHMI_NAMES.length;
-          buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः']);
+          buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः'].map(w=>mantraScriptText(w)));
         }
         jChantAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3');
         jChantAudio.preload='auto'; jChantAudio.setAttribute('playsinline','true');
@@ -3869,7 +3920,7 @@ function toggleJap(){
 
             // Update mantra text when name changes
             if(wordSlot === 0){
-              buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः']);
+              buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः'].map(w=>mantraScriptText(w)));
               // Update counter
               const cEl = document.getElementById('jNum');
               if(cEl){ cEl.textContent=nameIdx+1; cEl.classList.remove('pop'); void cEl.offsetWidth; cEl.classList.add('pop'); setTimeout(()=>cEl.classList.remove('pop'),220); }
@@ -3942,7 +3993,7 @@ function resetJap(){
   document.getElementById('jCountPill').textContent='0/'+(isShravan()?108:28);
   document.getElementById('jdone').classList.remove('show');
   buildMala();
-  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
+  mantraWords(dow).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
 }
 // ── Completion sound (soft OM hum using Web Audio API) ──
 function playCompletionSound(){
@@ -4101,7 +4152,7 @@ function shareJap(){
       var sn=(typeof getNames==='function')?getNames(dow):null;
       if(typeof isShravan==='function' && isShravan(dow) && sn && sn[0])
         return '\u0950 '+sn[0]+' \u0928\u092e\u0903';
-      var w=(typeof MANTRA_WORDS!=='undefined')&&MANTRA_WORDS[dow];
+      var w=(typeof MANTRA_WORDS!=='undefined')&&mantraWords(dow);
       if(w&&w.length) return w.join(' ');
     }catch(e){}
     try{
@@ -4717,8 +4768,8 @@ function openProblem(key) {
   document.getElementById('poUnderstand').textContent = L3(p.understand, p.understand_en||p.understand, 'concern.'+key+'_understand');
 
   // Mantra
-  document.getElementById('poMantra').textContent = p.mantra;
-  document.getElementById('poMantraEn').textContent = p.mantra_en;
+  document.getElementById('poMantra').textContent = localizedMantra(p.mantra,p.mantra_en);
+  document.getElementById('poMantraEn').textContent = (window.SD_LANG||'hi')==='en'?'':p.mantra_en;
 
   // Steps
   const steps = (p.steps||[]).map(function(s){
@@ -4920,7 +4971,7 @@ function startSadhana(key){
   if(!p) return;
   const today = new Date().toISOString().slice(0,10);
   const s = {
-    key, titleKey: p.titleKey||'', title: p.title_hi, mantra: p.mantra,
+    key, titleKey: p.titleKey||'', title: p.title_hi, mantra: p.mantra, mantra_en:p.mantra_en,
     totalDays: parseInt((p.duration||'21'))||21,
     targetCount: p.count||28,
     startDate: today, daysDone: [], streak: 0,
@@ -4990,7 +5041,7 @@ function renderSadhana(){
   const isDone = s.daysDone.includes(today);
 
   document.getElementById('sadPurpose').textContent = sdSadTitle(s) || A('dashbo.my_sadhana_3');
-  document.getElementById('sadMantra').textContent = s.mantra;
+  document.getElementById('sadMantra').textContent = localizedMantra(s.mantra,s.mantra_en);
   document.getElementById('sadDayNum').textContent = 'Day ' + Math.min(dayNum, s.totalDays);
   document.getElementById('sadDayOf').textContent = '/ ' + s.totalDays;
   document.getElementById('sadStreak').textContent = s.streak;
@@ -5067,7 +5118,7 @@ function openSadJap(){
   sadJapCount = s.todayCount||0;
   
   // Set mantra
-  document.getElementById('sadJapMantra').textContent = s.mantra||'ॐ नमो नारायणाय';
+  document.getElementById('sadJapMantra').textContent = localizedMantra(s.mantra||'ॐ नमो नारायणाय',s.mantra_en||'Om Namo Narayanaya');
   
   // Show overlay
   const ov=document.getElementById('sadJapOverlay');
@@ -5184,7 +5235,7 @@ function continueSadhana(){
 
   // Set mantra from sadhana data
   const mEl = document.getElementById('sadJMantra');
-  if(mEl) mEl.textContent = s.mantra || 'ॐ नमो नारायणाय';
+  if(mEl) mEl.textContent = localizedMantra(s.mantra||'ॐ नमो नारायणाय',s.mantra_en||'Om Namo Narayanaya');
 
   const th=document.getElementById('sadJTapHint');
   if(th){th.style.display='block';th.style.opacity='1';}
@@ -8681,7 +8732,7 @@ function japAgain(){
   document.getElementById('jNum').textContent='0';
   document.getElementById('jCountPill').textContent='0/'+(isShravan()?108:28);
   buildMala();
-  (MANTRA_WORDS[dow]||[]).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
+  mantraWords(dow).forEach((_,i)=>{const w=document.getElementById('jw'+i);if(w)w.className='j-word';});
   // Ensure jPlay is false, then toggle to start
   jPlay = false;
   toggleJap();
@@ -8911,7 +8962,7 @@ const ML_TITLES={0:{key:'settin.surya_mantra',hi:'सूर्य मंत्�
 const ML_LIB=[0,1,2,3,4,5,6].map(function(d){return {
   god_hi:D[d].d_hi, god_en:D[d].d_en, godKey:D[d].nameKey, img:D[d].img, ico:D[d].ico,
   mantras:[{t1:ML_TITLES[d].hi,t1en:ML_TITLES[d].en,key:ML_TITLES[d].key,
-    words:MANTRA_WORDS[d]||D[d].chant.split(' '),
+    words:mantraWords(d),
     ts:MANTRA_TIMESTAMPS[d]||null, audio:CHANT_MAP[d]}]};});
 
 let mlAudio=null, mlPlaying=false, mlLastIdx=0, mlView='grid';

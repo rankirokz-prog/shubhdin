@@ -80,7 +80,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
 /* ad slot placeholder */
 .ad{margin-top:13px;border:1px dashed rgba(255,244,222,0.14);border-radius:14px;height:84px;
   display:flex;align-items:center;justify-content:center;font-size:9.5px;letter-spacing:2px;
-  color:rgba(255,244,222,0.22);}
+  color:rgba(255,244,222,0.22);display:none;}
 
 /* generic page bits */
 .pg-h{display:flex;align-items:center;gap:11px;padding:16px 0 10px;}
@@ -639,7 +639,7 @@ function vHub(){
    +(nb?'<div class="d-next" style="color:rgba(240,150,130,0.92);">⚠ '+A('astrol.hold_new_work_this_is_a_forbidden_')+'</div>':'')
    +(ng?'<div class="d-next">'+AF('astrol.next_clean_window_name_range',
         {name:sdChog(ng), range:fR(ng.start,ng.end)})
-        +(ng.trimmed?' <small style="color:rgba(212,168,67,0.6);">'+A('astrol.trimmed')+'</small>':'')+'</div>'
+        +'</div>'
       :'<div class="d-next">'+A('astrol.no_clean_window_left_today')+'</div>')
    +tara
    +'</div>'
@@ -924,7 +924,7 @@ function vTimes(){
        var live=(now>=+w.start&&now<+w.end);
        return '<div class="row"><span class="r-k dev">'+sdWindow(w)
         +(live?' <span class="tag now">'+A('dashbo.now')+'</span>':'')
-        +(w.trimmed?' <small style="color:rgba(212,168,67,0.62);">'+A('astrol.trimmed')+'</small>':'')
+        +''
         +'</span><span class="r-v good">'+fR(w.start,w.end)+'</span></div>';
      }).join('')
    : '<div class="row"><span class="r-k">'+A('astrol.no_clean_window_left_today')+'</span></div>';
