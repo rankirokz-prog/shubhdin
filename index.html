@@ -8,6 +8,9 @@
      script below, on the page that IS the acquisition funnel. -->
 <script src="analytics.js"></script>
 <script src="sd-tz.js"></script>
+<script src="astronomy.min.js"></script>
+<script src="panchang-engine.js"></script>
+<script src="ui-strings.js"></script>
 <script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
 (function(){try{
@@ -1044,7 +1047,7 @@
     const cn=(user.name||'').charAt(0).toUpperCase()+(user.name||'').slice(1);
     if(n===3&&user.name) document.getElementById('s3title').textContent=lang==='hi'?cn+' जी, जन्म तिथि?':onbL()?onbL().birthTitle(cn):'Birth details, '+cn+'?';
     if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':onbL()?onbL().almostDone(cn):'Almost done, '+cn+'!';
-    if (n===5) buildWelcome();
+    if (n===5) await buildWelcome();
 
     showStep(n);
     window.scrollTo(0,0);
@@ -1128,8 +1131,31 @@
      city-only one. */
 
   // ── Welcome screen ──
-  function buildWelcome() {
-    const r = getRashi(user.dob);
+  async function buildWelcome() {
+    /* The welcome card must use the same Vedic Moon calculation as the rest of
+       the app.  The former getRashi(dob) shortcut was a tropical Sun-sign
+       lookup and then invented one fixed nakshatra per sign. */
+    var r = null;
+    try {
+      var lat=Number(user.city_lat), lon=Number(user.city_lon), zone=user.city_tz;
+      if(!zone && isFinite(lat) && isFinite(lon)){
+        zone=await sdTz.fetchZone(lat,lon);
+        if(zone) user.city_tz=zone;
+      }
+      var bi=(zone&&user.dob&&user.tob) ? sdTz.birthInstant(user.dob,user.tob,zone) : null;
+      if(bi && window.PanchangEngine){
+        var ml=PanchangEngine.moonSidereal(bi.instant);
+        var ri=Math.floor(ml/30)%12, ni=Math.floor(ml/(360/27))%27;
+        var re=PanchangEngine._data.RASHI_EN[ri];
+        var ne=PanchangEngine._data.NAKSHATRA_NAMES[ni];
+        var lord=['ketu','venus','sun','moon','mars','rahu','jupiter','saturn','mercury'][ni%9];
+        var ui=window.SD_UI||{};
+        r={icon:rashis[ri].icon,
+           rashi:(ui.rashi&&ui.rashi[re]&&ui.rashi[re][lang])||re,
+           nak:(ui.nakshatra&&ui.nakshatra[ne]&&ui.nakshatra[ne][lang])||ne,
+           lord:(ui.planet&&ui.planet[lord]&&ui.planet[lord][lang])||lord};
+      }
+    }catch(e){ r=null; }
     const name = user.name || '';
     const cN=name.charAt(0).toUpperCase()+name.slice(1);
     document.getElementById('wTitle').textContent=lang==='hi'?'स्वागत है, '+cN+' जी! 🙏':onbL()?onbL().welcome(cN):'Welcome, '+cN+'! 🙏';
@@ -1142,14 +1168,17 @@
       : (lang==='hi' ? 'आपकी साधना यात्रा आज से शुरू होती है 🌼'
          : onbL()&&onbL().welcomeSub ? onbL().welcomeSub()
          : 'Your journey begins today 🌼');
-    document.getElementById('rIcon').textContent  = r.icon;
+    document.getElementById('rIcon').textContent  = r ? r.icon : 'ॐ';
     // Vedic name leads; the Western label follows in brackets purely so a user
     // who only knows "Scorpio" recognises themselves. Never the other way round.
-    document.getElementById('rName').textContent  = lang==='hi'
-      ? r.hi+' राशि'
-      : onbL() ? onbL().rashiLine(onbTerm('rashi',r.en))
-      : r.en+' Rashi'+(r.w?' ('+r.w+')':'');
-    document.getElementById('rSub').textContent   = lang==='hi' ? r.nh+' नक्षत्र • '+r.lh+' स्वामी' : onbL() ? onbL().nakLine(onbTerm('nak',r.ne),onbTerm('planet',r.le)) : r.ne+' Nakshatra • Lord: '+r.le;
+    if(r){
+      document.getElementById('rName').textContent = lang==='hi' ? r.rashi+' राशि' : onbL() ? onbL().rashiLine(r.rashi) : r.rashi+' Rashi';
+      document.getElementById('rSub').textContent  = lang==='hi' ? r.nak+' नक्षत्र • '+r.lord+' स्वामी' : onbL() ? onbL().nakLine(r.nak,r.lord) : r.nak+' Nakshatra • Lord: '+r.lord;
+    }else{
+      /* Missing coordinates/zone is not permission to invent a chart. */
+      document.getElementById('rName').textContent = lang==='te'?'జన్మ జాతకం':lang==='hi'?'जन्म कुंडली':'Birth chart';
+      document.getElementById('rSub').textContent  = lang==='te'?'నగర వివరాలు సేవ్ చేసిన తర్వాత లెక్కిస్తాం':lang==='hi'?'शहर की जानकारी सहेजने के बाद गणना होगी':'Calculated after valid city details are saved';
+    }
 
     const days = new Date().getDay();
     const ihi = ['आज सूर्य देवता की पूजा करें। शुभ समय <strong>7:00–8:30</strong>।','आज शिव जी का जल चढ़ाएं। शुभ समय <strong>6:30–8:00</strong>।','आज हनुमान जी का जप करें। शुभ समय <strong>9:00–10:30</strong>।','आज गणेश जी की पूजा करें। शुभ समय <strong>10:00–11:30</strong>।','आज विष्णु जी का स्मरण करें। शुभ समय <strong>8:00–9:30</strong>।','आज लक्ष्मी जी की आराधना करें। शुभ समय <strong>6:00–7:30</strong>।','आज शनि देव को तेल चढ़ाएं। शुभ समय <strong>8:30–10:00</strong>।'];

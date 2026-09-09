@@ -2496,6 +2496,10 @@
       // (Tarabalam / Chandrabalam) may rank a permitted day but can never buy a
       // prohibited nakshatra, tithi, Amavasya or weekday back into the results.
       if (rule.goodNak.indexOf(nak) < 0) continue;
+      // A tithi omitted from the approved list is not eligible.  Previously
+      // Pratipada could survive because it was neither good nor explicitly bad,
+      // then personal-strength points could rank it as an excellent date.
+      if (rule.goodTithi.indexOf(tithiNum) < 0) continue;
       if (rule.badTithi.indexOf(tithiNum) >= 0) continue;
       if (tithiNum === 30 || p.tithi.segments[0].en === 'Amavasya') continue;
       if (rule.badDays.indexOf(wd) >= 0) continue;

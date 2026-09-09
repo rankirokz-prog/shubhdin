@@ -1505,8 +1505,11 @@ function vHcal(){
    +prow(A('dashbo.paksha'),'<span class="dev">'+sdPaksha(p.tithi.paksha)+'</span>')
    +prow(A('dashbo.vikram_samvat'),hc.vikramSamvat)
    +prow(A('astrol.shaka_samvat'),hc.shakaSamvat)
-   +(hc.gujaratiSamvat?prow(A('astrol.gujarati_samvat'),hc.gujaratiSamvat):'')
-   +orow(A('astrol.samvatsara'),sdTerm('samvatsara',(hc.samvatsara&&hc.samvatsara.drik)||hc.samvatsara))
+   +((window.SD_LANG||'hi')==='gu'&&hc.gujaratiSamvat?prow(A('astrol.gujarati_samvat'),hc.gujaratiSamvat):'')
+   +orow(A('astrol.samvatsara'),(function(v){
+      var n=sdTerm('samvatsara',v);
+      return (window.SD_LANG||'hi')==='te'&&n ? 'శ్రీ '+n+' నామ సంవత్సరం' : n;
+    })((hc.samvatsara&&hc.samvatsara.drik)||hc.samvatsara))
    +orow(A('astrol.ritu'),sdRitu((hc.ritu&&hc.ritu.drik)||hc.ritu))
    +orow(A('astrol.ayana'),sdAyana((hc.ayana&&hc.ayana.drik)||hc.ayana))
    +'</div>';
