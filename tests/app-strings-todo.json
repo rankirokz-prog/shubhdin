@@ -19015,7 +19015,13 @@
    "area": "muhurta",
    "chars": 9,
    "where": "muhurta card — why a day is not offered",
-   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused.",
+   "kn": "ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ…",
+   "ta": "சரிபார்க்கப்படுகிறது…",
+   "bn": "যাচাই করা হচ্ছে…",
+   "mr": "तपासणी सुरू आहे…",
+   "gu": "ચકાસણી થઈ રહી છે…",
+   "as": "পৰীক্ষা কৰা হৈছে…"
   },
   {
    "key": "strength.excellent_today",
@@ -19220,7 +19226,13 @@
    "area": "muhurta",
    "chars": 18,
    "where": "muhurta card — why a day is not offered",
-   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused.",
+   "kn": "ಇಂದು ಭದ್ರಾ ಇದೆ",
+   "ta": "இன்று பத்ரை உள்ளது",
+   "bn": "আজ ভদ্রা আছে",
+   "mr": "आज भद्रा आहे",
+   "gu": "આજે ભદ્રા છે",
+   "as": "আজি ভদ্ৰা আছে"
   },
   {
    "key": "strength.sub_ekadashi_avoid_new_starts",
@@ -19260,7 +19272,13 @@
    "area": "muhurta",
    "chars": 26,
    "where": "muhurta card — why a day is not offered",
-   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused.",
+   "kn": "ಇಂದು ಅಶುಭ ಯೋಗವಿದೆ",
+   "ta": "இன்று அசுப யோகம் உள்ளது",
+   "bn": "আজ অশুভ যোগ রয়েছে",
+   "mr": "आज अशुभ योग आहे",
+   "gu": "આજે અશુભ યોગ છે",
+   "as": "আজি অশুভ যোগ আছে"
   },
   {
    "key": "strength.sub_mars_mercury_day_ideal",
@@ -19285,7 +19303,13 @@
    "area": "muhurta",
    "chars": 41,
    "where": "muhurta card — why a day is not offered",
-   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused.",
+   "kn": "ನಕ್ಷತ್ರ, ತಿಥಿ ಮತ್ತು ವಾರ — ಮೂರೂ ಅನುಕೂಲಕರವಾಗಿವೆ",
+   "ta": "நட்சத்திரம், திதி, கிழமை — மூன்றும் ஏற்றவை",
+   "bn": "নক্ষত্র, তিথি ও বার—তিনটিই অনুকূল",
+   "mr": "नक्षत्र, तिथी आणि वार तिन्ही अनुकूल आहेत",
+   "gu": "નક્ષત્ર, તિથિ અને વાર—ત્રણેય અનુકૂળ છે",
+   "as": "নক্ষত্ৰ, তিথি আৰু বাৰ—তিনিওটা অনুকূল"
   },
   {
    "key": "strength.sub_nakshatra_not_suitable",
@@ -19295,7 +19319,13 @@
    "area": "muhurta",
    "chars": 35,
    "where": "muhurta card — why a day is not offered",
-   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused.",
+   "kn": "ಇಂದಿನ ನಕ್ಷತ್ರ ಅನುಕೂಲಕರವಾಗಿಲ್ಲ",
+   "ta": "இன்றைய நட்சத்திரம் ஏற்றதல்ல",
+   "bn": "আজকের নক্ষত্র অনুকূল নয়",
+   "mr": "आजचे नक्षत्र अनुकूल नाही",
+   "gu": "આજનું નક્ષત્ર અનુકૂળ નથી",
+   "as": "আজিৰ নক্ষত্ৰ অনুকূল নহয়"
   },
   {
    "key": "strength.sub_paksha_could_be_better",
@@ -19305,7 +19335,13 @@
    "area": "muhurta",
    "chars": 26,
    "where": "muhurta card — why a day is not offered",
-   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused.",
+   "kn": "ಪಕ್ಷ ಇನ್ನಷ್ಟು ಅನುಕೂಲಕರವಾಗಿರಬಹುದಿತ್ತು",
+   "ta": "பட்சம் இன்னும் சாதகமாக இருக்கலாம்",
+   "bn": "পক্ষটি আরও অনুকূল হতে পারত",
+   "mr": "पक्ष आणखी अनुकूल असू शकला असता",
+   "gu": "પક્ષ વધુ અનુકૂળ હોઈ શક્યો હોત",
+   "as": "পক্ষটো আৰু অনুকূল হ’ব পাৰিলেহেঁতেন"
   },
   {
    "key": "strength.sub_shukla_paksha_avoid_tue_sat",
