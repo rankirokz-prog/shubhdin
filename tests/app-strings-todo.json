@@ -16,7 +16,7 @@
   "needed": [],
   "note": "Strings marked needsHindiToo have NO Hindi and need eight languages, Hindi included — they are the sales hooks and chips, and they are the only strings that fall back to English rather than Hindi when untranslated."
  },
- "count": 974,
+ "count": 1054,
  "strings": [
   {
    "key": "astrol.16_slots_sunrise_to_sunrise",
@@ -1289,20 +1289,21 @@
   },
   {
    "key": "astrol.fully_blocked_by_a_forbidden_perio",
-   "en": "— fully blocked by a forbidden period that day",
-   "hi": "— उस दिन वर्ज्य समय से पूरा टकराता है",
+   "en": "That time window is blocked by an inauspicious period.",
+   "hi": "उस समयावधि में निषिद्ध काल बाधक है।",
    "area": "astrology",
    "chars": 46,
    "where": [
     "astrology.html:1200"
    ],
-   "te": "— ఆ రోజంతా వర్జ్య కాలం అడ్డుగా ఉంది",
-   "kn": "— ಆ ದಿನವಿಡೀ ವರ್ಜ್ಯ ಕಾಲ ಅಡ್ಡವಾಗಿದೆ",
-   "ta": "— அந்த நாள் முழுவதும் வர்ஜ்ய காலம் தடையாக இருக்கிறது",
-   "bn": "— সেদিন পুরো সময়টাই বর্জ্য কালে আটকে",
-   "mr": "— त्या दिवशी पूर्ण वेळ वर्ज्य काळ आडवा आहे",
-   "gu": "— એ દિવસે આખો વખત વર્જ્ય કાળ આડો છે",
-   "as": "— সেইদিনা গোটেই সময় বৰ্জ্য কালত আৱদ্ধ"
+   "te": "ఆ సమయమంతా నిషిద్ధ కాలం అడ్డుగా ఉంది",
+   "kn": "ಆ ನಿರ್ದಿಷ್ಟ ಅವಧಿಯಲ್ಲಿ ನಿಷೇಧ ಕಾಲವು ಅಡ್ಡಿಯಾಗಿದೆ.",
+   "ta": "அந்தக் குறிப்பிட்ட நேரத்தில் நிஷேத காலம் தடையாக உள்ளது.",
+   "bn": "ওই সময়সীমা নিষিদ্ধ কালের কারণে অবরুদ্ধ।",
+   "mr": "त्या समयावध्यात निषिद्ध काळ बाधक आहे.",
+   "gu": "તે સમયગાળા દરમિયાન નિષિદ્ધ કાળ બાધક છે.",
+   "as": "সেই নিৰ্দিষ্ট সময়ছোৱাত নিষিদ্ধ কালৰ বাধা আছে।",
+   "_note": "Rewritten. The old text said the WHOLE DAY was blocked by VARJYAM. Both were wrong: the block is a single window, and it may be Rahu Kaal, Yamaganda, Gulika or durmuhurtam, not varjyam. All nine languages replaced together so the same mistranslation cannot survive in one of them."
   },
   {
    "key": "astrol.green_clean_auspicious_slot_amber_",
@@ -5255,6 +5256,34 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_aadi_perukku",
+   "en": "Aadi Perukku",
+   "hi": "आड़ी पेरुक्कु",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "tn",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "ta": "ஆடிப் பெருக்கு"
+  },
+  {
+   "key": "cal.name_akshaya_tritiya",
+   "en": "Akshaya Tritiya",
+   "hi": "अक्षय तृतीया",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "అక్షయ తృతీయ",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "அக்ஷய திருதியை",
+   "kn": "ಅಕ್ಷಯ ತೃತೀಯಾ",
+   "bn": "অক্ষয় তৃতীয়া",
+   "mr": "अक्षय तृतीया",
+   "gu": "અક્ષય તૃતીયા",
+   "as": "অক্ষয় তৃতীয়া"
+  },
+  {
    "key": "cal.name_amavasya",
    "en": "Amavasya",
    "hi": "अमावस्या",
@@ -5268,6 +5297,46 @@
    "area": "(added from the built sheets)",
    "chars": 8,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_anant_chaturdashi",
+   "en": "Anant Chaturdashi",
+   "hi": "अनंत चतुर्दशी",
+   "area": "calendar",
+   "chars": 17,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "అనంత చతుర్దశి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "அனந்த சதுர்தசி",
+   "kn": "ಅನಂತ ಚತುರ್ದಶಿ",
+   "bn": "অনন্ত চতুর্দশী",
+   "mr": "अनंत चतुर्दशी",
+   "gu": "અનંત ચતુર્દશી",
+   "as": "অনন্ত চতুৰ্দশী"
+  },
+  {
+   "key": "cal.name_atla_taddi",
+   "en": "Atla Taddi",
+   "hi": "अट्ला तद्दी",
+   "area": "calendar",
+   "chars": 10,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts",
+   "te": "అట్లతద్ది",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan."
+  },
+  {
+   "key": "cal.name_bali_pratipada",
+   "en": "Bali Pratipada (Diwali Padwa)",
+   "hi": "बलि प्रतिपदा",
+   "area": "calendar",
+   "chars": 29,
+   "where": "festival name on the calendar screen",
+   "_regions": "mh,ka",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "kn": "ಬಲಿಪಾಡ್ಯಮಿ",
+   "mr": "पाडवा / बळीप्रतिपदा"
   },
   {
    "key": "cal.name_bank_holiday",
@@ -5285,6 +5354,81 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_bathukamma",
+   "en": "Bathukamma",
+   "hi": "बतुकम्मा",
+   "area": "calendar",
+   "chars": 10,
+   "where": "festival name on the calendar screen",
+   "_regions": "ts",
+   "te": "బతుకమ్మ",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it."
+  },
+  {
+   "key": "cal.name_bestu_varas",
+   "en": "Bestu Varas (Gujarati New Year)",
+   "hi": "बेस्तु वरस",
+   "area": "calendar",
+   "chars": 31,
+   "where": "festival name on the calendar screen",
+   "_regions": "gj",
+   "gu": "બેસતું વર્ષ"
+  },
+  {
+   "key": "cal.name_bhai_dooj",
+   "en": "Bhai Dooj",
+   "hi": "भाई दूज",
+   "area": "calendar",
+   "chars": 9,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "భగినీ హస్త భోజనం",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "பாய் தூஜ்",
+   "kn": "ಭಾಗಿನಿ ಹಸ್ತಭೋಜನ",
+   "bn": "ভাইফোঁটা",
+   "mr": "भाऊबीज",
+   "gu": "ભાઈબીજ",
+   "as": "ভাই ফোঁটা"
+  },
+  {
+   "key": "cal.name_bhogi",
+   "en": "Bhogi",
+   "hi": "भोगी",
+   "area": "calendar",
+   "chars": 5,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts,tn,ka",
+   "te": "భోగి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "போகி",
+   "kn": "ಭೋಗಿ"
+  },
+  {
+   "key": "cal.name_bohag_bihu",
+   "en": "Bohag Bihu",
+   "hi": "बोहाग बिहू",
+   "area": "calendar",
+   "chars": 10,
+   "where": "festival name on the calendar screen",
+   "_regions": "as",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "as": "ব’হাগ বিহু"
+  },
+  {
+   "key": "cal.name_bonalu",
+   "en": "Bonalu (Ashada, Sundays)",
+   "hi": "बोनालू",
+   "area": "calendar",
+   "chars": 24,
+   "where": "festival name on the calendar screen",
+   "_regions": "ts",
+   "te": "బోనాలు",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it."
+  },
+  {
    "key": "cal.name_buddha_purnima",
    "en": "Buddha Purnima",
    "hi": "बुद्ध पूर्णिमा",
@@ -5300,6 +5444,38 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_business",
+   "en": "Business",
+   "hi": "व्यापार",
+   "te": "వ్యాపారం",
+   "area": "muhurta",
+   "chars": 8,
+   "where": "muhurta card — the occasion name",
+   "_teNeedsReview": "Proposed. The four occasion labels on the muhurta card."
+  },
+  {
+   "key": "cal.name_chaitra_navratri",
+   "en": "Chaitra Navratri",
+   "hi": "चैत्र नवरात्रि",
+   "area": "calendar",
+   "chars": 16,
+   "where": "festival name on the calendar screen",
+   "_regions": "north,gj,mh",
+   "te": "వసంత నవరాత్రులు",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "mr": "चैत्र नवरात्र",
+   "gu": "ચૈત્ર નવરાત્રી"
+  },
+  {
+   "key": "cal.name_chhath_puja",
+   "en": "Chhath Puja",
+   "hi": "छठ पूजा",
+   "area": "calendar",
+   "chars": 11,
+   "where": "festival name on the calendar screen",
+   "_regions": "north"
+  },
+  {
    "key": "cal.name_christmas",
    "en": "Christmas",
    "hi": "क्रिसमस",
@@ -5313,6 +5489,60 @@
    "area": "(added from the built sheets)",
    "chars": 9,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_dahi_handi",
+   "en": "Dahi Handi",
+   "hi": "दही हांडी",
+   "area": "calendar",
+   "chars": 10,
+   "where": "festival name on the calendar screen",
+   "_regions": "mh",
+   "mr": "गोकुळाष्टमी / दहीहंडी"
+  },
+  {
+   "key": "cal.name_deepavali_tn",
+   "en": "Deepavali (Naraka Chaturdashi)",
+   "hi": "दीपावली",
+   "area": "calendar",
+   "chars": 30,
+   "where": "festival name on the calendar screen",
+   "_regions": "tn",
+   "ta": "தீபாவளி"
+  },
+  {
+   "key": "cal.name_dev_uthani_ekadashi",
+   "en": "Dev Uthani Ekadashi",
+   "hi": "देव उठनी एकादशी",
+   "area": "calendar",
+   "chars": 19,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "ఉత్థాన ఏకాదశి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "பிரபோதினீ ஏகாதசி",
+   "kn": "ಉತ್ಥಾನ ಏಕಾದಶಿ",
+   "bn": "দেবোত্থান একাদশী",
+   "mr": "कार्तिकी एकादशी",
+   "gu": "દેવ ઊઠી અગિયારસ",
+   "as": "দেৱ উট্থান একাদশী"
+  },
+  {
+   "key": "cal.name_dhanteras",
+   "en": "Dhanteras",
+   "hi": "धनतेरस",
+   "area": "calendar",
+   "chars": 9,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "ధన త్రయోదశి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "தனத் திரயோதசி",
+   "kn": "ಧನತ್ರಯೋದಶಿ",
+   "bn": "ধানতেরাস",
+   "mr": "धनत्रयोदशी",
+   "gu": "ધનતેરસ",
+   "as": "ধনতেৰাচ"
   },
   {
    "key": "cal.name_diwali",
@@ -5345,6 +5575,34 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_durga_ashtami",
+   "en": "Durga Ashtami",
+   "hi": "दुर्गा अष्टमी",
+   "area": "calendar",
+   "chars": 13,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "దుర్గాష్టమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "துர்க்காஷ்டமி",
+   "kn": "ದುರ್ಗಾಷ್ಟಮಿ",
+   "bn": "মহাঅষ্টমী",
+   "mr": "दुर्गाष्टमी",
+   "gu": "દુર્ગા અષ્ટમી",
+   "as": "মহাঅষ্টমী"
+  },
+  {
+   "key": "cal.name_durga_puja",
+   "en": "Durga Puja",
+   "hi": "दुर्गा पूजा",
+   "area": "calendar",
+   "chars": 10,
+   "where": "festival name on the calendar screen",
+   "_regions": "wb,as,north",
+   "bn": "দুর্গাপূজা",
+   "as": "দুৰ্গাপূজা"
+  },
+  {
    "key": "cal.name_dussehra",
    "en": "Dussehra",
    "hi": "दशहरा",
@@ -5375,6 +5633,70 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_ganesh_chaturthi",
+   "en": "Ganesh Chaturthi",
+   "hi": "गणेश चतुर्थी",
+   "area": "calendar",
+   "chars": 16,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "వినాయక చవితి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "விநாயகர் சதுர்த்தி",
+   "kn": "ಗಣೇಶ ಚತುರ್ಥಿ",
+   "bn": "গণেশ চতুর্থী",
+   "mr": "गणेश चतुर्थी",
+   "gu": "ગણેશ ચતુર્થી",
+   "as": "গণেশ চতুৰ্থী"
+  },
+  {
+   "key": "cal.name_ganesh_utsav",
+   "en": "Ganeshotsav (10 days)",
+   "hi": "गणेशोत्सव",
+   "area": "calendar",
+   "chars": 21,
+   "where": "festival name on the calendar screen",
+   "_regions": "mh",
+   "mr": "गणेशोत्सव"
+  },
+  {
+   "key": "cal.name_good_friday",
+   "en": "Good Friday",
+   "hi": "गुड फ्राइडे",
+   "area": "calendar",
+   "chars": 11,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "గుడ్ ఫ్రైడే",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "புனித வெள்ளி",
+   "kn": "ಗುಡ್ ಫ್ರೈಡೇ",
+   "bn": "গুড ফ্রাইডে",
+   "mr": "गुड फ्रायडे",
+   "gu": "ગુડ ફ્રાઈડે",
+   "as": "গুড ফ্রাইডে"
+  },
+  {
+   "key": "cal.name_govardhan_puja",
+   "en": "Govardhan Puja",
+   "hi": "गोवर्धन पूजा",
+   "area": "calendar",
+   "chars": 14,
+   "where": "festival name on the calendar screen",
+   "_regions": "north,gj",
+   "gu": "ગોવર્ધન પૂજા"
+  },
+  {
+   "key": "cal.name_griha_pravesh",
+   "en": "Griha Pravesh",
+   "hi": "गृह प्रवेश",
+   "te": "గృహప్రవేశం",
+   "area": "muhurta",
+   "chars": 13,
+   "where": "muhurta card — the occasion name",
+   "_teNeedsReview": "Proposed. The four occasion labels on the muhurta card."
+  },
+  {
    "key": "cal.name_gudi_padwa",
    "en": "Gudi Padwa",
    "hi": "गुड़ी पड़वा",
@@ -5388,6 +5710,86 @@
    "area": "(added from the built sheets)",
    "chars": 10,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_guru_nanak_jayanti",
+   "en": "Guru Nanak Jayanti",
+   "hi": "गुरु नानक जयंती",
+   "area": "calendar",
+   "chars": 18,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "గురునానక్ జయంతి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "குரு நானக் ஜெயந்தி",
+   "kn": "ಗುರು ನಾನಕ್ ಜಯಂತಿ",
+   "bn": "গুরু নানক জয়ন্তী",
+   "mr": "गुरु नानक जयंती",
+   "gu": "ગુરુ નાનક જયંતી",
+   "as": "গুৰু নানক জয়ন্তী"
+  },
+  {
+   "key": "cal.name_guru_purnima",
+   "en": "Guru Purnima",
+   "hi": "गुरु पूर्णिमा",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "గురు పౌర్ణమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "குரு பூர்ணிமா",
+   "kn": "ಗುರು ಪೂರ್ಣಿಮಾ",
+   "bn": "গুরু পূর্ণিমা",
+   "mr": "गुरु पौर्णिमा",
+   "gu": "ગુરુ પૂનમ",
+   "as": "গুৰু পূৰ্ণিমা"
+  },
+  {
+   "key": "cal.name_hanuman_jayanti",
+   "en": "Hanuman Jayanti",
+   "hi": "हनुमान जयंती",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all −ap,ts,ka,tn",
+   "bn": "হনুমান জয়ন্তী",
+   "mr": "हनुमान जयंती",
+   "gu": "હનુમાન જયંતી",
+   "as": "হনুমান জয়ন্তী"
+  },
+  {
+   "key": "cal.name_hanuman_jayanti_kn",
+   "en": "Hanuman Jayanti (Kannada)",
+   "hi": "हनुमान जयंती",
+   "area": "calendar",
+   "chars": 25,
+   "where": "festival name on the calendar screen",
+   "_regions": "ka",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "kn": "ಹನುಮ ಜಯಂತಿ"
+  },
+  {
+   "key": "cal.name_hanuman_jayanti_ta",
+   "en": "Hanuman Jayanti (Tamil)",
+   "hi": "हनुमान जयंती",
+   "area": "calendar",
+   "chars": 23,
+   "where": "festival name on the calendar screen",
+   "_regions": "tn",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "ta": "அனுமன் ஜயந்தி"
+  },
+  {
+   "key": "cal.name_hanuman_jayanti_te",
+   "en": "Hanuman Jayanti (Telugu)",
+   "hi": "हनुमान जयंती",
+   "area": "calendar",
+   "chars": 24,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts",
+   "te": "హనుమాన్ జయంతి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan."
   },
   {
    "key": "cal.name_haribodhini_ekadashi",
@@ -5405,6 +5807,34 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_holi",
+   "en": "Holi",
+   "hi": "होली",
+   "area": "calendar",
+   "chars": 4,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "హోళీ",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "ஹோலி",
+   "kn": "ಹೋಳಿ",
+   "bn": "দোলযাত্রা",
+   "mr": "धुलिवंदन",
+   "gu": "ધૂળેટી",
+   "as": "ফাকুৱা"
+  },
+  {
+   "key": "cal.name_holika_dahan",
+   "en": "Holika Dahan",
+   "hi": "होलिका दहन",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "north,gj,mh",
+   "mr": "होळी",
+   "gu": "હોલિકા દહન"
+  },
+  {
    "key": "cal.name_independence_day",
    "en": "Independence Day",
    "hi": "स्वतंत्रता दिवस",
@@ -5420,6 +5850,17 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_jamai_sasthi",
+   "en": "Jamai Sasthi",
+   "hi": "जामाई षष्ठी",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "wb",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "bn": "জামাই ষষ্ঠী"
+  },
+  {
    "key": "cal.name_janmashtami",
    "en": "Janmashtami",
    "hi": "जन्माष्टमी",
@@ -5433,6 +5874,110 @@
    "area": "(added from the built sheets)",
    "chars": 11,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_jyeshtha_gauri",
+   "en": "Jyeshtha Gauri Puja",
+   "hi": "ज्येष्ठा गौरी पूजा",
+   "area": "calendar",
+   "chars": 19,
+   "where": "festival name on the calendar screen",
+   "_regions": "mh",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "mr": "ज्येष्ठ गौरी पूजन"
+  },
+  {
+   "key": "cal.name_kali_puja",
+   "en": "Kali Puja",
+   "hi": "काली पूजा",
+   "area": "calendar",
+   "chars": 9,
+   "where": "festival name on the calendar screen",
+   "_regions": "wb,as",
+   "bn": "কালীপূজা",
+   "as": "কালী পূজা"
+  },
+  {
+   "key": "cal.name_kanuma",
+   "en": "Kanuma",
+   "hi": "कनुमा",
+   "area": "calendar",
+   "chars": 6,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts",
+   "te": "కనుమ",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan."
+  },
+  {
+   "key": "cal.name_karthigai_deepam",
+   "en": "Karthigai Deepam",
+   "hi": "कार्तिगै दीपम",
+   "area": "calendar",
+   "chars": 16,
+   "where": "festival name on the calendar screen",
+   "_regions": "tn,ka",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "ta": "கார்த்திகை தீபம்",
+   "kn": "ಕಾರ್ತಿಕ ದೀಪೋತ್ಸವ"
+  },
+  {
+   "key": "cal.name_kartika_purnima",
+   "en": "Kartika Purnima",
+   "hi": "कार्तिक पूर्णिमा",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "కార్తీక పౌర్ణమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "கார்த்திகை பௌர்ணமி",
+   "kn": "ಕಾರ್ತಿಕ ಪೂರ್ಣಿಮಾ",
+   "bn": "কার্তিক পূর্ণিমা",
+   "mr": "त्रिपुरारी पौर्णिमा",
+   "gu": "કારતકી પૂનમ",
+   "as": "কাৰ্তিক পূৰ্ণিমা"
+  },
+  {
+   "key": "cal.name_karwa_chauth",
+   "en": "Karwa Chauth",
+   "hi": "करवा चौथ",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "north"
+  },
+  {
+   "key": "cal.name_kati_bihu",
+   "en": "Kati Bihu",
+   "hi": "काति बिहू",
+   "area": "calendar",
+   "chars": 9,
+   "where": "festival name on the calendar screen",
+   "_regions": "as",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "as": "কাটি বিহু"
+  },
+  {
+   "key": "cal.name_kojagari_lakshmi_puja",
+   "en": "Kojagari Lakshmi Puja",
+   "hi": "कोजागरी लक्ष्मी पूजा",
+   "area": "calendar",
+   "chars": 21,
+   "where": "festival name on the calendar screen",
+   "_regions": "wb,north,as",
+   "bn": "কোজাগরী লক্ষ্মীপূজা",
+   "as": "লক্ষ্মী পূজা"
+  },
+  {
+   "key": "cal.name_labh_pancham",
+   "en": "Labh Pancham",
+   "hi": "लाभ पंचम",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "gj",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "gu": "લાભ પાંચમ"
   },
   {
    "key": "cal.name_labour_day",
@@ -5465,6 +6010,50 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_magh_bihu",
+   "en": "Magh Bihu",
+   "hi": "माघ बिहू",
+   "area": "calendar",
+   "chars": 9,
+   "where": "festival name on the calendar screen",
+   "_regions": "as",
+   "as": "মাঘ বিহু"
+  },
+  {
+   "key": "cal.name_maha_navami",
+   "en": "Maha Navami",
+   "hi": "महा नवमी",
+   "area": "calendar",
+   "chars": 11,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "మహర్నవమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "மகா நவமி",
+   "kn": "ಮಹಾನವಮಿ",
+   "bn": "মহানবমী",
+   "mr": "महानवमी",
+   "gu": "મહા નોમ",
+   "as": "মহানৱমী"
+  },
+  {
+   "key": "cal.name_maha_shivaratri",
+   "en": "Maha Shivaratri",
+   "hi": "महाशिवरात्रि",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "మహా శివరాత్రి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "மகா சிவராத்திரி",
+   "kn": "ಮಹಾ ಶಿವರಾತ್ರಿ",
+   "bn": "মহা শিবরাত্রি",
+   "mr": "महाशिवरात्री",
+   "gu": "મહા શિવરાત્રી",
+   "as": "মহা শিৱৰাত্ৰি"
+  },
+  {
    "key": "cal.name_maha_shivratri",
    "en": "Maha Shivratri",
    "hi": "महाशिवरात्रि",
@@ -5480,6 +6069,114 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_mahalaya_amavasya",
+   "en": "Mahalaya Amavasya",
+   "hi": "महालया अमावस्या",
+   "area": "calendar",
+   "chars": 17,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "మహాలయ అమావాస్య",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "மஹாளய அமாவாசை",
+   "kn": "ಮಹಾಲಯ ಅಮಾವಾಸ್ಯೆ",
+   "bn": "মহালয়া",
+   "mr": "सर्वपित्री अमावास्या",
+   "gu": "સર્વપિત્રી અમાસ",
+   "as": "মহালয়া"
+  },
+  {
+   "key": "cal.name_mahavir_jayanti",
+   "en": "Mahavir Jayanti",
+   "hi": "महावीर जयंती",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "మహావీర్ జయంతి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "ta": "மகாவீர் ஜெயந்தி",
+   "kn": "ಮಹಾವೀರ ಜಯಂತಿ",
+   "bn": "মহাবীর জয়ন্তী",
+   "mr": "महावीर जयंती",
+   "gu": "મહાવીર જયંતી",
+   "as": "মহাবীৰ জয়ন্তী"
+  },
+  {
+   "key": "cal.name_makar_sankranti",
+   "en": "Makar Sankranti",
+   "hi": "मकर संक्रांति",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "సంక్రాంతి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "தைப்பொங்கல்",
+   "kn": "ಮಕರ ಸಂಕ್ರಾಂತಿ",
+   "bn": "পৌষ সংক্রান্তি",
+   "mr": "मकर संक्रांत",
+   "gu": "ઉત્તરાયણ",
+   "as": "মকৰ সংক্ৰান্তি"
+  },
+  {
+   "key": "cal.name_mukkanuma",
+   "en": "Mukkanuma",
+   "hi": "मुक्कनुमा",
+   "area": "calendar",
+   "chars": 9,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap",
+   "te": "ముక్కనుమ",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it."
+  },
+  {
+   "key": "cal.name_nag_panchami",
+   "en": "Nag Panchami",
+   "hi": "नाग पंचमी",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "నాగ పంచమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "நாக பஞ்சமி",
+   "kn": "ನಾಗ ಪಂಚಮಿ",
+   "bn": "নাগ পঞ্চমী",
+   "mr": "नागपंचमी",
+   "gu": "નાગ પંચમી",
+   "as": "নাগ পঞ্চমী"
+  },
+  {
+   "key": "cal.name_nagula_chavithi",
+   "en": "Nagula Chavithi",
+   "hi": "नागुला चविथी",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts",
+   "te": "నాగుల చవితి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan."
+  },
+  {
+   "key": "cal.name_naraka_chaturdashi",
+   "en": "Naraka Chaturdashi",
+   "hi": "नरक चतुर्दशी",
+   "area": "calendar",
+   "chars": 18,
+   "where": "festival name on the calendar screen",
+   "_regions": "all −tn",
+   "te": "నరక చతుర్దశి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "kn": "ನರಕ ಚತುರ್ದಶಿ",
+   "bn": "ভূত চতুর্দশী",
+   "mr": "नरक चतुर्दशी",
+   "gu": "કાળી ચૌદશ",
+   "as": "নৰক চতুৰ্দশী"
+  },
+  {
    "key": "cal.name_navratri_begins",
    "en": "Navratri Begins",
    "hi": "नवरात्रि आरंभ",
@@ -5493,6 +6190,27 @@
    "area": "(added from the built sheets)",
    "chars": 15,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_new_beginning",
+   "en": "New Beginning",
+   "hi": "नई शुरुआत",
+   "te": "కొత్త ప్రారంభం",
+   "area": "muhurta",
+   "chars": 13,
+   "where": "muhurta card — the occasion name",
+   "_teNeedsReview": "Proposed. The four occasion labels on the muhurta card."
+  },
+  {
+   "key": "cal.name_panguni_uthiram",
+   "en": "Panguni Uthiram",
+   "hi": "पंगुनी उथिरम",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "tn",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "ta": "பங்குனி உத்திரம்"
   },
   {
    "key": "cal.name_papamochani_ekadashi",
@@ -5523,6 +6241,46 @@
    "area": "(added from the built sheets)",
    "chars": 15,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_pitru_paksha",
+   "en": "Pitru Paksha",
+   "hi": "पितृ पक्ष",
+   "area": "calendar",
+   "chars": 12,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "పితృ పక్షం",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "பித்ரு பட்சம்",
+   "kn": "ಪಿತೃ ಪಕ್ಷ",
+   "bn": "পিতৃপক্ষ",
+   "mr": "पितृपक्ष",
+   "gu": "પિતૃ પક્ષ",
+   "as": "পিতৃ পক্ষ"
+  },
+  {
+   "key": "cal.name_poila_boishakh",
+   "en": "Poila Boishakh",
+   "hi": "पोइला बोइशाख",
+   "area": "calendar",
+   "chars": 14,
+   "where": "festival name on the calendar screen",
+   "_regions": "wb",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "bn": "পয়লা বৈশাখ"
+  },
+  {
+   "key": "cal.name_polala_amavasya",
+   "en": "Polala Amavasya",
+   "hi": "पोलाला अमावस्या",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts",
+   "te": "పోలాల అమావాస్య",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it."
   },
   {
    "key": "cal.name_pongal",
@@ -5570,6 +6328,23 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_raksha_bandhan",
+   "en": "Raksha Bandhan",
+   "hi": "रक्षा बंधन",
+   "area": "calendar",
+   "chars": 14,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "రాఖీ పౌర్ణమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "ரக்ஷா பந்தன்",
+   "kn": "ರಕ್ಷಾ ಬಂಧನ",
+   "bn": "রাখি বন্ধন",
+   "mr": "राखी पौर्णिमा",
+   "gu": "રક્ષાબંધન",
+   "as": "ৰক্ষা বন্ধন"
+  },
+  {
    "key": "cal.name_ram_navami",
    "en": "Ram Navami",
    "hi": "राम नवमी",
@@ -5583,6 +6358,23 @@
    "area": "(added from the built sheets)",
    "chars": 10,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_rama_navami",
+   "en": "Rama Navami",
+   "hi": "राम नवमी",
+   "area": "calendar",
+   "chars": 11,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "శ్రీరామ నవమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "ராம நவமி",
+   "kn": "ರಾಮ ನವಮಿ",
+   "bn": "রাম নবমী",
+   "mr": "राम नवमी",
+   "gu": "રામ નવમી",
+   "as": "ৰাম নৱমী"
   },
   {
    "key": "cal.name_rath_yatra",
@@ -5600,6 +6392,20 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_ratha_saptami",
+   "en": "Ratha Saptami",
+   "hi": "रथ सप्तमी",
+   "area": "calendar",
+   "chars": 13,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts,ka,tn,mh",
+   "te": "రథ సప్తమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "ரத சப்தமி",
+   "kn": "ರಥ ಸಪ್ತಮಿ",
+   "mr": "रथ सप्तमी"
+  },
+  {
    "key": "cal.name_republic_day",
    "en": "Republic Day",
    "hi": "गणतंत्र दिवस",
@@ -5613,6 +6419,40 @@
    "area": "(added from the built sheets)",
    "chars": 12,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_sharad_navratri",
+   "en": "Sharad Navratri",
+   "hi": "शारदीय नवरात्रि",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "దసరా నవరాత్రులు",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "நவராத்திரி",
+   "kn": "ದಸರಾ / ಶರನ್ನವರಾತ್ರಿ",
+   "bn": "দুর্গাপূজা",
+   "mr": "शारदीय नवरात्र",
+   "gu": "નવરાત્રી",
+   "as": "শাৰদীয় নৱৰাত্ৰি"
+  },
+  {
+   "key": "cal.name_sharad_purnima",
+   "en": "Sharad Purnima",
+   "hi": "शरद पूर्णिमा",
+   "area": "calendar",
+   "chars": 14,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "శరద్ పౌర్ణమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "சரத் பௌர்ணமி",
+   "kn": "ಶರದ್ ಪೂರ್ಣಿಮಾ",
+   "bn": "কোজাগরী পূর্ণিমা",
+   "mr": "कोजागिरी पौर्णिमा",
+   "gu": "શરદ પૂનમ",
+   "as": "শৰৎ পূৰ্ণিমা"
   },
   {
    "key": "cal.name_shravana_putrada",
@@ -5630,6 +6470,19 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_subrahmanya_shashti",
+   "en": "Subrahmanya Shashti",
+   "hi": "सुब्रह्मण्य षष्ठी",
+   "area": "calendar",
+   "chars": 19,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts,ka,tn",
+   "te": "సుబ్రహ్మణ్య షష్ఠి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "சுப்பிரமணிய ஷஷ்டி",
+   "kn": "ಸುಬ್ರಹ್ಮಣ್ಯ ಷಷ್ಠಿ"
+  },
+  {
    "key": "cal.name_tamil_new_year",
    "en": "Tamil New Year",
    "hi": "तमिल नव वर्ष",
@@ -5643,6 +6496,17 @@
    "area": "(added from the built sheets)",
    "chars": 14,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_thaipusam",
+   "en": "Thaipusam",
+   "hi": "थैपूसम",
+   "area": "calendar",
+   "chars": 9,
+   "where": "festival name on the calendar screen",
+   "_regions": "tn",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "ta": "தைப்பூசம்"
   },
   {
    "key": "cal.name_ugadi",
@@ -5660,6 +6524,20 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_vaikunta_ekadashi",
+   "en": "Vaikunta Ekadashi",
+   "hi": "वैकुंठ एकादशी",
+   "area": "calendar",
+   "chars": 17,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts,ka,tn",
+   "te": "వైకుంఠ ఏకాదశి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "_ruleNeedsVerify": "The DATE rule is flagged verify in the engine — a printed panchangam or a native reviewer must confirm it.",
+   "ta": "வைகுண்ட ஏகாதசி",
+   "kn": "ವೈಕುಂಠ ಏಕಾದಶಿ"
+  },
+  {
    "key": "cal.name_valmiki_jayanti",
    "en": "Valmiki Jayanti",
    "hi": "वाल्मीकि जयंती",
@@ -5675,6 +6553,47 @@
    "_addedFromSheets": true
   },
   {
+   "key": "cal.name_varalakshmi_vratam",
+   "en": "Varalakshmi Vratam",
+   "hi": "वरलक्ष्मी व्रत",
+   "area": "calendar",
+   "chars": 18,
+   "where": "festival name on the calendar screen",
+   "_regions": "ap,ts,ka,tn",
+   "te": "వరలక్ష్మీ వ్రతం",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "வரலக்ஷ்மி விரதம்",
+   "kn": "ವರಮಹಾಲಕ್ಷ್ಮಿ ವ್ರತ"
+  },
+  {
+   "key": "cal.name_vasant_panchami",
+   "en": "Vasant Panchami",
+   "hi": "वसंत पंचमी",
+   "area": "calendar",
+   "chars": 15,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "వసంత పంచమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "வசந்த பஞ்சமி",
+   "kn": "ವಸಂತ ಪಂಚಮಿ",
+   "bn": "সরস্বতী পূজা",
+   "mr": "वसंत पंचमी",
+   "gu": "વસંત પંચમી",
+   "as": "সৰস্বতী পূজা"
+  },
+  {
+   "key": "cal.name_vat_purnima",
+   "en": "Vat Purnima",
+   "hi": "वट पूर्णिमा",
+   "area": "calendar",
+   "chars": 11,
+   "where": "festival name on the calendar screen",
+   "_regions": "mh,gj",
+   "mr": "वटपौर्णिमा",
+   "gu": "વટ સાવિત્રી પૂનમ"
+  },
+  {
    "key": "cal.name_vat_savitri",
    "en": "Vat Savitri",
    "hi": "वट सावित्री",
@@ -5688,6 +6607,33 @@
    "area": "(added from the built sheets)",
    "chars": 11,
    "_addedFromSheets": true
+  },
+  {
+   "key": "cal.name_vehicle",
+   "en": "Vehicle",
+   "hi": "वाहन",
+   "te": "వాహనం",
+   "area": "muhurta",
+   "chars": 7,
+   "where": "muhurta card — the occasion name",
+   "_teNeedsReview": "Proposed. The four occasion labels on the muhurta card."
+  },
+  {
+   "key": "cal.name_vijayadashami",
+   "en": "Vijayadashami (Dussehra)",
+   "hi": "विजयादशमी (दशहरा)",
+   "area": "calendar",
+   "chars": 24,
+   "where": "festival name on the calendar screen",
+   "_regions": "all",
+   "te": "విజయదశమి",
+   "_teNeedsReview": "Proposed by the developer, NOT yet confirmed by Ram. Showing Telugu-pending-review beats showing Hindi on a devotional calendar, but these 45 want a five-minute scan.",
+   "ta": "விஜயதசமி",
+   "kn": "ವಿಜಯದಶಮಿ",
+   "bn": "বিজয়া দশমী",
+   "mr": "दसरा",
+   "gu": "દશેરા / વિજયાદશમી",
+   "as": "বিজয়া দশমী"
   },
   {
    "key": "cal.tip_0",
@@ -16710,6 +17656,33 @@
    "as": "গুৰুত্বপূৰ্ণ মোৰ"
   },
   {
+   "key": "report.tz_adjusted_gap",
+   "en": "Note: clocks moved forward at the birth place that night, so the entered time did not exist; it has been taken as the next valid minute.",
+   "hi": "नोट: उस रात जन्म स्थान पर घड़ियाँ आगे बढ़ाई गई थीं, इसलिए दर्ज समय अस्तित्व में नहीं था; उसे अगले मान्य मिनट के रूप में लिया गया है।",
+   "area": "report",
+   "chars": 136,
+   "where": "F1 timezone block / adjustment note",
+   "_needsReview": "te kn ta from Ram; bn mr gu as with the writer batch. Until a language has it the note is OMITTED, never shown in English."
+  },
+  {
+   "key": "report.tz_adjusted_overlap",
+   "en": "Note: clocks moved back at the birth place that night, so the entered time occurred twice; the earlier occurrence has been used.",
+   "hi": "नोट: उस रात जन्म स्थान पर घड़ियाँ पीछे की गई थीं, इसलिए दर्ज समय दो बार आया; पहली बार वाला समय लिया गया है।",
+   "area": "report",
+   "chars": 128,
+   "where": "F1 timezone block / adjustment note",
+   "_needsReview": "te kn ta from Ram; bn mr gu as with the writer batch. Until a language has it the note is OMITTED, never shown in English."
+  },
+  {
+   "key": "report.tz_missing",
+   "en": "The birth place's time zone could not be resolved, so this chart was not cast. Please choose the city again.",
+   "hi": "जन्म स्थान का समय-क्षेत्र नहीं मिल सका, इसलिए यह कुंडली नहीं बनाई गई। कृपया शहर फिर से चुनें।",
+   "area": "report",
+   "chars": 108,
+   "where": "F1 timezone block / adjustment note",
+   "_needsReview": "te kn ta from Ram; bn mr gu as with the writer batch. Until a language has it the note is OMITTED, never shown in English."
+  },
+  {
    "key": "report.unexpected_response_from_the_serve",
    "en": "Unexpected response from the server.",
    "hi": "सर्वर से अप्रत्याशित उत्तर मिला।",
@@ -18035,6 +19008,16 @@
    "_addedFromSheets": true
   },
   {
+   "key": "strength.checking",
+   "en": "Checking…",
+   "hi": "जाँच हो रही है…",
+   "te": "పరిశీలిస్తోంది…",
+   "area": "muhurta",
+   "chars": 9,
+   "where": "muhurta card — why a day is not offered",
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+  },
+  {
    "key": "strength.excellent_today",
    "en": "🟢 Excellent today",
    "hi": "🟢 बेहतरीन दिन",
@@ -18230,6 +19213,16 @@
    "_addedFromSheets": true
   },
   {
+   "key": "strength.sub_bhadra_today",
+   "en": "Bhadra falls today",
+   "hi": "आज भद्रा है",
+   "te": "ఈ రోజు భద్ర ఉంది",
+   "area": "muhurta",
+   "chars": 18,
+   "where": "muhurta card — why a day is not offered",
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+  },
+  {
    "key": "strength.sub_ekadashi_avoid_new_starts",
    "en": "Ekadashi — avoid new starts",
    "hi": "एकादशी — नया काम न शुरू करें",
@@ -18260,6 +19253,16 @@
    "_addedFromSheets": true
   },
   {
+   "key": "strength.sub_inauspicious_yoga_today",
+   "en": "An inauspicious yoga today",
+   "hi": "आज का योग अशुभ है",
+   "te": "ఈ రోజు యోగం అశుభం",
+   "area": "muhurta",
+   "chars": 26,
+   "where": "muhurta card — why a day is not offered",
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+  },
+  {
    "key": "strength.sub_mars_mercury_day_ideal",
    "en": "Mars/Mercury day — ideal",
    "hi": "मंगल/बुध वार — शुभ",
@@ -18273,6 +19276,36 @@
    "area": "(added from the built sheets)",
    "chars": 24,
    "_addedFromSheets": true
+  },
+  {
+   "key": "strength.sub_nak_tithi_weekday_all_good",
+   "en": "Nakshatra, tithi and weekday all suitable",
+   "hi": "नक्षत्र, तिथि और वार तीनों अनुकूल",
+   "te": "నక్షత్రం, తిథి, వారం మూడూ అనుకూలం",
+   "area": "muhurta",
+   "chars": 41,
+   "where": "muhurta card — why a day is not offered",
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+  },
+  {
+   "key": "strength.sub_nakshatra_not_suitable",
+   "en": "The nakshatra is not suitable today",
+   "hi": "आज का नक्षत्र उपयुक्त नहीं",
+   "te": "ఈ రోజు నక్షత్రం అనుకూలం కాదు",
+   "area": "muhurta",
+   "chars": 35,
+   "where": "muhurta card — why a day is not offered",
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
+  },
+  {
+   "key": "strength.sub_paksha_could_be_better",
+   "en": "The paksha could be better",
+   "hi": "पक्ष और बेहतर हो सकता था",
+   "te": "పక్షం ఇంకా మెరుగ్గా ఉండవచ్చు",
+   "area": "muhurta",
+   "chars": 26,
+   "where": "muhurta card — why a day is not offered",
+   "_teNeedsReview": "Proposed. Shown on the muhurta card when a day is refused."
   },
   {
    "key": "strength.sub_shukla_paksha_avoid_tue_sat",
