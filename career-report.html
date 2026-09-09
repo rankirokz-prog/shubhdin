@@ -627,7 +627,12 @@ function generate(){ try {
     var nam = '';
     try{
       var nk = PE.getNamakshara(moon.nakshatra.index, moon.nakshatra.pada);
-      nam = (nk.syllables||[]).map(function(x){return x.devanagari;}).join(' \u00b7 ');
+      // Namakshara is a phonetic syllable, not Hindi copy. Keep Roman
+      // transliteration outside Devanagari-script languages instead of leaking
+      // Hindi glyphs into every localized report.
+      nam = (nk.syllables||[]).map(function(x){
+        return (LANG==='hi'||LANG==='mr') ? x.devanagari : x.latin;
+      }).join(' \u00b7 ');
     }catch(e){}
     var bal = dz && dz.balanceYears != null
       ? dz.balanceYears.toFixed(1)+' '+J('yearsLbl')+' \u2014 '+term('planet', dz.mahadashas[0].lord) : null;
@@ -721,10 +726,13 @@ function generate(){ try {
     +'<div class="prose">'+T(W.jobbiz[cw.jobBusiness])+'</div>');
   // WEALTH + SUB-DIMENSIONS + WINDOWS
   var wtier=cw.wealthScore>=74?'high':cw.wealthScore>=58?'moderate':'building';
-  function starRow(label,n){var f='<span style="color:#E8730C;">'+'\u2605'.repeat(n)+'</span><span style="color:#D4A843;">'+'\u2606'.repeat(5-n)+'</span>';
-    return '<div style="display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #E4D3AE;"><span>'+label+'</span><span style="font-size:17px;letter-spacing:2px;">'+f+'</span></div>';}
+  function starRow(label,n){
+    // CSS-drawn meter avoids missing-glyph boxes when a PDF font lacks stars.
+    var f=Array.from({length:5},function(_,i){return '<i style="display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:4px;background:'+(i<n?'#E8730C':'#E4D3AE')+';"></i>';}).join('');
+    return '<div style="display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #E4D3AE;"><span>'+label+'</span><span aria-label="'+n+' / 5">'+f+' <small>'+n+'/5</small></span></div>';}
   var win=PE.getEventWindows('career',b,lat,lng,new Date(),SD_WINDOW_TO);
-  var winH=win.windows.slice(0,4).map(function(x){
+  // Present windows as a timeline; engine ranking order looked like a date bug.
+  var winH=win.windows.slice().sort(function(a,z){return new Date(a.start)-new Date(z.start);}).slice(0,4).map(function(x){
     var act=W.action[x.antar]||W.action[x.maha];
     var doList=act?(act['do'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]||act.doEn||[]):[];
     var avList=act?(act['avoid'+LANG.charAt(0).toUpperCase()+LANG.slice(1)]||act.avoidEn||[]):[];
@@ -745,7 +753,18 @@ function generate(){ try {
       +'<div class="prose" style="font-size:12px;color:#8B5A2B;margin-top:10px;">'+U('career.avoidFields')+'</div>');
   }
   // FOREIGN + REMEDIES + FOOTER
-  var rem=[cw.tenthLord,'sun','saturn','mercury'].filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,4).map(function(k){var r=C.remedy[k];return r?'<div class="yog"><b>'+(U('mantraLabel.'+k)||r.name)+'</b> — <span style="color:#8B2B33;">'+r.mantra+'</span><br>'+((window.SD_UI&&SD_UI.remedy&&SD_UI.remedy[k]&&SD_UI.remedy[k][LANG])||(LANG==='hi'?r.hi:r.en))+'</div>':'';}).join('');
+  var MANTRA={
+    sun:{en:'Om Ghrinih Suryaya Namah',hi:'ॐ घृणिः सूर्याय नमः',mr:'ॐ घृणिः सूर्याय नमः',te:'ఓం ఘృణిః సూర్యాయ నమః',kn:'ಓಂ ಘೃಣಿಃ ಸೂರ್ಯಾಯ ನಮಃ',ta:'ஓம் க்ருணிஃ ஸூர்யாய நமஃ',bn:'ওঁ ঘৃণিঃ সূর্যায় নমঃ',gu:'ૐ ઘૃણિઃ સૂર્યાય નમઃ',as:'ওঁ ঘৃণিঃ সূৰ্যায় নমঃ'},
+    moon:{en:'Om Som Somaya Namah',hi:'ॐ सों सोमाय नमः',mr:'ॐ सों सोमाय नमः',te:'ఓం సోం సోమాయ నమః',kn:'ಓಂ ಸೋಂ ಸೋಮಾಯ ನಮಃ',ta:'ஓம் ஸோம் ஸோமாய நமஃ',bn:'ওঁ সোং সোমায় নমঃ',gu:'ૐ સોં સોમાય નમઃ',as:'ওঁ সোং সোমায় নমঃ'},
+    mars:{en:'Om Am Angarakaya Namah',hi:'ॐ अं अंगारकाय नमः',mr:'ॐ अं अंगारकाय नमः',te:'ఓం అం అంగారకాయ నమః',kn:'ಓಂ ಅಂ ಅಂಗಾರಕಾಯ ನಮಃ',ta:'ஓம் அம் அங்காரகாய நமஃ',bn:'ওঁ অং অঙ্গারকায় নমঃ',gu:'ૐ અં અંગારકાય નમઃ',as:'ওঁ অং অঙ্গাৰকায় নমঃ'},
+    mercury:{en:'Om Bum Budhaya Namah',hi:'ॐ बुं बुधाय नमः',mr:'ॐ बुं बुधाय नमः',te:'ఓం బుం బుధాయ నమః',kn:'ಓಂ ಬುಂ ಬುಧಾಯ ನಮಃ',ta:'ஓம் பும் புதாய நமஃ',bn:'ওঁ বুং বুধায় নমঃ',gu:'ૐ બું બુધાય નમઃ',as:'ওঁ বুং বুধায় নমঃ'},
+    jupiter:{en:'Om Brim Brihaspataye Namah',hi:'ॐ बृं बृहस्पतये नमः',mr:'ॐ बृं बृहस्पतये नमः',te:'ఓం బృం బృహస్పతయే నమః',kn:'ಓಂ ಬೃಂ ಬೃಹಸ್ಪತಯೇ ನಮಃ',ta:'ஓம் ப்ரும் ப்ருஹஸ்பதயே நமஃ',bn:'ওঁ বৃং বৃহস্পতয়ে নমঃ',gu:'ૐ બૃં બૃહસ્પતયે નમઃ',as:'ওঁ বৃং বৃহস্পতয়ে নমঃ'},
+    venus:{en:'Om Shum Shukraya Namah',hi:'ॐ शुं शुक्राय नमः',mr:'ॐ शुं शुक्राय नमः',te:'ఓం శుం శుక్రాయ నమః',kn:'ಓಂ ಶುಂ ಶುಕ್ರಾಯ ನಮಃ',ta:'ஓம் ஷும் ஷுக்ராய நமஃ',bn:'ওঁ শুং শুক্রায় নমঃ',gu:'ૐ શું શુક્રાય નમઃ',as:'ওঁ শুং শুক্ৰায় নমঃ'},
+    saturn:{en:'Om Sham Shanaishcharaya Namah',hi:'ॐ शं शनैश्चराय नमः',mr:'ॐ शं शनैश्चराय नमः',te:'ఓం శం శనైశ్చరాయ నమః',kn:'ಓಂ ಶಂ ಶನೈಶ್ಚರಾಯ ನಮಃ',ta:'ஓம் ஷம் ஷனைஷ்சராய நமஃ',bn:'ওঁ শং শনৈশ্চরায় নমঃ',gu:'ૐ શં શનૈશ્ચરાય નમઃ',as:'ওঁ শং শনৈশ্চৰায় নমঃ'},
+    rahu:{en:'Om Ram Rahave Namah',hi:'ॐ रां राहवे नमः',mr:'ॐ रां राहवे नमः',te:'ఓం రాం రాహవే నమః',kn:'ಓಂ ರಾಂ ರಾಹವೇ ನಮಃ',ta:'ஓம் ராம் ராஹவே நமஃ',bn:'ওঁ রাং রাহবে নমঃ',gu:'ૐ રાં રાહવે નમઃ',as:'ওঁ ৰাং ৰাহৱে নমঃ'},
+    ketu:{en:'Om Kem Ketave Namah',hi:'ॐ कें केतवे नमः',mr:'ॐ कें केतवे नमः',te:'ఓం కేం కేతవే నమః',kn:'ಓಂ ಕೇಂ ಕೇತವೇ ನಮಃ',ta:'ஓம் கேம் கேதவே நமஃ',bn:'ওঁ কেং কেতবে নমঃ',gu:'ૐ કેં કેતવે નમઃ',as:'ওঁ কেং কেতৱে নমঃ'}
+  };
+  var rem=[cw.tenthLord,'sun','saturn','mercury'].filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,4).map(function(k){var r=C.remedy[k],m=MANTRA[k]&&MANTRA[k][LANG];return r?'<div class="yog"><b>'+(U('mantraLabel.'+k)||r.name)+'</b> — <span style="color:#8B2B33;">'+(m||r.mantra)+'</span><br>'+((window.SD_UI&&SD_UI.remedy&&SD_UI.remedy[k]&&SD_UI.remedy[k][LANG])||(LANG==='hi'?r.hi:r.en))+'</div>':'';}).join('');
   pg('<h2 class="sec">🌏 '+T(L.foreign)+'</h2><div class="prose">'+T(cw.foreign.length?W.foreignYes:W.foreignNo)+'</div>'
     +'<h2 class="sec">🙏 '+T(L.remedies)+'</h2>'+rem
     +'<div class="foot">'+T(L.disclaimer)+'<br><b>'+U('brand.name')+' · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'})+'</div>');
