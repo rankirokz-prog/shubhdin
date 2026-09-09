@@ -1,8 +1,9 @@
 // Diffs live engine output against golden-snapshots.json. Reports per-field drift.
-global.window=global; const A=require('./astronomy_min.js'); global.window.Astronomy=A; global.Astronomy=A;
-require('./panchang-engine.js'); const PE=global.PanchangEngine;
+const path=require('path'); const ROOT=path.resolve(__dirname,'..');
+global.window=global; const A=require(path.join(ROOT,'astronomy_min.js')); global.window.Astronomy=A; global.Astronomy=A;
+require(path.join(ROOT,'panchang-engine.js')); const PE=global.PanchangEngine;
 const fs=require('fs');
-const g=JSON.parse(fs.readFileSync('golden-snapshots.json','utf8'));
+const g=JSON.parse(fs.readFileSync(path.join(__dirname,'golden-snapshots.json'),'utf8'));
 // MUST match make-goldens.js — see the note there.
 const SS_REF = new Date('2026-08-14T00:00:00.000Z');
 const ser=o=>JSON.parse(JSON.stringify(o));
