@@ -60,7 +60,9 @@ module.exports = async function handler(req, res) {
   // one file per language, so a second phone asking in another language gets
   // its own render instead of the first one (legacy `kundlis/{uid}.pdf` is not
   // reused: its language is unknown)
-  const path   = `kundlis/${uid}-${lang}.pdf`;
+  // v2 invalidates PDFs rendered before the Indic-font/symbol fixes. Without
+  // a versioned key, the HEAD shortcut would serve the old broken PDF forever.
+  const path   = `kundlis/v2/${uid}-${lang}.pdf`;
   const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${path}`;
   const dlUrl = publicUrl + `?download=Shubh-Din-Kundli-${lang}.pdf`;
 
