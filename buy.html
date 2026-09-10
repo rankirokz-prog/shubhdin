@@ -202,7 +202,7 @@ if(CFG[R]){try{localStorage.setItem('sd_buy_last',R);}catch(e){}}
    has paid and holds nothing yet. Reviewers rewrote it from "your report" to
    "your Kundli report / जन्मकुंडली / ஜாதக அறிக்கை" and added "expert team"
    and "with care" — it has to sound like a person, not a queue. */
-var SD_BUILD='C8';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
+var SD_BUILD='C9';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
 function bdlog(m){
   try{var a=JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]');
     a.push(new Date().toISOString().slice(11,19)+' '+m);
@@ -695,7 +695,7 @@ function afterAuth(sess){
 }
 function showPay(){
   $('payS').textContent=(A('buy.amount_2'))+'₹'+C.now+' · '+RT;
-  $('btPay').textContent=A('buy.pay');
+  $('btPay').textContent='₹'+C.now+' '+A('buy.pay');
   $('btPay').disabled=false;
   show('stPay');
 }
@@ -950,7 +950,7 @@ absorbHash().then(function(){
    English over them. Now it runs for everyone and reads the string tables. */
 (function(){
   $('btNext').textContent=A('buy.continue');$('errD').textContent=A('buy.please_fill_all_details');
-  $('payT').textContent=A('buy.payment');$('btPay').textContent=A('buy.pay');
+  $('payT').textContent=A('buy.payment');$('btPay').textContent='₹'+C.now+' '+A('buy.pay');
   $('payNote').textContent='🔒 '+A('buy.secure_payment_upi_card');
   $('doneT').textContent=A('buy.your_report_is_being_prepared');
   $('doneS').textContent=A('buy.get_your_report_below_it_stays_in');
