@@ -448,6 +448,24 @@ function term(kind,val){if(!UI)UI=window.SD_UI||{};var m=UI[kind]&&UI[kind][val]
 
 var GR_HI={sun:'सूर्य',moon:'चंद्र',mars:'मंगल',mercury:'बुध',jupiter:'गुरु',venus:'शुक्र',saturn:'शनि',rahu:'राहु',ketu:'केतु'};
 function gname2(k){if(!k)return '';var t=term('planet',k);return t!==k?t:(k.charAt(0).toUpperCase()+k.slice(1));}
+function forecastSyllable(x){
+  if(LANG==='hi'||LANG==='mr')return x.devanagari||x.latin||'';
+  var r=x.latin||'',ov=window.SD_UI&&SD_UI.syllable&&SD_UI.syllable[r];
+  return (LANG!=='en'&&ov&&ov[LANG])?ov[LANG]:r;
+}
+function wellbeingLabel(){return ({en:'Wellbeing & routine',hi:'स्वास्थ्य-संभाल और दिनचर्या',te:'శ్రేయస్సు, దినచర్య',kn:'ಕ್ಷೇಮ ಮತ್ತು ದಿನಚರಿ',ta:'நலனும் தினசரி ஒழுங்கும்',bn:'সুস্থতা ও দৈনন্দিন রুটিন',mr:'आरोग्य-जपणूक आणि दिनक्रम',gu:'સુખાકારી અને દિનચર્યા',as:'সুস্থতা আৰু দৈনন্দিন অভ্যাস'})[LANG]||'';}
+function forecastSafetyNote(){return ({
+    en:'These ratings are traditional planning indicators, not certainties or probabilities. They do not predict medical conditions, investment returns, legal outcomes, marriage or specific events. For major health, financial or legal decisions, use qualified professional advice and current facts.',
+    hi:'ये अंक पारंपरिक योजना-संकेत हैं, निश्चित परिणाम या संभावना नहीं। ये बीमारी, निवेश-लाभ, कानूनी नतीजे, विवाह या किसी खास घटना की भविष्यवाणी नहीं करते। स्वास्थ्य, धन या कानून से जुड़े बड़े निर्णय वर्तमान तथ्यों और योग्य विशेषज्ञ की सलाह से ही लें।',
+    te:'ఈ రేటింగ్‌లు సంప్రదాయ ప్రణాళిక సూచనలు మాత్రమే; ఖచ్చిత ఫలితాలు లేదా సంభావ్యతలు కావు. ఇవి వ్యాధులు, పెట్టుబడి లాభాలు, న్యాయ ఫలితాలు, వివాహం లేదా నిర్దిష్ట సంఘటనలను జోస్యం చెప్పవు. ఆరోగ్యం, ఆర్థికం లేదా న్యాయానికి సంబంధించిన పెద్ద నిర్ణయాలు ప్రస్తుత వాస్తవాలు, అర్హులైన నిపుణుల సలహాతోనే తీసుకోండి.',
+    kn:'ಈ ಮೌಲ್ಯಗಳು ಸಂಪ್ರದಾಯದ ಯೋಜನಾ ಸೂಚನೆಗಳು ಮಾತ್ರ; ಖಚಿತ ಫಲಿತಾಂಶ ಅಥವಾ ಸಾಧ್ಯತೆಗಳಲ್ಲ. ಇವು ಕಾಯಿಲೆ, ಹೂಡಿಕೆಯ ಲಾಭ, ಕಾನೂನು ಫಲಿತಾಂಶ, ಮದುವೆ ಅಥವಾ ನಿರ್ದಿಷ್ಟ ಘಟನೆಗಳನ್ನು ಭವಿಷ್ಯವಾಣಿ ಮಾಡುವುದಿಲ್ಲ. ಆರೋಗ್ಯ, ಹಣಕಾಸು ಅಥವಾ ಕಾನೂನಿನ ದೊಡ್ಡ ನಿರ್ಧಾರಗಳಿಗೆ ಪ್ರಸ್ತುತ ವಾಸ್ತವಾಂಶ ಮತ್ತು ಅರ್ಹ ತಜ್ಞರ ಸಲಹೆ ಬಳಸಿ.',
+    ta:'இந்த மதிப்பீடுகள் பாரம்பரிய திட்டமிடல் குறிப்புகள் மட்டுமே; உறுதியான முடிவுகளோ நிகழ்தகவுகளோ அல்ல. நோய், முதலீட்டு வருமானம், சட்ட முடிவு, திருமணம் அல்லது குறிப்பிட்ட நிகழ்வை இவை கணிப்பதில்லை. முக்கிய மருத்துவ, நிதி அல்லது சட்ட முடிவுகளுக்கு தற்போதைய உண்மைகளையும் தகுதியான நிபுணரின் ஆலோசனையையும் பயன்படுத்துங்கள்.',
+    bn:'এই মূল্যায়নগুলি প্রচলিত পরিকল্পনা-সূচক মাত্র; নিশ্চিত ফল বা সম্ভাবনা নয়। এগুলি রোগ, বিনিয়োগের লাভ, আইনি ফল, বিয়ে বা নির্দিষ্ট ঘটনার পূর্বাভাস দেয় না। বড় চিকিৎসা, আর্থিক বা আইনি সিদ্ধান্তে বর্তমান তথ্য ও যোগ্য বিশেষজ্ঞের পরামর্শ নিন।',
+    mr:'ही मूल्यांकने पारंपरिक नियोजन-संकेत आहेत; निश्चित निकाल किंवा शक्यता नाहीत. ती आजार, गुंतवणुकीवरील परतावा, कायदेशीर निकाल, विवाह किंवा विशिष्ट घटना भाकीत करत नाहीत. आरोग्य, आर्थिक किंवा कायदेशीर मोठ्या निर्णयांसाठी सद्य तथ्ये आणि पात्र तज्ज्ञांचा सल्ला घ्या.',
+    gu:'આ મૂલ્યાંકન પરંપરાગત આયોજનના સંકેત માત્ર છે; ચોક્કસ પરિણામ કે સંભાવના નથી. તે રોગ, રોકાણનું વળતર, કાનૂની પરિણામ, લગ્ન કે કોઈ ચોક્કસ ઘટનાની આગાહી કરતા નથી. આરોગ્ય, નાણાં અથવા કાયદાના મોટા નિર્ણય માટે હાલના તથ્યો અને લાયક નિષ્ણાતની સલાહ લો.',
+    as:'এই মূল্যায়নবোৰ পৰম্পৰাগত পৰিকল্পনাৰ সংকেত মাথোঁ; নিশ্চিত ফল বা সম্ভাৱনা নহয়। এইবোৰে ৰোগ, বিনিয়োগৰ লাভ, আইনী ফল, বিবাহ বা কোনো নির্দিষ্ট ঘটনাৰ ভৱিষ্যদ্বাণী নকৰে। স্বাস্থ্য, বিত্ত বা আইনৰ ডাঙৰ সিদ্ধান্তত বৰ্তমান তথ্য আৰু যোগ্য বিশেষজ্ঞৰ পৰামৰ্শ লওক।'
+  })[LANG]||'';}
+function safeExcellentAction(){return ({en:'Use the favourable tone for preparation and measured action. Before any major commitment, verify affordability, risks, alternatives and current facts.',hi:'अनुकूल संकेत का उपयोग तैयारी और सोच-समझकर कदम उठाने में करें। किसी बड़े निर्णय से पहले खर्च उठाने की क्षमता, जोखिम, विकल्प और वर्तमान तथ्य जाँचें।',te:'అనుకూల స్వభావాన్ని సిద్ధతకు, కొలిచిన చర్యలకు ఉపయోగించండి. ఏ పెద్ద నిర్ణయం ముందైనా ఖర్చు భరించే సామర్థ్యం, ప్రమాదాలు, ప్రత్యామ్నాయాలు, ప్రస్తుత వాస్తవాలను పరిశీలించండి.',kn:'ಅನುಕೂಲ ಸೂಚನೆಯನ್ನು ಸಿದ್ಧತೆ ಮತ್ತು ಅಳೆಯಲ್ಪಟ್ಟ ಕ್ರಮಕ್ಕೆ ಬಳಸಿ. ಯಾವುದೇ ದೊಡ್ಡ ಬದ್ಧತೆಯ ಮೊದಲು ವೆಚ್ಚ ಭರಿಸುವ ಸಾಮರ್ಥ್ಯ, ಅಪಾಯ, ಪರ್ಯಾಯ ಮತ್ತು ಪ್ರಸ್ತುತ ವಾಸ್ತವಾಂಶಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',ta:'சாதகமான போக்கைத் தயாரிப்புக்கும் அளவான செயலுக்கும் பயன்படுத்துங்கள். பெரிய உறுதிப்பாட்டுக்கு முன் செலவு தாங்கும் திறன், ஆபத்து, மாற்று வழிகள் மற்றும் தற்போதைய உண்மைகளைச் சரிபாருங்கள்.',bn:'অনুকূল ইঙ্গিতকে প্রস্তুতি ও পরিমিত পদক্ষেপে কাজে লাগান। বড় সিদ্ধান্তের আগে সামর্থ্য, ঝুঁকি, বিকল্প ও বর্তমান তথ্য যাচাই করুন।',mr:'अनुकूल संकेताचा उपयोग तयारी आणि मोजून पाऊल टाकण्यासाठी करा. कोणत्याही मोठ्या निर्णयापूर्वी परवड, जोखीम, पर्याय आणि सद्य तथ्ये तपासा.',gu:'અનુકૂળ સંકેતનો ઉપયોગ તૈયારી અને માપેલા પગલાં માટે કરો. કોઈ મોટા નિર્ણય પહેલાં પરવડ, જોખમ, વિકલ્પો અને હાલના તથ્યો તપાસો.',as:'অনুকূল সংকেতক প্ৰস্তুতি আৰু জুখি-মাপি পদক্ষেপ লোৱাত ব্যৱহাৰ কৰক। ডাঙৰ সিদ্ধান্তৰ আগতে সামৰ্থ্য, ঝুঁকি, বিকল্প আৰু বৰ্তমান তথ্য যাচাই কৰক।'})[LANG]||'';}
 /* ══ F1 · the birth moment, in the BIRTH PLACE's zone ═══════════════════
    Every birth time used to be parsed as IST (…-5.5*3600000): a London buyer
    typing 09:00 was cast at 03:30 London — four signs of Lagna. Now the zone
@@ -554,8 +572,8 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
         +'<textPath href="#sdArcTop" startOffset="50%" text-anchor="middle">'+brand+'</textPath></text>'
         +'<text font-size="10.5" fill="'+ink+'" letter-spacing="2.4" opacity=".92" style="font-weight:600;">'
         +'<textPath href="#sdArcBot" startOffset="50%" text-anchor="middle">SHUBHDIN.APP</textPath></text>'
-        +'<text x="100" y="118" text-anchor="middle" font-size="54" fill="'+ink+'"'
-        +' style="font-family:\'Noto Serif Devanagari\',serif;">\u0950</text>'
+        +'<text x="100" y="116" text-anchor="middle" font-size="42" fill="'+ink+'"'
+        +' style="font-family:serif;font-weight:700;">'+({en:'Om',hi:'ॐ',mr:'ॐ',te:'ఓం',kn:'ಓಂ',ta:'ஓம்',bn:'ওঁ',gu:'ૐ',as:'ওঁ'}[LANG]||'Om')+'</text>'
         +'<line x1="62" y1="132" x2="138" y2="132" stroke="'+ink+'" stroke-width="1.1" opacity=".6"/>'
         +'<line x1="62" y1="68" x2="138" y2="68" stroke="'+ink+'" stroke-width="1.1" opacity=".6"/>'
         +'</g></svg>';
@@ -618,7 +636,7 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
     var nam = '';
     try{
       var nk = PE.getNamakshara(moon.nakshatra.index, moon.nakshatra.pada);
-      nam = (nk.syllables||[]).map(function(x){return x.devanagari;}).join(' \u00b7 ');
+      nam = (nk.syllables||[]).map(forecastSyllable).join(' \u00b7 ');
     }catch(e){}
     var bal = dz && dz.balanceYears != null
       ? dz.balanceYears.toFixed(1)+' '+J('yearsLbl')+' \u2014 '+term('planet', dz.mahadashas[0].lord) : null;
@@ -657,7 +675,7 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
       + (hc.vikramSamvat ? row(J('samvatLbl'), hc.vikramSamvat) : '');
     var gRows = (_bc.grahas||[]).map(function(g){
       return '<tr><td>'+term('planet',g.key)+'</td><td>'+term('rashi',g.rashi.en)+'</td><td>'+(g.house||'\u2014')+'</td>'
-           + '<td>'+(g.retrograde?'\u211e':'')+'</td></tr>';
+           + '<td>'+(g.retrograde?'R':'\u2014')+'</td></tr>';
     }).join('');
     pg('<h2 class="sec">'+J('page2Title')+'</h2>'
       +'<div class="prose">'+J('page2Intro')+'</div>'
@@ -675,9 +693,9 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
       +'<div class="ovbar"><div style="width:'+pct+'%;background:'+col+';"></div></div>'
       +'<div style="font-size:12px;color:var(--soft);width:120px;text-align:right;">'+gname2(y.maha)+'/'+gname2(y.antar)+'</div></div>';
   }).join('');
-  pg('<h2 class="sec">📊 '+T(L.overview)+'</h2>'+ov+'<div class="prose" style="font-size:11.5px;color:#8B5A2B;margin-top:10px;">'+T(L.method)+'</div>');
+  pg('<h2 class="sec">'+T(L.overview)+'</h2>'+ov+'<div class="prose" style="font-size:11.5px;color:#8B5A2B;margin-top:10px;">'+forecastSafetyNote()+'</div><div class="prose" style="font-size:11.5px;color:#8B5A2B;margin-top:8px;">'+T(L.method)+'</div>');
   // SPOTLIGHT FULL PAGES (best + caution years get their own page)
-  function starStr(n){return '<span style="color:#E8730C;letter-spacing:2px;">'+'\u2605'.repeat(n)+'</span><span style="color:#D4A843;letter-spacing:2px;">'+'\u2606'.repeat(5-n)+'</span>';}
+  function starStr(n){var h='<span style="display:inline-flex;gap:4px;vertical-align:middle;">';for(var i=1;i<=5;i++)h+='<i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(i<=n?'#E8730C':'#E6D9B8')+';"></i>';return h+'</span> <b style="font-size:11px;color:#8B5A2B;">'+n+'/5</b>';}
   function spotlightPage(y, kind){
     var SL=Y.spotLabels, d=y.domains;
     var isBest=kind==='best';
@@ -685,7 +703,8 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
     var col=isBest?'#2B8B5A':'#B8434A';
     var intro=isBest?T(Y.spotlightBest):T(Y.spotlightCaution);
     var domRows=[['career',SL.career],['money',SL.money],['marriage',SL.marriage],['health',SL.health],['travel',SL.travel],['invest',SL.invest]].map(function(dd){
-      return '<div style="display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #E4D3AE;"><span>'+T(dd[1])+'</span><span style="font-size:17px;">'+starStr(d[dd[0]])+'</span></div>';
+      var label=dd[0]==='health'?wellbeingLabel():T(dd[1]);
+      return '<div style="display:flex;justify-content:space-between;font-size:15px;padding:6px 0;border-bottom:1px dashed #E4D3AE;"><span>'+label+'</span><span style="font-size:17px;">'+starStr(d[dd[0]])+'</span></div>';
     }).join('');
     // opportunities from high-star domains; risks from low-star + rating
     var opps=[], risks=[];
@@ -714,11 +733,12 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
       +'<div class="prose" style="margin-top:10px;">'+intro+'</div>'
       +'<div class="idcard"><div class="t">'+T(SL.domains)+'</div>'+domRows+'</div>'
       +'<div class="two" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
-      +(isBest?'<div class="idcard" style="background:#F2F8EF;"><div class="t" style="color:#2B7A4B;">'+T(SL.opportunities)+'</div><div style="font-size:14px;line-height:2;margin-top:4px;">'+uniqOpps.map(function(o){return '\u2705 '+o;}).join('<br>')+'</div></div>':'')
-      +'<div class="idcard" style="background:#FFF3F0;"><div class="t" style="color:#B8434A;">'+T(SL.avoid)+'</div><div style="font-size:14px;line-height:2;margin-top:4px;">'+uniqRisks.map(function(r){return '\u274C '+r;}).join('<br>')+'</div></div>'
+      +(isBest?'<div class="idcard" style="background:#F2F8EF;"><div class="t" style="color:#2B7A4B;">'+T(SL.opportunities)+'</div><div style="font-size:14px;line-height:2;margin-top:4px;">'+uniqOpps.map(function(o){return '+ '+o;}).join('<br>')+'</div></div>':'')
+      +'<div class="idcard" style="background:#FFF3F0;"><div class="t" style="color:#B8434A;">'+T(SL.avoid)+'</div><div style="font-size:14px;line-height:2;margin-top:4px;">'+uniqRisks.map(function(r){return '- '+r;}).join('<br>')+'</div></div>'
       +(isBest?'':'<div class="idcard" style="background:#F2F8EF;"><div class="t" style="color:#2B7A4B;">'+T(SL.strategy)+'</div><div style="font-size:14px;line-height:1.8;margin-top:4px;">'+strat+'</div></div>')
       +'</div>'
-      +(isBest?'<div class="idcard" style="background:#FFF6E3;margin-top:2px;"><div class="t">'+T(SL.strategy)+'</div><div class="prose" style="margin:4px 0 0;">'+strat+'</div></div>':''));
+      +(isBest?'<div class="idcard" style="background:#FFF6E3;margin-top:2px;"><div class="t">'+T(SL.strategy)+'</div><div class="prose" style="margin:4px 0 0;">'+safeExcellentAction()+'</div></div>':'')
+      +'<div style="font-size:10.5px;color:#8B5A2B;margin-top:8px;">'+forecastSafetyNote()+'</div>');
   }
   var bestY=fc.years.find(function(y){return y.spotlight==='best';});
   var cautionY=fc.years.find(function(y){return y.spotlight==='caution';});
@@ -760,12 +780,12 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
       +'<div class="line"><b>'+T(L.period)+':</b> '+gname2(y.maha)+' – '+gname2(y.antar)+' &nbsp;·&nbsp; <b>'+T(L.theme)+':</b> '+themeTxt+'</div>'
       +'<div class="line">'+T(rt)+'</div>'
       +'<div class="line" style="font-size:11.5px;color:#8B5A2B;">'+U('fcYr.transits')+': '+gname2('jupiter')+' '+U('kundli.k024')+' '+y.jupiterHouse+' \u00b7 '+gname2('saturn')+' '+y.saturnHouse+' \u00b7 '+gname2('rahu')+' '+y.rahuHouse+'</div>'
-      +'<div class="domgrid">'+dom(T(Y.domain.career),career)+dom(T(Y.domain.money),money)+dom(T(Y.domain.relationships),rel)+dom(T(Y.domain.health),health)+'</div>'
-      +'<div class="act">\u2705 <b>'+T(L.action)+':</b> '+T(Y.action[y.rating])+'</div></div>';
+      +'<div class="domgrid">'+dom(T(Y.domain.career),career)+dom(T(Y.domain.money),money)+dom(T(Y.domain.relationships),rel)+dom(wellbeingLabel(),health)+'</div>'
+      +'<div class="act"><b>'+T(L.action)+':</b> '+(y.rating==='excellent'?safeExcellentAction():T(Y.action[y.rating]))+'</div></div>';
   });
   // 3 cards per page
   for(var i=0;i<cards.length;i+=3){
-    pg('<h2 class="sec">'+(i===0?'\uD83D\uDCC5 '+U('forecast.yearByYear'):'\uD83D\uDCC5 '+U('forecast.yearByYearContd'))+'</h2>'+cards.slice(i,i+3).join(''));
+    pg('<h2 class="sec">'+(i===0?U('forecast.yearByYear'):U('forecast.yearByYearContd'))+'</h2>'+cards.slice(i,i+3).join(''));
   }
   // FOOTER
 
@@ -853,8 +873,8 @@ var SD_JP_HIGHLIGHT = 'jp.forecastHighlight';
       + '<div style="font-size:11.5px;color:#8B5A2B;margin-top:10px;">'+U('annGo.slowNote')+'</div>');
   })();
 
-    pg('<h2 class="sec">🙏 '+U('forecast.closing')+'</h2>'
-    +'<div class="prose">'+U('forecast.closingText')+'</div>'
+    pg('<h2 class="sec">'+U('forecast.closing')+'</h2>'
+    +'<div class="prose">'+U('forecast.closingText')+'</div><div class="prose" style="font-size:11.5px;color:#8B5A2B;">'+forecastSafetyNote()+'</div>'
     +'<div class="foot">'+T(L.disclaimer)+'<br><b>'+U('brand.name')+' · shubhdin.app</b> · '+new Date().toLocaleDateString('en-IN')+'</div>');
   document.getElementById('report').innerHTML=H;
   var rep=document.getElementById('report');
