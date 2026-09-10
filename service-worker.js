@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v214';
+const CACHE_NAME = 'shubhdin-v215';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -25,6 +25,7 @@ const CORE_FILES = [
      jsDelivr with no integrity hash, on the pages that hold the session. */
   '/vendor/supabase-2.114.0.js',
   '/report-catalog.js',
+  '/mantra-library-data.js',
   /* today's verse — cached so the morning card is there on a weak
      connection, which is exactly when people open a devotional app */
   '/daily-gita.js',
