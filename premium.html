@@ -202,7 +202,8 @@ if(ownedCount>0){
 
 REPORTS.forEach(function(r){
   var owned=!!OWNED[r.id];
-  var chips=r.chips.map(function(c){return '<span class="chip">'+reportChip(c)+'</span>';}).join('');
+  var chips='<span class="chip">📄 '+reportPages(r)+'</span>'
+    +r.chips.map(function(c){return '<span class="chip">'+reportChip(c)+'</span>';}).join('');
   // An owned card must never look buyable again: no price, no discount, and a
   // link into the report rather than into the buy flow.
   var href = owned ? 'reports.html#'+r.id : ('buy.html?r='+r.id);

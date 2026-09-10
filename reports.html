@@ -238,6 +238,7 @@ function render(){
          invisible. A buyer (and Ram, over WhatsApp) can now read the state
          instead of guessing why one report opens and another does not. */
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
+       +'<span style="font-size:9.5px;padding:3px 9px;border-radius:20px;background:rgba(212,168,67,0.12);color:rgba(232,190,90,0.95);">📄 '+reportPages(r)+'</span>'
        +chip(!!o.pdf_url, A('report.pdf_ready'), A('report.pdf_not_made_yet'))
        +chip(canView,     A('report.details_on_this_phone'),
                           A('report.details_not_on_this_phone'))

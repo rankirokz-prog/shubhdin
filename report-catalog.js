@@ -16,7 +16,7 @@
     {
       id: 'marriage', hero: true, ico: '💍',
       key: 'reportTitle.marriage', hi: 'विवाह मिलान', en: 'Marriage Compatibility Report',
-      was: 799, now: 399,
+      was: 799, now: 399, pages: 28,
       anchor: 'card-marriage',
       route: 'buy.html?r=marriage',
       page: 'marriage-report.html',
@@ -33,18 +33,21 @@
     {
       id: 'love', ico: '❤️',
       key: 'reportTitle.love', hi: 'प्रेम रिपोर्ट', en: 'Love & Relationship',
-      was: 499, now: 199,
+      was: 499, now: 199, pages: 14,
       anchor: 'card-love',
       route: 'buy.html?r=love',
       page: 'love-report.html',
       hook: 'Your relationship patterns, partner nature and the periods that matter most in love.',
       _hookKey: 'report.your_relationship_patterns_partner',
-      chips: ['Love life', 'Partner nature', 'Compatibility', 'Relationship timing']
+      /* This is a one-person report. It can describe relationship patterns and
+         partner indicators, but cannot honestly measure compatibility without
+         a second chart. */
+      chips: ['Love life', 'Partner nature', 'Relationship timing']
     },
     {
       id: 'career', ico: '💼',
       key: 'reportTitle.career', hi: 'करियर रिपोर्ट', en: 'Career & Wealth',
-      was: 499, now: 199,
+      was: 499, now: 199, pages: 27,
       anchor: 'card-career',
       route: 'buy.html?r=career',
       page: 'career-report.html',
@@ -55,13 +58,13 @@
     {
       id: 'child', ico: '👶',
       key: 'reportTitle.child', hi: 'संतान रिपोर्ट', en: 'Child & Family',
-      was: 499, now: 199,
+      was: 499, now: 199, pages: 9,
       anchor: 'card-child',
       route: 'buy.html?r=child',
       page: 'child-report.html',
       hook: 'Santaan yog in your chart, favourable timing and auspicious naming letters.',
       _hookKey: 'report.santaan_yog_in_your_chart_favourab',
-      chips: ['Santaan Yog', 'Right timing', 'Family prospects', 'Naming letters']
+      chips: ['Santaan Yog', 'Right timing', 'Naming letters']
     },
     {
       id: 'muhurta', ico: '🕉️',
@@ -103,7 +106,7 @@
     {
       id: 'annual', ico: '🗓️',
       key: 'reportTitle.annual', hi: 'वार्षिक फल', en: 'Annual Varshaphal',
-      was: 499, now: 199,
+      was: 499, now: 199, pages: 23,
       anchor: 'card-annual',
       route: 'buy.html?r=annual',
       page: 'annual-report.html',
@@ -114,7 +117,7 @@
     {
       id: 'forecast', ico: '🔮',
       key: 'reportTitle.forecast', hi: '10 वर्ष का रोडमैप', en: '10-Year Forecast',
-      was: 599, now: 299,
+      was: 599, now: 299, pages: 13,
       anchor: 'card-forecast',
       route: 'buy.html?r=forecast',
       page: 'forecast-report.html',
@@ -258,6 +261,18 @@
   root.reportTitle = function (r) { return tr('reportTitle.' + r.id, r.hi || r.en); };
   root.reportHook  = function (r) { return tr(r._hookKey || '', r.hook); };
   root.reportChip  = function (c) { return tr(root.CHIP_KEYS[c] || '', c); };
+  /* Physical A4 PDF counts, verified from all nine generated language builds.
+     Keep these exact rather than marketing them as approximate page ranges. */
+  root.reportPages = function (r) {
+    if (!r || !r.pages) return '';
+    var lang = root.SD_LANG || 'en';
+    var forms = {
+      en: '{n}-page PDF', hi: '{n} पन्नों की PDF', te: '{n} పేజీల PDF',
+      kn: '{n} ಪುಟಗಳ PDF', ta: '{n} பக்க PDF', bn: '{n} পৃষ্ঠার PDF',
+      mr: '{n} पानांची PDF', gu: '{n} પાનાંની PDF', as: '{n} পৃষ্ঠাৰ PDF'
+    };
+    return (forms[lang] || forms.en).replace('{n}', r.pages);
+  };
 
   var byId = {};
   CATALOG.forEach(function (r) { byId[r.id] = r; });

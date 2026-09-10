@@ -42,12 +42,12 @@ a{color:#D4A843;}
 <h2>Paid Reports</h2>
 <p id="priceRows">Loading prices…</p>
 <noscript><ul>
-  <li><b>Marriage Compatibility Report</b> — <b>Rs 399</b></li>
-  <li><b>Love &amp; Relationship</b> — <b>Rs 199</b></li>
-  <li><b>Career &amp; Wealth</b> — <b>Rs 199</b></li>
-  <li><b>Child &amp; Family</b> — <b>Rs 199</b></li>
-  <li><b>Annual Varshaphal</b> — <b>Rs 199</b></li>
-  <li><b>10-Year Forecast</b> — <b>Rs 299</b></li>
+  <li><b>Marriage Compatibility Report</b> — 28-page PDF — <b>Rs 399</b></li>
+  <li><b>Love &amp; Relationship</b> — 14-page PDF — <b>Rs 199</b></li>
+  <li><b>Career &amp; Wealth</b> — 27-page PDF — <b>Rs 199</b></li>
+  <li><b>Child &amp; Family</b> — 9-page PDF — <b>Rs 199</b></li>
+  <li><b>Annual Varshaphal</b> — 23-page PDF — <b>Rs 199</b></li>
+  <li><b>10-Year Forecast</b> — 13-page PDF — <b>Rs 299</b></li>
 </ul></noscript>
 
 <h2>What you get</h2>
@@ -71,7 +71,7 @@ a{color:#D4A843;}
   try{
     var list=(typeof reportsForSale==='function')?reportsForSale():REPORT_CATALOG;
     host.outerHTML='<ul>'+list.map(function(r){
-      return '<li><b>'+r.en+'</b> — <b>Rs '+r.now+'</b>'
+      return '<li><b>'+r.en+'</b> — '+reportPages(r)+' — <b>Rs '+r.now+'</b>'
         +(r.was&&r.was>r.now?' <span style="opacity:.6;">(regular Rs '+r.was+')</span>':'')+'</li>';
     }).join('')+'</ul>';
   }catch(e){
@@ -80,12 +80,12 @@ a{color:#D4A843;}
        If these ever disagree with report-catalog.js, the catalog is right —
        it is what the checkout charges. */
     host.outerHTML='<ul>'
-      +'<li><b>Marriage Compatibility Report</b> — <b>Rs 399</b></li>'
-      +'<li><b>Love &amp; Relationship</b> — <b>Rs 199</b></li>'
-      +'<li><b>Career &amp; Wealth</b> — <b>Rs 199</b></li>'
-      +'<li><b>Child &amp; Family</b> — <b>Rs 199</b></li>'
-      +'<li><b>Annual Varshaphal</b> — <b>Rs 199</b></li>'
-      +'<li><b>10-Year Forecast</b> — <b>Rs 299</b></li></ul>';
+      +'<li><b>Marriage Compatibility Report</b> — 28-page PDF — <b>Rs 399</b></li>'
+      +'<li><b>Love &amp; Relationship</b> — 14-page PDF — <b>Rs 199</b></li>'
+      +'<li><b>Career &amp; Wealth</b> — 27-page PDF — <b>Rs 199</b></li>'
+      +'<li><b>Child &amp; Family</b> — 9-page PDF — <b>Rs 199</b></li>'
+      +'<li><b>Annual Varshaphal</b> — 23-page PDF — <b>Rs 199</b></li>'
+      +'<li><b>10-Year Forecast</b> — 13-page PDF — <b>Rs 299</b></li></ul>';
   }
 })();
 </script>
