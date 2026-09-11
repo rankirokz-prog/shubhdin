@@ -1739,6 +1739,7 @@ body[data-home="returning"] .streak{display:flex;}
 .ml-god{position:relative;border-radius:15px;overflow:hidden;border:1px solid rgba(212,168,67,0.28);cursor:pointer;aspect-ratio:4/3;transition:transform .12s;}
 .ml-god:active{transform:scale(0.96);}
 .ml-god img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;}
+.ml-god.ml-center-crop img{object-position:center center;}
 .ml-god .sh{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,2,0,.08) 25%,rgba(6,2,0,.93));}
 .ml-god .nm{position:absolute;left:8px;right:8px;bottom:8px;text-align:left;}
 .ml-god .nm .d{font-family:'Tiro Devanagari Hindi',serif;font-size:14px;color:#FFF4DE;font-weight:600;line-height:1.2;text-shadow:0 1px 6px rgba(0,0,0,0.9);}
@@ -1752,9 +1753,9 @@ body[data-home="returning"] .streak{display:flex;}
 .ml-row .go{color:rgba(212,168,67,0.55);font-size:16px;}
 /* player */
 .mlp{position:relative;height:clamp(430px,calc(100dvh - 158px),720px);min-height:0;border-radius:20px;overflow:hidden;border:1px solid rgba(212,168,67,0.3);display:flex;flex-direction:column;background:#080301;}
-.mlp::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,3,1,.62),rgba(8,3,1,.78));}
-.mlp-bg{position:absolute;inset:0;background-size:cover;background-position:center top;filter:grayscale(.25) brightness(.30) saturate(.55);opacity:.22;transition:opacity 1s,filter 1s;}
-.mlp.playing .mlp-bg{filter:grayscale(.2) brightness(.32) saturate(.6);opacity:.25;}
+.mlp::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,3,1,.46),rgba(8,3,1,.61));}
+.mlp-bg{position:absolute;inset:0;background-size:cover;background-position:center top;filter:grayscale(.18) brightness(.48) saturate(.65) blur(.4px);opacity:.52;transition:opacity 1s,filter 1s;}
+.mlp.playing .mlp-bg{filter:grayscale(.14) brightness(.50) saturate(.7) blur(.4px);opacity:.56;}
 .mlp-in{position:relative;z-index:2;flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 18px 10px;text-align:center;}
 .mlp-god{font-family:'Tiro Devanagari Hindi',serif;font-size:15px;color:var(--gold);letter-spacing:0.5px;}
 .mlp-mt{font-size:10px;color:rgba(255,244,222,0.55);margin-top:3px;letter-spacing:1px;}
@@ -9010,7 +9011,7 @@ function mlGrid(){
   let g='';
   ML_LIB.forEach(function(x,i){
     const count=AF(x.mantras.length>1?'dashbo.n_mantras':'dashbo.n_mantra',{n:x.mantras.length});
-    g+='<div class="ml-god" onclick="mlList('+i+')"><img src="'+x.img+'" alt="" loading="lazy">'
+    g+='<div class="ml-god'+(x.id==='venkateswara'?' ml-center-crop':'')+'" onclick="mlList('+i+')"><img src="'+x.img+'" alt="" loading="lazy">'
      +'<div class="sh"></div><div class="ml-count">'+count+'</div>'
      +'<div class="nm"><div class="d">'+mlGodTitle(x)+'</div></div></div>';
   });
