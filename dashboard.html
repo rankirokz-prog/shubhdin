@@ -8990,6 +8990,24 @@ const ML_LIB=[0,1,2,3,4,5,6].map(function(d){return {
   });
 });
 
+/* Editorial discovery order, not a theological ranking. Until real in-app
+   engagement is available, the selected language supplies a regional default;
+   every unlisted category then follows the neutral base order. */
+const ML_BASE_ORDER=['shiva','vishnu','lakshmi','devi','ganesh','hanuman','rama','krishna','venkateswara','narasimha','dakshinamurthy','dattatreya','surya','shani','navagraha','varahi','bhairava','hayagriva','naga'];
+const ML_LOCALE_FIRST={
+ te:['venkateswara','shiva','lakshmi','hanuman','ganesh','rama','narasimha','devi','krishna','vishnu'],
+ ta:['shiva','ganesh','lakshmi','devi','vishnu','venkateswara','hanuman','krishna'],
+ kn:['shiva','venkateswara','hanuman','lakshmi','ganesh','vishnu','devi','rama'],
+ bn:['devi','krishna','shiva','lakshmi','vishnu','ganesh','rama','hanuman'],
+ as:['krishna','devi','shiva','vishnu','lakshmi','ganesh','hanuman','rama'],
+ gu:['krishna','lakshmi','shiva','ganesh','hanuman','vishnu','rama','devi'],
+ mr:['ganesh','shiva','devi','hanuman','rama','krishna','lakshmi','vishnu']
+};
+function mlDisplayOrder(){
+  const first=ML_LOCALE_FIRST[window.SD_LANG]||ML_BASE_ORDER;
+  return first.concat(ML_BASE_ORDER.filter(function(id){return first.indexOf(id)<0;}));
+}
+
 function mlGodTitle(x){
   if(x.godKey&&sdHas(x.godKey))return A(x.godKey);
   return (window.SD_LANG||'hi')==='en'?x.god_en:mantraScriptText(x.god_hi);
@@ -9009,7 +9027,12 @@ function mlHead(t,sub,onBack){
 function mlGrid(){
   window.mlStop&&mlStop(true); mlView='grid';
   let g='';
-  ML_LIB.forEach(function(x,i){
+  const order=mlDisplayOrder();
+  ML_LIB.map(function(x,i){return {x:x,i:i};}).sort(function(a,b){
+    const ai=order.indexOf(a.x.id),bi=order.indexOf(b.x.id);
+    return (ai<0?999:ai)-(bi<0?999:bi);
+  }).forEach(function(entry){
+    const x=entry.x,i=entry.i;
     const count=AF(x.mantras.length>1?'dashbo.n_mantras':'dashbo.n_mantra',{n:x.mantras.length});
     g+='<div class="ml-god'+(x.id==='venkateswara'?' ml-center-crop':'')+'" onclick="mlList('+i+')"><img src="'+x.img+'" alt="" loading="lazy">'
      +'<div class="sh"></div><div class="ml-count">'+count+'</div>'
