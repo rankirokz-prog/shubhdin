@@ -104,7 +104,7 @@ document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
 /* Names and prices come from report-catalog.js — the single source shared with
    My Reports. They used to live here AND in buy.html, which meant the sales
    page could advertise a price the buy flow did not charge. */
-/* reportsForSale() drops anything withdrawn from sale (muhurta today) while
+/* reportsForSale() drops anything withdrawn from sale (Child and Muhurta) while
    leaving reportById() intact, so a report someone already owns still resolves
    by name, price and page and their OWNED card below still renders.
    The typeof guard is deliberate: if this page is ever served against an older
@@ -127,10 +127,43 @@ document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
 var REPORTS = (function () {
   try {
     if (typeof reportsForSale === 'function') return reportsForSale() || [];
-    if (typeof REPORT_CATALOG !== 'undefined' && REPORT_CATALOG) return REPORT_CATALOG;
+    if (typeof REPORT_CATALOG !== 'undefined' && REPORT_CATALOG)
+      return REPORT_CATALOG.filter(function(r){return r&&r.id!=='child'&&r.id!=='muhurta'&&!r.unlisted;});
   } catch (e) {}
   return null;                     // null means "catalogue unavailable"
 })();
+
+/* Personalise only the ORDER. No report is hidden because of age. DOB is
+   already collected during onboarding and stored as YYYY-MM-DD. Exact age is
+   recomputed on every open, so the order changes naturally after a birthday.
+   Missing/invalid DOB keeps the neutral catalogue order. The first card alone
+   becomes the hero/Most Popular card; the old permanent marriage hero is not
+   allowed to leak through. */
+function sdProfileAge(){
+  try{
+    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}'), s=u.dob||u.birth_date||'';
+    var m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m)return null;
+    var y=+m[1],mo=+m[2],d=+m[3],now=new Date(),age=now.getFullYear()-y;
+    if(mo<1||mo>12||d<1||d>31||age<0||age>120)return null;
+    if((now.getMonth()+1)<mo||((now.getMonth()+1)===mo&&now.getDate()<d))age--;
+    return age>=0?age:null;
+  }catch(e){return null;}
+}
+function sdAgeOrder(age){
+  if(age==null)return ['marriage','love','career','annual','forecast'];
+  if(age<27)return ['love','career','marriage','annual','forecast'];
+  if(age<35)return ['marriage','career','love','annual','forecast'];
+  if(age<50)return ['career','annual','forecast','marriage','love'];
+  return ['annual','forecast','career','marriage','love'];
+}
+if(REPORTS){
+  var _rank=sdAgeOrder(sdProfileAge());
+  REPORTS=REPORTS.slice().sort(function(a,b){
+    var ai=_rank.indexOf(a.id),bi=_rank.indexOf(b.id);
+    return (ai<0?999:ai)-(bi<0?999:bi);
+  });
+  REPORTS.forEach(function(r,i){r.hero=(i===0);});
+}
 
 /* Ownership is read from localStorage ONLY on this page — a deliberate call
    from owned-contract.md. No Supabase client on the sales page. The cost is
@@ -202,8 +235,7 @@ if(ownedCount>0){
 
 REPORTS.forEach(function(r){
   var owned=!!OWNED[r.id];
-  var chips='<span class="chip">📄 '+reportPages(r)+'</span>'
-    +r.chips.map(function(c){return '<span class="chip">'+reportChip(c)+'</span>';}).join('');
+  var chips=r.chips.map(function(c){return '<span class="chip">'+reportChip(c)+'</span>';}).join('');
   // An owned card must never look buyable again: no price, no discount, and a
   // link into the report rather than into the buy flow.
   var href = owned ? 'reports.html#'+r.id : ('buy.html?r='+r.id);
@@ -211,7 +243,7 @@ REPORTS.forEach(function(r){
     ? '<span class="cta" style="background:linear-gradient(120deg,#4A7C59,#2E7D46);color:#EAFFEF;">'+A('prem.openYourReport')+'</span>'
     : '<span class="was">₹'+r.was+'</span><span class="now">₹'+r.now+'</span>'
       +'<span class="off">'+reportDiscount(r.id)+'</span>'
-      +'<span class="cta">'+A('prem.getMyReport')+'</span>';
+      +'<span class="cta">'+(r.hero?A('prem.getMyReport'):A('prem.view'))+'</span>';
   var ownedTag = owned
     ? '<div data-owned-badge style="position:absolute;top:12px;right:12px;background:rgba(74,124,89,0.90);color:#EAFFEF;'
       +'font-size:9.5px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:20px;">'+A('prem.owned')+'</div>' : '';

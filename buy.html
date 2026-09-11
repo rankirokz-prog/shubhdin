@@ -58,7 +58,7 @@ input:focus{outline:none;border-color:var(--gold);}
 <div class="h-t dev" id="hTitle">रिपोर्ट</div></div>
 <div class="wrap">
 <div class="sum"><div class="ic" id="sIco">💍</div>
- <div><div class="t1 dev" id="sT1"></div><div class="t2" id="sT2"></div><div class="t2" id="sPages"></div></div>
+ <div><div class="t1 dev" id="sT1"></div><div class="t2" id="sT2"></div></div>
  <div class="price"><div class="was" id="sWas"></div><div class="now" id="sNow"></div></div></div>
 
 <!-- 1 · DETAILS -->
@@ -165,9 +165,11 @@ function show(id){document.querySelectorAll('.stage').forEach(function(s){s.clas
 
 var CFG={
  marriage:{ic:'💍',hi:'विवाह मिलान',en:'Marriage Compatibility',was:799,now:399,two:true},
- love:    {ic:'❤️',hi:'प्रेम रिपोर्ट',en:'Love & Relationship',was:499,now:199,pages:14},
- career:  {ic:'💼',hi:'करियर रिपोर्ट',en:'Career & Wealth',was:499,now:199,pages:27},
- child:   {ic:'👶',hi:'संतान रिपोर्ट',en:'Child & Family',was:499,now:199,pages:9},
+ love:    {ic:'❤️',hi:'प्रेम रिपोर्ट',en:'Love & Relationship',was:499,now:199,gender:true},
+ career:  {ic:'💼',hi:'करियर रिपोर्ट',en:'Career & Wealth',was:499,now:199,gender:true},
+ /* Child: WITHDRAWN from sale. Keep child-report.html, report-catalog.js and
+    PDF/ownership support for previous buyers, but never put it back in CFG:
+    CFG is the checkout allow-list, including for forwarded direct links. */
  /* muhurta: WITHDRAWN from sale (Aug 2026). Activity variants overlap 60–80%
     on dates, so the paid report couldn't clear the honest-ceiling bar against
     the free Explore finder. Removing it from CFG is the block: any old link,
@@ -175,8 +177,8 @@ var CFG={
     and bounces to premium.html instead of taking money for a withdrawn report.
     To restore: re-add the line below and re-add fromd/tod/activity collection.
     muhurta: {ic:'🕉️',hi:'मुहूर्त रिपोर्ट',en:'Personal Muhurta',was:499,now:199}, */
- annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199,residence:true,pages:23},
- forecast:{ic:'🔮',hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',was:599,now:299,pages:13}
+ annual:  {ic:'🗓️',hi:'वार्षिक फल',en:'Annual Varshaphal',was:499,now:199,residence:true},
+ forecast:{ic:'🔮',hi:'10 वर्ष का रोडमैप',en:'10-Year Forecast',was:599,now:299}
 };
 var R=(new URLSearchParams(location.search).get('r')||'').toLowerCase();
 /* OAuth can return us here without the ?r= query string, so remember which
@@ -202,7 +204,7 @@ if(CFG[R]){try{localStorage.setItem('sd_buy_last',R);}catch(e){}}
    has paid and holds nothing yet. Reviewers rewrote it from "your report" to
    "your Kundli report / जन्मकुंडली / ஜாதக அறிக்கை" and added "expert team"
    and "with care" — it has to sound like a person, not a queue. */
-var SD_BUILD='C9';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
+var SD_BUILD='C8';   /* bump on EVERY buy.html change — this tag is how we tell what is live */
 function bdlog(m){
   try{var a=JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]');
     a.push(new Date().toISOString().slice(11,19)+' '+m);
@@ -230,7 +232,7 @@ bdlog('boot '+SD_BUILD+' r='+R+' q='+location.search.slice(0,40)+(location.hash.
    later found nothing and the buyer was shown Pay after paying. Persist first,
    rewrite after. */
 try{ if(location.search.indexOf('razorpay_payment_id')>-1) payProof(); }catch(e){}
-var WITHDRAWN=['muhurta']; /* sold previously; links must not resolve to checkout */
+var WITHDRAWN=['child','muhurta']; /* sold previously; links must not resolve to checkout */
 if(!CFG[R]){
   /* a stale sd_buy_last for a withdrawn report would otherwise bounce the buyer
      every time they open buy.html with no ?r= — clear it on the way out. */
@@ -251,13 +253,11 @@ if(!CFG[R]){
 var SD_LANGS_NATIVE={en:'English',hi:'हिंदी',te:'తెలుగు',kn:'ಕನ್ನಡ',ta:'தமிழ்',mr:'मराठी',gu:'ગુજરાતી',bn:'বাংলা',as:'অসমীয়া'};
 function sdLangOptions(sel){var cur=(window.SD_LANG||'hi');if(!SD_LANGS_NATIVE[cur])cur='hi';return Object.keys(SD_LANGS_NATIVE).map(function(l){return '<option value="'+l+'"'+(l===cur?' selected':'')+'>'+SD_LANGS_NATIVE[l]+'</option>';}).join('');}
 var C=CFG[R]||{};
-if(R==='marriage') C.pages=28;
 /* Title in the reader's language from the same key premium.html uses, so the
    name on the sales card and the name at checkout are one word. */
 var RT=(typeof sdHas==='function'&&sdHas('reportTitle.'+R))?A('reportTitle.'+R):(H?C.hi:C.en);
 $('hTitle').textContent=RT;
 $('sIco').textContent=C.ic; $('sT1').textContent=RT; $('sT2').textContent=(window.SD_LANG==='en')?C.hi:C.en;
-$('sPages').textContent=(function(n){var f={en:'{n}-page PDF',hi:'{n} पन्नों की PDF',te:'{n} పేజీల PDF',kn:'{n} ಪುಟಗಳ PDF',ta:'{n} பக்க PDF',bn:'{n} পৃষ্ঠার PDF',mr:'{n} पानांची PDF',gu:'{n} પાનાંની PDF',as:'{n} পৃষ্ঠাৰ PDF'};return '📄 '+(f[window.SD_LANG]||f.en).replace('{n}',n);})(C.pages);
 $('sWas').textContent='₹'+C.was; $('sNow').textContent='₹'+C.now;
 
 /* ── details form per report ── */
@@ -287,6 +287,7 @@ function person(prefix,label){
   var g=prefix==='p'; // primary naming: reports use pname or bname/gname
   return '<div class="sect dev">'+label+'</div>'
    +'<label>'+(A('buy.full_name'))+'</label><input id="f_'+prefix+'name" type="text">'
+   +(C.gender&&prefix==='p'?'<label>'+(A('buy.gender'))+'</label><select id="f_pgender"><option value="male">'+A('kundli.male')+'</option><option value="female">'+A('kundli.female')+'</option></select>':'')
    +'<div class="two"><div><label>'+(A('buy.birth_date'))+'</label><input id="f_'+prefix+'date" type="date" max="'+SD_TODAY+'" min="1900-01-01"></div>'
    +'<div><label>'+(A('buy.birth_time'))+'</label><input id="f_'+prefix+'time" type="time"></div></div>'
    /* Birth time is genuinely unknown for many buyers. We never block the sale for it,
@@ -510,6 +511,7 @@ async function submitDetails(){
   }else{
     d.pname=val('f_pname');d.bdate=val('f_pdate');d.btime=val('f_ptime');
     if(C.residence)d.cplace=val('f_cplace');
+    if(C.gender)d.pgender=val('f_pgender');
     if(!C.noplace)d.bplace=val('f_pplace');
     if(!d.pname||!d.bdate||(!d.btime&&!noTimeOn('p'))){missD();return;}
     var pb=sdBadDate(d.bdate);
@@ -695,7 +697,7 @@ function afterAuth(sess){
 }
 function showPay(){
   $('payS').textContent=(A('buy.amount_2'))+'₹'+C.now+' · '+RT;
-  $('btPay').textContent='₹'+C.now+' '+A('buy.pay');
+  $('btPay').textContent=A('buy.pay');
   $('btPay').disabled=false;
   show('stPay');
 }
@@ -743,8 +745,7 @@ fetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
       +'&phone='+encodeURIComponent((details()||{}).phone||'')
       +'&lang='+encodeURIComponent((details()||{}).lang||window.SD_LANG||'hi')
       +'&access_token='+encodeURIComponent(SESSION.access_token),
-    {method:'POST',headers:{'Content-Type':'application/json'},
-     body:JSON.stringify({details:details(),lang:(details()||{}).lang||window.SD_LANG||'hi'})})
+    {method:'POST'})
    .then(apiJson).then(function(j){
      if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();return;}
      if(j&&j.ok&&j.url){bdlog('payment link created');ORDER_CODE=j.order_code||ORDER_CODE;location.href=j.url;return;}
@@ -950,7 +951,7 @@ absorbHash().then(function(){
    English over them. Now it runs for everyone and reads the string tables. */
 (function(){
   $('btNext').textContent=A('buy.continue');$('errD').textContent=A('buy.please_fill_all_details');
-  $('payT').textContent=A('buy.payment');$('btPay').textContent='₹'+C.now+' '+A('buy.pay');
+  $('payT').textContent=A('buy.payment');$('btPay').textContent=A('buy.pay');
   $('payNote').textContent='🔒 '+A('buy.secure_payment_upi_card');
   $('doneT').textContent=A('buy.your_report_is_being_prepared');
   $('doneS').textContent=A('buy.get_your_report_below_it_stays_in');
