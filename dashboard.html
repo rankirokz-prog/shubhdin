@@ -1848,7 +1848,7 @@ if(typeof window.A!=='function'){
 <!-- Opening wallpaper -->
 <div id="wallpaper">
   <div id="wpBg"></div>
-  <div id="wpImg" style="position:absolute;inset:0;background-size:cover;background-position:center top;opacity:0.22;transition:opacity 0.5s;"></div>
+  <div id="wpImg" style="position:absolute;inset:0;background-size:cover;background-repeat:no-repeat;background-position:center 20%;opacity:0.22;transition:opacity 0.5s;"></div>
   <div class="wp-pt" style="left:10%;bottom:35%;animation-duration:3.5s;animation-delay:0s;"></div>
   <div class="wp-pt" style="left:28%;bottom:42%;animation-duration:4.5s;animation-delay:1s;"></div>
   <div class="wp-pt" style="left:55%;bottom:38%;animation-duration:4s;animation-delay:0.5s;"></div>
@@ -2970,7 +2970,13 @@ function setWallpaper(){
   document.getElementById('wpDay').textContent='🙏 '+dailyTheme(T);
   // Deity image on wallpaper
   const wpImg=document.getElementById('wpImg');
-  if(wpImg&&T.img) wpImg.style.backgroundImage="url('"+T.img+"')";
+  if(wpImg){
+    var src=T.wallpaperImg||T.img||'';
+    wpImg.style.backgroundImage=src?"url('"+src+"')":'';
+    wpImg.style.backgroundSize=T.wallpaperFit||'cover';
+    wpImg.style.backgroundPosition=T.wallpaperPosition||'center 20%';
+    wpImg.style.backgroundColor='#090300';
+  }
   /* the wpHint caption is gone (SD-WP-HINT-OFF); dashbo.save_today_s_wallpaper
      is now unused and can be retired from the sheet */
 }
@@ -3133,16 +3139,9 @@ function personalise(){
   const yogaVal=(yogaEl.textContent||document.getElementById('tithiVal')?.textContent||'').trim();
 
   // Day suffix — adds spiritual flavour
-  const daySuffix_hi={
-    0:'सूर्य साधना विशेष लाभकारी होगी',
-    1:'शिव साधना से मन शांत होगा',
-    2:'श्री हनुमान की आराधना फलदायी है',
-    3:'श्री गणेश का स्मरण करें',
-    4:'राम नाम जप शुभ है',
-    5:'लक्ष्मी साधना लाभकारी होगी',
-    6:'शनि साधना से कष्ट दूर होंगे'
-  };
-  const suffix=daySuffix_hi[dow]||'';
+  /* Same festival-aware, localised guidance as the Jap card. The old table
+     was weekday-only Hindi and leaked into all eight other languages. */
+  const suffix=T.hook_local||dailyTheme(T)||'';
 
   // Yoga-based rule engine
   const shubhYogas=['शुभ','सिद्ध','शुभकारक','अमृत','ब्रह्म','इन्द्र','वज्र'];
@@ -3508,6 +3507,19 @@ const FESTIVAL_DAILY_MANTRA={
   govardhan_puja:'krishna_vasudevaya',dev_uthani_ekadashi:'narayana_om_namo',vaikunta_ekadashi:'narayana_om_namo',
   anant_chaturdashi:'vishnu_om_namo_bhagavate',kartika_purnima:'shiva_om_namah_shivaya',karthigai_deepam:'shiva_om_namah_shivaya'
 };
+/* Portrait artwork is composed for a phone screen. The mantra-library images
+   are square cards and looked oversized when stretched to a full wallpaper,
+   especially Lakshmi. Known deities use their portrait asset; newer deities
+   safely fall back to the library image with a gentler fit. */
+const DAILY_WALLPAPER={
+  surya:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/surya.jpg',
+  shiva:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/shiva.jpg',
+  hanuman:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/hanuman.jpg',
+  ganesh:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/ganesh.jpg',
+  rama:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/rama.jpg',
+  lakshmi:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/lakshmi.jpg',
+  shani:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/wallpapers/shani.jpg'
+};
 function dailyLibMantra(id){
   var lib=window.SD_MANTRA_LIBRARY_RAW||[];
   for(var i=0;i<lib.length;i++) for(var j=0;j<(lib[i].mantras||[]).length;j++)
@@ -3555,6 +3567,9 @@ function resolveDailyDevotional(date){
   var deity=names[hit.god.id]||((L==='en')?hit.god.godEn:mantraScriptText(hit.god.godDev,L));
   var festName=festival?sdCalName(festival):'';
   base.img=hit.god.img;base.ico=hit.god.ico;base.d_local=deity;base.d_en=hit.god.godEn;base.d_hi=hit.god.godDev;
+  base.wallpaperImg=DAILY_WALLPAPER[hit.god.id]||hit.god.img;
+  base.wallpaperFit=DAILY_WALLPAPER[hit.god.id]?'cover':'contain';
+  base.wallpaperPosition=(hit.god.id==='lakshmi')?'center 18%':'center 20%';
   base.dailyMantra=hit.mantra;base.chant=hit.mantra.words.join(' ');base.audio=hit.mantra.audio;
   base.isFestival=!!festival;base.festivalName=festName;
   base.day_local=festival?dailyFmt(copy.special,{festival:festName}):copy.theme;
@@ -4940,8 +4955,8 @@ function shareWallpaperText(){
   var deity='', day='';
   try{ deity=(document.getElementById('wpDeity')||{}).textContent||''; }catch(e){}
   try{ day=(document.getElementById('wpDay')||{}).textContent||''; }catch(e){}
-  if(!deity){ try{ deity=sdDev(T.d_hi,T.d_en,T.nameKey)||T.d_hi||''; }catch(e){} }
-  if(!day){ try{ day=(L==='hi'?T.day_hi:T.day_en)||''; }catch(e){} }
+  if(!deity){ try{ deity=dailyDeity(T)||''; }catch(e){} }
+  if(!day){ try{ day=dailyTheme(T)||''; }catch(e){} }
   deity=String(deity).trim(); day=String(day).trim();
   var line2=(deity||day)?('🕉️ *'+[deity,day].filter(Boolean).join(' • ')+'*\n'):'';
   return '🌅 *'+(GM[L]||GM.hi)+'*\n'
@@ -6101,7 +6116,7 @@ function wpMarkUnlocked(k){ var st=wpState(); st[k]={at:Date.now()}; wpSaveState
 /* One wallpaper per day, derived from the same weekday deity map the splash uses. */
 function wpOfDay(d){
   var cfg=resolveDailyDevotional(d);
-  return {key:wpKeyOf(d), img:cfg.img, bg:cfg.bg,
+  return {key:wpKeyOf(d), img:cfg.wallpaperImg||cfg.img, bg:cfg.bg,
           deity:dailyDeity(cfg), day:dailyTheme(cfg)};
 }
 
@@ -8118,9 +8133,9 @@ function calGuidance(date,obs,q){
       }
     }
   }catch(e){}
-  // if a chant line stays, it is that weekday's own deity, never a fixed one
-  var dd=D[date.getDay()];
-  if(dd) out.push('🕉️ '+AF('dashbo.deity_day_chant',{deity:sdDev(dd.d_hi,dd.d_en,dd.nameKey),chant:dd.chant}));
+  // Calendar guidance must match the same festival-aware resolver as Home.
+  var dd=resolveDailyDevotional(date);
+  if(dd) out.push('🕉️ '+AF('dashbo.deity_day_chant',{deity:dailyDeity(dd),chant:(dd.dailyMantra?localizedMantra(dd.dailyMantra.words.join(' ')):dd.chant)}));
   return out;
 }
 /* The weekday has no time segments, so stacking label over value spent two

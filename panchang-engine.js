@@ -804,7 +804,9 @@
   //   'pradosh'  = tithi just after sunset (Diwali, Dhanteras, Holika Dahan)
   //   'moonrise' = tithi at moonrise (Karwa Chauth)
   //   sankranti  = Sun entering a sidereal rashi (Makar Sankranti = 270 deg)
-  // ALL DATES PENDING Ram's validation against Drik's festival calendar.
+  // The 2026–2028 fixture set is reconciled against the cited Panchang
+  // references in tests/festival-fixtures.json. New rules still need a fixture
+  // before they are treated as release-ready.
   /* ══════════════════════════════════════════════════════════════════════
      FESTIVAL_RULES — v2 (regional coverage)
 
@@ -962,8 +964,10 @@
 
   /* Language → regions. The app knows the reader's language, which is a far
      better signal than coordinates (a Telugu family in New Jersey wants Telugu
-     festivals). English readers get everything. Override in Settings later. */
-  var REGIONS_FOR_LANG = { te:['ap','ts'], kn:['ka'], ta:['tn'], bn:['wb'], mr:['mh'], gu:['gj'], as:['as'], hi:['north'], en:['all'] };
+     festivals). English has no single regional identity, so it receives only
+     pan-India (`regions:['all']`) observances; `pan` deliberately matches no
+     state code. A future explicit region preference may override this. */
+  var REGIONS_FOR_LANG = { te:['ap','ts'], kn:['ka'], ta:['tn'], bn:['wb'], mr:['mh'], gu:['gj'], as:['as'], hi:['north'], en:['pan'] };
 
   function elongAt(ms) {
     var e = (moonSidereal(new Date(ms)) - sunSidereal(new Date(ms))) % 360;
