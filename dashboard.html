@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script src="mantra-library-data.js"></script>
 <script>
 /* ══ SD-SPLASH-WATCHDOG ═══════════════════════════════════════════════════
    THE WORST BUG THIS APP CAN HAVE is the opening wallpaper never lifting.
@@ -2746,7 +2747,10 @@ const D={
   6:{img:'https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/Images/shani.jpg',bg:'bg-sat',d_hi:'शनि देव',d_en:'Shani Dev',nameKey:'deity.name_6',day_hi:'शनिवार • कर्म',day_en:'Saturday • Karma',themeKey:'deity.theme_6',ico:'⚫',chant:'ॐ शं शनिचराय नमः',hook_hi:'आज शनि देव की आराधना करें — 28 बार जाप करें। कष्ट और बाधाओं से राहत के लिए शुभ माना जाता है।',hook_en:'Pray to Shani Dev today — chant 28 times. Held to be auspicious for relief from hardship and obstacles.',hookKey:'deity.hook_6',good:'8:30–10:00',avoid:'9:00–10:30',
     s:['आज शनिवार है — शनि देव का दिन।','ईमानदारी से काम करें, वो देख रहे हैं।','शनिवार को काले तिल का दान करें।','शनि देव न्यायप्रिय हैं।','आज सच्चाई से जियो।','तेल और काली चीजें दान करें।','श्री हनुमान शनि से रक्षा करते हैं।']},
 };
-const T=D[dow];
+/* The weekday row is only the safe boot fallback. Festival/vrat-aware daily
+   selection replaces it after the Panchang engine is ready. Keeping this
+   mutable also makes the wallpaper, home card and Jap player share one source. */
+let T=D[dow];
 
 // ── Rashi ──
 // Vedic-first. `e` is what the app SHOWS in English — the Sanskrit name, not
@@ -2962,8 +2966,8 @@ function getScript(){
 // ── Set wallpaper ──
 function setWallpaper(){
   document.getElementById('wpBg').className=T.bg;
-  document.getElementById('wpDeity').textContent=sdDev(T.d_hi,T.d_en,T.nameKey);
-  document.getElementById('wpDay').textContent='🙏 '+(sdDev(T.day_hi,T.day_en,T.themeKey));
+  document.getElementById('wpDeity').textContent=dailyDeity(T);
+  document.getElementById('wpDay').textContent='🙏 '+dailyTheme(T);
   // Deity image on wallpaper
   const wpImg=document.getElementById('wpImg');
   if(wpImg&&T.img) wpImg.style.backgroundImage="url('"+T.img+"')";
@@ -3086,7 +3090,7 @@ function personalise(){
   const _prev=document.getElementById('preview');
   if(_prev){
     _prev.innerHTML = AF('dashbo.today_deity_favorable_time_time',
-      {deity: (sdDev(T.d_hi,T.d_en,T.nameKey)), time: _pvTime});
+      {deity: dailyDeity(T), time: _pvTime});
   }
   // Times
   document.getElementById('goodLbl').textContent=A('dashbo.good_time');
@@ -3105,21 +3109,15 @@ function personalise(){
   if(dimg){dimg.src=T.img||'';}
   // "Sadhana" is the Explore feature with its own streak. This card is the
   // daily deity jap that feeds the HOME streak — two different things.
-  document.getElementById('jtTag').textContent=isShravan()
-    ?(A('dashbo.shravana_jap_lakshmi_ashtottara'))
-    :(A('dashbo.today_s_jap'));
+  document.getElementById('jtTag').textContent=T.isFestival?dailyTheme(T):A('dashbo.today_s_jap');
   // jtBg: keep dark gradient only, no deity image (deity shown on right via jtDeityImg)
-  document.getElementById('jtHook').textContent=sdDev(T.hook_hi,T.hook_en,T.hookKey);
-  document.getElementById('jtBenefit').textContent=isShravan()
-    ?(A('dashbo.108_names_4_minutes'))
-    :(A('dashbo.28_times_4_minutes'));
-  document.getElementById('jtBtn').textContent=isShravan()
-    ?(A('dashbo.listen_108_names'))
-    :(A('dashbo.start_28_times_chanting'));
+  document.getElementById('jtHook').textContent=T.hook_local||sdDev(T.hook_hi,T.hook_en,T.hookKey);
+  document.getElementById('jtBenefit').textContent=A('dashbo.28_times_4_minutes');
+  document.getElementById('jtBtn').textContent=A('dashbo.start_28_times_chanting');
   // Streak
   renderStreakCard();
   document.getElementById('skIco').textContent='🔥';
-  document.getElementById('skUnit').textContent=isShravan()?(A('dashbo.108_names')):(A('dashbo.28_chants'));
+  document.getElementById('skUnit').textContent=A('dashbo.28_chants');
   // Listen screen
   // Panchang
   document.getElementById('phTitle').innerHTML=A('dashbo.full_panchang');
@@ -3181,7 +3179,7 @@ function personalise(){
   document.getElementById('ps1').textContent=A('dashbo.pancha_tattva');
   document.getElementById('varLbl').textContent=A('dashbo.vara');
   document.getElementById('varVal').textContent=sdDow(dow,false);
-  document.getElementById('varSub').textContent=AF('dashbo.deity_day',{deity:sdDev(T.d_hi,T.d_en,T.nameKey)});
+  document.getElementById('varSub').textContent=AF('dashbo.deity_day',{deity:dailyDeity(T)});
   document.getElementById('nakLbl2').textContent=A('dashbo.nakshatra');
   document.getElementById('tithiLbl').textContent=A('dashbo.tithi');
   document.getElementById('yogLbl').textContent=A('dashbo.yoga');
@@ -3214,13 +3212,13 @@ function personalise(){
   const jImgBg = document.getElementById('jImgBg');
   if(jImgBg && T.img) jImgBg.style.backgroundImage = "url('"+T.img+"')";
   const jdn = document.getElementById('jDeityName');
-  if(jdn) jdn.innerHTML = (sdDev(T.d_hi,T.d_en,T.nameKey))+'<em>'+(sdDev(T.day_hi,T.day_en,T.themeKey))+'</em>';
+  if(jdn) jdn.innerHTML = dailyDeity(T)+'<em>'+dailyTheme(T)+'</em>';
   const jpill = document.getElementById('jPill');
   if(jpill) jpill.textContent = sdDow(dow,false);
   const jgl2 = document.getElementById('jGoalLine');
-  if(jgl2) jgl2.textContent = isShravan()?(A('dashbo.today_s_goal_108_names')):(A('dashbo.today_s_goal_28_chants'));
+  if(jgl2) jgl2.textContent = A('dashbo.today_s_goal_28_chants');
   document.getElementById('jdTitle').textContent = A('dashbo.28_chants_complete');
-  document.getElementById('jdSub').textContent = AF('dashbo.deity_blessings',{deity:sdDev(T.d_hi,T.d_en,T.nameKey)});
+  document.getElementById('jdSub').textContent = AF('dashbo.deity_blessings',{deity:dailyDeity(T)});
   document.getElementById('jdStreakLbl').textContent = A('dashbo.your_sadhana_journey');
   document.getElementById('jdBtn').textContent = A('dashbo.jap_again');
 
@@ -3319,7 +3317,8 @@ function updateStreak(){
 }
 
 // ── DAY MODE HELPERS ──
-function isShravan(d){ const dm=DAY_MODE[d!=null?d:sdVedicDow()]; return dm&&dm.mode==='shravan'; }
+/* 108-name listening belongs in the Mantra Library, never in Daily Jap. */
+function isShravan(){ return false; }
 function getNames(d){ const dm=DAY_MODE[d!=null?d:sdVedicDow()]; return dm&&dm.names?window[dm.names]:null; }
 function getTS(d){ const dm=DAY_MODE[d!=null?d:sdVedicDow()]; return dm&&dm.ts?window[dm.ts]:null; }
 
@@ -3434,6 +3433,135 @@ function mantraWords(d){
 }
 function localizedMantra(dev,latin){
   return (window.SD_LANG||'hi')==='en' ? (latin||dev) : mantraScriptText(dev);
+}
+
+/* ══ FESTIVAL-AWARE DAILY JAP ═════════════════════════════════════════════
+   Daily Jap is intentionally a SHORT-mantra surface. Long stotras and every
+   108-name recording remain available in the Mantra Library, but can never be
+   selected here. One resolved object drives the home card, immersive player,
+   completion/share card and daily wallpaper, preventing deity drift. */
+const DAILY_LATIN={
+  surya_beeja:['Om','Hram','Hrim','Hraum','Sah','Suryaya','Namah'],
+  shiva_om_namah_shivaya:['Om','Namah','Shivaya'],
+  shiva_gayatri:['Om','Sarveshvaraya','Vidmahe','Shulahastaya','Dhimahi','Tanno','Rudrah','Prachodayat'],
+  hanuman_hari_markata:['Om','Hari','Markata','Markataya','Namah'],
+  hanuman_anjaneyaya:['Om','Shri','Anjaneyaya','Namah'],
+  ganesh_om_gam:['Om','Gam','Ganapataye','Namah'],
+  ganesh_agajanana:['Agajanana','Padmarkam','Gajanana','Aharnisham','Anekadantam','Bhaktanam','Ekadantam','Upasmahe'],
+  rama_rameti:['Shri Rama','Rama','Rameti','Rame','Rame','Manorame','Sahasranama','Tattulyam','Ramanama','Varanane'],
+  krishna_vasudevaya:['Om','Krishnaya','Vasudevaya','Haraye','Paramatmane','Pranata-klesha-nashaya','Govindaya','Namo','Namah'],
+  lakshmi_gayatri:['Om','Shri Mahalakshmyai','Cha','Vidmahe','Vishnupatnyai','Cha','Dhimahi','Tanno','Lakshmih','Prachodayat'],
+  narayana_om_namo:['Om','Namo','Narayanaya'],
+  vishnu_om_namo_bhagavate:['Om','Namo','Bhagavate','Vasudevaya'],
+  venkateswara_om_namo:['Om','Namo','Venkateshaya'],
+  devi_kanaka_durga:['Om','Shri','Kanaka Durgayai','Namah'],
+  devi_sri_matre:['Om','Aim','Hrim','Shrim','Shri Matre','Namah'],
+  dakshinamurthy_gurave_sarvalokanam:['Gurave','Sarvalokanam','Bhishaje','Bhavaroginam','Nidhaye','Sarvavidyanam','Dakshinamurtaye','Namah'],
+  navagraha_nava_naga_stotram:['Anantam','Vasukim','Shesham','Padmanabham','Cha','Kambalam','Shankhapalam','Dhritarashtram','Takshakam','Kaliyam','Tatha'],
+  shani_neelanjana:['Nilanjana-samabhasam','Raviputram','Yamagrajam','Chhaya-martanda-sambhutam','Tam','Namami','Shanaishcharam']
+};
+const DAILY_NAMES={
+  en:{surya:'Surya Dev',shiva:'Mahadev',hanuman:'Shri Hanuman',ganesh:'Shri Ganesh',rama:'Shri Rama',krishna:'Shri Krishna',lakshmi:'Maa Lakshmi',vishnu:'Shri Narayana',devi:'Devi',dakshinamurthy:'Dakshinamurthy',naga:'Naga Devata',shani:'Shani Dev'},
+  hi:{surya:'सूर्य देव',shiva:'महादेव',hanuman:'श्री हनुमान',ganesh:'श्री गणेश',rama:'श्री राम',krishna:'श्री कृष्ण',lakshmi:'माँ लक्ष्मी',vishnu:'श्री नारायण',devi:'देवी',dakshinamurthy:'दक्षिणामूर्ति',naga:'नाग देवता',shani:'शनि देव'},
+  te:{surya:'సూర్య దేవుడు',shiva:'మహాదేవుడు',hanuman:'శ్రీ హనుమంతుడు',ganesh:'శ్రీ గణేశుడు',rama:'శ్రీరాముడు',krishna:'శ్రీకృష్ణుడు',lakshmi:'లక్ష్మీ దేవి',vishnu:'శ్రీమన్నారాయణుడు',devi:'అమ్మవారు',dakshinamurthy:'దక్షిణామూర్తి',naga:'నాగదేవత',shani:'శనిదేవుడు'},
+  kn:{surya:'ಸೂರ್ಯ ದೇವ',shiva:'ಮಹಾದೇವ',hanuman:'ಶ್ರೀ ಹನುಮಂತ',ganesh:'ಶ್ರೀ ಗಣೇಶ',rama:'ಶ್ರೀ ರಾಮ',krishna:'ಶ್ರೀ ಕೃಷ್ಣ',lakshmi:'ಮಹಾಲಕ್ಷ್ಮೀ ದೇವಿ',vishnu:'ಶ್ರೀಮನ್ನಾರಾಯಣ',devi:'ದೇವಿ',dakshinamurthy:'ದಕ್ಷಿಣಾಮೂರ್ತಿ',naga:'ನಾಗದೇವತೆ',shani:'ಶನಿ ದೇವ'},
+  ta:{surya:'சூரிய பகவான்',shiva:'மகாதேவர்',hanuman:'ஸ்ரீ அனுமன்',ganesh:'ஸ்ரீ விநாயகர்',rama:'ஸ்ரீ ராமர்',krishna:'ஸ்ரீ கிருஷ்ணர்',lakshmi:'மகாலட்சுமி',vishnu:'ஸ்ரீமன் நாராயணன்',devi:'அம்பாள்',dakshinamurthy:'தட்சிணாமூர்த்தி',naga:'நாக தேவதை',shani:'சனி பகவான்'},
+  bn:{surya:'সূর্যদেব',shiva:'মহাদেব',hanuman:'শ্রী হনুমান',ganesh:'শ্রী গণেশ',rama:'শ্রী রাম',krishna:'শ্রীকৃষ্ণ',lakshmi:'মা লক্ষ্মী',vishnu:'শ্রীনারায়ণ',devi:'দেবী',dakshinamurthy:'দক্ষিণামূর্তি',naga:'নাগদেবতা',shani:'শনিদেব'},
+  mr:{surya:'सूर्यदेव',shiva:'महादेव',hanuman:'श्री हनुमान',ganesh:'श्री गणेश',rama:'श्रीराम',krishna:'श्रीकृष्ण',lakshmi:'महालक्ष्मी',vishnu:'श्री नारायण',devi:'देवी',dakshinamurthy:'दक्षिणामूर्ती',naga:'नागदेवता',shani:'शनिदेव'},
+  gu:{surya:'સૂર્યદેવ',shiva:'મહાદેવ',hanuman:'શ્રી હનુમાન',ganesh:'શ્રી ગણેશ',rama:'શ્રી રામ',krishna:'શ્રી કૃષ્ણ',lakshmi:'મહાલક્ષ્મી',vishnu:'શ્રી નારાયણ',devi:'દેવી',dakshinamurthy:'દક્ષિણામૂર્તિ',naga:'નાગદેવતા',shani:'શનિદેવ'},
+  as:{surya:'সূৰ্যদেৱ',shiva:'মহাদেৱ',hanuman:'শ্ৰী হনুমান',ganesh:'শ্ৰী গণেশ',rama:'শ্ৰী ৰাম',krishna:'শ্ৰীকৃষ্ণ',lakshmi:'মা লক্ষ্মী',vishnu:'শ্ৰী নাৰায়ণ',devi:'দেৱী',dakshinamurthy:'দক্ষিণামূৰ্তি',naga:'নাগ দেৱতা',shani:'শনিদেৱ'}
+};
+const DAILY_COPY={
+  en:{special:'{festival} special Jap',festival:'For {festival}, chant {deity}’s mantra 28 times.',normal:'Chant {deity}’s short mantra 28 times today.',theme:'Today’s short Jap'},
+  hi:{special:'{festival} विशेष जप',festival:'{festival} के अवसर पर {deity} का मंत्र 28 बार जपें।',normal:'आज {deity} का छोटा मंत्र 28 बार जपें।',theme:'आज का लघु जप'},
+  te:{special:'{festival} ప్రత్యేక జపం',festival:'{festival} సందర్భంగా {deity} మంత్రాన్ని 28 సార్లు జపించండి.',normal:'ఈ రోజు {deity} చిన్న మంత్రాన్ని 28 సార్లు జపించండి.',theme:'నేటి లఘు జపం'},
+  kn:{special:'{festival} ವಿಶೇಷ ಜಪ',festival:'{festival} ನಿಮಿತ್ತ {deity} ಮಂತ್ರವನ್ನು 28 ಬಾರಿ ಜಪಿಸಿ.',normal:'ಇಂದು {deity} ಕಿರು ಮಂತ್ರವನ್ನು 28 ಬಾರಿ ಜಪಿಸಿ.',theme:'ಇಂದಿನ ಕಿರು ಜಪ'},
+  ta:{special:'{festival} சிறப்பு ஜபம்',festival:'{festival} நாளில் {deity} மந்திரத்தை 28 முறை ஜபியுங்கள்.',normal:'இன்று {deity} குறு மந்திரத்தை 28 முறை ஜபியுங்கள்.',theme:'இன்றைய குறு ஜபம்'},
+  bn:{special:'{festival} বিশেষ জপ',festival:'{festival} উপলক্ষে {deity}-র মন্ত্র ২৮ বার জপ করুন।',normal:'আজ {deity}-র সংক্ষিপ্ত মন্ত্র ২৮ বার জপ করুন।',theme:'আজকের সংক্ষিপ্ত জপ'},
+  mr:{special:'{festival} विशेष जप',festival:'{festival} निमित्त {deity} यांचा मंत्र २८ वेळा जपा.',normal:'आज {deity} यांचा लघुमंत्र २८ वेळा जपा.',theme:'आजचा लघुजप'},
+  gu:{special:'{festival} વિશેષ જપ',festival:'{festival} નિમિત્તે {deity}નો મંત્ર ૨૮ વાર જપો.',normal:'આજે {deity}નો ટૂંકો મંત્ર ૨૮ વાર જપો.',theme:'આજનો લઘુ જપ'},
+  as:{special:'{festival} বিশেষ জপ',festival:'{festival} উপলক্ষে {deity}ৰ মন্ত্ৰ ২৮ বাৰ জপ কৰক।',normal:'আজি {deity}ৰ চুটি মন্ত্ৰ ২৮ বাৰ জপ কৰক।',theme:'আজিৰ চুটি জপ'}
+};
+const DAILY_ROTATION={
+  0:['surya_beeja','narayana_om_namo'],
+  1:['shiva_om_namah_shivaya','shiva_gayatri'],
+  2:['hanuman_hari_markata','hanuman_anjaneyaya'],
+  3:['ganesh_om_gam','ganesh_agajanana'],
+  4:['narayana_om_namo','vishnu_om_namo_bhagavate','rama_rameti'],
+  5:['lakshmi_gayatri','devi_sri_matre'],
+  6:['shani_neelanjana','hanuman_anjaneyaya']
+};
+const FESTIVAL_DAILY_MANTRA={
+  maha_shivaratri:'shiva_om_namah_shivaya',rama_navami:'rama_rameti',
+  hanuman_jayanti:'hanuman_anjaneyaya',hanuman_jayanti_te:'hanuman_anjaneyaya',hanuman_jayanti_kn:'hanuman_anjaneyaya',hanuman_jayanti_ta:'hanuman_anjaneyaya',
+  guru_purnima:'dakshinamurthy_gurave_sarvalokanam',nag_panchami:'navagraha_nava_naga_stotram',nagula_chavithi:'navagraha_nava_naga_stotram',
+  varalakshmi_vratam:'lakshmi_gayatri',janmashtami:'krishna_vasudevaya',dahi_handi:'krishna_vasudevaya',
+  ganesh_chaturthi:'ganesh_om_gam',ganesh_utsav:'ganesh_om_gam',
+  chaitra_navratri:'devi_sri_matre',sharad_navratri:'devi_sri_matre',durga_puja:'devi_kanaka_durga',durga_ashtami:'devi_kanaka_durga',maha_navami:'devi_kanaka_durga',vijayadashami:'devi_kanaka_durga',kali_puja:'devi_sri_matre',bathukamma:'devi_sri_matre',bonalu:'devi_kanaka_durga',
+  kojagari_lakshmi_puja:'lakshmi_gayatri',dhanteras:'lakshmi_gayatri',diwali:'lakshmi_gayatri',deepavali_tn:'lakshmi_gayatri',
+  ratha_saptami:'surya_beeja',makar_sankranti:'surya_beeja',pongal:'surya_beeja',magh_bihu:'surya_beeja',chhath_puja:'surya_beeja',
+  govardhan_puja:'krishna_vasudevaya',dev_uthani_ekadashi:'narayana_om_namo',vaikunta_ekadashi:'narayana_om_namo',
+  anant_chaturdashi:'vishnu_om_namo_bhagavate',kartika_purnima:'shiva_om_namah_shivaya',karthigai_deepam:'shiva_om_namah_shivaya'
+};
+function dailyLibMantra(id){
+  var lib=window.SD_MANTRA_LIBRARY_RAW||[];
+  for(var i=0;i<lib.length;i++) for(var j=0;j<(lib[i].mantras||[]).length;j++)
+    if(lib[i].mantras[j].id===id) return {god:lib[i],mantra:lib[i].mantras[j]};
+  return null;
+}
+function dailyDeity(c){ return c&&c.d_local ? c.d_local : sdDev(c.d_hi,c.d_en,c.nameKey); }
+function dailyTheme(c){ return c&&c.day_local ? c.day_local : sdDev(c.day_hi,c.day_en,c.themeKey); }
+function dailyWords(){
+  var raw=(T.dailyMantra&&T.dailyMantra.words)||MANTRA_WORDS[dow]||[];
+  if((window.SD_LANG||'hi')==='en') return ((T.dailyMantra&&DAILY_LATIN[T.dailyMantra.id])||MANTRA_LATIN[dow]||raw).slice();
+  return raw.map(function(w){return mantraScriptText(w);});
+}
+function dailyFmt(s,vars){ Object.keys(vars||{}).forEach(function(k){s=s.replaceAll('{'+k+'}',vars[k]);}); return s; }
+function dailyCivilDate(){
+  try{
+    var z=U&&U.city_tz;
+    if(z&&window.sdTz&&sdTz.isZone(z)){
+      var w=sdTz.instantToWall(new Date(),z);
+      return new Date(w.y,w.mo-1,w.d,12,0,0);
+    }
+  }catch(e){}
+  return new Date();
+}
+function resolveDailyDevotional(date){
+  date=date||new Date(); var base=Object.assign({},D[date.getDay()]||D[0]);
+  var events=[]; try{ if(typeof obsFor==='function'&&window.PanchangEngine) events=obsFor(date)||[]; }catch(e){}
+  var picked=null,festival=null;
+  for(var i=0;i<events.length;i++){
+    var e=events[i], id=FESTIVAL_DAILY_MANTRA[e.fkey];
+    if(!id&&e.vtype==='ekadashi') id='narayana_om_namo';
+    if(!id&&e.vtype==='pradosh') id='shiva_om_namah_shivaya';
+    if(!id&&e.vtype==='sankashti') id='ganesh_om_gam';
+    if(id){picked=id;festival=e;break;}
+  }
+  /* A religious observance with no dedicated audio must still override the
+     weekday. Neutral fallback alternates Narayana and Shiva by civil date. */
+  if(!picked){
+    var religious=events.filter(function(e){return e.cat!=='national';})[0];
+    if(religious){festival=religious;picked=(date.getDate()%2)?'narayana_om_namo':'shiva_om_namah_shivaya';}
+  }
+  if(!picked){var pool=DAILY_ROTATION[date.getDay()]||DAILY_ROTATION[0]; picked=pool[(Math.floor(date.getTime()/86400000)+date.getFullYear())%pool.length];}
+  var hit=dailyLibMantra(picked); if(!hit) return base;
+  var L=window.SD_LANG||'hi', names=DAILY_NAMES[L]||DAILY_NAMES.hi, copy=DAILY_COPY[L]||DAILY_COPY.hi;
+  var deity=names[hit.god.id]||((L==='en')?hit.god.godEn:mantraScriptText(hit.god.godDev,L));
+  var festName=festival?sdCalName(festival):'';
+  base.img=hit.god.img;base.ico=hit.god.ico;base.d_local=deity;base.d_en=hit.god.godEn;base.d_hi=hit.god.godDev;
+  base.dailyMantra=hit.mantra;base.chant=hit.mantra.words.join(' ');base.audio=hit.mantra.audio;
+  base.isFestival=!!festival;base.festivalName=festName;
+  base.day_local=festival?dailyFmt(copy.special,{festival:festName}):copy.theme;
+  base.hook_local=festival?dailyFmt(copy.festival,{festival:festName,deity:deity}):dailyFmt(copy.normal,{deity:deity});
+  return base;
+}
+function refreshDailyDevotional(){
+  if(jPlay) return; /* never swap the mantra below an active recitation */
+  T=resolveDailyDevotional(dailyCivilDate());
+  try{setWallpaper();}catch(e){}
+  try{personalise();}catch(e){}
+  try{buildMantra();buildMala();updateJ();}catch(e){}
 }
 
 // Friday special: 108 Lakshmi names — one name per jap cycle
@@ -3551,24 +3679,11 @@ const LAKSHMI_NAMES=[
 const LAKSHMI_TS=[1.5,4.5,7.0,9.4,13.1,15.4,17.7,20.1,22.6,24.9,27.4,29.6,31.6,33.8,36.0,38.1,40.3,42.5,44.5,47.0,49.5,51.7,53.5,55.7,57.8,61.2,62.5,64.5,67.0,70.3,72.8,74.8,77.0,79.7,81.8,83.8,85.8,89.1,91.4,93.0,95.7,98.3,100.8,102.8,105.1,107.7,110.0,112.6,114.7,117.4,119.3,121.3,123.8,126.3,128.8,131.6,133.2,135.8,137.8,140.4,142.7,145.2,147.4,149.7,152.3,154.2,156.0,157.9,159.8,161.9,164.0,166.2,168.5,171.1,173.3,175.7,177.5,179.7,182.2,184.4,186.0,188.6,190.9,193.0,195.3,197.6,199.6,202.0,204.4,206.8,208.9,211.2,213.3,215.3,218.3,220.8,222.9,225.4,228.8,230.9,233.3,236.5,239.1,242.0,244.2,246.5,249.5,253.2];
 
 function buildMantra(){
-  const dow2=sdVedicDow();
-  let words;
-  const _sn=getNames(dow2);
-  if(isShravan(dow2)&&_sn){
-    words=['ॐ', _sn[0], 'नमः'];
-  } else {
-    words=mantraWords(dow2);
-  }
-  buildMantraForWords(words);
+  buildMantraForWords(dailyWords());
 }
 function buildMala(){
   const mala=document.getElementById('jMala');
   if(!mala)return;
-  if(isShravan()){
-    mala.style.display='none'; // Friday: no dots — श्रवण जप
-    const shEl=document.getElementById('jShravan');if(shEl)shEl.style.display='block';
-    return;
-  }
   mala.style.display='flex';
   const shEl2=document.getElementById('jShravan');if(shEl2)shEl2.style.display='none';
   mala.innerHTML='';
@@ -3594,7 +3709,7 @@ function updateJ(){
     }
     if(!wasDone && nowDone) dotPop(i);
   }
-  const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/'+(isShravan()?108:28);
+  const pill=document.getElementById('jCountPill');if(pill)pill.textContent=jCount+'/28';
   if(navigator.vibrate)navigator.vibrate(30);
   if(jCount>=TOTAL){
     // Continuous mode: silently loop without completion screen
@@ -3611,7 +3726,7 @@ function updateJ(){
       jChantAudio._onTimeUpdate=null;jChantAudio._rafId=null;
       jChantAudio.pause();jChantAudio=null;
     }
-    try{ sdTrack('jap_complete',{count:(isShravan()?108:28)}); }catch(e){}
+    try{ sdTrack('jap_complete',{count:28,mantra:(T.dailyMantra&&T.dailyMantra.id)||'weekday'}); }catch(e){}
     updateStreak();
     // ── COMPLETION MOMENT ──
     // Step 1: Strong vibration (guru bead feel)
@@ -3627,20 +3742,15 @@ function updateJ(){
       if(jScr){jScr.style.opacity='1';}
       const sk=getStreak();
       // Update overlay content
-      const isFriNow=isShravan();
-      document.getElementById('jdTitle').textContent=A(isFriNow?'dashbo.lakshmi_jap_complete_today':'dashbo.jap_complete_today');
+      document.getElementById('jdTitle').textContent=A('dashbo.jap_complete_today');
       document.getElementById('jdSub').textContent=A('dashbo.may_your_mind_be_at_peace');
       document.getElementById('jdStreakLbl').textContent=A('dashbo.your_sadhana_continues');
       document.getElementById('jdBtn').textContent=A('dashbo.one_more_mala');
       // Share card
-      const T2=D[dow];
-      const mantras_display={0:'ॐ सूर्याय नमः',1:'ॐ नमः शिवाय',2:'ॐ हनुमते नमः',3:'ॐ गं गणपतये नमः',4:'श्री राम जय राम जय जय राम',5:'ॐ महालक्ष्म्यै नमः',6:'ॐ शनैश्चराय नमः'};
-      const dtype_hi={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
       const scTop=document.getElementById('jdscTop');
       const scMan=document.getElementById('jdscMantra');
-      const dtypes={0:'सूर्य मंत्र',1:'महामृत्युंजय मंत्र',2:'हनुमान मंत्र',3:'गणेश मंत्र',4:'राम नाम',5:'लक्ष्मी मंत्र',6:'शनि मंत्र'};
-      if(scTop) scTop.textContent=(window.SD_LANG!=='en')?(isFriNow?A('dashbo.share_lakshmi_line'):AF('dashbo.share_jap_line',{mantra:(ML_TITLES[dow]&&sdHas(ML_TITLES[dow].key)?A(ML_TITLES[dow].key):dtypes[dow])})):'🙏 28 chants completed today';
-      if(scMan) scMan.textContent=localizedMantra(mantras_display[dow]||'ॐ नमः',(MANTRA_LATIN[dow]||[]).join(' '));
+      if(scTop) scTop.textContent=(window.SD_LANG==='en')?'🙏 28 chants completed today':AF('dashbo.share_jap_line',{mantra:dailyDeity(T)});
+      if(scMan) scMan.textContent=dailyWords().join(' ');
       // Show overlay
       document.getElementById('jdone').classList.add('show');
       // Play OM sound (bell tone via AudioContext)
@@ -3697,16 +3807,7 @@ function dotPop(idx) {
 }
 
 function startWordHighlight(){
-  const dow2=sdVedicDow();
-  // Friday: use current jap count to pick Lakshmi name
-  let words;
-  const _names=getNames(dow2);
-  if(isShravan(dow2)&&_names){
-    const nameIdx=jCount%_names.length;
-    words=['ॐ', _names[nameIdx], 'नमः'];
-  } else {
-    words=mantraWords(dow2);
-  }
+  let words=dailyWords();
 
   currentWordIdx = -1; // -1 so first word ALWAYS triggers
   clearTimeout(wordTimer);clearInterval(wordTimer);
@@ -3726,7 +3827,7 @@ function startWordHighlight(){
   let lastWordIdx = 0;
 
   // Use exact timestamps if available, else equal ratio
-  const timestamps = MANTRA_TIMESTAMPS[dow2];
+  const timestamps = (T.dailyMantra&&T.dailyMantra.ts)||MANTRA_TIMESTAMPS[dow];
 
   function getWordIdx(ct, dur){
     if(timestamps && timestamps.length === totalWords){
@@ -3807,7 +3908,7 @@ function stopWordHighlight(){
     if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
     jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
   }
-  const words=mantraWords(sdVedicDow());
+  const words=dailyWords();
   words.forEach((_,i)=>{
     const w=document.getElementById('jw'+i);
     if(w) animateWord(w,'idle');
@@ -3822,7 +3923,7 @@ function toggleJap(){
   if(btn)btn.classList.toggle('playing',jPlay);
   const jbg=document.getElementById('jImgBg');if(jbg)jbg.classList.toggle('chanting',jPlay);
   if(jPlay){
-    const chantKey=CHANT_MAP[dow];
+    const chantKey=(T.dailyMantra&&T.dailyMantra.audio)||T.audio||CHANT_MAP[dow];
     if(chantKey){
       // Request wake lock to prevent screen-off from stopping audio
       if('wakeLock' in navigator){
@@ -3842,14 +3943,8 @@ function toggleJap(){
         navigator.mediaSession.setActionHandler('play', ()=>{ if(!jPlay) toggleJap(); });
         navigator.mediaSession.setActionHandler('pause', ()=>{ if(jPlay) toggleJap(); });
       }
-      const isFriday = isShravan();
       function playOneCycle(){
         if(!jPlay)return;
-        // Rebuild mantra for Friday name cycling
-        if(isShravan()){
-          const nameIdx=jCount%LAKSHMI_NAMES.length;
-          buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः'].map(w=>mantraScriptText(w)));
-        }
         jChantAudio=new Audio('https://dulfiljhfchkccqwqniv.supabase.co/storage/v1/object/public/shubhdin-audio/chants/'+chantKey+'.mp3');
         jChantAudio.preload='auto'; jChantAudio.setAttribute('playsinline','true');
         // NO loop — count on onended
@@ -3871,85 +3966,9 @@ function toggleJap(){
           if(jChantAudio._onTimeUpdate) jChantAudio.removeEventListener('timeupdate',jChantAudio._onTimeUpdate);
           jChantAudio._onTimeUpdate=null; jChantAudio._rafId=null;
 
-          if(isFriday){
-            // Friday: one 4-min audio = all 108 names complete
-            jCount = TOTAL;
-            updateJ();
-          } else {
-            if(jCount<TOTAL){ jCount++; updateJ(); }
-            if(jPlay&&jCount<TOTAL) playOneCycle();
-          }
+          if(jCount<TOTAL){ jCount++; updateJ(); }
+          if(jPlay&&jCount<TOTAL) playOneCycle();
         },{once:true});
-
-        // Friday: update counter + name text as audio progresses
-        if(isFriday){
-          // Full ॐ → body → नमः animation per name slot
-          // LAKSHMI_TS[i] = when body starts (after ॐ ends)
-          // Timing is proportional to slot duration — so नमः always fits
-          let lastFriWord = -1;
-
-          function getSlotDur(i){
-            if(i>=LAKSHMI_TS.length-1) return 3.0;
-            return LAKSHMI_TS[i+1] - LAKSHMI_TS[i];
-          }
-
-          const friUpdate = ()=>{
-            if(!jChantAudio) return;
-            const ct = jChantAudio.currentTime;
-
-            // Find current name index
-            // ॐ starts 30% of slot BEFORE the body timestamp
-            let nameIdx = 0;
-            for(let i=0; i<LAKSHMI_TS.length; i++){
-              const omStart = LAKSHMI_TS[i] - getSlotDur(i)*0.30;
-              if(ct >= omStart) nameIdx = i;
-              else break;
-            }
-
-            // Proportional timing within this slot
-            const slot     = getSlotDur(nameIdx);
-            const omDur    = slot * 0.30;  // 30% of slot
-            const bodyDur  = slot * 0.28;  // 28% of slot — faster to नमः
-            // नमः gets remaining 28% — always has room!
-
-            const bodyStart  = LAKSHMI_TS[nameIdx];
-            const namahStart = bodyStart + bodyDur;
-            let wordSlot; // 0=ॐ, 1=body, 2=नमः
-            if(ct < bodyStart)        wordSlot = 0; // ॐ
-            else if(ct < namahStart)  wordSlot = 1; // body
-            else                      wordSlot = 2; // नमः
-
-            // Encode state as combined key
-            const stateKey = nameIdx * 10 + wordSlot;
-            if(stateKey === lastFriWord) return;
-            lastFriWord = stateKey;
-
-            // Update mantra text when name changes
-            if(wordSlot === 0){
-              buildMantraForWords(['ॐ', LAKSHMI_NAMES[nameIdx], 'नमः'].map(w=>mantraScriptText(w)));
-              // Update counter
-              const cEl = document.getElementById('jNum');
-              if(cEl){ cEl.textContent=nameIdx+1; cEl.classList.remove('pop'); void cEl.offsetWidth; cEl.classList.add('pop'); setTimeout(()=>cEl.classList.remove('pop'),220); }
-              const pEl = document.getElementById('jCountPill');
-              if(pEl) pEl.textContent = AF('dashbo.name_n_of_108',{n:nameIdx+1});
-              if(navigator.vibrate) navigator.vibrate(10);
-            }
-
-            // Highlight correct word — jw0=ॐ, jw1=body, jw2=नमः
-            // First dim all 3
-            [0,1,2].forEach(i=>{
-              const w=document.getElementById('jw'+i);
-              if(w) animateWord(w, 'idle');
-            });
-            // Then light up current word
-            const activeEl = document.getElementById('jw'+wordSlot);
-            const isNamehLast = (wordSlot===2 && nameIdx===107);
-            if(activeEl) animateWord(activeEl, isNamehLast ? 'last' : (wordSlot===2 ? 'active' : wordSlot===1 ? 'active' : 'active'));
-            if(wordSlot===2 && navigator.vibrate) navigator.vibrate(18);
-          };
-          jChantAudio.addEventListener('timeupdate', friUpdate);
-          jChantAudio._onTimeUpdate = friUpdate;
-        }
       }
 
       window._lastLakshmiIdx = -1;
@@ -4155,10 +4174,7 @@ function shareJap(){
      does. */
   function todaysMantraText(){
     try{
-      var sn=(typeof getNames==='function')?getNames(dow):null;
-      if(typeof isShravan==='function' && isShravan(dow) && sn && sn[0])
-        return '\u0950 '+sn[0]+' \u0928\u092e\u0903';
-      var w=(typeof MANTRA_WORDS!=='undefined')&&mantraWords(dow);
+      var w=dailyWords();
       if(w&&w.length) return w.join(' ');
     }catch(e){}
     try{
@@ -4201,8 +4217,8 @@ function shareJap(){
     gu:'તમારા નિત્ય જપ અને નિઃશુલ્ક 250+ પાનાંની જન્મકુંડળી માટે:',
     as:'আপোনাৰ নিত্য জপ আৰু বিনামূলীয়া 250+ পৃষ্ঠাৰ জন্মকোষ্ঠীৰ বাবে:'};
   var L=(window.SD_LANG||'hi'); if(!NAME[L]) L='hi';
-  var n=isShravan()?108:28;
-  var mname=(NAME[L]||NAME.hi)[dow];
+  var n=28;
+  var mname=dailyDeity(T);
   var did=(DID[L]||DID.hi).replace('{n}',n).replace('{name}','*'+mname+'*');
   var text='🙏 *'+(DONE[L]||DONE.hi)+'* ✨\n\n'
          + '📿 '+did+'\n'
@@ -5917,6 +5933,7 @@ function applyPanchang(p){
   }catch(e){ console.log('applyPanchang render:',e); }
   /* the real tithi is known now — upgrade the slot if the Sri Chakra card can
      render for this day and language */
+  try{ refreshDailyDevotional(); }catch(e){}
   try{ renderDailySlot(); }catch(e){}
 }
 
@@ -5972,8 +5989,7 @@ try{
    killed everything after it — the panchang, the sadhana card and the
    wallpaper simply never rendered, with no error anyone would see.
    Each is now independent: a failure costs its own feature and nothing else. */
-try{ setWallpaper(); }catch(e){}
-try{ personalise(); }catch(e){}
+try{ refreshDailyDevotional(); }catch(e){try{setWallpaper();personalise();}catch(_) {}}
 try{ personaliseMarg(); }catch(e){}
 try{ fetchPanchang(); }catch(e){}
 try{ updateSadhanaTab(); }catch(e){}
@@ -6079,9 +6095,9 @@ function wpIsUnlocked(k){ return !!wpState()[k]; }
 function wpMarkUnlocked(k){ var st=wpState(); st[k]={at:Date.now()}; wpSaveState(st); }
 /* One wallpaper per day, derived from the same weekday deity map the splash uses. */
 function wpOfDay(d){
-  var cfg=D[d.getDay()]||D[0];
+  var cfg=resolveDailyDevotional(d);
   return {key:wpKeyOf(d), img:cfg.img, bg:cfg.bg,
-          deity:sdDev(cfg.d_hi,cfg.d_en,cfg.nameKey), day:sdDev(cfg.day_hi,cfg.day_en,cfg.themeKey)};
+          deity:dailyDeity(cfg), day:dailyTheme(cfg)};
 }
 
 /* ── card ── */
@@ -7638,7 +7654,7 @@ function calObservances(year,month){
     try{
       var c=pgCoords(), pre=year+'-'+String(month+1).padStart(2,'0');
       (PE.getVrats(year,c.lat,c.lng,sdTzHours())||[]).forEach(function(v){
-        if(v.date.indexOf(pre)===0) put(v.date,{hi:v.hi,en:v.en,i:'🙏',cat:'vrat'});
+        if(v.date.indexOf(pre)===0) put(v.date,{hi:v.hi,en:v.en,vtype:v.type,i:'🙏',cat:'vrat'});
       });
       /* FESTIVAL v2: the reader's LANGUAGE decides the region (a Telugu family in
          New Jersey wants Telugu festivals). A span (Navratri, Pitru Paksha) is
@@ -8957,7 +8973,6 @@ if('serviceWorker' in navigator){
 </div>
 
 
-<script src="mantra-library-data.js"></script>
 <script>
 // ── MANTRA LIBRARY (start/stop listening, no counting) ──
 // Built on existing assets: D (deity imgs/names), CHANT_MAP (audio keys),
