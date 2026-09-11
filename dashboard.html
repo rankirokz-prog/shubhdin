@@ -3471,7 +3471,7 @@ const DAILY_LATIN={
   rama_rameti:['Shri Rama','Rama','Rameti','Rame','Rame','Manorame','Sahasranama','Tattulyam','Ramanama','Varanane'],
   krishna_vasudevaya:['Om','Krishnaya','Vasudevaya','Haraye','Paramatmane','Pranata-klesha-nashaya','Govindaya','Namo','Namah'],
   lakshmi_gayatri:['Om','Shri Mahalakshmyai','Cha','Vidmahe','Vishnupatnyai','Cha','Dhimahi','Tanno','Lakshmih','Prachodayat'],
-  narayana_om_namo:['Om','Namo','Narayanaya'],
+  narayana_om_namo:['Om','Namo','Lakshmi','Narayanaya','Namaha'],
   vishnu_om_namo_bhagavate:['Om','Namo','Bhagavate','Vasudevaya'],
   venkateswara_om_namo:['Om','Namo','Venkatesaya'],
   devi_kanaka_durga:['Om','Shri','Kanaka Durgayai','Namah'],
@@ -3504,15 +3504,41 @@ const DAILY_NAMES={
   as:{surya:'সূৰ্যদেৱ',shiva:'মহাদেৱ',hanuman:'শ্ৰী হনুমান',ganesh:'শ্ৰী গণেশ',rama:'শ্ৰী ৰাম',krishna:'শ্ৰীকৃষ্ণ',lakshmi:'মা লক্ষ্মী',vishnu:'শ্ৰী নাৰায়ণ',devi:'দেৱী',dakshinamurthy:'দক্ষিণামূৰ্তি',naga:'নাগ দেৱতা',shani:'শনিদেৱ'}
 };
 const DAILY_COPY={
-  en:{special:'{festival} special Jap',festival:'For {festival}, chant {deity}’s mantra 28 times.',normal:'Chant {deity}’s short mantra 28 times today.',theme:'Today’s short Jap'},
-  hi:{special:'{festival} विशेष जप',festival:'{festival} के अवसर पर {deity} का मंत्र 28 बार जपें।',normal:'आज {deity} का छोटा मंत्र 28 बार जपें।',theme:'आज का लघु जप'},
-  te:{special:'{festival} ప్రత్యేక జపం',festival:'{festival} సందర్భంగా {deity} మంత్రాన్ని 28 సార్లు జపించండి.',normal:'ఈ రోజు {deity} చిన్న మంత్రాన్ని 28 సార్లు జపించండి.',theme:'నేటి లఘు జపం'},
-  kn:{special:'{festival} ವಿಶೇಷ ಜಪ',festival:'{festival} ನಿಮಿತ್ತ {deity} ಮಂತ್ರವನ್ನು 28 ಬಾರಿ ಜಪಿಸಿ.',normal:'ಇಂದು {deity} ಕಿರು ಮಂತ್ರವನ್ನು 28 ಬಾರಿ ಜಪಿಸಿ.',theme:'ಇಂದಿನ ಕಿರು ಜಪ'},
-  ta:{special:'{festival} சிறப்பு ஜபம்',festival:'{festival} நாளில் {deity} மந்திரத்தை 28 முறை ஜபியுங்கள்.',normal:'இன்று {deity} குறு மந்திரத்தை 28 முறை ஜபியுங்கள்.',theme:'இன்றைய குறு ஜபம்'},
-  bn:{special:'{festival} বিশেষ জপ',festival:'{festival} উপলক্ষে {deity}-র মন্ত্র ২৮ বার জপ করুন।',normal:'আজ {deity}-র সংক্ষিপ্ত মন্ত্র ২৮ বার জপ করুন।',theme:'আজকের সংক্ষিপ্ত জপ'},
-  mr:{special:'{festival} विशेष जप',festival:'{festival} निमित्त {deity} यांचा मंत्र २८ वेळा जपा.',normal:'आज {deity} यांचा लघुमंत्र २८ वेळा जपा.',theme:'आजचा लघुजप'},
-  gu:{special:'{festival} વિશેષ જપ',festival:'{festival} નિમિત્તે {deity}નો મંત્ર ૨૮ વાર જપો.',normal:'આજે {deity}નો ટૂંકો મંત્ર ૨૮ વાર જપો.',theme:'આજનો લઘુ જપ'},
-  as:{special:'{festival} বিশেষ জপ',festival:'{festival} উপলক্ষে {deity}ৰ মন্ত্ৰ ২৮ বাৰ জপ কৰক।',normal:'আজি {deity}ৰ চুটি মন্ত্ৰ ২৮ বাৰ জপ কৰক।',theme:'আজিৰ চুটি জপ'}
+  en:{special:'{festival} • {purpose}',festival:'For {festival}, chant {deity}’s mantra 28 times for {purpose}.',normal:'For {purpose}, chant {deity}’s mantra 28 times today.',theme:'Today’s Jap for {purpose}'},
+  hi:{special:'{festival} • {purpose}',festival:'{festival} के अवसर पर {purpose} के लिए {deity} का मंत्र 28 बार जपें।',normal:'{purpose} के लिए आज {deity} का मंत्र 28 बार जपें।',theme:'{purpose} के लिए आज का जप'},
+  te:{special:'{festival} • {purpose}',festival:'{festival} సందర్భంగా {purpose} కోసం {deity} మంత్రాన్ని 28 సార్లు జపించండి.',normal:'{purpose} కోసం ఈ రోజు {deity} మంత్రాన్ని 28 సార్లు జపించండి.',theme:'{purpose} కోసం నేటి జపం'},
+  kn:{special:'{festival} • {purpose}',festival:'{festival} ನಿಮಿತ್ತ {purpose}ಕ್ಕಾಗಿ {deity} ಮಂತ್ರವನ್ನು 28 ಬಾರಿ ಜಪಿಸಿ.',normal:'{purpose}ಕ್ಕಾಗಿ ಇಂದು {deity} ಮಂತ್ರವನ್ನು 28 ಬಾರಿ ಜಪಿಸಿ.',theme:'{purpose}ಗಾಗಿ ಇಂದಿನ ಜಪ'},
+  ta:{special:'{festival} • {purpose}',festival:'{festival} நாளில் {purpose} வேண்டி {deity} மந்திரத்தை 28 முறை ஜபியுங்கள்.',normal:'{purpose} வேண்டி இன்று {deity} மந்திரத்தை 28 முறை ஜபியுங்கள்.',theme:'{purpose} வேண்டி இன்றைய ஜபம்'},
+  bn:{special:'{festival} • {purpose}',festival:'{festival} উপলক্ষে {purpose}-এর জন্য {deity}-র মন্ত্র ২৮ বার জপ করুন।',normal:'{purpose}-এর জন্য আজ {deity}-র মন্ত্র ২৮ বার জপ করুন।',theme:'{purpose}-এর জন্য আজকের জপ'},
+  mr:{special:'{festival} • {purpose}',festival:'{festival} निमित्त {purpose}साठी {deity} यांचा मंत्र २८ वेळा जपा.',normal:'{purpose}साठी आज {deity} यांचा मंत्र २८ वेळा जपा.',theme:'{purpose}साठी आजचा जप'},
+  gu:{special:'{festival} • {purpose}',festival:'{festival} નિમિત્તે {purpose} માટે {deity}નો મંત્ર ૨૮ વાર જપો.',normal:'{purpose} માટે આજે {deity}નો મંત્ર ૨૮ વાર જપો.',theme:'{purpose} માટે આજનો જપ'},
+  as:{special:'{festival} • {purpose}',festival:'{festival} উপলক্ষে {purpose}ৰ বাবে {deity}ৰ মন্ত্ৰ ২৮ বাৰ জপ কৰক।',normal:'{purpose}ৰ বাবে আজি {deity}ৰ মন্ত্ৰ ২৮ বাৰ জপ কৰক।',theme:'{purpose}ৰ বাবে আজিৰ জপ'}
+};
+const DAILY_MANTRA_DEITY={
+  narayana_om_namo:{
+    en:'Shri Lakshmi Narayana',hi:'श्री लक्ष्मी नारायण',te:'శ్రీ లక్ష్మీనారాయణులు',kn:'ಶ್ರೀ ಲಕ್ಷ್ಮೀನಾರಾಯಣ',ta:'ஸ்ரீ லட்சுமி நாராயணர்',
+    bn:'শ্রী লক্ষ্মীনারায়ণ',mr:'श्री लक्ष्मीनारायण',gu:'શ્રી લક્ષ્મીનારાયણ',as:'শ্ৰী লক্ষ্মীনাৰায়ণ'
+  }
+};
+/* These are traditional devotional intentions, not promises of material or
+   medical outcomes. Keep thumbnail language invitational and specific. */
+const DAILY_PURPOSE={
+  en:{wellbeing:'well-being and vitality',peace:'inner peace',clarity:'clarity and spiritual strength',courage:'courage and protection',obstacles:'auspicious beginnings',devotion:'peace and devotion',prosperity:'prosperity and well-being',protection:'peace and protection',grace:'devotion and divine grace',strength:'inner strength and protection',knowledge:'knowledge and clarity',reverence:'reverence and protection',discipline:'patience and discipline'},
+  hi:{wellbeing:'आरोग्य और ऊर्जा',peace:'मन की शांति',clarity:'स्पष्टता और आध्यात्मिक शक्ति',courage:'साहस और रक्षा',obstacles:'शुभ आरंभ',devotion:'शांति और भक्ति',prosperity:'समृद्धि और कल्याण',protection:'शांति और रक्षा',grace:'भक्ति और ईश-कृपा',strength:'आंतरिक शक्ति और रक्षा',knowledge:'ज्ञान और स्पष्टता',reverence:'श्रद्धा और रक्षा',discipline:'धैर्य और अनुशासन'},
+  te:{wellbeing:'ఆరోగ్యం, ఉత్సాహం',peace:'మనశ్శాంతి',clarity:'స్పష్టత, ఆధ్యాత్మిక బలం',courage:'ధైర్యం, రక్షణ',obstacles:'శుభారంభం',devotion:'శాంతి, భక్తి',prosperity:'సిరిసంపద, శ్రేయస్సు',protection:'శాంతి, రక్షణ',grace:'భక్తి, దైవానుగ్రహం',strength:'మనోబలం, రక్షణ',knowledge:'జ్ఞానం, స్పష్టత',reverence:'భక్తి, రక్షణ',discipline:'సహనం, క్రమశిక్షణ'},
+  kn:{wellbeing:'ಆರೋಗ್ಯ ಮತ್ತು ಚೈತನ್ಯ',peace:'ಮನಶ್ಶಾಂತಿ',clarity:'ಸ್ಪಷ್ಟತೆ ಮತ್ತು ಆಧ್ಯಾತ್ಮಿಕ ಬಲ',courage:'ಧೈರ್ಯ ಮತ್ತು ರಕ್ಷಣೆ',obstacles:'ಶುಭಾರಂಭ',devotion:'ಶಾಂತಿ ಮತ್ತು ಭಕ್ತಿ',prosperity:'ಸಮೃದ್ಧಿ ಮತ್ತು ಕ್ಷೇಮ',protection:'ಶಾಂತಿ ಮತ್ತು ರಕ್ಷಣೆ',grace:'ಭಕ್ತಿ ಮತ್ತು ದೈವಕೃಪೆ',strength:'ಮನೋಬಲ ಮತ್ತು ರಕ್ಷಣೆ',knowledge:'ಜ್ಞಾನ ಮತ್ತು ಸ್ಪಷ್ಟತೆ',reverence:'ಶ್ರದ್ಧೆ ಮತ್ತು ರಕ್ಷಣೆ',discipline:'ತಾಳ್ಮೆ ಮತ್ತು ಶಿಸ್ತು'},
+  ta:{wellbeing:'நலமும் புத்துணர்ச்சியும்',peace:'மன அமைதி',clarity:'தெளிவும் ஆன்மிக வலிமையும்',courage:'தைரியமும் பாதுகாப்பும்',obstacles:'மங்களகரமான தொடக்கம்',devotion:'அமைதியும் பக்தியும்',prosperity:'செழிப்பும் நலமும்',protection:'அமைதியும் பாதுகாப்பும்',grace:'பக்தியும் இறையருளும்',strength:'மனவலிமையும் பாதுகாப்பும்',knowledge:'ஞானமும் தெளிவும்',reverence:'பக்தியும் பாதுகாப்பும்',discipline:'பொறுமையும் ஒழுக்கமும்'},
+  bn:{wellbeing:'সুস্থতা ও প্রাণশক্তি',peace:'মনের শান্তি',clarity:'স্বচ্ছতা ও আধ্যাত্মিক শক্তি',courage:'সাহস ও সুরক্ষা',obstacles:'শুভ সূচনা',devotion:'শান্তি ও ভক্তি',prosperity:'সমৃদ্ধি ও মঙ্গল',protection:'শান্তি ও সুরক্ষা',grace:'ভক্তি ও ঈশ্বরের কৃপা',strength:'মানসিক শক্তি ও সুরক্ষা',knowledge:'জ্ঞান ও স্বচ্ছতা',reverence:'শ্রদ্ধা ও সুরক্ষা',discipline:'ধৈর্য ও শৃঙ্খলা'},
+  mr:{wellbeing:'आरोग्य आणि उत्साह',peace:'मनःशांती',clarity:'स्पष्टता आणि आध्यात्मिक बळ',courage:'धैर्य आणि संरक्षण',obstacles:'शुभारंभ',devotion:'शांती आणि भक्ती',prosperity:'समृद्धी आणि कल्याण',protection:'शांती आणि संरक्षण',grace:'भक्ती आणि ईशकृपा',strength:'मनोबळ आणि संरक्षण',knowledge:'ज्ञान आणि स्पष्टता',reverence:'श्रद्धा आणि संरक्षण',discipline:'संयम आणि शिस्त'},
+  gu:{wellbeing:'આરોગ્ય અને સ્ફૂર્તિ',peace:'મનની શાંતિ',clarity:'સ્પષ્ટતા અને આધ્યાત્મિક શક્તિ',courage:'સાહસ અને રક્ષણ',obstacles:'શુભ શરૂઆત',devotion:'શાંતિ અને ભક્તિ',prosperity:'સમૃદ્ધિ અને સુખાકારી',protection:'શાંતિ અને રક્ષણ',grace:'ભક્તિ અને ઈશ્વરકૃપા',strength:'મનોબળ અને રક્ષણ',knowledge:'જ્ઞાન અને સ્પષ્ટતા',reverence:'શ્રદ્ધા અને રક્ષણ',discipline:'ધીરજ અને શિસ્ત'},
+  as:{wellbeing:'সুস্বাস্থ্য আৰু সজীৱতা',peace:'মনঃশান্তি',clarity:'স্পষ্টতা আৰু আধ্যাত্মিক শক্তি',courage:'সাহস আৰু সুৰক্ষা',obstacles:'শুভ আৰম্ভণি',devotion:'শান্তি আৰু ভক্তি',prosperity:'সমৃদ্ধি আৰু মঙ্গল',protection:'শান্তি আৰু সুৰক্ষা',grace:'ভক্তি আৰু ঈশ্বৰকৃপা',strength:'মনোবল আৰু সুৰক্ষা',knowledge:'জ্ঞান আৰু স্পষ্টতা',reverence:'শ্ৰদ্ধা আৰু সুৰক্ষা',discipline:'ধৈৰ্য আৰু অনুশাসন'}
+};
+const DAILY_PURPOSE_KEY={
+  surya_beeja:'wellbeing',shiva_om_namah_shivaya:'peace',shiva_gayatri:'clarity',
+  hanuman_hari_markata:'courage',hanuman_anjaneyaya:'courage',ganesh_om_gam:'obstacles',ganesh_agajanana:'obstacles',
+  rama_rameti:'devotion',krishna_vasudevaya:'devotion',lakshmi_gayatri:'prosperity',narayana_om_namo:'protection',
+  vishnu_om_namo_bhagavate:'protection',venkateswara_om_namo:'grace',devi_kanaka_durga:'strength',devi_sri_matre:'strength',
+  dakshinamurthy_gurave_sarvalokanam:'knowledge',navagraha_nava_naga_stotram:'reverence',shani_neelanjana:'discipline'
 };
 const DAILY_ROTATION={
   0:['surya_beeja','narayana_om_namo'],
@@ -3583,16 +3609,16 @@ function resolveDailyDevotional(date){
     if(!id&&e.vtype==='sankashti') id='ganesh_om_gam';
     if(id){picked=id;festival=e;break;}
   }
-  /* A religious observance with no dedicated audio must still override the
-     weekday. Neutral fallback alternates Narayana and Shiva by civil date. */
-  if(!picked){
-    var religious=events.filter(function(e){return e.cat!=='national';})[0];
-    if(religious){festival=religious;picked=(date.getDate()%2)?'narayana_om_namo':'shiva_om_namah_shivaya';}
-  }
+  /* Only an explicitly mapped festival/vrata may override the weekday Jap.
+     Moon tithis such as ordinary Amavasya and Purnima remain Panchang
+     observances; they are not automatically advertised as festivals. */
   if(!picked){var pool=DAILY_ROTATION[date.getDay()]||DAILY_ROTATION[0]; picked=pool[(Math.floor(date.getTime()/86400000)+date.getFullYear())%pool.length];}
   var hit=dailyLibMantra(picked); if(!hit) return base;
   var L=window.SD_LANG||'hi', names=DAILY_NAMES[L]||DAILY_NAMES.hi, copy=DAILY_COPY[L]||DAILY_COPY.hi;
-  var deity=names[hit.god.id]||((L==='en')?hit.god.godEn:mantraScriptText(hit.god.godDev,L));
+  var purposeSet=DAILY_PURPOSE[L]||DAILY_PURPOSE.hi;
+  var purpose=purposeSet[DAILY_PURPOSE_KEY[picked]||'devotion'];
+  var mantraDeity=DAILY_MANTRA_DEITY[picked];
+  var deity=(mantraDeity&&mantraDeity[L])||names[hit.god.id]||((L==='en')?hit.god.godEn:mantraScriptText(hit.god.godDev,L));
   var festName=festival?sdCalName(festival):'';
   base.img=hit.god.img;base.ico=hit.god.ico;base.d_local=deity;base.d_en=hit.god.godEn;base.d_hi=hit.god.godDev;
   base.wallpaperImg=DAILY_WALLPAPER[hit.god.id]||hit.god.img;
@@ -3600,8 +3626,8 @@ function resolveDailyDevotional(date){
   base.wallpaperPosition=(hit.god.id==='lakshmi')?'center 18%':'center 20%';
   base.dailyMantra=hit.mantra;base.chant=sacredSourceWords(hit.mantra).join(' ');base.audio=hit.mantra.audio;
   base.isFestival=!!festival;base.festivalName=festName;
-  base.day_local=festival?dailyFmt(copy.special,{festival:festName}):copy.theme;
-  base.hook_local=festival?dailyFmt(copy.festival,{festival:festName,deity:deity}):dailyFmt(copy.normal,{deity:deity});
+  base.day_local=festival?dailyFmt(copy.special,{festival:festName,purpose:purpose}):dailyFmt(copy.theme,{purpose:purpose});
+  base.hook_local=festival?dailyFmt(copy.festival,{festival:festName,deity:deity,purpose:purpose}):dailyFmt(copy.normal,{deity:deity,purpose:purpose});
   return base;
 }
 function refreshDailyDevotional(){
