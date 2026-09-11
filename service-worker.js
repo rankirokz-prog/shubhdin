@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v223';
+const CACHE_NAME = 'shubhdin-v225';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -85,19 +85,9 @@ self.addEventListener('install', event => {
 });
 
 /* The chosen language file is named at runtime (app-strings-te.js and so on),
-   so it cannot sit in CORE_FILES. Cache it the first time it is fetched. */
-self.addEventListener('fetch', event => {
-  const u = event.request.url;
-  if (/\/app-strings-[a-z]{2}\.js$/.test(u)) {
-    event.respondWith(
-      caches.match(event.request).then(hit => hit || fetch(event.request).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then(c => c.put(event.request, copy)).catch(() => {});
-        return res;
-      }))
-    );
-  }
-}, { capture: true });
+   so it cannot sit in CORE_FILES. The single generic asset handler below
+   caches it on first fetch. Keep one fetch listener: calling respondWith()
+   from two listeners for the same request raises InvalidStateError. */
 
 // Activate — delete old caches
 self.addEventListener('activate', event => {
