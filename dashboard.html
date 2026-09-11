@@ -3253,12 +3253,13 @@ function personalise(){
    from a streak that is merely waiting for today's jap. */
 function streakState(){
   var d={}; try{d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');}catch(e){}
-  var n=d.count||0, last=d.date||d.lastDate||null;
+  var n=d.count||0, last=d.dayKey||d.date||d.lastDate||null;
   if(!n||!last) return {state:'none',count:0};
-  var today=new Date().toDateString();
-  var yest=new Date(Date.now()-86400000).toDateString();
-  if(last===today) return {state:'done',count:n};
-  if(last===yest)  return {state:'pending',count:n};
+  var todayDate=dailyCivilDate(), yesterdayDate=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate()-1,12);
+  var today=dailyDateKey(todayDate), yest=dailyDateKey(yesterdayDate);
+  var legacyToday=todayDate.toDateString(), legacyYest=yesterdayDate.toDateString();
+  if(last===today||last===legacyToday) return {state:'done',count:n};
+  if(last===yest||last===legacyYest)  return {state:'pending',count:n};
   return {state:'broken',count:n};   // missed a day — the count is history now
 }
 /* The icon is drawn once at load, so an app left open overnight would show
@@ -3307,12 +3308,16 @@ function renderStreakCard(){
   if(unit)unit.textContent=goal;
 }
 function getStreak(){try{return Number(JSON.parse(localStorage.getItem('shubhdin_streak')||'{}').count)||0;}catch(e){return 0;}}   /* D5: a non-empty string count rendered as '"abc" दिन' */
+function dailyDateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function updateStreak(){
-  const today=new Date().toDateString();
+  const todayDate=dailyCivilDate(), today=dailyDateKey(todayDate);
+  const yesterdayDate=new Date(todayDate.getFullYear(),todayDate.getMonth(),todayDate.getDate()-1,12), yesterday=dailyDateKey(yesterdayDate);
   let d={};try{d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');}catch(e){}
-  if(d.date===today)return;
-  d.count=(d.date===new Date(Date.now()-86400000).toDateString())?(d.count||0)+1:1;
-  d.date=today;
+  const last=d.dayKey||d.date||d.lastDate||null;
+  if(last===today||last===todayDate.toDateString())return;
+  d.count=(last===yesterday||last===yesterdayDate.toDateString())?(d.count||0)+1:1;
+  d.dayKey=today;       /* canonical, language-independent and city-zone aware */
+  d.date=todayDate.toDateString(); /* retained for backward-compatible readers */
   localStorage.setItem('shubhdin_streak',JSON.stringify(d));
 }
 
@@ -6580,7 +6585,7 @@ function applyHomeState(){
 function japDoneToday(){
   try{
     var d=JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');
-    var t=new Date().toDateString();
+    var cd=dailyCivilDate(), key=dailyDateKey(cd), legacy=cd.toDateString();
     /* THE BUG: dashboard.html defines updateStreak() TWICE and the two
        versions stamp DIFFERENT fields — the first writes `lastDate`, the
        second writes `date`. The later declaration wins, so a completed jap
@@ -6588,7 +6593,7 @@ function japDoneToday(){
        streak stayed tappable all day and restarted a jap already done.
        Accept either. Same duplicate-definition hazard as the two .hbody CSS
        rules and the two getStreak() functions in this file. */
-    return d.date===t || d.lastDate===t;
+    return d.dayKey===key || d.date===legacy || d.lastDate===legacy;
   }catch(e){ return false; }
 }
 /* Tapping the badge starts today's jap — but only when it has not been done.

@@ -10,6 +10,7 @@
 <script src="sd-tz.js"></script>
 <script src="astronomy.min.js"></script>
 <script src="panchang-engine.js"></script>
+<script src="vrat-names.js"></script>
 <script src="ui-strings.js"></script>
 <script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
@@ -1180,11 +1181,45 @@
       document.getElementById('rSub').textContent  = lang==='te'?'నగర వివరాలు సేవ్ చేసిన తర్వాత లెక్కిస్తాం':lang==='hi'?'शहर की जानकारी सहेजने के बाद गणना होगी':'Calculated after valid city details are saved';
     }
 
-    const days = new Date().getDay();
-    const ihi = ['आज सूर्य देवता की पूजा करें। शुभ समय <strong>7:00–8:30</strong>।','आज शिव जी का जल चढ़ाएं। शुभ समय <strong>6:30–8:00</strong>।','आज हनुमान जी का जप करें। शुभ समय <strong>9:00–10:30</strong>।','आज गणेश जी की पूजा करें। शुभ समय <strong>10:00–11:30</strong>।','आज विष्णु जी का स्मरण करें। शुभ समय <strong>8:00–9:30</strong>।','आज लक्ष्मी जी की आराधना करें। शुभ समय <strong>6:00–7:30</strong>।','आज शनि देव को तेल चढ़ाएं। शुभ समय <strong>8:30–10:00</strong>।'];
-    const ien = ['Pray to Surya Dev. Auspicious time: <strong>7:00–8:30</strong>.','Offer water to Shiva Ji. Auspicious time: <strong>6:30–8:00</strong>.','Chant for Hanuman Ji. Auspicious time: <strong>9:00–10:30</strong>.','Worship Ganesh Ji. Auspicious time: <strong>10:00–11:30</strong>.','Remember Vishnu Ji. Auspicious time: <strong>8:00–9:30</strong>.','Pray to Lakshmi Ji. Auspicious time: <strong>6:00–7:30</strong>.','Offer oil to Shani Dev. Auspicious time: <strong>8:30–10:00</strong>.'];
-        const ite = ['ఈ రోజు సూర్య భగవానుడిని పూజించండి. శుభ సమయం: <strong>7:00–8:30</strong>.','ఈ రోజు శివుడికి జలాభిషేకం చేయండి. శుభ సమయం: <strong>6:30–8:00</strong>.','ఈ రోజు హనుమంతుడి జపం చేయండి. శుభ సమయం: <strong>9:00–10:30</strong>.','ఈ రోజు గణపతిని పూజించండి. శుభ సమయం: <strong>10:00–11:30</strong>.','ఈ రోజు విష్ణువును స్మరించండి. శుభ సమయం: <strong>8:00–9:30</strong>.','ఈ రోజు లక్ష్మీ దేవిని ఆరాధించండి. శుభ సమయం: <strong>6:00–7:30</strong>.','ఈ రోజు శనీశ్వరుడికి నూనె సమర్పించండి. శుభ సమయం: <strong>8:30–10:00</strong>.'];
-    document.getElementById('tiTxt').innerHTML = lang==='hi' ? ihi[days] : (onbL()&&onbL().tips) ? onbL().tips[days] : ien[days];
+    document.getElementById('tiTxt').textContent = onboardingDailyJapLine();
+  }
+
+  /* The welcome card used to promise a weekday deity and even printed fixed
+     "auspicious" hours. That could say Lakshmi on Janmashtami and the hours
+     were not calculated for the selected city. It now previews the same
+     festival-aware daily Jap that the dashboard will resolve after entry. */
+  const ONB_DAILY_COPY={
+    en:{festival:'Today is {festival} — your special Jap is ready.',normal:"Today’s short Jap is ready inside."},
+    hi:{festival:'आज {festival} है — आपका विशेष जप तैयार है।',normal:'आज का लघु जप अंदर तैयार है।'},
+    te:{festival:'ఈ రోజు {festival} — ప్రత్యేక జపం సిద్ధంగా ఉంది.',normal:'ఈ రోజు చేయాల్సిన చిన్న జపం సిద్ధంగా ఉంది.'},
+    kn:{festival:'ಇಂದು {festival} — ವಿಶೇಷ ಜಪ ಸಿದ್ಧವಾಗಿದೆ.',normal:'ಇಂದಿನ ಕಿರು ಜಪ ಸಿದ್ಧವಾಗಿದೆ.'},
+    ta:{festival:'இன்று {festival} — சிறப்பு ஜபம் தயாராக உள்ளது.',normal:'இன்றைய குறு ஜபம் தயாராக உள்ளது.'},
+    bn:{festival:'আজ {festival} — বিশেষ জপ প্রস্তুত আছে।',normal:'আজকের সংক্ষিপ্ত জপ প্রস্তুত আছে।'},
+    mr:{festival:'आज {festival} — विशेष जप तयार आहे.',normal:'आजचा लघुजप तयार आहे.'},
+    gu:{festival:'આજે {festival} — વિશેષ જપ તૈયાર છે.',normal:'આજનો લઘુ જપ તૈયાર છે.'},
+    as:{festival:'আজি {festival} — বিশেষ জপ সাজু আছে।',normal:'আজিৰ চুটি জপ সাজু আছে।'}
+  };
+  function onboardingCivilDate(){
+    try{if(user.city_tz&&window.sdTz&&sdTz.isZone(user.city_tz)){var w=sdTz.instantToWall(new Date(),user.city_tz);return new Date(w.y,w.mo-1,w.d,12);}}catch(e){}
+    return new Date();
+  }
+  function onboardingDailyJapLine(){
+    var copy=ONB_DAILY_COPY[lang]||ONB_DAILY_COPY.hi, d=onboardingCivilDate(), event=null;
+    try{
+      var pe=window.PanchangEngine, lat=Number(user.city_lat), lon=Number(user.city_lon);
+      if(pe&&isFinite(lat)&&isFinite(lon)){
+        var tz=5.5;
+        if(user.city_tz&&window.sdTz&&sdTz.isZone(user.city_tz)) tz=sdTz.offsetHoursAt(d,user.city_tz);
+        var key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+        var rg=(pe.REGIONS_FOR_LANG&&pe.REGIONS_FOR_LANG[lang])||['all'];
+        event=(pe.getFestivals(d.getFullYear(),lat,lon,tz,{regions:rg})||[]).filter(function(x){return x.date===key||x.end===key;})[0]||null;
+        if(!event) event=(pe.getVrats(d.getFullYear(),lat,lon,tz)||[]).filter(function(x){return x.date===key;})[0]||null;
+      }
+    }catch(e){}
+    if(!event) return copy.normal;
+    var festival=event.en;
+    try{var row=window.SD_VRAT_NAMES&&SD_VRAT_NAMES[event.en];if(row) festival=row[lang]||row.hi||event.en;}catch(e){}
+    return copy.festival.replace('{festival}',festival);
   }
 
   // ── Enter app ──
