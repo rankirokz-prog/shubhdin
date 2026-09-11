@@ -38,7 +38,6 @@
 const crypto = require('crypto');
 // one session check for every api/ function — see lib/verify-user.js
 const { verifyUser: verifyUserWith } = require('../lib/verify-user.js');
-const { seal, digest } = require('../lib/report-vault.js');
 
 // ── PRICE AUTHORITY ──────────────────────────────────────────────────────────
 // This table is the ONLY place a price is decided. buy.html's CFG and
@@ -46,15 +45,14 @@ const { seal, digest } = require('../lib/report-vault.js');
 // here. The client never sends an amount — there is no amount field to tamper
 // with — so a posted ₹1 is impossible by construction rather than by validation.
 // A report absent from this table cannot be paid for at all: that is how a
-// withdrawn report (muhurta, Aug 2026) stays unsellable even via an old link.
+// withdrawn report (Child or Muhurta) stays unsellable even via an old link.
 const PRICES = {
   marriage: 399,
   love:     199,
   career:   199,
-  child:    199,
   annual:   199,
   forecast: 299
-  // muhurta: WITHDRAWN — do not re-add without restoring buy.html's CFG entry
+  // child/muhurta: WITHDRAWN — keep existing order/PDF access, do not sell
 };
 
 // SKU naming, in ONE place. Play SKUs are immutable once created, so this
@@ -145,7 +143,6 @@ module.exports = async function handler(req, res) {
   // ── dispatch-gate helpers ──────────────────────────────────────────────
   const SD_LANGS = ['en','hi','te','kn','ta','bn','mr','gu','as'];
   const BUCKET = 'shubhdin-audio';
-  const REPORT_BUCKET = 'shubhdin-reports';
   // Admin = a real signed-in session (verifyUser) whose uid is on the
   // allow-list. Without the second check any signed-in buyer could list every
   // order in the system.
@@ -183,35 +180,23 @@ module.exports = async function handler(req, res) {
       ? (lang ? `kundlis/${uid}-${lang}.pdf` : `kundlis/${uid}.pdf`)
       : (lang ? `reports/${uid}/${report}-${lang}.pdf` : `reports/${uid}/${report}.pdf`);
   }
-  async function headOk(path, bucket) {
-    bucket = bucket || BUCKET;
+  async function headOk(path) {
     try {
-      const h = await fetch(`${supabaseUrl}/storage/v1/object/${bucket}/` + path,
-                            { method: 'HEAD', headers: H });
-      if (h.ok) {
-        const sr = await fetch(`${supabaseUrl}/storage/v1/object/sign/${bucket}/` + path,
-          { method: 'POST', headers: H, body: JSON.stringify({ expiresIn: 3600 }) });
-        const sj = await sr.json();
-        if (!sr.ok || !sj.signedURL) return null;
-        return { url: supabaseUrl + '/storage/v1' + sj.signedURL,
-          expires_at: new Date(Date.now() + 55 * 60 * 1000).toISOString(),
-          bytes: parseInt(h.headers.get('content-length') || '0', 10) };
-      }
+      const h = await fetch(`${supabaseUrl}/storage/v1/object/public/${BUCKET}/` + path, { method: 'HEAD' });
+      if (h.ok) return { url: `${supabaseUrl}/storage/v1/object/public/${BUCKET}/` + path,
+                         bytes: parseInt(h.headers.get('content-length') || '0', 10) };
     } catch (e) {}
     return null;
   }
   async function pdfCheck(uid, report, lang) {
-    const bucket = report === 'kundli' ? BUCKET : REPORT_BUCKET;
-    let want = await headOk(pdfPath(uid, report, lang), bucket);
-    // Read-only compatibility for PDFs created before the private bucket.
-    if (!want && report !== 'kundli') want = await headOk(pdfPath(uid, report, lang), BUCKET);
+    const want = await headOk(pdfPath(uid, report, lang));
     if (want) return { ...want, found_lang: lang, exact: true };
     // Not there. What exists instead? Probe the legacy path, then the other
     // eight languages. Only runs on a miss, so the common case stays one HEAD.
-    const legacy = await headOk(pdfPath(uid, report, null), bucket);
+    const legacy = await headOk(pdfPath(uid, report, null));
     if (legacy) return { ...legacy, found_lang: null, exact: false };
     const others = await Promise.all(SD_LANGS.filter(l => l !== lang)
-      .map(async l => { const h = await headOk(pdfPath(uid, report, l), bucket); return h ? { ...h, found_lang: l } : null; }));
+      .map(async l => { const h = await headOk(pdfPath(uid, report, l)); return h ? { ...h, found_lang: l } : null; }));
     const hit = others.filter(Boolean)[0];
     return hit ? { ...hit, exact: false } : null;
   }
@@ -461,27 +446,7 @@ module.exports = async function handler(req, res) {
       if (Array.isArray(rows) && rows.length) {
         return res.status(200).json({ ok: true, already: true, order_code: rows[0].order_code });
       }
-    } catch (e) {
-      return res.status(503).json({ error: 'could not verify existing purchases' });
-    }
-
-    // Freeze one encrypted chart snapshot before money can move. This is after
-    // the paid check so an owner can never overwrite the chart they purchased.
-    const details = (req.body || {}).details;
-    const draftLang = q0.lang || (req.body || {}).lang;
-    if (!details || typeof details !== 'object')
-      return res.status(400).json({ error: 'report details required' });
-    try {
-      const dr = await fetch(`${supabaseUrl}/rest/v1/report_drafts?on_conflict=uid,report`, {
-        method: 'POST', headers: { ...H, Prefer: 'resolution=merge-duplicates' },
-        body: JSON.stringify([{ uid: q0.uid, report: q0.report, details_enc: seal(details),
-          details_hash: digest(details), lang: SD_LANGS.includes(draftLang) ? draftLang : 'hi',
-          updated_at: new Date().toISOString() }])
-      });
-      if (!dr.ok) return res.status(503).json({ error: 'could not secure report details' });
-    } catch (e) {
-      return res.status(503).json({ error: 'could not secure report details', detail: String(e.message).slice(0, 80) });
-    }
+    } catch (e) { /* fall through and let them pay rather than blocking a sale */ }
 
     // .trim(): pasted env values very often carry a trailing space or newline,
     // which breaks Basic auth with an opaque 401 from Razorpay.
@@ -748,7 +713,7 @@ module.exports = async function handler(req, res) {
   // Must sit before the report-required check: list has no report param.
   if (q.list === '1') {
     try {
-      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q.uid}&status=eq.paid&select=report,order_code,created_at,lang,dispatch_status,generation_status,generation_error&order=created_at.asc`,
+      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q.uid}&status=eq.paid&select=report,order_code,created_at,lang,dispatch_status&order=created_at.asc`,
         { headers: H }).then(r => r.json());
       if (!Array.isArray(rows)) return res.status(500).json({ error: 'orders query failed' });
       const seen = {}, reports = [];
@@ -757,9 +722,7 @@ module.exports = async function handler(req, res) {
         seen[r.report] = true;
         reports.push({ report: r.report, order_code: r.order_code, paid_at: r.created_at,
           lang: SD_LANGS.includes(r.lang) ? r.lang : 'hi',
-          dispatch_status: r.dispatch_status || 'pending',
-          generation_status: r.generation_status || 'queued',
-          generation_error: r.generation_error || null });
+          dispatch_status: r.dispatch_status || 'pending' });
       }
       // pdf_url is the delivery. It appears ONLY once Ram has moved the order
       // to 'sent' on the dispatch page — the whole point of the gate is that a
@@ -774,8 +737,7 @@ module.exports = async function handler(req, res) {
         // language) is withheld and flagged: the buyer's Download button then
         // re-renders in the right language rather than opening the wrong one.
         if (!pdf.exact) { r2.pdf_lang_mismatch = pdf.found_lang || 'legacy'; return; }
-        r2.pdf_url = pdf.url;
-        r2.pdf_expires_at = pdf.expires_at;
+        r2.pdf_url = pdf.url + `?download=Shubh-Din-${r2.report}-${r2.lang}.pdf`;
       }));
       return res.status(200).json({ ok: true, reports });
     } catch (e) { return res.status(500).json({ error: 'list failed' }); }
@@ -785,6 +747,7 @@ module.exports = async function handler(req, res) {
 
   if (q.dev === '1') {
     if (process.env.SD_DEV_FREE !== '1') return res.status(403).json({ error: 'dev mode disabled' });
+    if (!PRICES[q.report]) return res.status(400).json({ error: 'not for sale' });
     const r = await upsertPaid(q.uid, q.report, 0, 'dev-test');
     if (!r.ok) return res.status(500).json({ error: 'order write failed', detail: (await r.text()).slice(0, 150) });
     return res.status(200).json({ ok: true, paid: true, order_code: code(q.uid, q.report), dev: true });
