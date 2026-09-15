@@ -1579,6 +1579,10 @@ body[data-home="returning"] .streak{display:flex;}
   100%{transform:translate(-50%,-50%) scale(2.2);opacity:0;}
 }
 
+/* Standalone wallpaper experience retired. Home now paints immediately.
+   Today Jap deity imagery (.j-img-bg) is intentionally unaffected. */
+#app{opacity:1!important;animation:none!important;}
+
 /* Daily Jap responsive sacred-text layout.
    Short bija/name mantras keep the large immersive treatment. Medium and
    long prayers flow as one readable passage, so no word can escape the phone
@@ -1883,28 +1887,6 @@ if(typeof window.A!=='function'){
 </head>
 <body>
 
-<!-- Opening wallpaper -->
-<div id="wallpaper">
-  <div id="wpBg"></div>
-  <div id="wpImg" style="position:absolute;inset:0;background-size:cover;background-repeat:no-repeat;background-position:center 20%;opacity:0.22;transition:opacity 0.5s;"></div>
-  <div class="wp-pt" style="left:10%;bottom:35%;animation-duration:3.5s;animation-delay:0s;"></div>
-  <div class="wp-pt" style="left:28%;bottom:42%;animation-duration:4.5s;animation-delay:1s;"></div>
-  <div class="wp-pt" style="left:55%;bottom:38%;animation-duration:4s;animation-delay:0.5s;"></div>
-  <div class="wp-pt" style="left:76%;bottom:40%;animation-duration:5s;animation-delay:1.5s;"></div>
-  <div id="wpRing"></div>
-  <div id="wpOm">ॐ</div>
-  <div id="wpInfo">
-    <div id="wpDeity">श्री हनुमान</div>
-    <div id="wpDay">मंगलवार • शक्ति और भक्ति</div>
-    <!-- SD-WP-HINT-OFF · the caption that used to sit here ("save today's
-         wallpaper") scrolled the user to #wpMount. That mount is empty now
-         that the wallpaper card is off, so the scroll dropped them on the
-         Gita card instead — a sentence pointing at something that no longer
-         exists. Removed. The 📤 button below still shares the wallpaper. -->
-  </div>
-  <div id="wpShare" onclick="shareWallpaper()">📤</div>
-</div>
-
 <!-- App -->
 <div id="app">
   <div class="sw">
@@ -1977,9 +1959,8 @@ if(typeof window.A!=='function'){
           </div>
         </div>
 
-        <!-- WALLPAPER OF THE DAY — the only place in the app that shows a rewarded ad -->
+        <!-- Daily verse mount -->
         <div id="gitaMount"></div>
-        <div id="wpMount"></div>
         <!-- Calendar & Festivals Button -->
         <div onclick="openCalendar()" style="background:linear-gradient(135deg,rgba(212,168,67,0.08),rgba(255,140,30,0.05));border:1px solid rgba(212,168,67,0.20);border-radius:16px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
           <div style="display:flex;align-items:center;gap:12px;">
@@ -3665,7 +3646,6 @@ function resolveDailyDevotional(date){
 function refreshDailyDevotional(){
   if(jPlay) return; /* never swap the mantra below an active recitation */
   T=resolveDailyDevotional(dailyCivilDate());
-  try{setWallpaper();}catch(e){}
   try{personalise();}catch(e){}
   try{buildMantra();buildMala();updateJ();}catch(e){}
 }
@@ -4368,7 +4348,7 @@ function go(tab){
     }).catch(function(){});
   }
   if(tab==='listen')renderSadhanaCard();
-  if(tab==='home'){renderWallpaperCard();renderStreakCard();renderCalIcon();}
+  if(tab==='home'){renderStreakCard();renderCalIcon();}
 }
 
 // ── Audio player ──
@@ -6101,12 +6081,11 @@ try{
    killed everything after it — the panchang, the sadhana card and the
    wallpaper simply never rendered, with no error anyone would see.
    Each is now independent: a failure costs its own feature and nothing else. */
-try{ refreshDailyDevotional(); }catch(e){try{setWallpaper();personalise();}catch(_) {}}
+try{ refreshDailyDevotional(); }catch(e){try{personalise();}catch(_) {}}
 try{ personaliseMarg(); }catch(e){}
 try{ fetchPanchang(); }catch(e){}
 try{ updateSadhanaTab(); }catch(e){}
 try{ renderSadhanaCard(); }catch(e){}
-try{ renderWallpaperCard(); }catch(e){}
 // deep link from Explore: dashboard.html?go=sadhana
 // Explore (astrology.html) hops back here with ?go=<screen>.
 // Guidance and Sadhana no longer have bottom-nav tabs, so this is their entry.
