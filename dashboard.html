@@ -1578,6 +1578,38 @@ body[data-home="returning"] .streak{display:flex;}
   0%{transform:translate(-50%,-50%) scale(1);opacity:0.6;}
   100%{transform:translate(-50%,-50%) scale(2.2);opacity:0;}
 }
+
+/* Daily Jap responsive sacred-text layout.
+   Short bija/name mantras keep the large immersive treatment. Medium and
+   long prayers flow as one readable passage, so no word can escape the phone
+   viewport or push the counter and controls off-screen. */
+#scr-jap .j-center{min-height:0;gap:clamp(10px,2.2vh,20px);padding-inline:clamp(16px,5vw,24px);}
+#scr-jap #jFocusLine{margin-bottom:clamp(2px,1.2vh,12px)!important;flex-shrink:0;}
+#scr-jap .j-mantra-wrap{width:100%;max-width:100%;min-width:0;}
+#scr-jap .j-mantra{width:100%;max-width:620px;min-width:0;}
+#scr-jap .j-mantra .j-line{max-width:100%;}
+#scr-jap .j-mantra.is-short .j-word{font-size:clamp(30px,9.5vw,40px);letter-spacing:clamp(.5px,.7vw,3px);}
+#scr-jap .j-mantra.is-flow{display:block;max-height:min(42vh,360px);overflow-y:auto;overflow-x:hidden;padding:2px 4px;scrollbar-width:none;}
+#scr-jap .j-mantra.is-flow::-webkit-scrollbar{display:none;}
+#scr-jap .j-mantra.is-flow .j-line{display:block;width:100%;line-height:1.62;text-align:center;overflow-wrap:anywhere;word-break:normal;}
+#scr-jap .j-mantra.is-flow .j-word{display:inline;font-size:clamp(20px,6.2vw,28px);line-height:1.62;letter-spacing:0;margin-inline:.10em;white-space:normal;}
+#scr-jap .j-mantra.is-long{max-height:min(38vh,310px);}
+#scr-jap .j-mantra.is-long .j-word{font-size:clamp(17px,5.3vw,23px);line-height:1.55;}
+#scr-jap .j-bottom{padding:0 clamp(16px,5vw,24px) max(18px,env(safe-area-inset-bottom));gap:8px;}
+
+@media (max-height:740px){
+  #scr-jap .jnav{padding-top:max(20px,env(safe-area-inset-top));padding-bottom:5px;}
+  #scr-jap .j-center{gap:7px;justify-content:space-evenly;}
+  #scr-jap #jFocusLine{margin-bottom:0!important;}
+  #scr-jap .j-mantra.is-flow{max-height:34vh;}
+  #scr-jap .j-mantra.is-flow .j-word{font-size:clamp(17px,5.4vw,23px);line-height:1.48;}
+  #scr-jap .j-mantra.is-long .j-word{font-size:clamp(15px,4.8vw,20px);line-height:1.42;}
+  #scr-jap .j-counter{gap:1px;}
+  #scr-jap .j-count-num{font-size:24px;}
+  #scr-jap .j-play-btn,#scr-jap .j-reset-btn{height:48px;}
+  #scr-jap .j-bottom{gap:6px;}
+  #scr-jap #jContBtn{margin-top:3px!important;}
+}
 </style>
 
 <style id="wallpaper-day">
@@ -3863,9 +3895,9 @@ function animateWord(el, state){
   } else {
     // idle — fade back naturally
     el.style.transition='opacity 0.20s ease-in-out, color 0.20s ease-in-out, transform 0.15s ease-in-out, text-shadow 0.20s ease-in-out';
-    el.style.opacity='0.45';
+    el.style.opacity='0.82';
     el.style.transform='scale(1)';
-    el.style.color='rgba(255,255,255,0.88)';
+    el.style.color='rgba(255,255,255,0.94)';
     el.style.textShadow='none';
   }
 }
@@ -3960,15 +3992,20 @@ function startWordHighlight(){
 function buildMantraForWords(words){
   const el=document.getElementById('jMantra');
   if(!el)return;
-  // 2-line split: first 2 / rest
-  const line1=words.slice(0,Math.ceil(words.length/2));
-  const line2=words.slice(Math.ceil(words.length/2));
+  const glyphCount=words.join('').length;
+  const mode=(words.length<=6&&glyphCount<=42)?'short':(words.length<=14&&glyphCount<=120)?'medium':'long';
+  el.className='j-mantra '+(mode==='short'?'is-short':'is-flow is-'+mode);
+  // Only short mantras use the cinematic two-line composition. Longer text
+  // stays in one normal-flow line container and wraps at real word boundaries.
+  const split=(mode==='short')?Math.ceil(words.length/2):words.length;
+  const line1=words.slice(0,split);
+  const line2=words.slice(split);
   let html='<div class="j-line">';
-  line1.forEach((w,i)=>{html+=`<span class="j-word" data-sanskrit id="jw${i}" style="opacity:0.45;">${w}</span>`;});
+  line1.forEach((w,i)=>{html+=`<span class="j-word" data-sanskrit id="jw${i}" style="opacity:0.82;color:rgba(255,255,255,0.94);">${w}</span>`;});
   html+='</div>';
   if(line2.length){
     html+='<div class="j-line">';
-    line2.forEach((w,i)=>{html+=`<span class="j-word" data-sanskrit id="jw${i+line1.length}" style="opacity:0.45;">${w}</span>`;});
+    line2.forEach((w,i)=>{html+=`<span class="j-word" data-sanskrit id="jw${i+line1.length}" style="opacity:0.82;color:rgba(255,255,255,0.94);">${w}</span>`;});
     html+='</div>';
   }
   el.innerHTML=html;
