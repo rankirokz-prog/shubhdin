@@ -5802,13 +5802,23 @@ function enginePanchang(){
   return buildPayload(PE.getPanchang(new Date(),c.lat,c.lng,sdTzHours()));
 }
 async function fetchPanchang(){
-  // Today's values do not change during the day, so a cache hit means Home
-  // needs nothing further — and this is the ad page, so 278KB of engine is
-  // not worth fetching to recompute what we already have. The engine loads
-  // lazily when a deeper page (Full Panchang, calendar) actually needs it.
+  // Panchang values may come from cache immediately, but Today Jap also needs
+  // the engine's festival/vrata list. Returning before that engine loads made
+  // a warm launch fall back to the weekday mantra while a cold launch on the
+  // SAME civil date showed the festival mantra.
   pgSweepCache();
   try{ var c=JSON.parse(localStorage.getItem(pgCacheKey())||'null');
-       if(pgUsable(c)){ window._panchangData=c; applyPanchang(c); return; } }catch(e){}
+       if(pgUsable(c)){
+         window._panchangData=c;
+         applyPanchang(c);                 // fast cached paint
+         try{
+           await ensureEngine();
+           _obsMemo={};                    // discard any pre-engine observance map
+           refreshDailyDevotional();       // authoritative city-date festival Jap
+           try{ renderDailySlot(); }catch(_){}
+         }catch(engineErr){ console.log('Festival Jap engine unavailable:',engineErr); }
+         return;
+       } }catch(e){}
   try{
     await ensureEngine();
     var p=enginePanchang();
