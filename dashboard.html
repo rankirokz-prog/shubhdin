@@ -3443,7 +3443,8 @@ function mantraScriptText(s,l){
   var sacredKey=String(s).replace(/\s+/g,' ').trim();
   var sacredOverrides={
     te:{'ॐ नमो वेङ्कटेशाय':'ఓం నమో వేంకటేశాయ','ॐ नमो वेङ्कटेशाय ॥':'ఓం నమో వేంకటేశాయ ॥','वेङ्कटेशाय':'వేంకటేశాయ','वेङ्कटेशाय ॥':'వేంకటేశాయ ॥'},
-    en:{'ॐ नमो वेङ्कटेशाय':'Om Namo Venkatesaya','ॐ नमो वेङ्कटेशाय ॥':'Om Namo Venkatesaya','वेङ्कटेशाय':'Venkatesaya','वेङ्कटेशाय ॥':'Venkatesaya'}
+    en:{'ॐ नमो वेङ्कटेशाय':'Om Namo Venkatesaya','ॐ नमो वेङ्कटेशाय ॥':'Om Namo Venkatesaya','वेङ्कटेशाय':'Venkatesaya','वेङ्कटेशाय ॥':'Venkatesaya'},
+    ta:{'गोविंदाय':'கோவிந்தாய'}
   };
   if(sacredOverrides[l]&&sacredOverrides[l][sacredKey]) return sacredOverrides[l][sacredKey];
   var originalLang=l; if(l==='as') l='bn'; var map=MANTRA_SCRIPT_MAP[l];
@@ -3501,7 +3502,10 @@ const SACRED_SOURCE_CORRECTIONS={
   krishna_vasudeva_sutam:['वसुदेवसुतं','देवं','कंसचाणूरमर्दनम्','देवकीपरमानन्दं','कृष्णं','वन्दे','जगद्गुरुम् ॥'],
   vishnu_shantakaram:['शान्ताकारं','भुजगशयनं','पद्मनाभं','सुरेशम्','विश्वाधारं','गगनसदृशं','मेघवर्णं','शुभाङ्गम् ।','लक्ष्मीकान्तं','कमलनयनं','योगिभिर्ध्यानगम्यम्','वन्दे','विष्णुं','भवभयहरं','सर्वलोकैकनाथम् ॥'],
   navagraha_nava_naga_stotram:['अनन्तं','वासुकिं','शेषं','पद्मनाभं','च','कम्बलम्','शङ्खपालं','धृतराष्ट्रं','तक्षकं','कालियं','तथा ॥'],
-  ganesh_agajanana:['अगजानन','पद्मार्कं','गजाननम्','अहर्निशम् ।','अनेकदन्तं','भक्तानाम्','एकदन्तम्','उपास्महे ॥']
+  ganesh_agajanana:['अगजानन','पद्मार्कं','गजाननम्','अहर्निशम् ।','अनेकदन्तं','भक्तानाम्','एकदन्तम्','उपास्महे ॥'],
+  lakshmi_gayatri:['ॐ','श्रीमहालक्ष्म्यै','च','विद्महे','विष्णुपत्न्यै','च','धीमहि','तन्नो','लक्ष्मीः','प्रचोदयात् ॥'],
+  devi_kanaka_durga:['ॐ','श्री','कनकदुर्गायै','नमः ॥'],
+  shani_neelanjana:['नीलांजनसमाभासं','रविपुत्रं','यमाग्रजम् ।','छायामार्तण्डसम्भूतं','तं','नमामि','शनैश्चरम् ॥']
 };
 const SACRED_TEXT_HOLD={hanuman_ramadootha_stotram:1,dakshinamurthy_stotram:1,lakshmi_vyuha:1,venkateswara_vajrakavacham:1};
 function sacredSourceWords(m){return (SACRED_SOURCE_CORRECTIONS[m&&m.id]||(m&&m.words)||[]).slice();}
