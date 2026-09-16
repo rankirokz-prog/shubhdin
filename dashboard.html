@@ -9143,9 +9143,18 @@ function mlGodTitle(x){
   if(x.godKey&&sdHas(x.godKey))return A(x.godKey);
   return (window.SD_LANG||'hi')==='en'?x.god_en:mantraScriptText(x.god_hi);
 }
+// Editorial titles use native spelling; sacred recitation words keep their
+// original Sanskrit text and word boundaries for audio synchronization.
+function mantraTitleText(text,language){
+  var l=language||window.SD_LANG||'hi';
+  var title=mantraScriptText(text,l);
+  if(l==='te') title=title.replace(/మన్త్ర(?=\s|$)/g,'మంత్రం');
+  if(l==='kn') title=title.replace(/ಮನ್ತ್ರ(?=\s|$)/g,'ಮಂತ್ರ');
+  return title;
+}
 function mlMantraTitle(m){
   if(m.key&&sdHas(m.key))return A(m.key);
-  return (window.SD_LANG||'hi')==='en'?m.t1en:mantraScriptText(m.t1);
+  return (window.SD_LANG||'hi')==='en'?m.t1en:mantraTitleText(m.t1);
 }
 
 let mlAudio=null, mlPlaying=false, mlLastIdx=0, mlView='grid';
