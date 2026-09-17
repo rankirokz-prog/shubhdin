@@ -91,7 +91,7 @@ function code(uid, report) {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -138,7 +138,17 @@ module.exports = async function handler(req, res) {
   }
   /* the check itself lives in lib/verify-user.js, shared with save-user.js
      and feedback.js — one implementation, three callers */
-  async function verifyUser(uid, token) { return verifyUserWith(supabaseUrl, serviceKey, uid, token); }
+  /* Prefer the standard Authorization header. Query-string access tokens are
+     retained only as a backwards-compatible fallback for an older cached app;
+     putting a session token in a URL exposes it to hosting/request logs. */
+  function requestToken(fallback) {
+    const h = String(req.headers.authorization || '');
+    const m = h.match(/^Bearer\s+(.+)$/i);
+    return (m && m[1]) || fallback;
+  }
+  async function verifyUser(uid, token) {
+    return verifyUserWith(supabaseUrl, serviceKey, uid, requestToken(token));
+  }
 
   // ── dispatch-gate helpers ──────────────────────────────────────────────
   const SD_LANGS = ['en','hi','te','kn','ta','bn','mr','gu','as'];
@@ -264,10 +274,38 @@ module.exports = async function handler(req, res) {
         out[v] = await r.json();
       } catch (e) { out[v] = null; missing++; }
     }));
+    /* Payment truth comes from orders, not browser events. purchase_done is a
+       useful funnel signal but a buyer can close the tab after paying, so it
+       must never be presented as the financial total. Return only aggregates;
+       no buyer uid, phone, email or payment id reaches the stats page. */
+    let commerce = null;
+    try {
+      const r = await fetch(`${supabaseUrl}/rest/v1/orders?status=eq.paid&select=report,amount,dispatch_status,created_at&order=created_at.desc&limit=5000`,
+        { headers: H });
+      if (r.ok) {
+        const rows = await r.json();
+        const byReport = {}, byDispatch = { pending: 0, approved: 0, sent: 0, problem: 0 };
+        let revenue = 0, last7 = 0;
+        const since7 = Date.now() - 7 * 86400000;
+        (Array.isArray(rows) ? rows : []).forEach(o => {
+          const report = String(o.report || 'unknown');
+          const amount = Number(o.amount || 0);
+          revenue += amount;
+          if (Date.parse(o.created_at || '') >= since7) last7++;
+          const st = byDispatch[o.dispatch_status || 'pending'] == null ? 'pending' : (o.dispatch_status || 'pending');
+          byDispatch[st]++;
+          if (!byReport[report]) byReport[report] = { report, orders: 0, revenue: 0 };
+          byReport[report].orders++;
+          byReport[report].revenue += amount;
+        });
+        commerce = { paid_orders: rows.length, revenue, paid_last_7d: last7,
+          dispatch: byDispatch, reports: Object.values(byReport).sort((a,b) => b.revenue - a.revenue) };
+      }
+    } catch (e) { /* analytics views remain useful if this summary is unavailable */ }
     if (missing === VIEWS.length)
       return res.status(200).json({ ok: false, setup_needed: true,
-        error: 'analytics views not found — run analytics-setup.sql in Supabase first' });
-    return res.status(200).json({ ok: true, views: out, missing });
+        error: 'analytics views not found — run analytics-setup.sql in Supabase first', commerce });
+    return res.status(200).json({ ok: true, views: out, missing, commerce });
   }
 
   // ── ADMIN · move one order through the dispatch gate ──
@@ -411,7 +449,28 @@ module.exports = async function handler(req, res) {
       /* F2 · same rule as the webhook: a failed order write must not answer
          paid:true — the app would consume the Play purchase and no order row
          would exist behind it. 5xx; the app retries verification on next open. */
-      const upP = await upsertPaid(b.uid, b.report, PRICES[b.report], 'play:' + String(b.purchaseToken).slice(0, 24));
+      /* A purchase token is a one-time proof. Bind it to the first account and
+         report that uses it so sharing/replaying a valid token cannot unlock a
+         second account. Store only a one-way hash, never Google's raw token. */
+      const playPaymentId = 'play:' + crypto.createHash('sha256')
+        .update(String(b.purchaseToken)).digest('hex');
+      const legacyPaymentId = 'play:' + String(b.purchaseToken).slice(0, 24);
+      let used = [];
+      try {
+        const lookups = await Promise.all([playPaymentId, legacyPaymentId].map(id =>
+          fetch(`${supabaseUrl}/rest/v1/orders?payment_id=eq.${encodeURIComponent(id)}&select=uid,report`,
+            { headers: H }).then(async r => {
+              if (!r.ok) throw new Error('purchase-token lookup failed');
+              return r.json();
+            })));
+        used = lookups.reduce((a, x) => a.concat(Array.isArray(x) ? x : []), []);
+      } catch (e) {
+        return res.status(503).json({ error: 'purchase replay check failed', retry: true });
+      }
+      if (used.some(x => x.uid !== b.uid || x.report !== b.report))
+        return res.status(409).json({ error: 'purchase already used by another account or report' });
+
+      const upP = await upsertPaid(b.uid, b.report, PRICES[b.report], playPaymentId);
       if (!upP || !upP.ok) {
         let detail = ''; try { detail = (await upP.text()).slice(0, 200); } catch (e) {}
         console.error('[play_verify] order write failed for ' + b.uid + '/' + b.report + ': ' + detail);
@@ -525,9 +584,13 @@ module.exports = async function handler(req, res) {
       const pay = await fetch('https://api.razorpay.com/v1/payments/' + encodeURIComponent(q1.payment_id),
         { headers: { Authorization: auth } }).then(r => r.json());
       if (!pay || !pay.id) return res.status(404).json({ error: 'payment not found' });
-      if (pay.status !== 'captured' && pay.status !== 'authorized') {
+      /* "authorized" is not settled money and can still fail capture. Only a
+         captured payment may create ownership. */
+      if (pay.status !== 'captured') {
         return res.status(200).json({ paid: false, status: pay.status || 'unknown' });
       }
+      if (pay.currency && pay.currency !== 'INR')
+        return res.status(409).json({ error: 'wrong currency', currency: pay.currency });
 
       // notes live on the payment, or on its order, or on the payment link
       let notes = pay.notes || {};
@@ -538,10 +601,20 @@ module.exports = async function handler(req, res) {
           if (ord && ord.notes && ord.notes.uid) notes = ord.notes;
         } catch (e) {}
       }
+      if ((!notes.uid || !notes.report) && pay.payment_link_id) {
+        try {
+          const pl = await fetch('https://api.razorpay.com/v1/payment_links/' + encodeURIComponent(pay.payment_link_id),
+            { headers: { Authorization: auth } }).then(r => r.json());
+          if (pl && pl.notes && pl.notes.uid && pl.notes.report) notes = pl.notes;
+        } catch (e) {}
+      }
       // the payment must belong to this signed-in buyer — otherwise anyone could
       // replay someone else's payment id and claim a report
-      if (notes.uid && notes.uid !== q1.uid) return res.status(403).json({ error: 'payment belongs to another account' });
-      const report = notes.report || q1.report;
+      if (!notes.uid || !notes.report)
+        return res.status(409).json({ error: 'payment attribution missing' });
+      if (notes.uid !== q1.uid) return res.status(403).json({ error: 'payment belongs to another account' });
+      if (notes.report !== q1.report) return res.status(409).json({ error: 'payment is for another report' });
+      const report = notes.report;
       const expect = PRICES[report];
       if (!expect) return res.status(400).json({ error: 'not for sale' });
       /* B0 · compare in paise: Math.round(19850/100) is 199 and let fifty
@@ -553,8 +626,7 @@ module.exports = async function handler(req, res) {
       }
       if (paidPaise > expect * 100) console.warn('[order] over-payment on ' + report + ' by ' + q1.uid + ': ' + paidPaise + ' paise vs ' + (expect * 100));
 
-      const up = await upsertPaid(q1.uid, report, expect, pay.id,
-        (pay && pay.notes) || {});
+      const up = await upsertPaid(q1.uid, report, expect, pay.id, notes);
       if (!up.ok) return res.status(500).json({ error: 'order write failed' });
       return res.status(200).json({ ok: true, paid: true, report: report, order_code: code(q1.uid, report), via: 'confirm' });
     } catch (e) {
@@ -611,7 +683,8 @@ module.exports = async function handler(req, res) {
       // Recover notes from the payment link when the payment alone lacks them.
       if ((!notes.uid || !notes.report) && payEnt) {
         const linkId = payEnt.payment_link_id || (linkEnt && linkEnt.id);
-        const keyId = process.env.RZP_KEY_ID, keySecret = process.env.RZP_KEY_SECRET;
+        const keyId = (process.env.RZP_KEY_ID || '').trim();
+        const keySecret = (process.env.RZP_KEY_SECRET || '').trim();
         if (linkId && keyId && keySecret) {
           try {
             const auth = 'Basic ' + Buffer.from(keyId + ':' + keySecret).toString('base64');
