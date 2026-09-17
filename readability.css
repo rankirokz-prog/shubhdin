@@ -1,0 +1,158 @@
+/* App-shell readability, v237. No report/PDF, mantra, image or business-logic changes.
+   Explicit page scopes keep light onboarding cards separate from dark screens. */
+body[data-sd-page] {
+  --sd-readable: #DED0BB;
+  --sd-label: #E8BE73;
+}
+body[data-sd-page] :is(button, input, select) { font-family: inherit; }
+body[data-sd-page] :is(button, a, input, select):focus-visible {
+  outline: 2px solid #E8BE73; outline-offset: 3px;
+}
+body[data-sd-page] :is(.hdr, .h-row, .r-top, .c-top, .sum) > div { min-width: 0; }
+body[data-sd-page] :is(.btn, .cta, .kh-btn, .nitya-share) {
+  line-height: 1.6; white-space: normal; overflow-wrap: anywhere;
+}
+
+/* Main dark screens: opaque secondary text avoids cumulative fading. */
+body[data-sd-page]:not([data-sd-page="index"]) :is(.h-s, .h-en, .r-en, .c-t2,
+  .c-meta, .vline, .note, .p-note, .r-mail, .p-pct, .htitle small, .sum .t2) {
+  font-size: .75rem; line-height: 1.6; color: var(--sd-readable);
+  letter-spacing: .02em; overflow-wrap: anywhere;
+}
+body[data-sd-page]:not([data-sd-page="index"]) :is(.lead, .hook, .r-hook,
+  .p-s, .r-s, .tease, .empty .s) {
+  font-size: .875rem; line-height: 1.7; color: var(--sd-readable);
+}
+body[data-sd-page]:is([data-sd-page="buy"], [data-sd-page="kundli"]) label {
+  font-size: .8125rem; line-height: 1.6; color: var(--sd-label); letter-spacing: .02em;
+}
+body[data-sd-page]:is([data-sd-page="buy"], [data-sd-page="kundli"]) :is(input, select) {
+  min-width: 0; font-size: 1rem; line-height: 1.5;
+}
+body[data-sd-page]:is([data-sd-page="buy"], [data-sd-page="kundli"]) input::placeholder {
+  color: var(--sd-readable); opacity: 1;
+}
+body[data-sd-page]:is([data-sd-page="buy"], [data-sd-page="kundli"], [data-sd-page="reports"]) .err {
+  font-size: .8125rem; line-height: 1.6;
+}
+body[data-sd-page="buy"] :is(#prepTxt, #prepOc, #prepWa),
+body[data-sd-page="kundli"] :is(#timeHint, #lbLangHint) {
+  font-size: .8125rem !important; line-height: 1.7 !important;
+  color: var(--sd-readable) !important; opacity: 1 !important; overflow-wrap: anywhere;
+}
+body[data-sd-page="kundli"] .p-step { font-size: .875rem; color: var(--sd-readable); line-height: 1.7; }
+body[data-sd-page="buy"] .back { flex-shrink: 0; }
+body[data-sd-page="buy"] .was { font-size: .8125rem; color: var(--sd-readable); }
+body[data-sd-page="buy"] .wa { background: #146C3C; }
+
+/* Purchase cards keep prices and actions readable without horizontal overflow. */
+body[data-sd-page="premium"] :is(.chip, .r-chips .chip, .off, .ribbon) {
+  font-size: .75rem; line-height: 1.6; letter-spacing: .02em;
+}
+body[data-sd-page="premium"] .chip { color: #FFF4DE; }
+body[data-sd-page="premium"] .ribbon { background: #8A321A; }
+body[data-sd-page="premium"] :is(.buy, .r-buy) { flex-wrap: wrap; }
+body[data-sd-page="premium"] :is(.cta, .r-buy .cta) { font-size: .875rem; max-width: 100%; }
+body[data-sd-page="premium"] .was { color: var(--sd-readable); }
+
+/* Panchang: descriptions and named values, not decorative glyphs. */
+body[data-sd-page="astrology"] :is(.h-city, .d-now-lbl, .d-until, .d-count,
+  .rb-x, .d-next, .d-tara, .s-live, .l-k, .l-v, .pg-s, .r-v small, .tag,
+  .xc-s, .xgrp, .xt-s, .sg-t, .sg-now, .subh, .bpl, .bpwhy, .pc-s,
+  .sc-e, .kt-d, .brandline, .bprow .n2) { font-size: .75rem; line-height: 1.6; }
+body[data-sd-page="astrology"] :is(.h-city, .d-until, .rb-x, .d-next, .s-live,
+  .pg-s, .r-v small, .xc-s, .xt-s, .sg-t, .bpwhy, .sc-e, .kt-d,
+  .brandline, .bprow .n2, .seg .st) { color: var(--sd-readable); }
+body[data-sd-page="astrology"] :is(.l-k, .xgrp, .subh, .bpl, .pc-s) { color: var(--sd-label); }
+body[data-sd-page="astrology"] :is(.r-k, .r-v, .f-t, .xt-n, .sg-n, .kt-n) {
+  font-size: .8125rem; line-height: 1.6; overflow-wrap: anywhere;
+}
+body[data-sd-page="astrology"] :is(.v-line, .cta-s) { font-size: .875rem; line-height: 1.7; }
+body[data-sd-page="astrology"] .limbs { grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr)); }
+body[data-sd-page="astrology"] .xgrid { grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr)); }
+body[data-sd-page="astrology"] .xt-s { display: block; -webkit-line-clamp: unset; overflow: visible; }
+body[data-sd-page="astrology"] :is(.row, .sgrow) { gap: .5rem; flex-wrap: wrap; }
+body[data-sd-page="astrology"] .seg .st { font-size: .75rem; }
+
+/* Home, library labels and navigation. Sacred verse/player sizing stays intact. */
+body[data-sd-page="dashboard"] :is(.greet-time, .chip-l, .chip-v, .dpill, .lh-tag,
+  .lh-sub, .tc-lbl, .tc-sub, .jt-tag, .jt-benefit, .sk-sub, .sk-num, .sk-unit,
+  .mp-sub, .mp-time, .dh-title small, .gpill, .dh-sub, .np-day, .np-sub,
+  .prog-times span, .plbl, .pi-sub, .pi-dur, .si-lbl, .psec, .plabel, .psub2,
+  .pend, .kh-tag, .pm-sub, .ag-sub, .ml-s, .ml-count, .ml-row .t2, .mlp-mt,
+  .gita-tag, .gita-ref, .nitya-head .nitya-date, .cev-cg, .cev-more) {
+  font-size: .75rem; line-height: 1.6; letter-spacing: .02em;
+}
+body[data-sd-page="dashboard"] :is(.greet-time, .chip-l, .lh-sub, .tc-sub,
+  .sk-sub, .mp-time, .dh-sub, .np-sub, .prog-times span, .pi-sub, .psec,
+  .plabel, .psub2, .pm-sub, .ag-sub, .ml-s, .ml-row .t2, .mlp-mt,
+  .gita-ref, .nitya-head .nitya-date, .cev-more) { color: var(--sd-readable); }
+body[data-sd-page="dashboard"] :is(.lh-tag, .jt-tag, .sk-unit, .dh-title small,
+  .gpill, .np-day, .plbl, .pi-dur, .si-lbl, .pend, .kh-tag) { color: var(--sd-label); }
+body[data-sd-page="dashboard"] :is(.kh-sub, .lh-preview p, .gita-n, .nitya-digit) {
+  font-size: .875rem; line-height: 1.7; color: var(--sd-readable);
+}
+body[data-sd-page="dashboard"] :is(.nitya-note, .nitya-motion) { font-size: .875rem; line-height: 1.7; }
+body[data-sd-page="dashboard"] .chips { flex-wrap: wrap; overflow: visible; gap: 6px; }
+body[data-sd-page="dashboard"] .chip { flex-shrink: 1; min-width: 0; flex-wrap: wrap; }
+body[data-sd-page="dashboard"] .jt-content { max-width: 100%; }
+body[data-sd-page="dashboard"] .jt-hook { line-height: 1.65; max-width: 85%; }
+body[data-sd-page="dashboard"] .jt-bottom { flex-wrap: wrap; justify-content: flex-start; gap: 10px; margin-top: 8px; }
+body[data-sd-page="dashboard"] .jt-btn {
+  font-size: .875rem; line-height: 1.6; color: #1A0D00; white-space: normal; max-width: 100%;
+}
+body[data-sd-page="dashboard"] .jt-streak {
+  position: relative; top: auto; right: auto; display: table; margin: 0 14px 12px auto;
+  font-size: .75rem; line-height: 1.6; max-width: calc(100% - 28px);
+}
+body[data-sd-page="dashboard"] .gita-row { flex-wrap: wrap; }
+body[data-sd-page="dashboard"] .tabbar { height: auto; min-height: 64px; align-items: stretch; }
+body[data-sd-page="dashboard"] .tab { min-width: 0; justify-content: center; }
+body[data-sd-page="dashboard"] .tab-label {
+  font-size: .75rem !important; line-height: 1.6; color: var(--sd-readable);
+  white-space: normal; text-align: center; overflow-wrap: anywhere;
+}
+body[data-sd-page="dashboard"] .tab.on .tab-label { color: #FFB36B; }
+body[data-sd-page="dashboard"] :is(#settRepSub, #settNameLbl, #settLangLbl,
+  #settCityLbl, #settDobLbl, #settDobNote, #settTobLbl, #settTobNote, #settFbLbl,
+  #calHinduMonth, #lgPrivacy, #lgTerms, #lgRefund, #lgContact) {
+  font-size: .75rem !important; line-height: 1.6 !important;
+  color: var(--sd-readable) !important; letter-spacing: .02em !important;
+}
+body[data-sd-page="dashboard"] .gita-share { background: #146C3C; white-space: normal; }
+body[data-sd-page="dashboard"] .kh-sub { max-width: 100%; }
+body[data-sd-page="dashboard"] .nitya-body { flex-wrap: wrap; }
+body[data-sd-page="dashboard"] .nitya-text { flex-basis: 8rem; }
+/* These two compact panchang tiles are LIGHT even in the dark dashboard. */
+body[data-sd-page="dashboard"] :is(.klbl, .ksub) { font-size: .75rem; line-height: 1.6; color: #684B37; }
+body[data-sd-page="dashboard"] .kc.gu .ksub { color: #684B37; }
+
+/* Onboarding dark language picker. */
+body[data-sd-page="index"] :is(.lt-sub, .lang-sub) { font-size: .75rem; line-height: 1.6; color: var(--sd-readable); }
+/* Onboarding cream cards: dark ink, never the dark-page secondary colour. */
+body[data-sd-page="index"] :is(.step-counter, .step-counter span, .field label,
+  .field-opt, .field-hint, .or-div, .btn-back, .skip-link, .trust-line, .vi-text, .vi-sub) {
+  font-size: .75rem; line-height: 1.6; color: #684B37; letter-spacing: .02em;
+}
+body[data-sd-page="index"] :is(.sh-desc, .hook-sub, .w-sub) {
+  font-size: .875rem; line-height: 1.7; color: #684B37;
+}
+body[data-sd-page="index"] .field label { font-size: .8125rem; }
+body[data-sd-page="index"] .field-top { flex-wrap: wrap; gap: 4px; }
+body[data-sd-page="index"] .field :is(input, select) {
+  min-height: 50px; height: auto; font-size: 1rem; line-height: 1.5; padding: 12px 16px;
+}
+body[data-sd-page="index"] .field input::placeholder { color: #705B49; opacity: 1; }
+body[data-sd-page="index"] :is(.btn-cta, .loc-btn) {
+  min-height: 54px; height: auto; padding: 12px; line-height: 1.6; white-space: normal;
+}
+body[data-sd-page="index"] .btn-cta { color: #1A0D00; }
+body[data-sd-page="index"] :is(.rc-label, .rc-sub) { font-size: .75rem; line-height: 1.6; color: #DED0BB; }
+body[data-sd-page="index"] .card :is(button, a, input, select):focus-visible { outline-color: #684B37; }
+@media (max-width: 360px) {
+  body[data-sd-page="premium"] :is(.cta, .r-buy .cta) { flex-basis: 100%; text-align: center; }
+  body[data-sd-page="buy"] .two { grid-template-columns: minmax(0, 1fr); }
+  body[data-sd-page="index"] .value-grid { grid-template-columns: 1fr; }
+  body[data-sd-page="dashboard"] .nitya-body { flex-direction: column; align-items: flex-start; }
+  body[data-sd-page="dashboard"] .nitya-text { flex-basis: auto; }
+}

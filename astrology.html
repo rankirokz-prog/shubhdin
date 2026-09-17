@@ -246,8 +246,9 @@ if(typeof window.A!=='function'){
 <script src="vrat-names.js"></script>
 <script src="panchang-terms-bridge.js"></script>
 <script src="sd-tz.js"></script>
+<link rel="stylesheet" href="readability.css">
 </head>
-<body>
+<body data-sd-page="astrology">
 <div id="app"></div>
 
 <script src="astronomy.min.js"></script>
@@ -423,8 +424,11 @@ function mins(ms){var m=Math.max(0,Math.round(ms/60000));var h=Math.floor(m/60);
            : fmt(plural(m, A('astrol.n_min'), A('astrol.n_min')), {n:m});}
 
 /* ── today's panchang (one engine call, cached) ──────────── */
-var P=null;
-function panchang(){if(!P){var n=new Date();P=PE.getPanchang(n,LAT,LNG,zoneOffsetAt(n));}return P;}
+var P=null, P_DAY='';
+function astroDayKey(d){
+  try{return sdTz.instantToWall(d||new Date(),CITY_TZ).ymd;}catch(e){return (d||new Date()).toDateString();}
+}
+function panchang(){var n=new Date(),k=astroDayKey(n);if(!P||P_DAY!==k){P=PE.getPanchang(n,LAT,LNG,zoneOffsetAt(n));P_DAY=k;}return P;}
 
 /* ── rashi table (display labels) ────────────────────────── */
 /* Column 1 is the Sanskrit name — Mesha, Vrishabha — which is exactly the key
@@ -1609,10 +1613,18 @@ function vFest(){
     localStorage.setItem('shubhdin_user',JSON.stringify(U));
   }catch(e){}
 })();
+var SD_TZ_MSG={
+  wait:{en:'Resolving your city time zone…',hi:'आपके शहर का समय क्षेत्र पता किया जा रहा है…',te:'మీ నగర సమయ మండలాన్ని గుర్తిస్తున్నాం…',kn:'ನಿಮ್ಮ ನಗರದ ಸಮಯ ವಲಯವನ್ನು ಪತ್ತೆ ಮಾಡಲಾಗುತ್ತಿದೆ…',ta:'உங்கள் நகர நேர மண்டலம் கண்டறியப்படுகிறது…',bn:'আপনার শহরের সময় অঞ্চল নির্ধারণ করা হচ্ছে…',mr:'तुमच्या शहराचा वेळ विभाग शोधला जात आहे…',gu:'તમારા શહેરનો સમય વિસ્તાર શોધાઈ રહ્યો છે…',as:'আপোনাৰ চহৰৰ সময় অঞ্চল নিৰ্ধাৰণ কৰা হৈছে…'},
+  fail:{en:'Unable to resolve this city’s time zone. Please select the city again.',hi:'इस शहर का समय क्षेत्र नहीं मिल सका। कृपया शहर दोबारा चुनें।',te:'ఈ నగర సమయ మండలం గుర్తించలేకపోయాం. దయచేసి నగరాన్ని మళ్లీ ఎంచుకోండి.',kn:'ಈ ನಗರದ ಸಮಯ ವಲಯವನ್ನು ಪತ್ತೆ ಮಾಡಲಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಗರವನ್ನು ಮತ್ತೆ ಆಯ್ಕೆಮಾಡಿ.',ta:'இந்த நகரத்தின் நேர மண்டலத்தைக் கண்டறிய முடியவில்லை. நகரத்தை மீண்டும் தேர்ந்தெடுக்கவும்.',bn:'এই শহরের সময় অঞ্চল নির্ধারণ করা যায়নি। শহরটি আবার বেছে নিন।',mr:'या शहराचा वेळ विभाग सापडला नाही. कृपया शहर पुन्हा निवडा.',gu:'આ શહેરનો સમય વિસ્તાર મળી શક્યો નથી. કૃપા કરીને શહેર ફરી પસંદ કરો.',as:'এই চহৰৰ সময় অঞ্চল নিৰ্ধাৰণ কৰিব পৰা নগ’ল। অনুগ্ৰহ কৰি চহৰখন পুনৰ বাছক।'}
+};
+function sdTzMsg(k){var l=window.SD_LANG||'hi';return (SD_TZ_MSG[k]&&SD_TZ_MSG[k][l])||SD_TZ_MSG[k].hi;}
 if(SD_TZ_READY){
-  app.innerHTML='<div class="note" style="margin-top:35vh">Resolving your city time zone…</div>';
-  SD_TZ_READY.catch(function(){app.innerHTML='<div class="note" style="margin-top:35vh">Unable to resolve this city’s time zone. Please select the city again.</div>';});
+  app.innerHTML='<div class="note" style="margin-top:35vh">'+sdTzMsg('wait')+'</div>';
+  SD_TZ_READY.catch(function(){app.innerHTML='<div class="note" style="margin-top:35vh">'+sdTzMsg('fail')+'</div>';});
 }else route();
+var _astroDay=astroDayKey(new Date());
+setInterval(function(){var k=astroDayKey(new Date());if(k!==_astroDay){_astroDay=k;P=null;P_DAY='';route();}},60000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden){var k=astroDayKey(new Date());if(k!==_astroDay){_astroDay=k;P=null;P_DAY='';route();}}});
 </script>
 <script src="birthdate-guard.js"></script>
 <script src="nav-history.js"></script>
