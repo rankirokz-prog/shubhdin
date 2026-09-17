@@ -470,8 +470,8 @@ function absorbHash(){
 async function restoreFromServer(){
   if(!SESSION) return;
   try{
-    var r=await fetch('/api/order?list=1&uid='+SESSION.user.id
-                      +'&access_token='+encodeURIComponent(SESSION.access_token));
+    var r=await fetch('/api/order?list=1&uid='+SESSION.user.id,
+                      {headers:{Authorization:'Bearer '+SESSION.access_token}});
     var j=await apiJson(r);
     if(j && Array.isArray(j.reports)){
       j.reports.forEach(function(o){

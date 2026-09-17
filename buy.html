@@ -669,13 +669,18 @@ function absorbHash(){
   return Promise.resolve(null);
 }
 var SESSION=null;
+function sessionFetch(url,opts){
+  opts=opts||{};opts.headers=Object.assign({},opts.headers||{},
+    {Authorization:'Bearer '+SESSION.access_token});
+  return fetch(url,opts);
+}
 function afterAuth(sess){
   SESSION=sess;
   var proof=payProof();          /* MUST read the URL before we rewrite it */
   try{history.replaceState(null,'',location.pathname+'?r='+R);}catch(e){}
   /* heal the local ownership record from the orders table — one call, all
      reports. Fire-and-forget: the purchase flow below must not wait on it. */
-  fetch('/api/order?list=1&uid='+sess.user.id+'&access_token='+encodeURIComponent(sess.access_token))
+  sessionFetch('/api/order?list=1&uid='+sess.user.id)
    .then(apiJson).then(function(j){
      if(j&&Array.isArray(j.reports)){
        j.reports.forEach(function(o){sdOwnedWrite(o.report,o.order_code,o.pdf_url,o.lang);});
@@ -688,7 +693,7 @@ function afterAuth(sess){
   /* proof counts as much as the marker — a buyer who reloads, or whose rzp=1 is
      stripped by a redirect, must still land in confirmation and not on Pay. */
   var backFromRzp=(location.search.indexOf('rzp=1')>-1)||!!proof;
-  fetch('/api/order?check=1&uid='+sess.user.id+'&report='+R+'&access_token='+encodeURIComponent(sess.access_token))
+  sessionFetch('/api/order?check=1&uid='+sess.user.id+'&report='+R)
    .then(apiJson).then(function(j){
      if(j&&j.paid){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();}
      else if(backFromRzp){bdlog('back from razorpay, webhook not in yet');confirmAfterPay();}
@@ -741,10 +746,9 @@ function doPay(){
    ride in the Razorpay notes. postMeta() only runs in showDone(), i.e. after
    the buyer returns to this page — a buyer who pays and closes the tab was
    left with an order carrying no phone and lang defaulting to 'hi'. */
-fetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
+sessionFetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
       +'&phone='+encodeURIComponent((details()||{}).phone||'')
-      +'&lang='+encodeURIComponent((details()||{}).lang||window.SD_LANG||'hi')
-      +'&access_token='+encodeURIComponent(SESSION.access_token),
+      +'&lang='+encodeURIComponent((details()||{}).lang||window.SD_LANG||'hi'),
     {method:'POST'})
    .then(apiJson).then(function(j){
      if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();return;}
@@ -764,7 +768,7 @@ fetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
 }
 /* ₹0 test path — only reachable while the server has no Razorpay keys */
 function devPay(){
-  fetch('/api/order?dev=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
+  sessionFetch('/api/order?dev=1&uid='+SESSION.user.id+'&report='+R)
    .then(apiJson).then(function(j){
      if(j&&j.ok){ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();}
      else{$('errP').textContent=(j&&j.error)||'failed';$('errP').style.display='block';$('btPay').textContent=A('buy.retry');}
@@ -788,8 +792,7 @@ function confirmAfterPay(){
      fallback for buyers who arrive without a payment id. */
   var pid=payProof();
   if(pid){
-    fetch('/api/order?confirm=1&uid='+SESSION.user.id+'&report='+R+'&payment_id='+encodeURIComponent(pid)
-      +'&access_token='+encodeURIComponent(SESSION.access_token))
+    sessionFetch('/api/order?confirm=1&uid='+SESSION.user.id+'&report='+R+'&payment_id='+encodeURIComponent(pid))
      .then(apiJson).then(function(j){
        if(j&&j.paid){ORDER_CODE=j.order_code||ORDER_CODE;sdOwnedWrite(R,ORDER_CODE,null,viewLang());clearProof();
          bdlog('confirmed directly with razorpay');btn.disabled=false;showDone();}
@@ -798,7 +801,7 @@ function confirmAfterPay(){
   }
   var iv=setInterval(function(){
     tries++;
-    fetch('/api/order?check=1&uid='+SESSION.user.id+'&report='+R+'&access_token='+encodeURIComponent(SESSION.access_token))
+    sessionFetch('/api/order?check=1&uid='+SESSION.user.id+'&report='+R)
      .then(apiJson).then(function(j){
        if(j&&j.paid){clearInterval(iv);btn.disabled=false;ORDER_CODE=j.order_code;
          sdOwnedWrite(R,j.order_code,null,viewLang());clearProof();
@@ -849,7 +852,7 @@ function deliveryState(){
   if(WA_NUMBER){var w=$('prepWa');w.style.display='inline-block';
     w.href='https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent((ORDER_CODE||'')+' ');
     w.textContent='💬 '+SDX('support');}
-  fetch('/api/order?list=1&uid='+SESSION.user.id+'&access_token='+encodeURIComponent(SESSION.access_token))
+  sessionFetch('/api/order?list=1&uid='+SESSION.user.id)
    .then(apiJson).then(function(j){
      var o=(j&&j.reports||[]).filter(function(x){return x.report===R;})[0];
      if(!o){bdlog('deliveryState: order row not visible yet');return;}

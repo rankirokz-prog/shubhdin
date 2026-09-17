@@ -147,7 +147,8 @@ function signIn(){ if(!sb)return alert('Supabase CDN did not load — check the 
   } else fin();
 })();
 
-function api(qs){return fetch('/api/order?'+qs+'&uid='+SESSION.user.id+'&access_token='+encodeURIComponent(SESSION.access_token)).then(function(r){return r.json();});}
+function api(qs){return fetch('/api/order?'+qs+'&uid='+SESSION.user.id,
+  {headers:{Authorization:'Bearer '+SESSION.access_token}}).then(function(r){return r.json();});}
 function apiPost(qs,body){body.admin_uid=SESSION.user.id;body.access_token=SESSION.access_token;
   return fetch('/api/order?'+qs,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();});}
 

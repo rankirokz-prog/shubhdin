@@ -147,7 +147,8 @@ function day(s){ return String(s||'').slice(5,10); }
 
 function loadAll(){
   $('rfBtn').textContent='…';
-  fetch('/api/order?stats=1&uid='+SESSION.user.id+'&access_token='+encodeURIComponent(SESSION.access_token))
+  fetch('/api/order?stats=1&uid='+SESSION.user.id,
+    {headers:{Authorization:'Bearer '+SESSION.access_token}})
     .then(function(r){ return r.json().catch(function(){ return {error:'bad response ('+r.status+')'}; }); })
     .then(render)
     .catch(function(e){ cannotLoad('Could not reach the server.', String(e).slice(0,120)); });
@@ -155,13 +156,34 @@ function loadAll(){
 
 function render(j){
   $('rfBtn').textContent='↻';
-  if(!j || j.error) return cannotLoad(j&&j.error==='admin only'
+  if(!j || (j.error && !j.setup_needed)) return cannotLoad(j&&j.error==='admin only'
       ? 'This account is not on the admin list.'
       : 'Could not load stats.', j&&j.error);
-  if(j.setup_needed) return cannotLoad('Analytics tables are not set up yet.',
+  if(j.setup_needed && !j.commerce) return cannotLoad('Analytics tables are not set up yet.',
     'Run analytics-setup.sql in the Supabase SQL editor, then reload this page.');
 
   var v=j.views||{}, h='';
+  if(j.setup_needed) h+=card('Analytics setup needed',
+    '<p class="muted">Payment and dispatch totals below are live. For app usage, errors and funnels, run <b>analytics-setup.sql</b> in Supabase once.</p>','err');
+
+  /* Authoritative money and fulfilment numbers come from paid order rows,
+     never from the client-side purchase_done event. */
+  var c=j.commerce;
+  if(c){
+    var ds=c.dispatch||{};
+    h+=card('Payments & dispatch · authoritative',
+      '<div class="row3">'
+      +'<div><div class="big">'+esc(c.paid_orders||0)+'</div><span>paid orders</span></div>'
+      +'<div><div class="big">₹'+esc(c.revenue||0)+'</div><span>recorded revenue</span></div>'
+      +'<div><div class="big">'+esc(c.paid_last_7d||0)+'</div><span>paid · 7 days</span></div>'
+      +'</div>'
+      +'<div style="margin-top:11px;">'+tbl(['Status','Orders'],[
+        ['Pending',ds.pending||0],['Approved',ds.approved||0],['Sent',ds.sent||0],['Problem',ds.problem||0]
+      ],[1])+'</div>'
+      +(c.reports&&c.reports.length?'<div style="margin-top:11px;">'+tbl(['Report','Orders','Revenue'],
+        c.reports.map(function(x){return [x.report,x.orders,'₹'+x.revenue];}),[1,2])+'</div>':'')
+    );
+  }
 
   /* Errors first, always. This is the query worth running daily — three
      features in this app died silently to an uncaught throw and each was
@@ -195,8 +217,8 @@ function render(j){
       f.map(function(x){return [x.report,x.viewed,x.clicked,x.started,x.paid];}),[1,2,3,4]));
 
   var k=v.v_kundli_funnel||[];
-  if(k.length) h+=card('Free Kundli · opened → started → finished',
-    tbl(['Day','Opened','Started','Finished'],
+  if(k.length) h+=card('Free Kundli · generated → ready screen → gift tap',
+    tbl(['Day','Generated','Ready','Gift tap'],
       k.slice(0,10).map(function(x){return [day(x.day),x.opened,x.started,x.finished];}),[1,2,3]));
 
   var sh=v.v_shares||[];

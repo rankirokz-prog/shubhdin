@@ -310,7 +310,8 @@ function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
    new device's Premium and My Reports screens become correct immediately. */
 function syncPaidOwnership(){try{sbAuth().getSession().then(function(r){
   var s=r.data&&r.data.session;if(!s)return;
-  fetch('/api/order?list=1&uid='+s.user.id+'&access_token='+encodeURIComponent(s.access_token))
+  fetch('/api/order?list=1&uid='+s.user.id,
+    {headers:{Authorization:'Bearer '+s.access_token}})
   .then(function(x){return x.json();}).then(function(j){if(!j||!Array.isArray(j.reports))return;
     var a=[];try{a=JSON.parse(localStorage.getItem('sd_owned_reports')||'[]');if(!Array.isArray(a))a=[];}catch(e){a=[];}
     j.reports.forEach(function(o){var f=a.filter(function(x){return x&&x.report===o.report;})[0];
