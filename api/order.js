@@ -38,6 +38,7 @@
 const crypto = require('crypto');
 // one session check for every api/ function — see lib/verify-user.js
 const { verifyUser: verifyUserWith } = require('../lib/verify-user.js');
+const reportDrafts = require('../lib/report-drafts.js');
 
 // ── PRICE AUTHORITY ──────────────────────────────────────────────────────────
 // This table is the ONLY place a price is decided. buy.html's CFG and
@@ -90,6 +91,7 @@ function code(uid, report) {
 }
 
 module.exports = async function handler(req, res) {
+  res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -152,7 +154,7 @@ module.exports = async function handler(req, res) {
 
   // ── dispatch-gate helpers ──────────────────────────────────────────────
   const SD_LANGS = ['en','hi','te','kn','ta','bn','mr','gu','as'];
-  const BUCKET = 'shubhdin-audio';
+  const BUCKET = 'shubhdin-audio'; // read-only fallback for legacy public PDFs
   // Admin = a real signed-in session (verifyUser) whose uid is on the
   // allow-list. Without the second check any signed-in buyer could list every
   // order in the system.
@@ -187,11 +189,20 @@ module.exports = async function handler(req, res) {
   // to deliver it. Nothing guesses.
   function pdfPath(uid, report, lang) {
     return report === 'kundli'
-      ? (lang ? `kundlis/${uid}-${lang}.pdf` : `kundlis/${uid}.pdf`)
+      ? (lang ? `kundlis/v3/${uid}-${lang}.pdf` : `kundlis/${uid}.pdf`)
       : (lang ? `reports/${uid}/${report}-${lang}.pdf` : `reports/${uid}/${report}.pdf`);
   }
   async function headOk(path) {
     try {
+      if(path.startsWith('reports/')||path.startsWith('kundlis/v4/')){
+        const object=await fetch(`${supabaseUrl}/storage/v1/object/shubhdin-reports/`+path,{method:'HEAD',headers:H});
+        if(object.ok){
+          const sr=await fetch(`${supabaseUrl}/storage/v1/object/sign/shubhdin-reports/`+path,{method:'POST',headers:H,body:JSON.stringify({expiresIn:3600})});
+          const signed=await sr.json();if(!sr.ok||!signed.signedURL)return null;
+          return {url:supabaseUrl+'/storage/v1'+signed.signedURL,bytes:parseInt(object.headers.get('content-length')||'0',10),expires_at:new Date(Date.now()+55*60000).toISOString()};
+        }
+        if(![400,404].includes(object.status))return null;
+      }
       const h = await fetch(`${supabaseUrl}/storage/v1/object/public/${BUCKET}/` + path, { method: 'HEAD' });
       if (h.ok) return { url: `${supabaseUrl}/storage/v1/object/public/${BUCKET}/` + path,
                          bytes: parseInt(h.headers.get('content-length') || '0', 10) };
@@ -199,6 +210,16 @@ module.exports = async function handler(req, res) {
     return null;
   }
   async function pdfCheck(uid, report, lang) {
+    if(report==='kundli'&&lang){
+      try{
+        const r=await fetch(`${supabaseUrl}/storage/v1/object/shubhdin-reports/kundlis/v4/${uid}-${lang}.json`,{headers:H});
+        if(r.ok){const pointer=await r.json();const prefix=`kundlis/v4/${uid}-${lang}-`;
+          if(typeof pointer.path==='string'&&pointer.path.startsWith(prefix)&&/^[a-f0-9]{64}\.pdf$/.test(pointer.path.slice(prefix.length))){
+            const current=await headOk(pointer.path);if(current)return {...current,found_lang:lang,exact:true};
+          }
+        }
+      }catch(e){}
+    }
     const want = await headOk(pdfPath(uid, report, lang));
     if (want) return { ...want, found_lang: lang, exact: true };
     // Not there. What exists instead? Probe the legacy path, then the other
@@ -248,6 +269,15 @@ module.exports = async function handler(req, res) {
   }
 
   // ══ ADMIN · analytics ═══════════════════════════════════════════════════
+  // Read-only deployment check. Return booleans only, never keys or birth data.
+  if(req.method==='GET'&&(req.query||{}).readiness==='1'){
+    const q=req.query||{};
+    if(!q.uid||!(await verifyUser(q.uid,q.access_token))||!isAdmin(q.uid))return res.status(403).json({error:'admin only'});
+    const checks={snapshot_key_present:!!process.env.SD_REPORT_DATA_KEY,razorpay_keys_present:!!(process.env.RZP_KEY_ID&&process.env.RZP_KEY_SECRET),webhook_secret_present:!!process.env.RZP_WEBHOOK_SECRET,play_keys_present:!!(process.env.GOOGLE_PLAY_PACKAGE&&process.env.GOOGLE_PLAY_SA_EMAIL&&process.env.GOOGLE_PLAY_SA_KEY)};
+    try{const r=await fetch(supabaseUrl+'/rest/v1/report_drafts?select=uid,report,details_enc,lang&limit=1',{headers:H});checks.snapshot_table_readable=r.ok;}catch(e){checks.snapshot_table_readable=false;}
+    try{const r=await fetch(supabaseUrl+'/storage/v1/bucket/shubhdin-reports',{headers:H});const b=await r.json();checks.paid_bucket_private=!!(r.ok&&b.id==='shubhdin-reports'&&b.public===false);}catch(e){checks.paid_bucket_private=false;}
+    return res.status(200).json({checks,scope:'Read-only configuration checks, not a live purchase or PDF-render test.'});
+  }
   //
   // The events table is INSERT-ONLY by policy: the browser can add an event
   // with the public anon key and nobody can read one back with it. That is
@@ -352,15 +382,16 @@ module.exports = async function handler(req, res) {
       patch.dispatch_status = to;
       if (typeof b.note === 'string') patch.note = b.note.slice(0, 300);
     }
-    if (to === 'sent') {
+    if (to === 'sent' || to === 'approved') {
       /* no exact-language PDF in the bucket, no 'sent' — the red tick, enforced */
       const lang = SD_LANGS.includes(cur.lang) ? cur.lang : 'hi';
       const pdf = await pdfCheck(b.uid, b.report, lang);
-      if (!pdf || pdf.exact !== true) {
+      const floors={marriage:150000,love:120000,career:120000,child:120000,annual:120000,forecast:130000,muhurta:100000};
+      if (!pdf || pdf.exact !== true || pdf.bytes<(floors[b.report]||120000) || !cleanPhone(cur.phone)) {
         return res.status(409).json({ error: 'no exact-language pdf', lang: lang,
           found_lang: pdf ? pdf.found_lang : null, why: 'the buyer would receive a missing or wrong-language report' });
       }
-      patch.sent_at = new Date().toISOString();
+      if(to==='sent')patch.sent_at = new Date().toISOString();
     }
     try {
       const r = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${encodeURIComponent(b.report)}&status=eq.paid`,
@@ -434,6 +465,7 @@ module.exports = async function handler(req, res) {
       if (!pur || pur.error || pur.purchaseState !== 0)
         return res.status(402).json({ error: 'purchase not valid',
           state: pur && pur.purchaseState, detail: pur && pur.error && pur.error.message });
+      if(pur.productId&&pur.productId!==sku)return res.status(409).json({error:'verified product does not match report'});
 
       // acknowledgementState: 0 not yet · 1 done. Acknowledge once, now.
       if (pur.acknowledgementState === 0) {
@@ -470,7 +502,7 @@ module.exports = async function handler(req, res) {
       if (used.some(x => x.uid !== b.uid || x.report !== b.report))
         return res.status(409).json({ error: 'purchase already used by another account or report' });
 
-      const upP = await upsertPaid(b.uid, b.report, PRICES[b.report], playPaymentId);
+      const upP = await upsertPaid(b.uid, b.report, PRICES[b.report], playPaymentId,{phone:b.phone,lang:b.lang});
       if (!upP || !upP.ok) {
         let detail = ''; try { detail = (await upP.text()).slice(0, 200); } catch (e) {}
         console.error('[play_verify] order write failed for ' + b.uid + '/' + b.report + ': ' + detail);
@@ -500,12 +532,15 @@ module.exports = async function handler(req, res) {
     // Already paid? Send them to their report instead of a second payment page.
     // This is the back-button duplicate, which is the common one.
     try {
-      const rows = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q0.uid}&report=eq.${q0.report}&status=eq.paid&select=order_code`,
-        { headers: H }).then(r => r.json());
+      const lookup = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${q0.uid}&report=eq.${q0.report}&status=eq.paid&select=order_code`,{headers:H});
+      if(!lookup.ok)throw new Error('order lookup failed');
+      const rows=await lookup.json();if(!Array.isArray(rows))throw new Error('invalid orders');
       if (Array.isArray(rows) && rows.length) {
         return res.status(200).json({ ok: true, already: true, order_code: rows[0].order_code });
       }
-    } catch (e) { /* fall through and let them pay rather than blocking a sale */ }
+    } catch (e) {return res.status(503).json({error:'Could not check existing purchase. Please retry.'});}
+    try{await reportDrafts.save(supabaseUrl,H,q0.uid,q0.report,(req.body||{}).details);}
+    catch(e){return res.status(e.status||503).json({error:e.status===409?'report details already locked':'Could not save report details. Payment has not started.'});}
 
     // .trim(): pasted env values very often carry a trailing space or newline,
     // which breaks Basic auth with an opaque 401 from Razorpay.
@@ -621,7 +656,7 @@ module.exports = async function handler(req, res) {
          paise short through, and !== refused money someone had over-sent.
          Under-payment is refused; over-payment is accepted and logged. */
       const paidPaise = Number(pay.amount || 0);
-      if (paidPaise < expect * 100) {
+      if (pay.currency!=='INR'||!Number.isFinite(paidPaise)||paidPaise < expect * 100) {
         return res.status(409).json({ error: 'amount short', paid_paise: paidPaise, expected: expect });
       }
       if (paidPaise > expect * 100) console.warn('[order] over-payment on ' + report + ' by ' + q1.uid + ': ' + paidPaise + ' paise vs ' + (expect * 100));
@@ -712,6 +747,7 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true, ignored: 'payment not captured', status: payEnt.status || null, event: ev.event });
       }
       const paise = Number((linkEnt ? (linkEnt.amount_paid != null ? linkEnt.amount_paid : linkEnt.amount) : ent.amount) || 0);
+      if(ent.currency!=='INR')return res.status(200).json({ok:true,ignored:'currency mismatch'});
       /* compare in paise: Math.round(19850/100) is 199, which would wave
          through fifty paise short — the round-2 sweep's exact case */
       if (!(paise >= expect * 100)) {
@@ -810,7 +846,8 @@ module.exports = async function handler(req, res) {
         // language) is withheld and flagged: the buyer's Download button then
         // re-renders in the right language rather than opening the wrong one.
         if (!pdf.exact) { r2.pdf_lang_mismatch = pdf.found_lang || 'legacy'; return; }
-        r2.pdf_url = pdf.url + `?download=Shubh-Din-${r2.report}-${r2.lang}.pdf`;
+        r2.pdf_url = pdf.url + (pdf.url.includes('?')?'&':'?') + `download=Shubh-Din-${r2.report}-${r2.lang}.pdf`;
+        r2.pdf_expires_at=pdf.expires_at||new Date(Date.now()+55*60000).toISOString();
       }));
       return res.status(200).json({ ok: true, reports });
     } catch (e) { return res.status(500).json({ error: 'list failed' }); }

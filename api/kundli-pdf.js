@@ -1,19 +1,18 @@
 // api/kundli-pdf.js
 // Renders the user's free Kundli (kundli-report.html, ~263 pages) to a real
-// PDF via headless Chromium, stores it ONCE in Supabase Storage
-// (shubhdin-audio/kundlis/{uid}.pdf), and returns a direct-download URL.
-// Re-calls return the cached file instantly — one render per user, ever.
+// PDF via headless Chromium, stores it privately in shubhdin-reports,
+// and returns a signed download URL. Cache identity includes entered details.
 //
 // POST { uid, access_token, details:{name,gender,dob,time,place,lat,lng} }
 //  → { ready:true, url }            (cached or freshly rendered)
 //  → { ready:false, rendering:true} (a parallel render is in flight)
 //
-// Measured on this report: ~20s total, 3.8MB, 263 pages, well under limits
-// when vercel.json grants this function 3009MB / 300s.
+// Actual render duration must be validated against the deployment's limits.
 
 // @sparticuz/chromium is ESM-only; Vercel's runtime forbids require(esm).
 // Load both via dynamic import() — legal in CJS — cached across invocations.
 let _stack = null;
+const crypto=require('crypto');
 function loadStack() {
   if (!_stack) _stack = Promise.all([import('@sparticuz/chromium'), import('puppeteer-core')])
     .then(([c, p]) => ({ chromium: c.default || c, puppeteer: p.default || p }));
@@ -29,7 +28,7 @@ function pickLang(...cands) {
   return 'hi';
 }
 module.exports = async function handler(req, res) {
-  const { chromium, puppeteer } = await loadStack();
+  res.setHeader('Cache-Control','private, no-store');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -56,25 +55,31 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'auth check failed' });
   }
 
-  const BUCKET = 'shubhdin-audio';
-  // one file per language, so a second phone asking in another language gets
-  // its own render instead of the first one (legacy `kundlis/{uid}.pdf` is not
-  // reused: its language is unknown)
-  // v3 invalidates PDFs rendered before the personalised Pratyantar content.
-  // a versioned key, the HEAD shortcut would serve the old broken PDF forever.
-  const path   = `kundlis/v3/${uid}-${lang}.pdf`;
-  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${path}`;
-  const dlUrl = publicUrl + `?download=Shubh-Din-Kundli-${lang}.pdf`;
+  const BUCKET = 'shubhdin-reports';
+  // v4: a different birth profile or language is a different cached file.
+  const canonical={};Object.keys(details).sort().forEach(k=>canonical[k]=details[k]);
+  const fingerprint=crypto.createHash('sha256').update(JSON.stringify(canonical)).digest('hex');
+  const path=`kundlis/v4/${uid}-${lang}-${fingerprint}.pdf`;
+  const H={apikey:serviceKey,Authorization:'Bearer '+serviceKey};
+  const objectUrl=`${supabaseUrl}/storage/v1/object/${BUCKET}/${path}`;
+  async function ready(extra){
+    const signed=await fetch(`${supabaseUrl}/storage/v1/object/sign/${BUCKET}/${path}`,{method:'POST',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600})});
+    const j=await signed.json();if(!signed.ok||!j.signedURL)throw new Error('PDF link unavailable');
+    // Pointer contains no birth details; lets authenticated Dispatch find the latest file.
+    await fetch(`${supabaseUrl}/storage/v1/object/${BUCKET}/kundlis/v4/${uid}-${lang}.json`,{method:'POST',headers:{...H,'Content-Type':'application/json','x-upsert':'true'},body:JSON.stringify({path})});
+    return Object.assign({ready:true,url:supabaseUrl+'/storage/v1'+j.signedURL,lang,expires_at:new Date(Date.now()+55*60000).toISOString()},extra);
+  }
 
   // ── cached? serve instantly ──
   try {
-    const head = await fetch(publicUrl, { method: 'HEAD' });
-    if (head.ok) return res.status(200).json({ ready: true, url: dlUrl, lang, cached: true });
+    const head = await fetch(objectUrl, { method: 'HEAD',headers:H });
+    if (head.ok) return res.status(200).json(await ready({cached:true}));
   } catch (e) { /* fall through to render */ }
 
   // ── render ──
   let browser = null;
   try {
+    const { chromium, puppeteer } = await loadStack();
     browser = await puppeteer.launch({
       args: chromium.args,
       executablePath: await chromium.executablePath(),
@@ -117,7 +122,7 @@ module.exports = async function handler(req, res) {
       const t = await up.text();
       return res.status(500).json({ error: 'storage upload failed', detail: t.slice(0, 200) });
     }
-    return res.status(200).json({ ready: true, url: dlUrl, lang, pages: 'rendered', bytes: pdf.length });
+    return res.status(200).json(await ready({pages:'rendered',bytes:pdf.length}));
   } catch (e) {
     if (browser) { try { await browser.close(); } catch (x) {} }
     return res.status(500).json({ error: 'render failed', detail: String(e.message).slice(0, 200) });

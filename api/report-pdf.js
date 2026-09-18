@@ -35,6 +35,7 @@ function pickLang(...cands) {
   return 'hi';
 }
 module.exports = async function handler(req, res) {
+  res.setHeader('Cache-Control', 'private, no-store');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -48,39 +49,28 @@ module.exports = async function handler(req, res) {
   let lang = pickLang(req.body && req.body.lang, details && details.lang);
   if (!REPORTS[report]) return res.status(400).json({ error: 'unknown report' });
   if (!uid) return res.status(400).json({ error: 'uid required' });
+  let admin=false;
 
   // ── auth: caller must be this Supabase user ──
   try {
     const who = await fetch(supabaseUrl + '/auth/v1/user', {
       headers: { apikey: serviceKey, Authorization: 'Bearer ' + access_token }
     }).then(r => r.json());
-    if (!who || who.id !== uid) return res.status(401).json({ error: 'auth mismatch' });
+    admin=!!(who&&String(process.env.SD_ADMIN_UIDS||'').split(',').map(x=>x.trim()).filter(Boolean).includes(who.id));
+    if (!who || (who.id !== uid&&!admin)) return res.status(401).json({ error: 'auth mismatch' });
+    if(admin)details=null; // Admin recovery uses only the saved customer snapshot.
   } catch (e) { return res.status(401).json({ error: 'auth check failed' }); }
 
-  // ── order gate ──
-  if (process.env.SD_DEV_FREE !== '1') {
-    try {
-      const q = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${uid}&report=eq.${report}&status=eq.paid&select=id`, {
-        headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey }
-      }).then(r => r.json());
-      if (!Array.isArray(q) || !q.length) return res.status(402).json({ error: 'not purchased' });
-    } catch (e) { return res.status(500).json({ error: 'order check failed' }); }
-  }
-
-  // A different device sends no details. Recover the immutable encrypted
-  // snapshot captured before checkout; never accept replacement client data
-  // once a paid order exists.
+  // A dev purchase also has a paid row. Payment alone never releases a PDF.
+  let delivered=false;
   try {
-    const rows = await fetch(`${supabaseUrl}/rest/v1/report_drafts?uid=eq.${uid}&report=eq.${report}&select=details_enc,lang&limit=1`, {
-      headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey }
-    }).then(r => r.json());
-    if (Array.isArray(rows) && rows[0] && rows[0].details_enc) {
-      details = openSnapshot(rows[0].details_enc);
-      lang = pickLang(rows[0].lang, details && details.lang, lang);
-    } else if (!details) return res.status(409).json({ error: 'report snapshot unavailable' });
-  } catch (e) {
-    if (!details) return res.status(500).json({ error: 'could not restore report details' });
-  }
+    const r=await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(uid)}&report=eq.${report}&status=eq.paid&select=dispatch_status,lang`,{headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey}});
+    if(!r.ok)throw new Error('order lookup');
+    const rows=await r.json();
+    if(!Array.isArray(rows)||!rows.length)return res.status(402).json({error:'not purchased'});
+    delivered=rows[0].dispatch_status==='sent';
+    lang=pickLang(rows[0].lang,lang);
+  }catch(e){return res.status(503).json({error:'order check unavailable'});}
 
   const BUCKET = 'shubhdin-reports';
   // one file per (report, language); a buyer who opens the same purchase in
@@ -97,13 +87,32 @@ module.exports = async function handler(req, res) {
     return supabaseUrl + '/storage/v1' + j.signedURL;
   }
 
+  async function ready(extra){
+    return Object.assign({ready:true,lang,awaiting_dispatch:!delivered},extra||{},
+      delivered||admin?{url:await signedUrl(),expires_at:new Date(Date.now()+55*60000).toISOString()}:{});
+  }
+  // Recover an existing PDF even when a legacy birth snapshot is unavailable.
   // ── cached? ──
   try {
     const head = await fetch(objectUrl, { method: 'HEAD', headers: {
       apikey: serviceKey, Authorization: 'Bearer ' + serviceKey } });
-    if (head.ok) return res.status(200).json({ ready: true, url: await signedUrl(), lang,
-      cached: true, expires_at: new Date(Date.now()+55*60*1000).toISOString() });
+    if (head.ok) return res.status(200).json(await ready({cached:true}));
   } catch (e) {}
+
+  // A different device sends no details. Recover the immutable encrypted
+  // snapshot captured before checkout; never accept replacement client data
+  // once a paid order exists.
+  try {
+    const rows = await fetch(`${supabaseUrl}/rest/v1/report_drafts?uid=eq.${uid}&report=eq.${report}&select=details_enc,lang&limit=1`, {
+      headers: { apikey: serviceKey, Authorization: 'Bearer ' + serviceKey }
+    }).then(r => r.json());
+    if (Array.isArray(rows) && rows[0] && rows[0].details_enc) {
+      details = openSnapshot(rows[0].details_enc);
+      // The paid order's language already chose the storage path above.
+    } else if (!details) return res.status(409).json({ error: 'report snapshot unavailable' });
+  } catch (e) {
+    return res.status(503).json({ error: 'could not restore report details' });
+  }
 
   // ── render ──
   let browser = null;
@@ -156,8 +165,7 @@ module.exports = async function handler(req, res) {
       method:'PATCH', headers:{ apikey:serviceKey, Authorization:'Bearer '+serviceKey,
         'Content-Type':'application/json' }, body:JSON.stringify({generation_status:'ready',
           generation_error:null,generated_at:new Date().toISOString(),pdf_path:path}) });
-    return res.status(200).json({ ready: true, url: await signedUrl(), lang, bytes: pdf.length,
-      expires_at: new Date(Date.now()+55*60*1000).toISOString() });
+    return res.status(200).json(await ready({bytes:pdf.length}));
   } catch (e) {
     if (browser) { try { await browser.close(); } catch (x) {} }
     try { await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${uid}&report=eq.${report}`, {
