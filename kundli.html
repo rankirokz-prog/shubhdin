@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script src="app-runtime.js"></script>
+<script src="report-session.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
@@ -51,7 +53,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
 .tease{margin-top:26px;border:1px dashed rgba(212,168,67,0.3);border-radius:14px;padding:12px;font-size:11px;color:rgba(255,244,222,0.6);cursor:pointer;}
 </style>
 <script src="font-loader.js"></script>
-<script src="sd-tz.js"></script>
+<script src="sd-tz.js?v=238"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
 <script>
 /* Language tables must load BEFORE the page's own script runs. A dynamically
@@ -61,7 +63,7 @@ input:focus,select:focus{outline:none;border-color:var(--gold);}
    screen came back in Hindi. document.write during initial parse IS parser-
    blocking, which is the ordering guarantee needed here.
    Hindi always loads as the fallback; the chosen language loads beside it. */
-window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+window.SD_LANG=(function(){try{return sdSafeProfile().lang||'hi';}catch(e){return 'hi';}})();
 document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
 if(window.SD_LANG&&window.SD_LANG!=='hi')
   document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
@@ -310,21 +312,16 @@ function renderDbg(){var pnl=document.getElementById('dbgPanel');if(!pnl)return;
 /* Google login belongs to the whole account. Restore paid ownership here so a
    new device's Premium and My Reports screens become correct immediately. */
 function syncPaidOwnership(){try{sbAuth().getSession().then(function(r){
-  var s=r.data&&r.data.session;if(!s)return;
+  var s=r.data&&r.data.session;sdReportSetSession(s);if(!s)return;
   fetch('/api/order?list=1&uid='+s.user.id,
     {headers:{Authorization:'Bearer '+s.access_token}})
-  .then(function(x){return x.json();}).then(function(j){if(!j||!Array.isArray(j.reports))return;
-    var a=[];try{a=JSON.parse(localStorage.getItem('sd_owned_reports')||'[]');if(!Array.isArray(a))a=[];}catch(e){a=[];}
-    j.reports.forEach(function(o){var f=a.filter(function(x){return x&&x.report===o.report;})[0];
-      if(!f){f={report:o.report};a.push(f);}f.order_code=o.order_code;f.date=(o.paid_at||'').slice(0,10);
-      f.lang=o.lang;f.dispatch_status=o.dispatch_status;f.generation_status=o.generation_status;
-      if(o.pdf_url){f.pdf_url=o.pdf_url;f.pdf_expires_at=o.pdf_expires_at||null;}
-    });localStorage.setItem('sd_owned_reports',JSON.stringify(a));
-  });});}catch(e){}}
+  .then(function(x){if(!x.ok)throw new Error('Account unavailable');return x.json();}).then(function(j){if(!j||!Array.isArray(j.reports))return;
+    sdReportReconcile(j.reports,s.user.id);
+  }).catch(function(){});}).catch(function(){});}catch(e){}}
 dlog('KUNDLI boot K9 url='+location.pathname+location.search.slice(0,18)+(location.hash?' #'+location.hash.slice(1,14):''));
-sbAuth().onAuthStateChange(function(ev,session){dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
+sbAuth().onAuthStateChange(function(ev,session){sdReportSetSession(session);dlog('authEvent: '+ev+(session?' (session ok, '+((session.user&&session.user.email)||'?')+')':' (no session)'));});
 
-var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+var U=sdSafeProfile();
 var H=(U.lang||'hi')==='hi';
 function $(id){return document.getElementById(id);}
 /* One translatable sentence rather than a label glued to a value — the label
@@ -563,7 +560,7 @@ function kSaveAndGo(d){
      rashi on the dashboard — including the coordinates, which a place NAME
      alone cannot give. */
   try{
-    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    var u=sdSafeProfile();
     if(d.name)u.name=d.name;
     if(d.gender)u.gender=d.gender;
     if(d.dob){u.dob=d.dob;u.birth_date=d.dob;}
@@ -641,7 +638,7 @@ function startPrep(user){
     }
   }catch(e){}
   var email=user&&(user.email||(user.user_metadata&&user.user_metadata.email))||'';
-  if(email){try{var u2=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');u2.email=email;
+  if(email){try{var u2=sdSafeProfile();u2.email=email;
     localStorage.setItem('shubhdin_user',JSON.stringify(u2));}catch(e){}}
   requestServerPdf();
   syncPaidOwnership();
@@ -822,7 +819,7 @@ function renderDbgAuto(){document.getElementById('dbgWrap').style.display='block
 if(location.search.indexOf('debug=1')>-1){setTimeout(renderDbgAuto,300);}
 </script>
 <script src="birthdate-guard.js"></script>
-<script src="report-catalog.js"></script>
-<script src="nav-history.js"></script>
+<script src="report-catalog.js?v=238"></script>
+<script src="nav-history.js?v=238"></script>
 </body>
 </html>

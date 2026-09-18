@@ -87,7 +87,8 @@
   function fetchZone(lat, lon) {
     var u = '/api/tz?lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lon);
     if (typeof location !== 'undefined' && !(location.protocol === 'https:' && location.host)) u = 'https://www.shubhdin.app' + u;
-    return fetch(u).then(function (r) { return r.ok ? r.json() : null; })
+    var request=(typeof window!=='undefined'&&window.sdFetch)?window.sdFetch:fetch;
+    return request(u).then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { return (j && isZone(j.tz)) ? j.tz : null; }).catch(function () { return null; });
   }
   function offsetHoursAt(instant, zone) { return isZone(zone) ? zoneOffsetMinutes(instant, zone) / 60 : null; }

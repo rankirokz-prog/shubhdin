@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script src="app-runtime.js"></script>
 <!-- analytics.js FIRST on the page. Two reasons it must be here and not
      just on the dashboard: this is where a shared ?src=kundli_share link
      lands, and without it that referral tag is never recorded — the viral
      loop would be unmeasurable. It also reports uncaught errors from every
      script below, on the page that IS the acquisition funnel. -->
 <script src="analytics.js"></script>
-<script src="sd-tz.js"></script>
+<script src="sd-tz.js?v=238"></script>
 <script src="astronomy.min.js"></script>
 <script src="panchang-engine.js"></script>
 <script src="vrat-names.js"></script>
@@ -464,6 +465,19 @@
 <script>
   let lang = 'hi';
   const user = {};
+  var onbStep=0, onbRestoring=false, onbBusy=false,onbEpoch=0;
+  try{history.replaceState(Object.assign({},history.state,{sdOnb:0}),'');}catch(e){}
+  window.addEventListener('popstate',function(e){
+    if(e.state&&Number.isInteger(e.state.sdOnb)){
+      onbRestoring=true;showStep(e.state.sdOnb);onbRestoring=false;
+    }
+  });
+  window.addEventListener('pageshow',function(e){if(e.persisted&&sdSafeProfile().setupDone)location.replace('dashboard.html');});
+  function onbError(key){
+    var el=document.getElementById('onbError');
+    if(!el){el=document.createElement('p');el.id='onbError';el.setAttribute('role','alert');el.style.cssText='color:#6D2615;font-size:14px;line-height:1.7;margin-top:12px';document.getElementById('mainCard').appendChild(el);}
+    el.textContent=key?sdNotice(key,lang):'';
+  }
 
   // ── Progress map ──
   const pMap = {1:20, 2:40, 3:60, 4:80, 5:100};
@@ -938,6 +952,7 @@
     s('stateLabel',t.stateLabel); s('stateOpt',t.stateOpt);
     s('cta4',t.cta4);
     s('rcLbl',t.rcLbl); s('tiLbl',t.tiLbl); s('enterTxt',t.enterTxt);
+    s('trustLine',sdNotice('privacy',l));
   }
 
   // ── Language selection — auto-proceed after brief animation ──
@@ -994,18 +1009,41 @@
 
   // ── Step navigation ──
   function showStep(n) {
+    if(n<0||n>5)return;
+    var previous=onbStep;onbStep=n;onbEpoch++;onbBusy=false;
+    if(!onbRestoring&&previous!==n){try{history.pushState(Object.assign({},history.state,{sdOnb:n}),'');}catch(e){}}
+    document.getElementById('langScreen').style.display=n===0?'block':'none';
+    document.getElementById('mainCard').classList.toggle('show',n!==0);
+    if(n===0)return;
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById('step'+n).classList.add('active');
     document.getElementById('pFill').style.width = (pMap[n]||0) + '%';
     document.getElementById('stepCtr').textContent = ((cMap[lang]||cMap.hi)[n]) || '';
+    var b=document.getElementById('back'+n);
+    if(!b){b=document.createElement('button');b.type='button';b.className='btn-back';b.id='back'+n;document.getElementById('step'+n).appendChild(b);}
+    b.textContent='← '+sdNotice('back',lang);
+    b.onclick=function(){goStep(n-1);};
+    onbError('');
+    window.scrollTo(0,0);
   }
 
   async function goStep(n) {
+    if(n<onbStep){
+      /* Back never waits for transliteration or city lookup. DOM values stay. */
+      if(history.state&&history.state.sdOnb===onbStep){history.back();}
+      else showStep(n);
+      return;
+    }
+    if(onbBusy)return;
+    onbBusy=true;
+    var epoch=onbEpoch;
+    try {
     // Save data
     const _rawName = document.getElementById('userName')?.value?.trim() || user.name || '';
     if(lang==='hi')      user.name = await romanToScript(_rawName,'hi');
     else if(onbL()&&onbL().itc) user.name = await romanToScript(_rawName,lang);
     else                 user.name = _rawName;
+    if(epoch!==onbEpoch)return;
     user.dob   = document.getElementById('userDOB')?.value           || user.dob   || '';
     var _unk = document.getElementById('tobUnknown');
     user.tobUnknown = !!(_unk && _unk.checked);
@@ -1043,6 +1081,7 @@
     }
 
     // Personalise step titles
+    if(epoch!==onbEpoch)return;
     const t = T[lang] || T.hi;   /* six of the nine offered languages have no
      T entry yet; without this fallback every read off T[lang] throws on the
      first screen a new user sees. Hindi until they are written. */
@@ -1050,8 +1089,9 @@
     if(n===3&&user.name) document.getElementById('s3title').textContent=lang==='hi'?cn+' जी, जन्म तिथि?':onbL()?onbL().birthTitle(cn):'Birth details, '+cn+'?';
     if(n===4&&user.name) document.getElementById('s4title').textContent=lang==='hi'?'लगभग हो गया, '+cn+' जी!':onbL()?onbL().almostDone(cn):'Almost done, '+cn+'!';
     if (n===5) await buildWelcome();
-
+    if(epoch!==onbEpoch)return;
     showStep(n);
+    } finally {if(epoch===onbEpoch)onbBusy=false;}
     window.scrollTo(0,0);
   }
 
@@ -1086,7 +1126,7 @@
     }
     navigator.geolocation.getCurrentPosition(
       pos => {
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
+        sdFetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
           .then(r=>r.json())
           .then(d => {
             const city  = d.address?.city || d.address?.town || d.address?.village || d.address?.county || '';
@@ -1134,6 +1174,7 @@
 
   // ── Welcome screen ──
   async function buildWelcome() {
+    var revision=_onbCityRevision;
     /* The welcome card must use the same Vedic Moon calculation as the rest of
        the app.  The former getRashi(dob) shortcut was a tropical Sun-sign
        lookup and then invented one fixed nakshatra per sign. */
@@ -1142,6 +1183,7 @@
       var lat=Number(user.city_lat), lon=Number(user.city_lon), zone=user.city_tz;
       if(!zone && isFinite(lat) && isFinite(lon)){
         zone=await sdTz.fetchZone(lat,lon);
+        if(revision!==_onbCityRevision)return;
         if(zone) user.city_tz=zone;
       }
       var bi=(zone&&user.dob&&user.tob) ? sdTz.birthInstant(user.dob,user.tob,zone) : null;
@@ -1178,8 +1220,8 @@
       document.getElementById('rSub').textContent  = lang==='hi' ? r.nak+' नक्षत्र • '+r.lord+' स्वामी' : onbL() ? onbL().nakLine(r.nak,r.lord) : r.nak+' Nakshatra • Lord: '+r.lord;
     }else{
       /* Missing coordinates/zone is not permission to invent a chart. */
-      document.getElementById('rName').textContent = lang==='te'?'జన్మ జాతకం':lang==='hi'?'जन्म कुंडली':'Birth chart';
-      document.getElementById('rSub').textContent  = lang==='te'?'నగర వివరాలు సేవ్ చేసిన తర్వాత లెక్కిస్తాం':lang==='hi'?'शहर की जानकारी सहेजने के बाद गणना होगी':'Calculated after valid city details are saved';
+      document.getElementById('rName').textContent = sdNotice('chart',lang);
+      document.getElementById('rSub').textContent = sdNotice('chartPending',lang);
     }
 
     document.getElementById('tiTxt').textContent = onboardingDailyJapLine();
@@ -1225,8 +1267,12 @@
 
   // ── Enter app ──
   async function enterApp() {
-    localStorage.setItem('shubhdin_user', JSON.stringify({...user, lang, setupDone:true}));
-    window.location.href = 'dashboard.html';
+    try{
+      var value=JSON.stringify({...user, lang, setupDone:true});
+      localStorage.setItem('shubhdin_user',value);
+      if(localStorage.getItem('shubhdin_user')!==value)throw new Error('Storage unavailable');
+      window.location.replace('dashboard.html');
+    }catch(e){onbError('storage');}
   }
 
 
@@ -1236,7 +1282,7 @@
     if(/[\u0900-\u097F\u0C00-\u0C7F]/.test(name)) return name; // already in an Indic script
     const itc = (ONB_L[l]&&ONB_L[l].itc) ? ONB_L[l].itc : 'hi-t-i0-und';
     try {
-      const res = await fetch(
+      const res = await sdFetch(
         `https://inputtools.google.com/request?text=${encodeURIComponent(name.toLowerCase())}&itc=${itc}&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8`,
         {headers:{'Content-Type':'application/json'}}
       );
@@ -1251,29 +1297,26 @@
 
 
   // ── Init ──
-  window.addEventListener('load', () => {
-    try {
-      const saved = localStorage.getItem('shubhdin_user');
-      if (saved && JSON.parse(saved).setupDone) { window.location.href = 'dashboard.html'; return; }
-    } catch(e) {}
-    // Show language screen first — always
-    document.getElementById('langScreen').style.display = 'block';
-    document.getElementById('mainCard').classList.remove('show');
-  });
+  /* Startup routing happens before first paint in app-runtime.js. A late load
+     handler must not reset a language/step the user has already selected. */
 
 let _cityTimer = null;
+var _onbCityRevision=0;
 function searchCity(q){
+  var revision=++_onbCityRevision;clearTimeout(_cityTimer);_geoHits=[];
+  user.city='';delete user.city_lat;delete user.city_lon;delete user.city_tz;
   const dd = document.getElementById('cityResults');
   document.getElementById('userCity').value = '';
   validateStep4();
   if(!q || q.length < 2){ dd.style.display='none'; return; }
   clearTimeout(_cityTimer);
-  dd.innerHTML = '<div style="padding:10px 14px;color:rgba(255,255,255,0.40);font-size:13px;">Searching...</div>';
+  dd.innerHTML = '<div style="padding:10px 14px;color:#DED0BB;font-size:13px;">'+sdNotice('searching',lang)+'</div>';
   dd.style.display='block';
   _cityTimer = setTimeout(async ()=>{
     try{
       const results = await sdGeoSearch(q, 6);
-      if(!results.length){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">No results found</div>'; return; }
+      if(revision!==_onbCityRevision)return;
+      if(!results.length){dd.textContent=sdNotice('noResults',lang);return;}
       _geoHits = results;
       dd.innerHTML = results.map((r, i) => {
         const name = r.display_name.split(',')[0].trim();
@@ -1286,7 +1329,7 @@ function searchCity(q){
           <div style="font-size:10px;color:rgba(255,255,255,0.40);margin-top:2px;">${sdGeoEsc(sub)}</div>
         </div>`;
       }).join('');
-    }catch(e){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.35);font-size:13px;">Search failed</div>'; }
+    }catch(e){if(revision===_onbCityRevision)dd.textContent=sdNotice('unavailable',lang);}
   }, 400);
 }
 
@@ -1308,9 +1351,9 @@ function sdGeoSearch(q,limit,extra){
   var base='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit='+(limit||6)+(extra||'');
   var opt={headers:{'Accept-Language':'en'}};
   var arr=function(x){return Array.isArray(x)?x:[];};
-  var world=function(){return fetch(base,opt).then(function(r){return r.json();}).then(arr);};
+  var world=function(){return sdFetch(base,opt).then(function(r){return r.json();}).then(arr);};
   if(SD_GEO_SCOPE==='world') return world();
-  return fetch(base+'&countrycodes=in',opt).then(function(r){return r.json();}).then(arr).then(function(inr){
+  return sdFetch(base+'&countrycodes=in',opt).then(function(r){return r.json();}).then(arr).then(function(inr){
     if(inr.length>=(limit||6)) return inr;
     return world().then(function(w){
       var seen={}; inr.forEach(function(r){seen[r.place_id]=1;});
@@ -1321,6 +1364,7 @@ function sdGeoSearch(q,limit,extra){
 function sdGeoEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function pickCity(name, lat, lon, full){
+  var revision=++_onbCityRevision;clearTimeout(_cityTimer);
   document.getElementById('userCityInput').value = name;
   document.getElementById('userCity').value = name;
   document.getElementById('cityResults').style.display='none';
@@ -1332,7 +1376,7 @@ function pickCity(name, lat, lon, full){
   validateStep4();
   /* F1: the city's IANA zone, once. The chart and the daily panchang both need
      it; without it nothing is guessed (the dashboard backfills if this misses). */
-  sdTz.fetchZone(user.city_lat, user.city_lon).then(function (z) { if (user.city === name) user.city_tz = z; });
+  sdTz.fetchZone(user.city_lat,user.city_lon).then(function(z){if(revision===_onbCityRevision)user.city_tz=z;});
 }
 
 function validateStep4(){

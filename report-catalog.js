@@ -296,10 +296,7 @@
      and the filter drops malformed entries so one bad record cannot blank
      the whole list. */
   root.sdOwnedRead = function () {
-    try {
-      var a = JSON.parse(localStorage.getItem('sd_owned_reports') || '[]');
-      return Array.isArray(a) ? a.filter(function (x) { return x && x.report; }) : [];
-    } catch (e) { return []; }
+    return typeof root.sdAccountOwned==='function'?root.sdAccountOwned():[];
   };
   /* Owned ids that this catalog actually knows about — a record for a retired
      or mistyped report must not render a blank row. */

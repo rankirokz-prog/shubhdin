@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script src="app-runtime.js"></script>
 <script src="mantra-library-data.js"></script>
 <script>
 /* ══ SD-SPLASH-WATCHDOG ═══════════════════════════════════════════════════
@@ -65,7 +66,7 @@
      it can be taken down by a throw in the main script, and nothing in the
      main script can be taken down by a throw in it. -->
 <script src="analytics.js"></script>
-<script src="sd-tz.js"></script>
+<script src="sd-tz.js?v=238"></script>
 <script>
 /* SHUBHDIN AUTH CATCHER v2: log + forward any auth code to kundli.html */
 (function(){try{
@@ -1861,7 +1862,7 @@ body[data-home="returning"] .streak{display:flex;}
    screen came back in Hindi. document.write during initial parse IS parser-
    blocking, which is the ordering guarantee needed here.
    Hindi always loads as the fallback; the chosen language loads beside it. */
-window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+window.SD_LANG=(function(){try{return sdSafeProfile().lang||'hi';}catch(e){return 'hi';}})();
 document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
 if(window.SD_LANG&&window.SD_LANG!=='hi')
   document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
@@ -2505,9 +2506,8 @@ if(typeof window.A!=='function'){
 
 <script>
 // ── User data ──
-let U={};
-try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
-if(!U.setupDone){window.location.href='index.html';}
+let U=sdSafeProfile();
+if(!U.setupDone){window.location.replace('index.html');}
 
 const lang=U.lang||'hi';
 const H=lang==='hi';
@@ -2819,7 +2819,7 @@ function sdVedic(){
   }catch(e){}
   var out={dow:now.getDay(), before:false, changesAt:null, exact:false};
   try{
-    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    var u=sdSafeProfile();
     var la=parseFloat(u.city_lat), ln=parseFloat(u.city_lon);
     var PE=window.PanchangEngine;
     if(isFinite(la)&&isFinite(ln)&&PE&&typeof PE.findSunrise==='function'){
@@ -3657,7 +3657,11 @@ function resolveDailyDevotional(date){
 }
 function refreshDailyDevotional(){
   if(jPlay) return; /* never swap the mantra below an active recitation */
-  T=resolveDailyDevotional(dailyCivilDate());
+  var date=dailyCivilDate(),next=resolveDailyDevotional(date);
+  var identity=[dailyDateKey(date),lang,next.audio||next.chant,next.festivalName||'',next.hook_local||''].join('|');
+  if(window._dailyIdentity===identity)return;
+  if(window._dailyIdentity){try{resetJap();}catch(e){}}
+  window._dailyIdentity=identity;T=next;
   try{personalise();}catch(e){}
   try{buildMantra();buildMala();updateJ();}catch(e){}
 }
@@ -4425,7 +4429,7 @@ let _rndFn = Math.random; // fallback
 function initDayRnd(){
   const d = new Date();
   const dateKey = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
-  const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+  const u = sdSafeProfile();
   const settingsKey = (u.name||'')+(u.city||'')+(u.lang||'');
   // Hash date + settings into a number
   let hash = dateKey;
@@ -5631,16 +5635,21 @@ function showToast(){
    next day: at local midnight the key itself changes and yesterday's entry is
    never read again. Changing city changes the key too. Old keys are swept so
    localStorage does not accumulate one row per day forever. */
-function pgCacheKey(){
-  var d=dailyCivilDate();
-  return 'sd_pan_'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'_'+((U.city||'x')+'').toLowerCase();
+function pgContext(){
+  var la=Number(U.city_lat),lo=Number(U.city_lon);
+  if(U.city_lat==null||U.city_lon==null||U.city_lat===''||U.city_lon===''||!isFinite(la)||!isFinite(lo)||Math.abs(la)>90||Math.abs(lo)>180||!window.sdTz||!sdTz.isZone(U.city_tz))return null;
+  return [lang,U.city||'',la,lo,U.city_tz,U.nakshatra||'',U.rashi||''].join('|');
+}
+function pgCacheKey(date){
+  return 'sd_pan_v4_'+dailyDateKey(date||dailyCivilDate())+'_'+encodeURIComponent(pgContext()||'unavailable');
 }
 /* One rule for accepting a cached payload, used by every reader. A cache entry
    is only usable if it is the current shape AND was built for the profile in
    effect now — otherwise it is recomputed rather than half-rendered. */
-function pgUsable(c){
-  return !!(c && c.v===3 && c.seg &&
-            c.forNak===(U.nakshatra||'') && c.forRas===(U.rashi||''));
+function pgUsable(c,date){
+  var ctx=pgContext(),d=date||dailyCivilDate(),today=dailyDateKey(dailyCivilDate());
+  return !!(ctx&&c&&c.v===4&&c.seg&&c.context===ctx&&c.day===dailyDateKey(d)&&
+    (c.day!==today||(Date.now()-c.computedAt>=0&&Date.now()-c.computedAt<60000)));
 }
 function pgSweepCache(){
   try{
@@ -5656,18 +5665,18 @@ function pgSweepCache(){
    yet keeps today's IST behaviour for one open rather than losing its panchang;
    sdBackfillTz() below fills the zone on that same open. */
 function sdTzHours(){
-  try{ var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}'); var z=u.city_tz;
+  try{ var u=sdSafeProfile(); var z=u.city_tz;
     if(window.sdTz&&sdTz.isZone(z)){ var h=sdTz.offsetHoursAt(new Date(),z); if(h!=null) return h; } }catch(e){}
-  return 5.5;
+  throw new Error('City time zone unavailable');
 }
 /* Every stored profile predates city_tz. Fill it once, on this open, from the
    coordinates already stored — then the rashi and the daily panchang use it. */
 async function sdBackfillTz(){
   try{
-    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    var u=sdSafeProfile();
     if(!(isFinite(u.city_lat)&&isFinite(u.city_lon))||(window.sdTz&&sdTz.isZone(u.city_tz))) return false;
     var z=await sdTz.fetchZone(u.city_lat,u.city_lon); if(!z) return false;
-    u.city_tz=z; localStorage.setItem('shubhdin_user',JSON.stringify(u)); if(window.U) U.city_tz=z;
+    u.city_tz=z; localStorage.setItem('shubhdin_user',JSON.stringify(u)); U.city_tz=z;
     try{ u.birth_cache_key=null; localStorage.setItem('shubhdin_user',JSON.stringify(u)); }catch(e){}
     try{ if(typeof fetchBirthChart==='function') await fetchBirthChart(); }catch(e){}
     try{ if(typeof saveToCloud==='function') saveToCloud(); }catch(e){}
@@ -5675,7 +5684,8 @@ async function sdBackfillTz(){
   }catch(e){ return false; }
 }
 function pgCoords(){
-  return {lat:(U.city_lat!=null?U.city_lat:16.7107), lng:(U.city_lon!=null?U.city_lon:81.0952)};
+  if(!pgContext())throw new Error('City details unavailable');
+  return {lat:Number(U.city_lat),lng:Number(U.city_lon)};
 }
 /* ══ SD-PGFMT-ZONE ══════════════════════════════════════════════════════════
    getHours() READS THE DEVICE'S TIMEZONE, NOT THE CITY'S.
@@ -5694,7 +5704,7 @@ function pgCoords(){
    which is exactly why it survived every test until someone set a US city. */
 function pgFmt(x){ if(!x) return ''; var d=new Date(x);
   try{
-    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    var u=sdSafeProfile();
     if(u.city_tz && window.sdTz && sdTz.isZone(u.city_tz)){
       var w=sdTz.instantToWall(d, u.city_tz);
       if(w && w.hhmm) return w.hhmm;
@@ -5710,7 +5720,7 @@ function pgRange(w){ return w?(pgFmt(w.start)+'–'+pgFmt(w.end)):''; }
    date all render from this one shape, so a single cache key can never hold
    two different shapes again — which is exactly what hid the transition times:
    Home wrote a thin object over the calendar's rich one under the same key. */
-function buildPayload(q){
+function buildPayload(q,date){
   if(!q) return null;
   function segs(arr,kind){ return (arr||[]).map(function(s){ return {n:(kind?sdTerm(kind,s):(H?s.hi:s.en)), end:(s.end?pgFmt(s.end):'')}; }); }
   function win(w){ return w?{s:pgFmt(w.start),e:pgFmt(w.end)}:null; }
@@ -5733,7 +5743,8 @@ function buildPayload(q){
        matters: without the bump, a phone holding yesterday's cache would keep
        serving an object with no tithi_index and the Sri Chakra card would
        never appear, exactly as if the fix had not shipped. */
-    v:3, forNak:(U.nakshatra||''), forRas:(U.rashi||''),
+    v:4, context:pgContext(),day:dailyDateKey(date||dailyCivilDate()),computedAt:Date.now(),
+    forNak:(U.nakshatra||''), forRas:(U.rashi||''),
     tithi:(sdTithi(q.tithi)),
     /* ══ SD-TITHI-RAW ══
        Everything above is LOCALISED FOR DISPLAY — tithi is a string like
@@ -5753,10 +5764,10 @@ function buildPayload(q){
       catch(e){ return ''; }
     })(),
     tithi_paksha:(q.tithi.paksha==='Krishna'?(A('dashbo.krishna_paksha')):(A('dashbo.shukla_paksha'))),
-    tithi_end:pgFmt(q.tithi.end),
+    tithi_end:pgFmt(q.tithi.end||(q.tithi.segments&&q.tithi.segments[0]&&q.tithi.segments[0].end)),
     nakshatra:(sdNak(q.nakshatra)),
     nakshatra_ruler:(q.nakshatra.lord?(sdTerm("planet",q.nakshatra.lord)):''),
-    nakshatra_end:pgFmt(q.nakshatra.end),
+    nakshatra_end:pgFmt(q.nakshatra.end||(q.nakshatra.segments&&q.nakshatra.segments[0]&&q.nakshatra.segments[0].end)),
     yoga:(sdYoga(q.yoga)), karana:(sdKarana(q.karana)),
     weekday:(sdVara(q.vara)),
     sunrise:pgFmt(q.sunrise), sunset:pgFmt(q.sunset),
@@ -5814,6 +5825,10 @@ function enginePanchang(){
   return buildPayload(PE.getPanchang(new Date(),c.lat,c.lng,sdTzHours()));
 }
 async function fetchPanchang(){
+  var request=window._pgRequest=(window._pgRequest||0)+1,key=pgCacheKey();
+  if(!pgContext()){window._panchangData=null;applyPanchang(null);return;}
+  var old=window._panchangData;
+  if(!old||old.context!==pgContext()||old.day!==dailyDateKey(dailyCivilDate())){window._panchangData=null;applyPanchang(null);}
   // Panchang values may come from cache immediately, but Today Jap also needs
   // the engine's festival/vrata list. Returning before that engine loads made
   // a warm launch fall back to the weekday mantra while a cold launch on the
@@ -5825,6 +5840,7 @@ async function fetchPanchang(){
          applyPanchang(c);                 // fast cached paint
          try{
            await ensureEngine();
+           if(request!==window._pgRequest||key!==pgCacheKey())return;
            _obsMemo={};                    // discard any pre-engine observance map
            refreshDailyDevotional();       // authoritative city-date festival Jap
            try{ renderDailySlot(); }catch(_){}
@@ -5833,6 +5849,7 @@ async function fetchPanchang(){
        } }catch(e){}
   try{
     await ensureEngine();
+    if(request!==window._pgRequest||key!==pgCacheKey())return;
     var p=enginePanchang();
     if(p){
       window._panchangData=p;
@@ -5841,7 +5858,8 @@ async function fetchPanchang(){
       return;
     }
   }catch(e){ console.log('Engine panchang unavailable:',e); }
-  applyPanchang(window._panchangData||null);
+  if(request!==window._pgRequest)return;
+  window._panchangData=null;applyPanchang(null);
 }
 /* Every DOM write that used to live inside the API call, unchanged. */
 /* ══ SD-ASTRO-TEASER ══════════════════════════════════════════════════════
@@ -5894,8 +5912,8 @@ function sdMins(str){
 }
 function paintAstroTeaser(){
   var el=document.getElementById('agSub'); if(!el) return;
-  var p=window._panchangData; if(!p) return;          /* keep the static label */
-  var now=new Date(), nowM=now.getHours()*60+now.getMinutes();
+  var p=window._panchangData; if(!p){el.textContent=sdNotice('unavailable',lang);return;}
+  var wall=sdTz.instantToWall(new Date(),U.city_tz).hhmm.split(':'),nowM=Number(wall[0])*60+Number(wall[1]);
 
   /* every auspicious window the day still has ahead of it */
   var ahead=[];
@@ -5934,11 +5952,25 @@ function paintAstroTeaser(){
   } else if(p.mine){
     html='<span class="ag-hot">⚠️ '+esc(sdTease('care'))+' <span class="ag-arrow">→</span></span>';
   }
-  if(html) el.innerHTML=html;
+  if(html) el.innerHTML=html;else el.textContent=A('dashbo.astrology_today');
 }
 
 function applyPanchang(p){
-  if(!p) return;
+  /* Clear optional values first; absence must not retain yesterday's text. */
+  ['tithiVal','tv','tithiPaksha','tithiEnd','nakVal2','nakRuler','nakEnd','yogVal','karVal','goodTime','pvTime','abTime','abSub','abDesc','moonTime','gulTime','avoidTime','rahuTime'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='—';});
+  document.querySelectorAll('.sun-bar .si-t').forEach(function(el){el.textContent='—';});
+  var warn=document.getElementById('abhijitWarn');if(warn)warn.remove();
+  var status=document.getElementById('pgStatus');
+  if(!p){
+    if(!status){status=document.createElement('div');status.id='pgStatus';status.setAttribute('role','status');status.style.cssText='padding:14px;margin:8px 0;color:#FFF4DE;font-size:14px;line-height:1.7;border:1px solid #D4A843;border-radius:12px';var host=document.querySelector('.hbody');if(host)host.prepend(status);}
+    status.textContent=sdNotice('unavailable',lang)+' ';
+    var retry=document.createElement('button');retry.textContent=sdNotice('retry',lang);retry.onclick=function(){fetchPanchang();};status.appendChild(retry);
+    var settings=document.createElement('button');settings.textContent='⚙';settings.setAttribute('aria-label',sdNotice('city',lang));settings.onclick=function(){openSettings();};status.appendChild(settings);
+    try{paintAstroTeaser();}catch(e){}
+    try{refreshDailyDevotional();renderDailySlot();}catch(e){}
+    return;
+  }
+  if(status)status.remove();
   try{ paintAstroTeaser(); }catch(e){}
   try{
     setTimeout(prewarmAudio, 1000);
@@ -6079,7 +6111,7 @@ function updateSadhanaTab(){
    every declaration below it down with it. localStorage can hold anything;
    parsing it is never safe. */
 try{
-  var _u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+  var _u=sdSafeProfile();
   if(_u.birth_cache_key && !_u.rashi){
     _u.birth_cache_key='';
     localStorage.setItem('shubhdin_user',JSON.stringify(_u));
@@ -6336,7 +6368,7 @@ function gitaOfDay(){
     var L=(window.SD_LANG||'hi');
     var ok=list.filter(function(e){ return e&&e.quote&&e.note&&e.quote[L]&&e.note[L]; });
     if(!ok.length) return null;
-    var e=ok[(new Date().getDate()-1)%ok.length];
+    var e=ok[(dailyCivilDate().getDate()-1)%ok.length];
     return {ref:e.ref, sanskrit:e.sanskrit, q:e.quote[L], n:e.note[L]};
   }catch(err){ return null; }
 }
@@ -6637,17 +6669,21 @@ function wpUse(key){
 let _settLang = 'hi';
 
 // Resuming a backgrounded PWA is the real "opened at dawn" path.
-document.addEventListener('visibilitychange',function(){
+function refreshDailyState(){
   if(document.hidden) return;
   renderCalIcon();
   var today=dailyDateKey(dailyCivilDate());
   if(window._sdDay && window._sdDay!==today){
     _calMemo={};                 // calendar tithi memo is per-day
-    fetchPanchang();             // cache key has rolled — recompute for the new day
+    _obsMemo={};
     renderStreakCard();
   }
   window._sdDay=today;
-});
+  fetchPanchang();
+}
+document.addEventListener('visibilitychange',refreshDailyState);
+window.addEventListener('pageshow',function(e){if(e.persisted)refreshDailyState();});
+setInterval(refreshDailyState,60000);
 window._sdDay=dailyDateKey(dailyCivilDate());
 /* ══ SD-HOME-STATE · the toggle ══
    Deliberately not localised: this is a decision tool for Ram, not a feature
@@ -6796,7 +6832,7 @@ function paintHomeLayoutBtns(){
 function openSettings(){
   // Prefill current values
   const u = {};
-  try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
+  try{ Object.assign(u, sdSafeProfile()); }catch(e){}
   _settLang = u.lang || 'hi';
   document.getElementById('settName').value = u.name || '';
   document.getElementById('settDob').value  = u.dob  || '';
@@ -6808,7 +6844,9 @@ function openSettings(){
     if(sh) sh.value = th;
     if(sm) sm.value = tm;
   }
-  const city = (u.city||'delhi').toLowerCase();
+  const city = (u.city||'').toLowerCase();
+  _settingsCityRevision++;
+  window._selectedCityLat=null;window._selectedCityLon=null;window._selectedCityTz=null;
   const cityInput = document.getElementById('settCityInput');
   if(cityInput) cityInput.value = u.city || '';
   document.getElementById('settCity').value = city;
@@ -6983,18 +7021,20 @@ async function settingsResolveCity(name){
   return null;
 }
 async function saveSettings(){
+  try {
   const newName = document.getElementById('settName').value.trim();
-  const newCity = document.getElementById('settCity').value;
+  const newCity = document.getElementById('settCityInput').value.trim();
   const newDob  = document.getElementById('settDob').value;
   const newTob  = document.getElementById('settTob').value;
-  if(!newName){ alert(_settLang==='hi'?'नाम खाली नहीं हो सकता':'Name cannot be empty'); return; }
+  if(!newName){ alert(sdNotice('nameRequired',_settLang)); return; }
   // Update localStorage
   let u = {};
-  try{ u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}'); }catch(e){}
+  try{ u = sdSafeProfile(); }catch(e){}
   /* Capture BEFORE anything is overwritten. The first version of this fix
      compared u.city to newCity after u.city had already been assigned, so
      "changed" was always false and neither fix ever ran. */
   const oldCity = u.city, oldDob = u.dob, oldTob = u.tob, oldName = u.name;
+  const oldLat=u.city_lat,oldLon=u.city_lon,oldZone=u.city_tz,oldUnknown=u.tobUnknown;
   const nameChanged = u.name !== newName;
   u.name = newName;
   u.lang = _settLang;
@@ -7004,7 +7044,9 @@ async function saveSettings(){
      the OLD city's coordinates against a new city name — the pair is cleared
      so nothing computes against a place the user has left. */
   const cityChanged = (oldCity !== newCity);
-  if(window._selectedCityLat){
+  if(!newCity){
+    delete u.city_lat;delete u.city_lon;delete u.city_tz;
+  } else if(window._selectedCityLat!=null&&isFinite(window._selectedCityLat)&&window._selectedCityLon!=null&&isFinite(window._selectedCityLon)){
     u.city_lat = window._selectedCityLat; u.city_lon = window._selectedCityLon;
     u.city_tz = window._selectedCityTz || (await sdTz.fetchZone(u.city_lat, u.city_lon)) || null;
     if(!u.city_tz) delete u.city_tz;   /* F1: no zone → no zone; nothing assumes IST */
@@ -7020,11 +7062,10 @@ async function saveSettings(){
   var _tu=document.getElementById('settTobUnknown');
   u.tobUnknown = !!(_tu && _tu.checked);
   u.tob  = u.tobUnknown ? '06:00' : newTob;
-  localStorage.setItem('shubhdin_user', JSON.stringify(u));
   /* A changed birth moment or place invalidates the chart. Clear the cache
      key AND the derived values, so nothing stale is shown or matched against
      while the recomputation runs. */
-  const birthChanged = (oldDob!==newDob) || (oldTob!==(u.tobUnknown?'06:00':newTob)) || cityChanged;
+  const birthChanged = (oldDob!==newDob) || (oldTob!==u.tob) || cityChanged || oldLat!==u.city_lat || oldLon!==u.city_lon || oldZone!==u.city_tz || oldUnknown!==u.tobUnknown;
   u.birth_cache_key = '';
   if(birthChanged){ u.rashi=''; u.nakshatra=''; u.lagna=''; u.nakshatra_pada=null; }
   localStorage.setItem('shubhdin_user', JSON.stringify(u));
@@ -7048,6 +7089,7 @@ async function saveSettings(){
   }catch(e){}
 
   saveToCloud().then(()=>{ closeSettings(); window.location.reload(); });
+  } catch(e) {alert(sdNotice('storage',_settLang));}
 }
 
 
@@ -7075,7 +7117,8 @@ function ensureEngine(){
   _engineP=new Promise(function(resolve,reject){
     function load(src){ return new Promise(function(ok,no){
       var s=document.createElement('script'); s.src=src; s.async=true;
-      s.onload=ok; s.onerror=function(){no(new Error(src));};
+      var timer=setTimeout(function(){s.remove();no(new Error('Engine load timed out'));},10000);
+      s.onload=function(){clearTimeout(timer);ok();};s.onerror=function(){clearTimeout(timer);s.remove();no(new Error(src));};
       document.head.appendChild(s);
     });}
     load('astronomy.min.js')
@@ -7083,6 +7126,7 @@ function ensureEngine(){
       .then(function(){ window.PanchangEngine?resolve(window.PanchangEngine):reject(new Error('engine absent')); })
       .catch(reject);
   });
+  _engineP=_engineP.catch(function(e){_engineP=null;throw e;});
   return _engineP;
 }
 /* Compute locally. Returns null if the engine could not be loaded, so the
@@ -7129,12 +7173,12 @@ function computeBirthLocal(u){
 async function fetchBirthChart(){
   if(!window.__sdTzBackfilled){ window.__sdTzBackfilled=true; try{ await sdBackfillTz(); }catch(e){} }   /* F1: once per open */
   const u = {};
-  try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
+  try{ Object.assign(u, sdSafeProfile()); }catch(e){}
   if(!u.dob) return; // need at least DOB
   if(!u.tob) u.tob = '12:00'; // default noon if no birth time
 
   // Don't refetch if already have data and DOB/TOB unchanged
-  const cacheKey = u.dob+'_'+u.tob+'_'+(u.city||'delhi');
+  const cacheKey = ['v2',u.dob,u.tob,!!u.tobUnknown,u.birth_lat!=null?u.birth_lat:u.city_lat,u.birth_lng!=null?u.birth_lng:u.city_lon,u.birth_tz||u.city_tz||''].join('|');
   if(u.birth_cache_key === cacheKey && u.nakshatra) return;
 
   // On-device only. If the engine or required location/zone is unavailable,
@@ -7164,7 +7208,7 @@ async function fetchBirthChart(){
 // When the time was unknown we substituted sunrise, so anything that depends
 // on the exact minute — the nakshatra PADA and the lagna — is approximate.
 // Say it where it shows, rather than presenting a guess as a fact.
-function tobIsUnknown(){ try{return !!JSON.parse(localStorage.getItem('shubhdin_user')||'{}').tobUnknown;}catch(e){return false;} }
+function tobIsUnknown(){ try{return !!sdSafeProfile().tobUnknown;}catch(e){return false;} }
 function approxNote(){ return tobIsUnknown()
   ? ' <span style="font-size:9px;color:rgba(212,168,67,0.72);">'+(A('dashbo.time_assumed'))+'</span>' : ''; }
 function updateBirthChips(data){
@@ -7207,7 +7251,7 @@ function updateBirthChips(data){
 // Load from cache if already fetched
 function loadBirthCache(){
   const u = {};
-  try{ Object.assign(u, JSON.parse(localStorage.getItem('shubhdin_user')||'{}')); }catch(e){}
+  try{ Object.assign(u, sdSafeProfile()); }catch(e){}
   if(u.nakshatra || u.rashi){
     updateBirthChips({ rashi: u.rashi, nakshatra: u.nakshatra, nakshatra_pada: u.nakshatra_pada });
   }
@@ -7218,17 +7262,23 @@ function loadBirthCache(){
 
 // ── CITY SEARCH via OpenStreetMap (free, all India cities/villages) ──
 let _citySearchTimer = null;
+var _settingsCityRevision=0;
 
 function filterCities(q){
+  var revision=++_settingsCityRevision;
+  window._selectedCityLat=null;window._selectedCityLon=null;window._selectedCityTz=null;
+  document.getElementById('settCity').value=(q||'').trim();
+  _geoHits=[];clearTimeout(_citySearchTimer);
   const dd = document.getElementById('cityDropdown');
   if(!q || q.length < 2){ dd.style.display='none'; return; }
   clearTimeout(_citySearchTimer);
-  dd.innerHTML = '<div style="padding:10px 14px;color:rgba(255,255,255,0.75);font-size:13px;">Searching...</div>';
+  dd.textContent=sdNotice('searching',_settLang);
   dd.style.display='block';
   _citySearchTimer = setTimeout(async ()=>{
     try{
       const results = await sdGeoSearch(q, 6, '&addressdetails=1');
-      if(!results.length){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.90);font-size:13px;">No results</div>'; return; }
+      if(revision!==_settingsCityRevision)return;
+      if(!results.length){dd.textContent=sdNotice('noResults',_settLang);return;}
       _geoHits = results;
       dd.innerHTML = results.map((r, i) => {
         return `<div onclick="selectCityIdx(${i})"
@@ -7239,7 +7289,7 @@ function filterCities(q){
           <div style="font-size:10px;color:rgba(255,255,255,0.90);margin-top:2px;">${sdGeoEsc(r.display_name.split(',').slice(1,3).join(',').trim())}</div>
         </div>`;
       }).join('');
-    }catch(e){ dd.innerHTML='<div style="padding:10px 14px;color:rgba(255,255,255,0.90);font-size:13px;">Search failed</div>'; }
+    }catch(e){if(revision===_settingsCityRevision)dd.textContent=sdNotice('unavailable',_settLang);}
   }, 400);
 }
 
@@ -7258,9 +7308,9 @@ function sdGeoSearch(q,limit,extra){
   var base='https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit='+(limit||6)+(extra||'');
   var opt={headers:{'Accept-Language':'en'}};
   var arr=function(x){return Array.isArray(x)?x:[];};
-  var world=function(){return fetch(base,opt).then(function(r){return r.json();}).then(arr);};
+  var world=function(){return sdFetch(base,opt).then(function(r){return r.json();}).then(arr);};
   if(SD_GEO_SCOPE==='world') return world();
-  return fetch(base+'&countrycodes=in',opt).then(function(r){return r.json();}).then(arr).then(function(inr){
+  return sdFetch(base+'&countrycodes=in',opt).then(function(r){return r.json();}).then(arr).then(function(inr){
     if(inr.length>=(limit||6)) return inr;
     return world().then(function(w){
       var seen={}; inr.forEach(function(r){seen[r.place_id]=1;});
@@ -7271,6 +7321,7 @@ function sdGeoSearch(q,limit,extra){
 function sdGeoEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
 function selectCity(name, lat, lon){
+  var revision=++_settingsCityRevision;clearTimeout(_citySearchTimer);
   document.getElementById('settCityInput').value = name;
   document.getElementById('settCity').value = name.toLowerCase();
   window._selectedCityLat = parseFloat(lat);
@@ -7278,7 +7329,7 @@ function selectCity(name, lat, lon){
   window._selectedCityTz = null;
   document.getElementById('cityDropdown').style.display='none';
   /* F1: the city's IANA zone, once, at pick time */
-  sdTz.fetchZone(lat, lon).then(function(z){ if(window._selectedCityLat===parseFloat(lat)) window._selectedCityTz = z; });
+  sdTz.fetchZone(lat, lon).then(function(z){if(revision===_settingsCityRevision)window._selectedCityTz=z;});
 }
 
 document.addEventListener('click', function(e){
@@ -7424,10 +7475,10 @@ async function saveToCloud(){
   try{
     const uid = getOrCreateUID();
     const write_key = getOrCreateKey();
-    const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
+    const u = sdSafeProfile();
     const streak = JSON.parse(localStorage.getItem('shubhdin_streak')||'{}');
     const sadhana = JSON.parse(localStorage.getItem('shubhdin_sadhana')||'null');
-    await fetch((location.protocol==='https:'&&location.host)?'/api/save-user':'https://www.shubhdin.app/api/save-user', {
+    await sdFetch((location.protocol==='https:'&&location.host)?'/api/save-user':'https://www.shubhdin.app/api/save-user', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -7482,8 +7533,8 @@ async function submitFeedback(){
   btnTxt.textContent = A('dashbo.sending');
   btn.disabled = true;
   try{
-    const u = JSON.parse(localStorage.getItem('shubhdin_user')||'{}');
-    const r = await fetch((location.protocol==='https:'&&location.host)?'/api/feedback':'https://www.shubhdin.app/api/feedback', {
+    const u = sdSafeProfile();
+    const r = await sdFetch((location.protocol==='https:'&&location.host)?'/api/feedback':'https://www.shubhdin.app/api/feedback', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
@@ -8208,13 +8259,13 @@ function cleanWindowOf(q){
   }catch(e){ return null; }
 }
 function panchangForDate(date){
-  var ck='sd_pan_'+date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate()
-         +'_'+((U.city||'x')+'').toLowerCase();
-  try{ var hit=JSON.parse(localStorage.getItem(ck)||'null'); if(pgUsable(hit)) return hit; }catch(e){}
+  var ck=pgCacheKey(date);
+  try{ var hit=JSON.parse(localStorage.getItem(ck)||'null'); if(pgUsable(hit,date)) return hit; }catch(e){}
   var PE=window.PanchangEngine; if(!PE) return null;
   try{
     var c=pgCoords();
-    var out=buildPayload(PE.getPanchang(new Date(date.getFullYear(),date.getMonth(),date.getDate(),6,0,0),c.lat,c.lng,sdTzHours()));
+    var instant=sdTz.birthInstant(dailyDateKey(date),'06:00',U.city_tz).instant;
+    var out=buildPayload(PE.getPanchang(instant,c.lat,c.lng,sdTz.offsetHoursAt(instant,U.city_tz)),date);
     try{ localStorage.setItem(ck,JSON.stringify(out)); }catch(e){}
     return out;
   }catch(e){ return null; }
@@ -8314,7 +8365,7 @@ function showCalDetail(date){
      rest of the page uses, so tapping a date twice never recomputes. */
   const today = new Date();
   const isToday = date.getDate()===today.getDate() && date.getMonth()===today.getMonth() && date.getFullYear()===today.getFullYear();
-  const p = isToday ? (window._panchangData||panchangForDate(date)) : panchangForDate(date);
+  const p = isToday && pgUsable(window._panchangData) ? window._panchangData : panchangForDate(date);
 
   // Build full data rows when we have real data (today)
   /* Rendered from the single payload above. Each limb gains its transition
@@ -9274,7 +9325,7 @@ function mlStop(silent){
 window.mlStop=mlStop;
 </script>
 <script src="birthdate-guard.js"></script>
-<script src="report-catalog.js"></script>
+<script src="report-catalog.js?v=238"></script>
 <script src="daily-gita.js"></script>
 <!-- The daily Sri Chakra card. Order matters: draw → content → card.
      If any of the three fails to load, sdNityaMount is undefined, the slot
@@ -9282,7 +9333,7 @@ window.mlStop=mlStop;
 <script src="srichakra-draw.js"></script>
 <script src="daily-nitya.js"></script>
 <script src="nitya-card.js"></script>
-<script src="nav-history.js"></script>
+<script src="nav-history.js?v=238"></script>
 <script>
 /* Tabs become history entries. Called after go() and openSadhana() exist, and
    after the boot go('home') has run, so the hash — not the default — decides

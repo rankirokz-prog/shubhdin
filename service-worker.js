@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v237';
+const CACHE_NAME = 'shubhdin-v238';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -6,6 +6,8 @@ const CORE_FILES = [
   '/index.html',
   '/dashboard.html',
   '/readability.css',
+  '/app-runtime.js',
+  '/report-session.js',
   '/astrology.html',
   '/kundli.html',
   '/premium.html',
@@ -26,6 +28,7 @@ const CORE_FILES = [
      jsDelivr with no integrity hash, on the pages that hold the session. */
   '/vendor/supabase-2.114.0.js',
   '/report-catalog.js',
+  '/report-catalog.js?v=238',
   '/mantra-library-data.js',
   /* today's verse — cached so the morning card is there on a weak
      connection, which is exactly when people open a devotional app */
@@ -46,7 +49,9 @@ const CORE_FILES = [
   '/panchang-engine.js',
   '/birthdate-guard.js',
   '/nav-history.js',
+  '/nav-history.js?v=238',
   '/sd-tz.js',   /* F1: birth-zone conversion, used by every report page and the dashboard */
+  '/sd-tz.js?v=238',
   /* Localisation. These were fetched from the network on every load and were
      absent offline — on a devotional app that is opened first thing in the
      morning, often on a weak connection, that is the difference between a

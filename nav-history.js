@@ -164,6 +164,18 @@
      sessionStorage is per-tab and survives same-tab navigation, so a stored
      same-origin previous page means "you got here from inside the app". */
   var PREV = 'sd_navPrev';
+  var arrivalFrom=null;
+  try{
+    var intent=JSON.parse(sessionStorage.getItem('sd_nav_intent')||'null');
+    if(intent&&Date.now()-intent.at<120000&&new URL(intent.to).origin===location.origin&&new URL(intent.to).pathname===location.pathname&&new URL(intent.from).origin===location.origin)arrivalFrom=intent.from;
+    sessionStorage.removeItem('sd_nav_intent');
+  }catch(e){}
+  document.addEventListener('click',function(e){
+    var el=e.target.closest&&e.target.closest('a[href],[onclick]');if(!el)return;
+    var to=el.getAttribute('href'),m;
+    if(!to){m=(el.getAttribute('onclick')||'').match(/location\.href\s*=\s*['"]([^'"]+)['"]/);if(m)to=m[1];}
+    try{var url=new URL(to,location.href);if(to&&url.origin===location.origin)sessionStorage.setItem('sd_nav_intent',JSON.stringify({from:location.href,to:url.href,at:Date.now()}));}catch(err){}
+  },true);
   try {
     w.addEventListener('pagehide', function () {
       try { sessionStorage.setItem(PREV, location.href); } catch (e) {}
@@ -173,9 +185,9 @@
   w.sdBack = function (fallback) {
     var dest = fallback || 'dashboard.html', cameFromApp = false;
     try {
-      var prev = sessionStorage.getItem(PREV);
-      cameFromApp = !!prev && prev.indexOf(location.origin) === 0
-                    && prev.split('#')[0] !== location.href.split('#')[0];
+      var prev=arrivalFrom;
+      if(w.navigation&&w.navigation.currentEntry){var entries=w.navigation.entries(),at=entries.findIndex(function(e){return e.key===w.navigation.currentEntry.key;});prev=at>0?entries[at-1].url:null;}
+      cameFromApp=!!prev&&new URL(prev).origin===location.origin&&!/\/index\.html$/.test(new URL(prev).pathname)&&prev.split('#')[0]!==location.href.split('#')[0];
     } catch (e) {}
 
     if (cameFromApp && history.length > 1) {
@@ -184,11 +196,11 @@
       // If that went nowhere, the person must not be left staring at the page
       // they just tried to leave.
       setTimeout(function () {
-        if (location.href === here) location.href = dest;
+        if (location.href === here) location.replace(dest);
       }, 450);
       return;
     }
-    location.href = dest;
+    location.replace(dest);
   };
 
   /* ── scroll position across in-page routes ─────────────────────────

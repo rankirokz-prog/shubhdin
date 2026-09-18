@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script src="app-runtime.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="dark only">
@@ -223,7 +224,7 @@ body{min-height:100vh;font-family:'Poppins',sans-serif;color:rgba(255,244,222,0.
    screen came back in Hindi. document.write during initial parse IS parser-
    blocking, which is the ordering guarantee needed here.
    Hindi always loads as the fallback; the chosen language loads beside it. */
-window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+window.SD_LANG=(function(){try{return sdSafeProfile().lang||'hi';}catch(e){return 'hi';}})();
 document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
 if(window.SD_LANG&&window.SD_LANG!=='hi')
   document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
@@ -245,7 +246,7 @@ if(typeof window.A!=='function'){
 <script src="panchang-terms.js"></script>
 <script src="vrat-names.js"></script>
 <script src="panchang-terms-bridge.js"></script>
-<script src="sd-tz.js"></script>
+<script src="sd-tz.js?v=238"></script>
 <link rel="stylesheet" href="readability.css">
 </head>
 <body data-sd-page="astrology">
@@ -253,11 +254,11 @@ if(typeof window.A!=='function'){
 
 <script src="astronomy.min.js"></script>
 <script src="panchang-engine.js"></script>
-<script src="report-catalog.js"></script>
+<script src="report-catalog.js?v=238"></script>
 <script>
 'use strict';
 /* ── user context ─────────────────────────────────────────── */
-var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+var U=sdSafeProfile();
 var H=
 (U.lang||'hi')==='hi';
 /* Date locale follows the reader's language. Every call passed H?'hi-IN':'en-IN',
@@ -285,11 +286,11 @@ function sdLocale(){
    people plan weddings on these timings.
 
    The pair now moves together. If we fall back, we say we fell back. */
-var SD_COORD_FALLBACK = !(isFinite(parseFloat(U.city_lat)) && isFinite(parseFloat(U.city_lon)));
-var LAT = SD_COORD_FALLBACK ? 23.1793 : parseFloat(U.city_lat);
-var LNG = SD_COORD_FALLBACK ? 75.7849 : parseFloat(U.city_lon);
-var CITY = SD_COORD_FALLBACK ? A('astrol.ujjain') : (U.city || A('astrol.ujjain'));
-var CITY_TZ = SD_COORD_FALLBACK ? 'Asia/Kolkata' :
+var SD_COORD_FALLBACK = !(U.city_lat!=null&&U.city_lon!=null&&U.city_lat!==''&&U.city_lon!==''&&isFinite(Number(U.city_lat))&&isFinite(Number(U.city_lon))&&Math.abs(Number(U.city_lat))<=90&&Math.abs(Number(U.city_lon))<=180);
+var LAT = SD_COORD_FALLBACK ? NaN : Number(U.city_lat);
+var LNG = SD_COORD_FALLBACK ? NaN : Number(U.city_lon);
+var CITY = U.city || '';
+var CITY_TZ = SD_COORD_FALLBACK ? null :
   ((window.sdTz&&sdTz.isZone(U.city_tz)) ? U.city_tz : null);
 function zoneOffsetAt(d,zone){
   var z=zone||CITY_TZ;
@@ -311,7 +312,7 @@ if(!CITY_TZ&&!SD_COORD_FALLBACK&&window.sdTz){
 
 /* And say it on the screen, once, where it cannot be missed. */
 (function(){
-  if(!SD_COORD_FALLBACK) return;
+  return; /* Missing-location recovery is rendered by route(), never default-city timings. */
   try{
     document.addEventListener('DOMContentLoaded', function(){
       if(document.getElementById('sdCoordWarn')) return;
@@ -463,6 +464,13 @@ window.addEventListener('hashchange',route);
 var tick=null;
 function route(){
   if(tick){clearInterval(tick);tick=null;}
+  if(SD_COORD_FALLBACK||!CITY_TZ||!window.PanchangEngine){
+    app.replaceChildren();
+    var text=document.createElement('p');text.className='note';text.textContent=sdNotice('unavailable');app.appendChild(text);
+    var backButton=document.createElement('button');backButton.className='back';backButton.textContent='←';backButton.setAttribute('aria-label',sdNotice('back'));backButton.onclick=function(){sdBack('dashboard.html');};app.appendChild(backButton);
+    var retry=document.createElement('button');retry.textContent=sdNotice('retry');retry.onclick=function(){location.reload();};app.appendChild(retry);
+    return;
+  }
   var h=(location.hash||'#hub').slice(1).split('/');
   if(h[0]==='rashifal'&&h[1]!==undefined)return vRashi(parseInt(h[1],10));
   if(h[0]==='rashifal')return vRashiGrid();
@@ -622,7 +630,7 @@ function vHub(){
    /* build marker removed — it painted "astro A8" in the corner for every
       devotee. Read SD_BUILD from devtools instead. */
    ''
-   +'<div class="hdr"><button class="back" onclick="location.href=\'dashboard.html\'">←</button>'
+   +'<div class="hdr"><button class="back" onclick="sdBack(\'dashboard.html\')">←</button>'
    +'<div><div class="h-t dev">'+A('dashbo.astrology_today')+'</div>'
    +'<div class="h-s">'+greg+' · <span class="dev">'+hindu+'</span></div></div>'
    +'<div class="h-city">📍 '+CITY+'</div></div>'
@@ -670,16 +678,7 @@ function vHub(){
    +'<div class="note">'+A('astrol.all_timings_computed_for_your_city')+'</div>';
 
   tick=setInterval(function(){
-    var c=currentSeg();
-    var el=document.getElementById('dCount');
-    // count down to the end of whatever the headline is showing — if a
-    // forbidden period is running, that is the thing the user is waiting out.
-    var _nb=nowBad();
-    var _end=_nb?new Date(_nb.e):(c.s?new Date(c.s.end):null);
-    if(el&&_end)el.textContent='⏳ '+mins(+_end-Date.now());
-    var rb=document.getElementById('rbNow');
-    if(rb){var t0=new Date(panchang().sunrise).getTime(),t1=new Date(panchang().nextSunrise).getTime();
-      rb.style.left=Math.min(99.6,Math.max(0,(Date.now()-t0)/(t1-t0)*100)).toFixed(2)+'%';}
+    refreshAstrology();
   },30000);
 }
 function sec(ico,title,live,href){
@@ -1043,7 +1042,7 @@ function vExplore(){
    details — a user enters their birth data once, anywhere, and never again. */
 function bpRead(slot){
   if(slot==='self'){
-    var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+    var u={}; try{u=sdSafeProfile();}catch(e){}
     if(!u.dob) return null;
     return {name:u.name||'', dob:u.dob, tob:u.tob||'12:00',
             place:u.birth_place||u.city||'',
@@ -1055,7 +1054,7 @@ function bpRead(slot){
 }
 function bpWrite(slot,pr){
   if(slot==='self'){
-    var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+    var u={}; try{u=sdSafeProfile();}catch(e){}
     if(pr.name) u.name=pr.name;
     u.dob=pr.dob; u.tob=pr.tob; u.birth_place=pr.place; u.birth_lat=pr.lat; u.birth_lng=pr.lng;
     if(pr.tz) u.birth_tz=pr.tz; else delete u.birth_tz;
@@ -1539,7 +1538,7 @@ function needBirth(what){
 /* Moon can change nakshatra within a single day, so an assumed birth time can
    land on the wrong one. Say so rather than presenting it as settled. */
 function tobUnknownNote(){
-  var u={}; try{u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+  var u={}; try{u=sdSafeProfile();}catch(e){}
   if(!u.tobUnknown) return '';
   return '<div class="note" style="color:rgba(232,190,90,0.78);">'
    +A('astrol.your_birth_time_is_unknown_so_sunr')+'</div>';
@@ -1620,14 +1619,25 @@ var SD_TZ_MSG={
 function sdTzMsg(k){var l=window.SD_LANG||'hi';return (SD_TZ_MSG[k]&&SD_TZ_MSG[k][l])||SD_TZ_MSG[k].hi;}
 if(SD_TZ_READY){
   app.innerHTML='<div class="note" style="margin-top:35vh">'+sdTzMsg('wait')+'</div>';
-  SD_TZ_READY.catch(function(){app.innerHTML='<div class="note" style="margin-top:35vh">'+sdTzMsg('fail')+'</div>';});
+  SD_TZ_READY.catch(function(){route();});
 }else route();
 var _astroDay=astroDayKey(new Date());
-setInterval(function(){var k=astroDayKey(new Date());if(k!==_astroDay){_astroDay=k;P=null;P_DAY='';route();}},60000);
-document.addEventListener('visibilitychange',function(){if(!document.hidden){var k=astroDayKey(new Date());if(k!==_astroDay){_astroDay=k;P=null;P_DAY='';route();}}});
+function refreshAstrology(){
+  if(document.hidden)return;
+  var k=astroDayKey(new Date());if(k!==_astroDay){_astroDay=k;P=null;P_DAY='';}
+  var section=(location.hash||'#hub').slice(1).split('/')[0];
+  /* Never rebuild an open form or restart a muhurta search in the background. */
+  if(['hub','panchang','times','chogh','hora','lagna','tara','chandra','rashifal','fest','vrats','explore','hcal'].indexOf(section)<0)return;
+  var y=window.scrollY,focus=document.activeElement&&document.activeElement.id;
+  route();window.scrollTo(0,y);
+  if(focus){var el=document.getElementById(focus);if(el)el.focus({preventScroll:true});}
+}
+setInterval(function(){if((location.hash||'#hub')!=='#hub')refreshAstrology();},30000);
+document.addEventListener('visibilitychange',refreshAstrology);
+window.addEventListener('pageshow',function(e){if(e.persisted)refreshAstrology();});
 </script>
 <script src="birthdate-guard.js"></script>
-<script src="nav-history.js"></script>
+<script src="nav-history.js?v=238"></script>
 <script>
 /* The ← button now goes back through history instead of pushing another
    entry, so the trail no longer replays forwards-backwards. */

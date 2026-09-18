@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script src="report-session.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shubh Din — Marriage Compatibility Report</title>
@@ -965,7 +966,7 @@ function confirmStep(){
     var bought=null, app=null;
     try{
       var m=location.pathname.match(/([a-z]+)-report\.html/);
-      if(m){var d=JSON.parse(localStorage.getItem('sd_buy_'+m[1])||'null'); if(d)bought=d.lang;}
+      if(m){var d=sdReportDetails(m[1]); if(d)bought=d.lang;}
     }catch(e){}
     try{ app=(JSON.parse(localStorage.getItem('shubhdin_user')||'{}')||{}).lang; }catch(e){}
     var pick=[q,bought,app].filter(function(x){return OK.indexOf(x)>=0;})[0];
@@ -985,7 +986,7 @@ function confirmStep(){
   try{
     var m=location.pathname.match(/([a-z]+)-report\.html/); if(!m)return;
     var R=m[1]; if(R==='kundli')return; /* kundli has its own prefill block */
-    var d=null; try{d=JSON.parse(localStorage.getItem('sd_buy_'+R)||'null');}catch(e){}
+    var d=null; try{d=sdReportDetails(R);}catch(e){}
     if(d){
       for(var k in d){var el=document.getElementById(k);
         if(el&&d[k]!==undefined&&d[k]!==null&&d[k]!==''){el.value=d[k];}}

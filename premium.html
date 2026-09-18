@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="app-runtime.js"></script>
+<script src="report-session.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
@@ -76,14 +78,14 @@ body{min-height:100vh;background:linear-gradient(155deg,#0D0500 0%,#2C1208 45%,#
    and before report-catalog.js so its helpers can see A() and sdHas().
    document.write during initial parse is parser-blocking; a dynamically
    appended script is not, and that race already shipped once. */
-window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+window.SD_LANG=(function(){try{return sdSafeProfile().lang||'hi';}catch(e){return 'hi';}})();
 document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
 if(window.SD_LANG&&window.SD_LANG!=='hi')
   document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
 document.write('<scr'+'ipt src="app-langs.js"></scr'+'ipt>');
 document.write('<scr'+'ipt src="app-strings-loader.js"></scr'+'ipt>');
 </script>
-<script src="report-catalog.js"></script>
+<script src="report-catalog.js?v=238"></script>
 <script src="font-loader.js"></script>
 <script>try{sdLoadFonts();}catch(e){}</script>
 <link rel="stylesheet" href="readability.css">
@@ -142,7 +144,7 @@ var REPORTS = (function () {
    allowed to leak through. */
 function sdProfileAge(){
   try{
-    var u=JSON.parse(localStorage.getItem('shubhdin_user')||'{}'), s=u.dob||u.birth_date||'';
+    var u=sdSafeProfile(), s=u.dob||u.birth_date||'';
     var m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/); if(!m)return null;
     var y=+m[1],mo=+m[2],d=+m[3],now=new Date(),age=now.getFullYear()-y;
     if(mo<1||mo>12||d<1||d>31||age<0||age>120)return null;
@@ -186,6 +188,8 @@ if(typeof A!=='function'){
   window.A=function(k){ return String(k||'').split('.').pop().replace(/_/g,' '); };
 }
 var root=document.getElementById('pageRoot'), h='';
+function renderPremium(){
+  h='';OWNED=typeof sdOwnedIds==='function'?sdOwnedIds():{};ownedCount=Object.keys(OWNED).length;
 
 /* No catalogue means nothing can be priced or named. Show that honestly
    instead of an empty page that reads as "we have nothing to sell". */
@@ -271,6 +275,10 @@ REPORTS.forEach(function(r){
   }
 });
 root.innerHTML=h;
+}
+renderPremium();
+sdReportSync().then(function(changed){if(changed)renderPremium();});
+window.addEventListener('pageshow',function(e){if(e.persisted)sdReportSync().then(function(){renderPremium();});});
 
 /* ══ funnel · top ══════════════════════════════════════════════════════════
    report_view is fired once per report shown on this page, so the funnel has
@@ -302,6 +310,6 @@ try{
   if(n&&typeof A==='function') n.textContent='© '+A('dashbo.shubh_din')+' · '+A('prem.introPrices');
 })();
 </script>
-<script src="nav-history.js"></script>
+<script src="nav-history.js?v=238"></script>
 </body>
 </html>

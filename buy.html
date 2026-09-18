@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+<script src="app-runtime.js"></script>
+<script src="report-session.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
@@ -8,7 +10,7 @@
 <!-- FIRST script on the money page. Errors here cost real revenue, so they
      must be reported the same day rather than found weeks later. -->
 <script src="analytics.js"></script>
-<script src="sd-tz.js"></script>
+<script src="sd-tz.js?v=238"></script>
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -55,7 +57,7 @@ input:focus{outline:none;border-color:var(--gold);}
 <link rel="stylesheet" href="readability.css">
 </head>
 <body data-sd-page="buy">
-<div class="hdr"><button class="back" onclick="location.href='premium.html'">←</button>
+<div class="hdr"><button class="back" onclick="checkoutBack()">←</button>
 <div class="h-t dev" id="hTitle">रिपोर्ट</div></div>
 <div class="wrap">
 <div class="sum"><div class="ic" id="sIco">💍</div>
@@ -107,7 +109,7 @@ input:focus{outline:none;border-color:var(--gold);}
   <pre id="bdbgTxt" style="font-size:10px;color:#fff;font-family:monospace;white-space:pre-wrap;word-break:break-all;"></pre>
 </div>
 <script>
-window.SD_LANG=(function(){try{return JSON.parse(localStorage.getItem('shubhdin_user')||'{}').lang||'hi';}catch(e){return 'hi';}})();
+window.SD_LANG=(function(){try{return sdSafeProfile().lang||'hi';}catch(e){return 'hi';}})();
 document.write('<scr'+'ipt src="app-strings-hi.js"></scr'+'ipt>');
 if(window.SD_LANG&&window.SD_LANG!=='hi')
   document.write('<scr'+'ipt src="app-strings-'+window.SD_LANG+'.js"></scr'+'ipt>');
@@ -140,7 +142,7 @@ function sbDown(){
   if(e){e.textContent=A('buy.sign_in_service_could_not_load_che');
        e.style.display='block';}
 }
-var U={}; try{U=JSON.parse(localStorage.getItem('shubhdin_user')||'{}');}catch(e){}
+var U=sdSafeProfile();
 var H=(U.lang||'hi')==='hi';
 
 /* ══ SD-WA STRINGS (additive) ══════════════════════════════════════════════
@@ -162,7 +164,22 @@ function SDX(k){var lang=window.SD_LANG||'hi';
   var t=SD_WA_STR[k]||{};return t[lang]||t.hi||t.en||k;}
 
 function $(id){return document.getElementById(id);}
-function show(id){document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');}
+var checkoutVisit=Date.now()+'-'+Math.random(),checkoutStage=null,checkoutRestoring=false,checkoutDepth=0;
+function show(id){
+  document.querySelectorAll('.stage').forEach(function(s){s.classList.remove('on');});$(id).classList.add('on');
+  if(!checkoutRestoring&&id!==checkoutStage){
+    if(checkoutStage&&id!=='stDone')checkoutDepth++;
+    var st=Object.assign({},history.state,{sdCheckout:id,sdCheckoutVisit:checkoutVisit,sdCheckoutDepth:checkoutDepth});
+    try{if(!checkoutStage||id==='stDone')history.replaceState(st,'');else history.pushState(st,'');}catch(e){}
+  }
+  checkoutStage=id;
+}
+window.addEventListener('popstate',function(e){
+  if(e.state&&e.state.sdCheckoutVisit===checkoutVisit){
+    checkoutDepth=e.state.sdCheckoutDepth||0;
+    checkoutRestoring=true;show(ORDER_CODE?'stDone':e.state.sdCheckout);checkoutRestoring=false;
+  }
+});
 
 var CFG={
  marriage:{ic:'💍',hi:'विवाह मिलान',en:'Marriage Compatibility',was:799,now:399,two:true},
@@ -351,8 +368,7 @@ function langBlock(){
    WhatsApp after Ram's checks (the 48-hour promise), so an order without a
    number is an order that cannot be delivered. Prefilled from the last buy. */
 function phoneBlock(){
-  var prev='';try{var ks=Object.keys(localStorage).filter(function(k){return k.indexOf('sd_buy_')===0;});
-    for(var i=0;i<ks.length;i++){var o=JSON.parse(localStorage.getItem(ks[i])||'{}');if(o&&o.phone){prev=o.phone;break;}}}catch(e){}
+  var prev='';try{Object.keys(CFG).some(function(id){var o=sdReportDetails(id);if(o&&o.phone){prev=String(o.phone).replace(/[^+0-9]/g,'');return true;}return false;});}catch(e){}
   return '<label>📱 '+SDX('phone_label')+'</label>'
    +'<input id="f_phone" type="tel" inputmode="numeric" autocomplete="tel" value="'+prev+'" placeholder="98XXXXXXXX">'
    +'<div style="font-size:11px;opacity:.6;margin:4px 0 12px;">'+SDX('phone_hint')+'</div>';
@@ -600,7 +616,7 @@ async function submitDetails(){
     d.clat=rc.lat;d.clng=rc.lng;
     bdlog('residence resolved '+rc.lat.toFixed(3)+','+rc.lng.toFixed(3));
   }
-  localStorage.setItem('sd_buy_'+R,JSON.stringify(d));
+  if(!sdReportSaveDraft(R,d)){$('errD').textContent=sdNotice('storage');$('errD').style.display='block';return;}
   checkAuthThen();
 }
 
@@ -612,12 +628,11 @@ async function submitDetails(){
    The read helper below is the canonical way to read this key — the app pages
    (premium/home/settings) should copy it verbatim rather than re-interpreting. */
 function sdOwnedRead(){
-  try{
-    var a=JSON.parse(localStorage.getItem('sd_owned_reports')||'[]');
-    return Array.isArray(a)?a.filter(function(x){return x&&x.report;}):[];
-  }catch(e){return [];}
+  return sdAccountOwned();
 }
+var ownedRevision=0;
 function sdOwnedWrite(report,orderCode,pdfUrl,lang){
+  ownedRevision++;
   try{
     var a=sdOwnedRead(), f=null;
     for(var i=0;i<a.length;i++)if(a[i].report===report){f=a[i];break;}
@@ -628,7 +643,7 @@ function sdOwnedWrite(report,orderCode,pdfUrl,lang){
        fresh device can only guess, and guessing is how English reached a
        Telugu buyer */
     if(lang)f.lang=lang;
-    localStorage.setItem('sd_owned_reports',JSON.stringify(a));
+    sdAccountWriteOwned(a);
     bdlog('owned+ '+report+(pdfUrl?' (pdf url saved)':''));
   }catch(e){}
 }
@@ -671,20 +686,27 @@ function absorbHash(){
 }
 var SESSION=null;
 function sessionFetch(url,opts){
+  var session=SESSION;
+  if(!session||session.user.id!==sdReportAccount())return Promise.reject(new Error('Account changed'));
   opts=opts||{};opts.headers=Object.assign({},opts.headers||{},
-    {Authorization:'Bearer '+SESSION.access_token});
-  return fetch(url,opts);
+    {Authorization:'Bearer '+session.access_token});
+  return fetch(url,opts).then(function(r){if(!SESSION||SESSION.user.id!==session.user.id||sdReportAccount()!==session.user.id)throw new Error('Account changed');return r;});
 }
 function afterAuth(sess){
   SESSION=sess;
+  sdReportSetSession(sess);
+  if(sdReportDraft(R)&&!sdReportAdoptDraft(R)){
+    show('stDetails');$('errD').textContent=sdNotice('storage');$('errD').style.display='block';return;
+  }
   var proof=payProof();          /* MUST read the URL before we rewrite it */
-  try{history.replaceState(null,'',location.pathname+'?r='+R);}catch(e){}
+  try{history.replaceState(history.state,'',location.pathname+'?r='+R);}catch(e){}
   /* heal the local ownership record from the orders table — one call, all
      reports. Fire-and-forget: the purchase flow below must not wait on it. */
+  var restoreRevision=ownedRevision;
   sessionFetch('/api/order?list=1&uid='+sess.user.id)
    .then(apiJson).then(function(j){
-     if(j&&Array.isArray(j.reports)){
-       j.reports.forEach(function(o){sdOwnedWrite(o.report,o.order_code,o.pdf_url,o.lang);});
+     if(j&&Array.isArray(j.reports)&&restoreRevision===ownedRevision){
+       sdReportReconcile(j.reports,sess.user.id);
        bdlog('owned list synced: '+j.reports.length);
      }
    }).catch(function(){});
@@ -702,6 +724,7 @@ function afterAuth(sess){
    }).catch(function(){ backFromRzp?confirmAfterPay():showPay(); });
 }
 function showPay(){
+  if(!details()){show('stDetails');return;}
   $('payS').textContent=(A('buy.amount_2'))+'₹'+C.now+' · '+RT;
   $('btPay').textContent=A('buy.pay');
   $('btPay').disabled=false;
@@ -907,7 +930,16 @@ function showDone(){
 }
 
 /* ── delivery ── */
-function details(){try{return JSON.parse(localStorage.getItem('sd_buy_'+R)||'null');}catch(e){return null;}}
+function details(){return sdReportDraft(R)||sdReportDetails(R);}
+function checkoutBack(){
+  var stage=document.querySelector('.stage.on');
+  if(stage&&/^(stAuth|stPay)$/.test(stage.id)){
+    if(checkoutDepth>0){history.back();}
+    else {checkoutStage=null;show('stDetails');}
+    return;
+  }
+  sdBack('premium.html');
+}
 var PDF_URL=null;
 function doDownload(){
   if(PDF_URL){location.href=PDF_URL;return;}
@@ -962,6 +994,16 @@ absorbHash().then(function(){
   $('btDl').textContent=A('buy.download_pdf');$('btWa').textContent=A('buy.get_on_whatsapp');
   document.querySelectorAll('.btn.sec')[0].textContent=A('buy.view_on_screen');
 })();
+</script>
+<script src="nav-history.js?v=238"></script>
+<script>
+if(sb)sb.auth.onAuthStateChange(function(event,session){
+  var old=sdReportAccount();sdReportSetSession(session);
+  if(old!==sdReportAccount()){
+    SESSION=session;
+    if(event!=='INITIAL_SESSION'){location.replace('buy.html?r='+encodeURIComponent(R));}
+  }
+});
 </script>
 </body>
 </html>
