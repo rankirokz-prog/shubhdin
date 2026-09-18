@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<script src="app-runtime.js"></script>
+<script src="app-runtime.js?v=239"></script>
 <script src="report-session.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -555,6 +555,7 @@ function submitDetails(){
 }
 function kSaveAndGo(d){
   localStorage.setItem('shubhdin_kundli_details',JSON.stringify(d));
+  PDF_URL=null;PDF_EXPIRES=0;
   /* The app profile is what the dashboard reads for the daily rashi. Keeping
      these in step means a user who only ever makes a free Kundli still gets a
      rashi on the dashboard — including the coordinates, which a place NAME
@@ -632,6 +633,7 @@ function startPrep(user){
        .then(function(r){return r.json();}).then(function(a){
          if(a&&a[0]){det.lat=parseFloat(a[0].lat);det.lng=parseFloat(a[0].lon);
            localStorage.setItem('shubhdin_kundli_details',JSON.stringify(det));
+           PDF_URL=null;PDF_EXPIRES=0;
            dlog('geocode ok: '+det.lat.toFixed(3)+','+det.lng.toFixed(3));}
          else dlog('geocode: no result — report defaults will be used');
        }).catch(function(e){dlog('geocode failed: '+e.message);});
@@ -662,12 +664,13 @@ function finishPrep(email){
 }
 
 /* ── 4 · server PDF ── */
-var PDF_URL=localStorage.getItem('shubhdin_kundli_pdf')||null;
+var PDF_URL=null,PDF_EXPIRES=0,PDF_ACCOUNT=null;
 function requestServerPdf(){
-  if(PDF_URL)return;
+  if(PDF_URL&&PDF_EXPIRES>Date.now()&&PDF_ACCOUNT===sdReportAccount())return;
+  PDF_URL=null;
   sbAuth().getSession().then(function(r){
     var sess=r.data&&r.data.session; if(!sess)return;
-    var det=null; try{det=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');}catch(e){}
+    var det=null,detailsVersion=null;try{detailsVersion=localStorage.getItem('shubhdin_kundli_details');det=JSON.parse(detailsVersion||'null');}catch(e){}
     if(!det)return;
     det.lang=det.lang||(window.SD_LANG||'hi');   /* the language chosen on the form, else the app language */
     dlog('pdf: requesting server render');
@@ -675,7 +678,9 @@ function requestServerPdf(){
       body:JSON.stringify({uid:sess.user.id,access_token:sess.access_token,details:det,lang:det.lang})})
     .then(function(x){return x.json();})
     .then(function(j){
-      if(j&&j.ready&&j.url){PDF_URL=j.url;localStorage.setItem('shubhdin_kundli_pdf',j.url);
+      if(sdReportAccount()!==sess.user.id)return;
+      if(localStorage.getItem('shubhdin_kundli_details')!==detailsVersion)return;
+      if(j&&j.ready&&j.url){PDF_URL=j.url;PDF_EXPIRES=Date.parse(j.expires_at)||0;PDF_ACCOUNT=sess.user.id;
         dlog('pdf: ready '+(j.cached?'(cached)':'(rendered)'));updateDlBtn();}
       else dlog('pdf: not ready — '+JSON.stringify(j).slice(0,80));
     }).catch(function(e){dlog('pdf request failed: '+e.message);});
@@ -737,6 +742,7 @@ function kShowManualLink(url){
 function kundliLang(){try{var d=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');if(d&&d.lang)return d.lang;}catch(e){}return window.SD_LANG||'hi';}
 function viewKundli(){location.href='kundli-report.html?autoview=1&lang='+encodeURIComponent(kundliLang());}
 function downloadKundli(){
+  if(PDF_EXPIRES<=Date.now()||PDF_ACCOUNT!==sdReportAccount())PDF_URL=null;
   if(PDF_URL){dlog('pdf: downloading file');kOpenPdf(PDF_URL);return;}
   /* not ready yet: one quick retry, else fall back to on-device save */
   var b=$('rdBtn'); if(b)b.textContent=A('kundli.finishing_the_last_pages');

@@ -96,6 +96,7 @@ h1{font-size:17px;color:#D4A843;}
   <div class="hdr">
     <h1>🕉️ Dispatch</h1>
     <button class="refresh" onclick="loadAll()">↻ Refresh</button>
+    <button class="refresh" onclick="checkReadiness()">Check deployment</button>
     <div class="sub" id="subLine">—</div>
   </div>
   <div class="tabs">
@@ -147,10 +148,23 @@ function signIn(){ if(!sb)return alert('Supabase CDN did not load — check the 
   } else fin();
 })();
 
-function api(qs){return fetch('/api/order?'+qs+'&uid='+SESSION.user.id,
-  {headers:{Authorization:'Bearer '+SESSION.access_token}}).then(function(r){return r.json();});}
-function apiPost(qs,body){body.admin_uid=SESSION.user.id;body.access_token=SESSION.access_token;
-  return fetch('/api/order?'+qs,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();});}
+function api(qs){var s=SESSION;if(!s)return Promise.reject(new Error('Sign in required'));
+  return fetch('/api/order?'+qs+'&uid='+s.user.id,{headers:{Authorization:'Bearer '+s.access_token}}).then(function(r){return r.json();}).then(function(j){if(!SESSION||SESSION.user.id!==s.user.id)throw new Error('Account changed');return j;});}
+function apiPost(qs,body){var s=SESSION;if(!s)return Promise.reject(new Error('Sign in required'));body.admin_uid=s.user.id;body.access_token=s.access_token;
+  return fetch('/api/order?'+qs,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(j){if(!SESSION||SESSION.user.id!==s.user.id)throw new Error('Account changed');return j;});}
+if(sb)sb.auth.onAuthStateChange(function(event,session){
+  var previous=SESSION&&SESSION.user.id;SESSION=session;
+  if(previous&&previous!==(session&&session.user.id)){
+    ORDERS=[];LEADS=[];$('listO').textContent='';$('listL').textContent='';show('stAuth');
+    if(session)setTimeout(loadAll,0);
+  }
+});
+async function checkReadiness(){
+  try{const j=await api('readiness=1');if(!j.checks)throw new Error(j.error||'No result');
+    const labels={snapshot_key_present:'Report encryption key configured',snapshot_table_readable:'Report snapshot table readable',paid_bucket_private:'Paid-report bucket is private',razorpay_keys_present:'Razorpay keys configured',webhook_secret_present:'Webhook secret configured',play_keys_present:'Play server credentials configured'};
+    alert(Object.keys(j.checks).map(k=>(j.checks[k]?'PASS: ':'CHECK: ')+(labels[k]||k)).join('\n')+'\n\n'+j.scope);
+  }catch(e){alert('Deployment check failed: '+e.message);}
+}
 
 function copyUid(){
   var u=SESSION&&SESSION.user?SESSION.user.id:'';
@@ -282,7 +296,7 @@ function orderChecks(o){
         : ('WRONG LANGUAGE — bought in '+o.lang+', on disk as '+(o.pdf_found_lang||'legacy/unknown')
            +'. Do NOT send this file. Ask the buyer to reopen the report in the app; their device re-renders in '+o.lang+' and this tick turns green.')});
   } else {
-    t.push({ok:false,txt:'No PDF yet — buyer\'s device renders it in the background after payment; if this stays red, WhatsApp them to reopen the report in the app (birth details never touch the server, so it cannot be re-rendered from here)'});
+    t.push({ok:false,txt:'No PDF yet — buyer\'s device renders it in the background after payment; if this stays red, ask them to reopen My Reports; saved server details can restore it. Legacy orders may need support'});
   }
   t.push({ok:!!o.phone,txt:o.phone?('WhatsApp number +'+o.phone):'No phone on the order — older purchase or form skipped; get it on WhatsApp/email first'});
   return t;
@@ -313,6 +327,7 @@ function renderOrders(){
     var msg=fillTpl('report',o.lang,{name:name,report:(REPORT_NAME[o.report]&&(REPORT_NAME[o.report][o.lang]||REPORT_NAME[o.report].en))||o.report,code:o.order_code,link:o.pdf_url||''});
     var key=esc(o.uid)+'|'+esc(o.report);
     var b='';
+    if(!o.pdf_url||!o.pdf_lang_scoped)b+='<button class="b grey" onclick="generatePdf(\''+key+'\')">⚙ Generate saved report</button>';
     if(o.pdf_url)b+='<a class="b grey" href="'+esc(o.pdf_url)+'" target="_blank">👁️ Open PDF</a>';
     if(st==='pending')
       b+='<button class="b gold" '+(allGreen?'':'disabled title="fix the red ticks first"')+' onclick="approveSend(\''+key+'\')">✅ Approve &amp; WhatsApp</button>';
@@ -333,26 +348,39 @@ function renderOrders(){
   }).join('');
 }
 function findO(key){var a=key.split('|');return ORDERS.filter(function(o){return o.uid===a[0]&&o.report===a[1];})[0];}
+async function generatePdf(key){
+  var o=findO(key),session=SESSION;if(!o||o._busy||!session)return;o._busy=true;
+  try{
+    var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report:o.report,uid:o.uid,access_token:session.access_token,lang:o.lang})});
+    var j=await r.json();if(!SESSION||SESSION.user.id!==session.user.id)return;
+    if(!r.ok||!j.ready)throw new Error(j.error||'Could not generate report');
+    loadAll();
+  }catch(e){alert('Report was not generated: '+e.message+'. For an older order without saved details, recover the original details through support.');}
+  finally{o._busy=false;}
+}
 /* Approve = record 'approved', then open WhatsApp with the filled template.
    Two explicit steps (Approve → Mark Sent) so "did it actually go?" always
    has a truthful answer in the ledger. */
 function approveSend(key){
   var o=findO(key); if(!o)return;
+  if(o._busy||!orderChecks(o).every(function(t){return t.ok;}))return;
+  o._busy=true;
   apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:'approved'}).then(function(j){
     if(!j||!j.ok)return alert('Could not save: '+((j&&j.error)||'?'));
     o.dispatch_status='approved';renderOrders();
     var name=(o.email||'').split('@')[0];
     var msg=fillTpl('report',o.lang,{name:name,report:(REPORT_NAME[o.report]&&(REPORT_NAME[o.report][o.lang]||REPORT_NAME[o.report].en))||o.report,code:o.order_code,link:o.pdf_url||''});
     if(o.phone)window.open(waLink(o.phone,msg),'_blank');
-  });
+  }).catch(function(){alert('Could not save. Please refresh and retry.');}).finally(function(){o._busy=false;});
 }
 function setState(key,st){
   var o=findO(key); if(!o)return;
+  if(o._busy)return;o._busy=true;
   apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:st}).then(function(j){
     if(!j||!j.ok)return alert('Could not save: '+((j&&j.error)||'?'));
     o.dispatch_status=st; if(st==='sent')o.sent_at=new Date().toISOString();
     renderOrders();
-  });
+  }).catch(function(){alert('Could not save. Please refresh and retry.');}).finally(function(){o._busy=false;});
 }
 function setProblem(key){
   var o=findO(key); if(!o)return;

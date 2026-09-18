@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<script src="app-runtime.js"></script>
+<script src="app-runtime.js?v=239"></script>
 <script src="report-session.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -690,7 +690,7 @@ function sessionFetch(url,opts){
   if(!session||session.user.id!==sdReportAccount())return Promise.reject(new Error('Account changed'));
   opts=opts||{};opts.headers=Object.assign({},opts.headers||{},
     {Authorization:'Bearer '+session.access_token});
-  return fetch(url,opts).then(function(r){if(!SESSION||SESSION.user.id!==session.user.id||sdReportAccount()!==session.user.id)throw new Error('Account changed');return r;});
+  return sdFetch(url,opts,20000).then(function(r){if(!SESSION||SESSION.user.id!==session.user.id||sdReportAccount()!==session.user.id)throw new Error('Account changed');return r;});
 }
 function afterAuth(sess){
   SESSION=sess;
@@ -726,6 +726,7 @@ function afterAuth(sess){
 function showPay(){
   if(!details()){show('stDetails');return;}
   $('payS').textContent=(A('buy.amount_2'))+'₹'+C.now+' · '+RT;
+  $('payS').textContent+=' · '+sdNotice('checkoutLock');
   $('btPay').textContent=A('buy.pay');
   $('btPay').disabled=false;
   show('stPay');
@@ -738,13 +739,14 @@ var ORDER_CODE=null;
    payment — the buyer has already paid. Persisted so a reload cannot lose it. */
 function payProof(){
   try{
+    var proofKey='sd_paid_v2_'+encodeURIComponent(sdReportAccount()||'guest')+'_'+R;
     var q=new URLSearchParams(location.search);
     var pid=q.get('razorpay_payment_id');
-    if(pid){localStorage.setItem('sd_paid_'+R,pid);bdlog('payment id seen: '+pid.slice(0,14));return pid;}
-    return localStorage.getItem('sd_paid_'+R)||'';
+    if(pid){localStorage.setItem(proofKey,pid);bdlog('payment id seen: '+pid.slice(0,14));return pid;}
+    return localStorage.getItem(proofKey)||'';
   }catch(e){return '';}
 }
-function clearProof(){try{localStorage.removeItem('sd_paid_'+R);}catch(e){}}
+function clearProof(){try{localStorage.removeItem('sd_paid_v2_'+encodeURIComponent(sdReportAccount()||'guest')+'_'+R);}catch(e){}}
 
 var _payInFlight=false;
 function doPay(){
@@ -759,7 +761,6 @@ function doPay(){
   if(_payInFlight){ bdlog('pay ignored — a request is already in flight'); return; }
   _payInFlight=true;
   try{ $('btPay').disabled=true; }catch(e){}
-  setTimeout(function(){ _payInFlight=false; try{ $('btPay').disabled=false; }catch(e){} },20000);
   /* the moment the buyer commits — this is the funnel step that was missing */
   try{ sdTrack('payment_start',{report:R,method:'razorpay'}); sdFlush(true); }catch(e){}
   $('btPay').textContent='⏳';$('errP').style.display='none';
@@ -773,14 +774,15 @@ function doPay(){
 sessionFetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
       +'&phone='+encodeURIComponent((details()||{}).phone||'')
       +'&lang='+encodeURIComponent((details()||{}).lang||window.SD_LANG||'hi'),
-    {method:'POST'})
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({details:details()})})
    .then(apiJson).then(function(j){
      if(j&&j.already){bdlog('already owned — skipping payment');ORDER_CODE=j.order_code;sdOwnedWrite(R,j.order_code,null,viewLang());showDone();return;}
-     if(j&&j.ok&&j.url){bdlog('payment link created');ORDER_CODE=j.order_code||ORDER_CODE;location.href=j.url;return;}
+     if(j&&j.ok&&j.url){bdlog('payment link created');location.href=j.url;return;}
      if(j&&j.error==='payments not configured yet'){_payInFlight=false;try{$('btPay').disabled=false;}catch(e){}devPay();return;}
      /* show Razorpay's actual reason, not just "failed" — this is the message
         that tells you whether it's keys, mode, or something else. */
      var why=(j&&j.detail)?((j.error||'error')+' — '+j.detail):((j&&j.error)||'failed');
+     if(j&&j.error==='report details already locked')why=sdNotice('checkoutLocked');
      if(j&&j.mode)why+=' ['+j.mode+' · '+(j.key_id||'?')+' · secret '+(j.secret_len||0)+' chars]';
      bdlog('pay failed: '+why);
      $('errP').textContent=why;$('errP').style.display='block';
@@ -788,7 +790,7 @@ sessionFetch('/api/order?create=1&uid='+SESSION.user.id+'&report='+R
    }).catch(function(e){
      $('errP').textContent=e.message;$('errP').style.display='block';
      $('btPay').textContent=A('buy.retry');
-   });
+   }).finally(function(){_payInFlight=false;try{$('btPay').disabled=false;}catch(e){}});
 }
 /* ₹0 test path — only reachable while the server has no Razorpay keys */
 function devPay(){
@@ -899,7 +901,7 @@ function showDone(){
      a buyer reopens the page, and counting those as sales would quietly
      inflate the only number that matters. */
   try{
-    var k='sd_ev_paid_'+R;
+    var k='sd_ev_paid_'+encodeURIComponent(sdReportAccount()||'guest')+'_'+R;
     if(!localStorage.getItem(k)){
       localStorage.setItem(k,'1');
       sdTrack('purchase_done',{report:R});
@@ -919,9 +921,11 @@ function showDone(){
   try{
     var det=details();
     if(det&&SESSION&&SESSION.user){
+      var renderAccount=SESSION.user.id;
       fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:det,lang:(det.lang||window.SD_LANG||'hi')})})
       .then(apiJson).then(function(j){
+        if(sdReportAccount()!==renderAccount)return;
         if(j&&j.ready&&j.url){PDF_URL=PDF_URL||j.url;sdOwnedWrite(R,ORDER_CODE,j.url,(det.lang||viewLang()));
           bdlog('prerender '+(j.cached?'cached':'rendered'));}
       }).catch(function(){bdlog('prerender failed (harmless)');});
@@ -942,12 +946,14 @@ function checkoutBack(){
 }
 var PDF_URL=null;
 function doDownload(){
+  var downloadAccount=sdReportAccount();
   if(PDF_URL){location.href=PDF_URL;return;}
   var d=details(); if(!d){show('stDetails');return;}
   $('btDl').textContent=A('buy.preparing_your_report_30_40s');
   fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:(d.lang||window.SD_LANG||'hi')})})
   .then(apiJson).then(function(j){
+    if(sdReportAccount()!==downloadAccount)return;
     if(j&&j.ready&&j.url){PDF_URL=j.url;sdOwnedWrite(R,ORDER_CODE,j.url,(d.lang||viewLang()));$('btDl').textContent=A('buy.download_pdf');location.href=j.url;}
     else{$('errX').textContent=(j&&(j.detail||j.error))||'failed';$('errX').style.display='block';
       $('btDl').textContent=A('report.try_again');}
