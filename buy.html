@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<script src="app-runtime.js?v=239"></script>
+<script src="app-runtime.js?v=240"></script>
+<script src="play-checkout.js?v=240"></script>
 <script src="report-session.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -730,6 +731,7 @@ function showPay(){
   $('btPay').textContent=A('buy.pay');
   $('btPay').disabled=false;
   show('stPay');
+  sdPlayShow();
 }
 var ORDER_CODE=null;
 /* ── proof of payment ─────────────────────────────────────────────────────────
@@ -750,6 +752,7 @@ function clearProof(){try{localStorage.removeItem('sd_paid_v2_'+encodeURICompone
 
 var _payInFlight=false;
 function doPay(){
+  if(sdPlayPay())return;
   /* Guard: never mint a second link for a buyer who already paid once. This is
      the double-charge path — the button used to say "Check again" while still
      wired to doPay, so a worried buyer tapping it paid twice. */

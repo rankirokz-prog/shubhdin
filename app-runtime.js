@@ -34,6 +34,13 @@
       fetch(url,opts).then(function(r){clearTimeout(timer);resolve(r);},function(e){clearTimeout(timer);reject(e);});
     });
   };
+  // Remember wrapper launches before onboarding strips its query parameters.
+  try{
+    if(new URLSearchParams(location.search).get('sd_twa')==='1'||/^android-app:\/\/app\.shubhdin\.daily(?:\/|$)/.test(document.referrer)){
+      w.__sdTwa=true;sessionStorage.setItem('sd_twa','1');
+    }
+    if(sessionStorage.getItem('sd_twa')==='1')w.__sdTwa=true;
+  }catch(e){}
   /* Runs before fonts, analytics or engine downloads. Never steal auth callbacks. */
   var path=location.pathname, auth=/[?&](code|error)=/.test(location.search)||/access_token=/.test(location.hash);
   if(!auth&&(/\/(index|dashboard)\.html$/.test(path)||path==='/')){
@@ -42,7 +49,7 @@
       document.documentElement.style.visibility='hidden';
       w.__sdBootRedirect=true;
       setTimeout(function(){document.documentElement.style.visibility='';},4000);
-      location.replace(dest);
+      location.replace(dest+(w.__sdTwa?'?sd_twa=1':''));
     }
   }
 })(window);
