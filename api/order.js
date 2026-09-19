@@ -39,6 +39,7 @@ const crypto = require('crypto');
 // one session check for every api/ function — see lib/verify-user.js
 const { verifyUser: verifyUserWith } = require('../lib/verify-user.js');
 const reportDrafts = require('../lib/report-drafts.js');
+const playReceipts = require('../lib/play-receipts.js');
 
 // ── PRICE AUTHORITY ──────────────────────────────────────────────────────────
 // This table is the ONLY place a price is decided. buy.html's CFG and
@@ -276,6 +277,9 @@ module.exports = async function handler(req, res) {
     const checks={snapshot_key_present:!!process.env.SD_REPORT_DATA_KEY,razorpay_keys_present:!!(process.env.RZP_KEY_ID&&process.env.RZP_KEY_SECRET),webhook_secret_present:!!process.env.RZP_WEBHOOK_SECRET,play_keys_present:!!(process.env.GOOGLE_PLAY_PACKAGE&&process.env.GOOGLE_PLAY_SA_EMAIL&&process.env.GOOGLE_PLAY_SA_KEY)};
     try{const r=await fetch(supabaseUrl+'/rest/v1/report_drafts?select=uid,report,details_enc,lang&limit=1',{headers:H});checks.snapshot_table_readable=r.ok;}catch(e){checks.snapshot_table_readable=false;}
     try{const r=await fetch(supabaseUrl+'/storage/v1/bucket/shubhdin-reports',{headers:H});const b=await r.json();checks.paid_bucket_private=!!(r.ok&&b.id==='shubhdin-reports'&&b.public===false);}catch(e){checks.paid_bucket_private=false;}
+    checks.play_checkout_enabled=process.env.SD_PLAY_BILLING_ENABLED==='1';
+    checks.play_package_matches=process.env.GOOGLE_PLAY_PACKAGE==='app.shubhdin.daily';
+    try{await playReceipts.ready(supabaseUrl,H);checks.play_receipt_table_readable=true;}catch(e){checks.play_receipt_table_readable=false;}
     return res.status(200).json({checks,scope:'Read-only configuration checks, not a live purchase or PDF-render test.'});
   }
   //
@@ -418,6 +422,24 @@ module.exports = async function handler(req, res) {
     } catch (e) { return res.status(500).json({ error: 'update failed' }); }
   }
 
+  // Prepare before opening Play's payment sheet. Fail closed on configuration/storage.
+  if(req.method==='POST'&&(req.query||{}).play_prepare==='1'){
+    const b=req.body||{};
+    if(!b.uid||!PRICES[b.report])return res.status(400).json({error:'not for sale'});
+    if(!(await verifyUser(b.uid)))return res.status(401).json({error:'auth mismatch'});
+    if(process.env.SD_PLAY_BILLING_ENABLED!=='1'||process.env.GOOGLE_PLAY_PACKAGE!=='app.shubhdin.daily'||!process.env.GOOGLE_PLAY_SA_EMAIL||!process.env.GOOGLE_PLAY_SA_KEY)
+      return res.status(503).json({error:'play billing not configured'});
+    try{
+      const r=await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${b.report}&status=eq.paid&select=order_code`,{headers:H});
+      if(!r.ok)throw new Error('order lookup failed');
+      const rows=await r.json();if(!Array.isArray(rows))throw new Error('invalid orders');
+      if(rows.length)return res.status(200).json({ok:true,already:true,order_code:rows[0].order_code});
+      await playReceipts.ready(supabaseUrl,H);
+      await reportDrafts.save(supabaseUrl,H,b.uid,b.report,b.details);
+      return res.status(200).json({ok:true,productId:playSku(b.report)});
+    }catch(e){return res.status(e.status||503).json({error:e.status===409?'report details already locked':'play preparation failed'});}
+  }
+
   // ══ GOOGLE PLAY · verify and acknowledge a purchase ═══════════════════
   //
   // Play's billing runs entirely on the device, so the ONLY proof a purchase
@@ -435,7 +457,7 @@ module.exports = async function handler(req, res) {
   // is already safely paid.
   if (req.method === 'POST' && (req.query || {}).play_verify === '1') {
     const b = req.body || {};
-    if (!b.uid || !b.report || !b.purchaseToken)
+    if (!b.uid || !b.report || typeof b.purchaseToken!=='string' || !b.purchaseToken || b.purchaseToken.length>4096)
       return res.status(400).json({ error: 'uid, report and purchaseToken required' });
     if (!(await verifyUser(b.uid, b.access_token)))
       return res.status(401).json({ error: 'auth mismatch' });
@@ -444,7 +466,7 @@ module.exports = async function handler(req, res) {
     const pkg = process.env.GOOGLE_PLAY_PACKAGE;
     const saEmail = process.env.GOOGLE_PLAY_SA_EMAIL;
     const saKey = (process.env.GOOGLE_PLAY_SA_KEY || '').replace(/\\n/g, '\n');
-    if (!pkg || !saEmail || !saKey)
+    if (pkg!=='app.shubhdin.daily' || !saEmail || !saKey)
       return res.status(503).json({ error: 'play billing not configured' });
 
     // The SKU must be the one this report actually costs. A client asking us
@@ -466,17 +488,6 @@ module.exports = async function handler(req, res) {
         return res.status(402).json({ error: 'purchase not valid',
           state: pur && pur.purchaseState, detail: pur && pur.error && pur.error.message });
       if(pur.productId&&pur.productId!==sku)return res.status(409).json({error:'verified product does not match report'});
-
-      // acknowledgementState: 0 not yet · 1 done. Acknowledge once, now.
-      if (pur.acknowledgementState === 0) {
-        const ack = await fetch(base + ':acknowledge', { method: 'POST',
-          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ developerPayload: b.uid + ':' + b.report }) });
-        if (!ack.ok)
-          // Do NOT record the sale we could not acknowledge — Google would
-          // refund it in three days and the books would disagree.
-          return res.status(502).json({ error: 'could not acknowledge purchase' });
-      }
 
       /* F2 · same rule as the webhook: a failed order write must not answer
          paid:true — the app would consume the Play purchase and no order row
@@ -502,16 +513,36 @@ module.exports = async function handler(req, res) {
       if (used.some(x => x.uid !== b.uid || x.report !== b.report))
         return res.status(409).json({ error: 'purchase already used by another account or report' });
 
-      const upP = await upsertPaid(b.uid, b.report, PRICES[b.report], playPaymentId,{phone:b.phone,lang:b.lang});
-      if (!upP || !upP.ok) {
-        let detail = ''; try { detail = (await upP.text()).slice(0, 200); } catch (e) {}
-        console.error('[play_verify] order write failed for ' + b.uid + '/' + b.report + ': ' + detail);
-        return res.status(503).json({ ok: false, error: 'order write failed', retry: true, source: 'google_play' });
+      // PK insert is atomic across concurrent requests and remains after an order changes.
+      // Old paid orders can be restored without forcing new birth details.
+      const own=await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${b.report}&status=eq.paid&select=order_code,lang`,{headers:H});
+      if(!own.ok)return res.status(503).json({error:'order lookup failed'});
+      const owned=await own.json();if(!Array.isArray(owned))return res.status(503).json({error:'order lookup failed'});
+      let saved=null;
+      if(!owned.length){
+        saved=await reportDrafts.load(supabaseUrl,H,b.uid,b.report);
+        if(!saved)return res.status(409).json({error:'saved report details required'});
+      }
+      await playReceipts.claim(supabaseUrl,H,b.uid,b.report,b.purchaseToken);
+      // acknowledgementState: 0 not yet · 1 done. Acknowledge once, now.
+      if (pur.acknowledgementState === 0) {
+        const ack = await fetch(base + ':acknowledge', { method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ developerPayload: b.uid + ':' + b.report }) });
+        if (!ack.ok)
+          // Do NOT record the sale we could not acknowledge — Google would
+          // refund it in three days and the books would disagree.
+          return res.status(502).json({ error: 'could not acknowledge purchase' });
+      }
+
+      if(!owned.length){
+        const upP = await upsertPaid(b.uid,b.report,PRICES[b.report],playPaymentId,{phone:saved.phone,lang:saved.lang});
+        if(!upP||!upP.ok)return res.status(503).json({ok:false,error:'order write failed',retry:true,source:'google_play'});
       }
       return res.status(200).json({ ok: true, paid: true, order_code: code(b.uid, b.report),
-                                    source: 'google_play' });
+                                    source: 'google_play', details:saved, lang:saved?saved.lang:(owned[0]&&owned[0].lang) });
     } catch (e) {
-      return res.status(500).json({ error: 'play verification failed' });
+      return res.status(e.status||503).json({ error: e.status===409?e.message:'play verification failed',retry:e.status!==409 });
     }
   }
 
