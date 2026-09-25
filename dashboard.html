@@ -3456,7 +3456,7 @@ function mantraScriptText(s,l){
   }).join('') : s;
   /* Native orthography normally writes the homorganic nasal before द with
      anusvara in these scripts, rather than exposing the Sanskrit न् conjunct. */
-  if(originalLang==='te') out=out.replace(/మన్దః/g,'మందః');
+  if(originalLang==='te') out=out.replace(/ఞ్చ/g,'ంచ').replace(/ఞ్జ/g,'ంజ').replace(/మన్దః/g,'మందః');
   if(originalLang==='kn') out=out.replace(/ಮನ್ದಃ/g,'ಮಂದಃ');
   if(originalLang==='gu') out=out.replace(/મન્દઃ/g,'મંદઃ');
   return out;
@@ -9210,6 +9210,7 @@ function mlGodTitle(x){
 // original Sanskrit text and word boundaries for audio synchronization.
 function mantraTitleText(text,language){
   var l=language||window.SD_LANG||'hi';
+  if(l==='te'&&text==='पञ्चमुख हनुमान मन्त्र') return 'పంచముఖ హనుమాన్ మంత్రం';
   var title=mantraScriptText(text,l);
   if(l==='te') title=title.replace(/మన్త్ర(?=\s|$)/g,'మంత్రం');
   if(l==='kn') title=title.replace(/ಮನ್ತ್ರ(?=\s|$)/g,'ಮಂತ್ರ');
