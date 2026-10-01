@@ -56,17 +56,18 @@ module.exports = async function handler(req, res) {
   }
 
   const BUCKET = 'shubhdin-reports';
-  // v4: a different birth profile or language is a different cached file.
+  // v5: invalidate PDFs generated before the birth-field prefill correction.
+  // a different birth profile or language is a different cached file.
   const canonical={};Object.keys(details).sort().forEach(k=>canonical[k]=details[k]);
   const fingerprint=crypto.createHash('sha256').update(JSON.stringify(canonical)).digest('hex');
-  const path=`kundlis/v4/${uid}-${lang}-${fingerprint}.pdf`;
+  const path=`kundlis/v5/${uid}-${lang}-${fingerprint}.pdf`;
   const H={apikey:serviceKey,Authorization:'Bearer '+serviceKey};
   const objectUrl=`${supabaseUrl}/storage/v1/object/${BUCKET}/${path}`;
   async function ready(extra){
     const signed=await fetch(`${supabaseUrl}/storage/v1/object/sign/${BUCKET}/${path}`,{method:'POST',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify({expiresIn:3600})});
     const j=await signed.json();if(!signed.ok||!j.signedURL)throw new Error('PDF link unavailable');
     // Pointer contains no birth details; lets authenticated Dispatch find the latest file.
-    await fetch(`${supabaseUrl}/storage/v1/object/${BUCKET}/kundlis/v4/${uid}-${lang}.json`,{method:'POST',headers:{...H,'Content-Type':'application/json','x-upsert':'true'},body:JSON.stringify({path})});
+    await fetch(`${supabaseUrl}/storage/v1/object/${BUCKET}/kundlis/v5/${uid}-${lang}.json`,{method:'POST',headers:{...H,'Content-Type':'application/json','x-upsert':'true'},body:JSON.stringify({path})});
     return Object.assign({ready:true,url:supabaseUrl+'/storage/v1'+j.signedURL,lang,expires_at:new Date(Date.now()+55*60000).toISOString()},extra);
   }
 
@@ -93,10 +94,19 @@ module.exports = async function handler(req, res) {
 
     const site = 'https://' + (req.headers['x-forwarded-host'] || req.headers.host);
     await page.goto(site + '/kundli-report.html?lang=' + lang, { waitUntil: 'networkidle0', timeout: 90000 });
-    await page.evaluate((lang) => {
+    await page.evaluate(({lang,details}) => {
+      const fields={pname:'name',pgender:'gender',bdate:'dob',btime:'time',bplace:'place',blat:'lat',blng:'lng',btz:'tz'};
+      for(const [id,key] of Object.entries(fields)){
+        const el=document.getElementById(id), expected=details[key];
+        if(expected===undefined||expected===null||expected==='')throw new Error('Missing birth field: '+key);
+        const matches=el&&(key==='lat'||key==='lng'
+          ? el.value!==''&&Number(el.value)===Number(expected)
+          : String(el.value)===String(expected));
+        if(!matches)throw new Error('Birth field mismatch: '+key);
+      }
       try { if (lang && typeof setLang === 'function') setLang(lang); } catch (e) {}
       confirmStep(); generate();
-    }, lang);
+    }, {lang,details});
     await page.waitForFunction(() => {
       const r = document.getElementById('report');
       return r && r.innerHTML && r.innerHTML.length > 10000;

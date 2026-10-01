@@ -195,7 +195,7 @@ module.exports = async function handler(req, res) {
   }
   async function headOk(path) {
     try {
-      if(path.startsWith('reports/')||path.startsWith('kundlis/v4/')){
+      if(path.startsWith('reports/')||path.startsWith('kundlis/v5/')){
         const object=await fetch(`${supabaseUrl}/storage/v1/object/shubhdin-reports/`+path,{method:'HEAD',headers:H});
         if(object.ok){
           const sr=await fetch(`${supabaseUrl}/storage/v1/object/sign/shubhdin-reports/`+path,{method:'POST',headers:H,body:JSON.stringify({expiresIn:3600})});
@@ -213,13 +213,14 @@ module.exports = async function handler(req, res) {
   async function pdfCheck(uid, report, lang) {
     if(report==='kundli'&&lang){
       try{
-        const r=await fetch(`${supabaseUrl}/storage/v1/object/shubhdin-reports/kundlis/v4/${uid}-${lang}.json`,{headers:H});
-        if(r.ok){const pointer=await r.json();const prefix=`kundlis/v4/${uid}-${lang}-`;
+        const r=await fetch(`${supabaseUrl}/storage/v1/object/shubhdin-reports/kundlis/v5/${uid}-${lang}.json`,{headers:H});
+        if(r.ok){const pointer=await r.json();const prefix=`kundlis/v5/${uid}-${lang}-`;
           if(typeof pointer.path==='string'&&pointer.path.startsWith(prefix)&&/^[a-f0-9]{64}\.pdf$/.test(pointer.path.slice(prefix.length))){
             const current=await headOk(pointer.path);if(current)return {...current,found_lang:lang,exact:true};
           }
         }
       }catch(e){}
+      return null; // Regenerate corrected v5 Kundli; never serve older files.
     }
     const want = await headOk(pdfPath(uid, report, lang));
     if (want) return { ...want, found_lang: lang, exact: true };
