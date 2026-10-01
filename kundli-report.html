@@ -243,14 +243,14 @@ body,.page,.prose,.idcard,.yog,td,th,h1,h2,div,span{letter-spacing:normal;}
     <div><label>Gender / लिंग</label><select id="pgender"><option>Male</option><option>Female</option></select></div>
   </div>
   <div class="row">
-    <div><label>Birth Date / जन्म तिथि</label><input id="bdate" type="date" value="1996-12-06" min="1900-01-01" data-birthdate="1"></div>
-    <div><label>Birth Time (24h) / जन्म समय</label><input id="btime" type="time" value="15:47" step="60"></div>
+    <div><label>Birth Date / जन्म तिथि</label><input id="bdate" type="date" value="" min="1900-01-01" data-birthdate="1"></div>
+    <div><label>Birth Time (24h) / जन्म समय</label><input id="btime" type="time" value="" step="60"></div>
   </div>
   <div class="row">
-    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value="16.4343"><input type="hidden" id="btz"></div>
-    <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value="81.6985"></div>
+    <div><label>Latitude</label><input id="blat" type="number" step="0.0001" value=""><input type="hidden" id="btz"></div>
+    <div><label>Longitude</label><input id="blng" type="number" step="0.0001" value=""></div>
   </div>
-  <label>Birth Place (label only) / जन्म स्थान</label><input id="bplace" type="text" value="Narasapur, AP">
+  <label>Birth Place (label only) / जन्म स्थान</label><input id="bplace" type="text" value="">
   <div class="langToggle"><button id="lEn" class="on" onclick="setLang('en')">English</button><button id="lHi" onclick="setLang('hi')">हिन्दी</button><button id="lTe" onclick="setLang('te')">తెలుగు</button><button id="lKn" onclick="setLang('kn')">ಕನ್ನಡ</button><button id="lAs" onclick="setLang('as')">অসমীয়া</button><button id="lGu" onclick="setLang('gu')">ગુજરાતી</button><button id="lMr" onclick="setLang('mr')">मराठी</button><button id="lBn" onclick="setLang('bn')">বাংলা</button><button id="lTa" onclick="setLang('ta')">தமிழ்</button></div>
   <button onclick="confirmStep()">Check Birth Details → जाँचें</button>
   <div class="confirm" id="confirmBox">
@@ -1113,10 +1113,10 @@ function generate(){
   try{
     var d=JSON.parse(localStorage.getItem('shubhdin_kundli_details')||'null');
     if(d){
-      function set(id,v){var e=document.getElementById(id);if(e&&v!==undefined&&v!==null&&v!==''){if(!e.value||id==='blat'||id==='blng')e.value=v;}}
+      function set(id,v){var e=document.getElementById(id);if(e&&v!==undefined&&v!==null&&v!==''){e.value=v;}}
       set('pname',d.name); set('pgender',d.gender);
       set('bdate',d.dob); set('btime',d.time); set('bplace',d.place);
-      if(d.lat)set('blat',d.lat); if(d.lng)set('blng',d.lng);
+      if(d.lat!==undefined&&d.lat!==null)set('blat',d.lat); if(d.lng!==undefined&&d.lng!==null)set('blng',d.lng);
       if(d.tz)set('btz',d.tz);   /* F1: IANA zone resolved at city-pick */
     }
     var wantPdf =location.search.indexOf('autopdf=1')>-1;
