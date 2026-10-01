@@ -30,6 +30,17 @@
    ══════════════════════════════════════════════════════════════════ */
 (function () {
   var MIN = '1900-01-01';
+  var WARNINGS = {
+    en: ['A birth date must be January 1, 1900 or later.', 'A birth date must be today or earlier.'],
+    hi: ['जन्म तिथि 1 जनवरी 1900 या उसके बाद की होनी चाहिए।', 'जन्म तिथि आज या उससे पहले की होनी चाहिए।'],
+    te: ['పుట్టిన తేదీ 1900 జనవరి 1 లేదా ఆ తర్వాత ఉండాలి.', 'పుట్టిన తేదీ ఈ రోజు లేదా అంతకు ముందు ఉండాలి.'],
+    kn: ['ಜನ್ಮ ದಿನಾಂಕವು 1900ರ ಜನವರಿ 1 ಅಥವಾ ಅದರ ನಂತರ ಇರಬೇಕು.', 'ಜನ್ಮ ದಿನಾಂಕವು ಇಂದು ಅಥವಾ ಅದಕ್ಕಿಂತ ಮೊದಲು ಇರಬೇಕು.'],
+    ta: ['பிறந்த தேதி ஜனவரி 1, 1900 அல்லது அதற்குப் பிறகு இருக்க வேண்டும்.', 'பிறந்த தேதி இன்று அல்லது அதற்கு முன்பாக இருக்க வேண்டும்.'],
+    bn: ['জন্মতারিখ ১ জানুয়ারি ১৯০০ বা তার পরে হতে হবে।', 'জন্মতারিখ আজ বা তার আগে হতে হবে।'],
+    mr: ['जन्मतारीख १ जानेवारी १९०० किंवा त्यानंतरची असावी.', 'जन्मतारीख आजची किंवा त्याआधीची असावी.'],
+    gu: ['જન્મતારીખ 1 જાન્યુઆરી 1900 અથવા તે પછીની હોવી જોઈએ.', 'જન્મતારીખ આજની અથવા તે પહેલાંની હોવી જોઈએ.'],
+    as: ['জন্মৰ তাৰিখ ১ জানুৱাৰী ১৯০০ বা তাৰ পিছৰ হ’ব লাগিব।', 'জন্মৰ তাৰিখ আজিৰ বা তাৰ আগৰ হ’ব লাগিব।']
+  };
 
   function today() {
     var d = new Date();
@@ -54,8 +65,9 @@
     // is cleared rather than silently used to compute a chart. Both ends:
     // a pasted 1200-01-01 used to pass because only max was checked.
     if (el.value && (el.value > max || el.value < MIN)) {
+      var tooEarly = el.value < MIN;
       el.value = '';
-      flag(el, true, el.value < MIN);
+      flag(el, true, tooEarly);
     }
   }
 
@@ -70,10 +82,9 @@
       w.style.cssText = 'font-size:11.5px;color:#E66E5A;line-height:1.5;margin-top:5px;';
       (el.parentNode || document.body).insertBefore(w, el.nextSibling);
     }
-    var hi = (document.documentElement.lang === 'hi');
-    w.textContent = tooEarly
-      ? (hi ? 'जन्म तिथि 1900 के बाद की होनी चाहिए।' : 'A birth date has to be after 1900.')
-      : (hi ? 'जन्म तिथि आज या उससे पहले की होनी चाहिए।' : 'A birth date has to be today or earlier.');
+    var lang = window.SD_LANG || document.documentElement.lang || 'en';
+    lang = String(lang).toLowerCase().split('-')[0];
+    w.textContent = (WARNINGS[lang] || WARNINGS.en)[tooEarly ? 0 : 1];
   }
 
   function check(e) {

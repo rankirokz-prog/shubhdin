@@ -181,6 +181,13 @@
   }
   /* Dropdown list items need solid bg (browser renders the popup list separately) */
   .field input:focus,.field select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,67,0.10);}
+  /* Keep the unknown-time option a native checkbox, outside text-input styling. */
+  .field #tobUnknown{
+    -webkit-appearance:checkbox;appearance:auto;
+    width:18px;height:18px;padding:0;margin:0;border-radius:0;
+    flex-shrink:0;accent-color:#B8860B;cursor:pointer;
+  }
+  .field #tobUnkWrap{text-transform:none;letter-spacing:normal;}
   .field input::placeholder{color:rgba(44,18,8,0.40);}
   .field-hint{font-size:10px;color:rgba(26,10,0,0.30);margin-top:5px;padding-left:2px;}
 
@@ -927,6 +934,8 @@
   function onbL(){ return ONB_L[lang]||null; }
   function applyLang(l) {
     const t = T[l];
+    document.documentElement.lang = l;
+    window.SD_LANG = l;
     const s = (id,v) => { const el=document.getElementById(id); if(el) el.innerHTML=v; };
     const ph = (id,v) => { const el=document.getElementById(id); if(el) el.placeholder=v; };
     s('hookTitle',t.hookTitle); s('hookSub',t.hookSub);
@@ -1415,6 +1424,6 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="birthdate-guard.js"></script>
+<script src="birthdate-guard.js?v=signup-checkbox-1"></script>
 </body>
 </html>
