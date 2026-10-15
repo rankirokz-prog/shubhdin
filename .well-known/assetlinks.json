@@ -1,1 +1,14 @@
-
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.shubhdin.daily",
+      "sha256_cert_fingerprints": [
+        "13:FE:DA:7E:E8:56:15:4C:48:E9:4D:63:60:01:2F:FF:86:B5:C8:78:14:4A:E5:BE:5C:CA:F7:3F:25:35:2F:0C"
+      ]
+    }
+  }
+]
