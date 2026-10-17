@@ -11,6 +11,33 @@
  pending:['Purchase not confirmed yet. Check again before paying again.','खरीद की पुष्टि अभी नहीं हुई है। दोबारा भुगतान से पहले फिर जाँचें।','కొనుగోలు ఇంకా నిర్ధారణ కాలేదు. మళ్లీ చెల్లించే ముందు తనిఖీ చేయండి.','ಖರೀದಿ ಇನ್ನೂ ದೃಢಪಟ್ಟಿಲ್ಲ. ಮತ್ತೆ ಪಾವತಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ.','வாங்குதல் இன்னும் உறுதியாகவில்லை. மீண்டும் பணம் செலுத்தும் முன் சரிபார்க்கவும்.','কেনাকাটা এখনও নিশ্চিত হয়নি। আবার টাকা দেওয়ার আগে যাচাই করুন।','खरेदीची पुष्टी अद्याप झालेली नाही. पुन्हा पैसे देण्याआधी तपासा.','ખરીદીની પુષ્ટિ હજી થઈ નથી. ફરી ચૂકવતાં પહેલાં તપાસો.','ক্ৰয় এতিয়াও নিশ্চিত হোৱা নাই। পুনৰ পৰিশোধ কৰাৰ আগতে পৰীক্ষা কৰক।']
  };
  var state=null,revision=0,busy=false;
+ // Diagnostic values are fixed labels only: never log tokens or customer details.
+ var reasons={
+  'play billing not configured':'PLAY_CONFIG',
+  'play preparation failed':'PREPARATION_FAILED',
+  'report details already locked':'DETAILS_LOCKED',
+  'auth mismatch':'AUTH_MISMATCH',
+  'not for sale':'REPORT_UNAVAILABLE',
+  'unknown report':'REPORT_UNAVAILABLE',
+  'Missing Supabase config':'DATABASE_CONFIG',
+  'play receipt storage unavailable':'RECEIPT_STORAGE',
+  'product unavailable':'PRODUCT_UNAVAILABLE',
+  'details missing':'DETAILS_MISSING',
+  'invalid purchase list':'INVALID_PURCHASE_LIST',
+  'invalid receipt':'INVALID_RECEIPT',
+  'sku mismatch':'SKU_MISMATCH',
+  'account changed':'ACCOUNT_CHANGED',
+  'timeout':'TIMEOUT'
+ };
+ function trace(s,stage,error){
+  try{
+   var code=error&&['NETWORK','INVALID_RESPONSE','BRIDGE_MISSING'].indexOf(error.code)>-1?error.code:null;
+   var tag=error?(code||reasons[error.reason]||reasons[error.message]||'UNKNOWN_ERROR'):'OK';
+   var status=error&&Number.isInteger(error.status)?' HTTP '+error.status:'';
+   var msg='Play D1 '+stage+' '+(s&&sku[s.report]?s.report:'unknown')+' '+tag+status;
+   if(typeof w.bdlog==='function')w.bdlog(msg);
+  }catch(e){}
+ }
  function say(k){var i=langs.indexOf(w.SD_LANG||'en');return messages[k][i<0?0:i];}
  function element(id){return document.getElementById(id);}
  function inWrapper(){
@@ -23,9 +50,14 @@
  function showError(key){element('errP').textContent=say(key);element('errP').style.display='block';}
  async function api(s,mode,body){
   guard(s);
-  var r=await w.sessionFetch('/api/order?'+mode+'=1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({uid:s.uid,report:s.report},body||{}))});
-  guard(s);var j=await r.json();guard(s);
-  if(!r.ok||!j.ok){var e=new Error('play request failed');e.reason=j.error;throw e;}
+  var r;
+  try{r=await w.sessionFetch('/api/order?'+mode+'=1',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({uid:s.uid,report:s.report},body||{}))});}
+  catch(error){var n=new Error('network request failed');n.code='NETWORK';trace(s,mode,n);throw n;}
+  guard(s);var j;
+  try{j=await r.json();}catch(error){var p=new Error('invalid server response');p.code='INVALID_RESPONSE';p.status=r.status;trace(s,mode,p);throw p;}
+  guard(s);
+  if(!r.ok||!j||!j.ok){var e=new Error('play request failed');e.reason=j&&j.error;e.status=r.status;trace(s,mode,e);throw e;}
+  trace(s,mode);
   return j;
  }
  function complete(s,j){guard(s);if(j.details){w.sdReportSaveDetails(s.report,j.details);try{sessionStorage.removeItem('sd_checkout_draft');}catch(e){}}w.ORDER_CODE=j.order_code;w.sdOwnedWrite(s.report,j.order_code,null,j.lang||w.viewLang());w.showDone();}
@@ -34,15 +66,15 @@
   return api(s,'play_verify',{productId:p.itemId,purchaseToken:p.purchaseToken});
  }
  function timed(p){return new Promise(function(resolve,reject){var t=setTimeout(function(){reject(new Error('timeout'));},12000);Promise.resolve(p).then(function(v){clearTimeout(t);resolve(v);},function(e){clearTimeout(t);reject(e);});});}
- async function service(){
-  if(typeof w.getDigitalGoodsService!=='function')return null;
-  try{return await timed(w.getDigitalGoodsService(STORE));}catch(e){return null;}
+ async function service(s){
+  if(typeof w.getDigitalGoodsService!=='function'){trace(s,'service',{code:'BRIDGE_MISSING'});return null;}
+  try{return await timed(w.getDigitalGoodsService(STORE));}catch(e){trace(s,'service',e);return null;}
  }
  w.sdPlayShow=async function(){
   var rev=++revision,uid=w.SESSION&&w.SESSION.user.id;
   var s=state={revision:rev,uid:uid,report:w.R,ready:false,play:inWrapper()};
   element('btPay').disabled=true;
-  var dg=await service();if(!valid(s))return;
+  var dg=await service(s);if(!valid(s))return;
   if(!dg&&!s.play){state=null;element('btPay').disabled=false;return;}
   s.play=true;s.dg=dg;
   element('payNote').textContent='🔒 Google Play';
@@ -53,12 +85,15 @@
   if(!restore){restore=document.createElement('button');restore.id='btPlayRestore';restore.className='btn';element('btPay').after(restore);}
   restore.textContent=say('retry');restore.onclick=function(){if(!busy)w.sdPlayShow();};restore.disabled=true;
   element('errP').style.display='none';
+  var stage='bridge';
   try{
    if(!dg||!w.PaymentRequest||!sku[s.report])throw new Error('unavailable');
+   stage='restore';
    var purchases=await timed(dg.listPurchases());guard(s);
    if(!Array.isArray(purchases))throw new Error('invalid purchase list');
    var p=purchases.find(function(x){return x.itemId===sku[s.report];});
    if(p){s.pending=true;complete(s,await verify(s,p));return;}
+   stage='products';
    var products=await timed(dg.getDetails([sku[s.report]]));guard(s);
    var product=products.find(function(x){return x.itemId===sku[s.report];});
    if(!product||!product.price||!product.price.currency||!isFinite(Number(product.price.value))||Number(product.price.value)<0)throw new Error('product unavailable');
@@ -67,7 +102,9 @@
    var amount=new Intl.NumberFormat(w.SD_LANG||'en',{style:'currency',currency:product.price.currency}).format(Number(product.price.value));
    element('payS').textContent=amount+' · '+w.RT+' · '+w.sdNotice('checkoutLock');
    element('btPay').textContent='Google Play · '+w.A('buy.continue');element('btPay').disabled=false;
+   trace(s,'ready');
   }catch(e){if(valid(s)){
+   trace(s,stage,e);
    if(e.reason==='report details already locked'){element('errP').textContent=w.sdNotice('checkoutLocked');element('errP').style.display='block';}
    else showError(s.pending?'pending':'unavailable');
   }}finally{if(valid(s))restore.disabled=false;}
@@ -80,6 +117,7 @@
   if(JSON.stringify(w.details())!==s.details){w.sdPlayShow();return true;}
   busy=true;s.ready=false;element('btPay').disabled=true;element('btPlayRestore').disabled=true;
   if(!s.prepared){
+   element('errP').style.display='none';
    // Explicit confirmation saves the chart. The next tap opens Play synchronously.
    api(s,'play_prepare',{details:w.details()}).then(function(j){
     if(j.already){complete(s,j);return;}
@@ -87,13 +125,15 @@
     s.prepared=true;s.ready=true;
     element('btPay').textContent='Google Play · '+w.A('buy.pay');element('btPay').disabled=false;
    }).catch(function(e){if(valid(s)){
+    trace(s,'prepare',e);
     if(e.reason==='report details already locked'){element('errP').textContent=w.sdNotice('checkoutLocked');element('errP').style.display='block';}
-    else showError('unavailable');
+    else {showError('unavailable');s.ready=true;element('btPay').disabled=false;}
    }}).finally(function(){busy=false;if(valid(s))element('btPlayRestore').disabled=false;});
    return true;
   }
   var response;
   try{
+   trace(s,'opening_sheet');
    var request=new w.PaymentRequest([{supportedMethods:STORE,data:{sku:sku[s.report]}}],{total:{label:w.RT,amount:s.product.price}});
    // Called synchronously within the tap: preserves browser user activation.
    request.show().then(async function(r){
@@ -101,13 +141,13 @@
     var j=await verify(s,{itemId:sku[s.report],purchaseToken:r.details.purchaseToken});
     try{await r.complete('success');}catch(e){}
     complete(s,j);
-   }).catch(async function(){
+   }).catch(async function(e){
     if(response)try{await response.complete('unknown');}catch(e){}
-    if(valid(s))showError('pending');
+    if(valid(s)){trace(s,response?'verify':'sheet',e);showError('pending');}
    }).finally(function(){
     busy=false;if(valid(s)){element('btPlayRestore').disabled=false;element('btPay').textContent=say('retry');element('btPay').disabled=true;}
    });
-  }catch(e){busy=false;showError('unavailable');element('btPlayRestore').disabled=false;}
+  }catch(e){trace(s,'opening_sheet',e);busy=false;showError('unavailable');element('btPlayRestore').disabled=false;}
   return true;
  };
 })(window);
