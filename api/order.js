@@ -430,15 +430,39 @@ module.exports = async function handler(req, res) {
     if(!(await verifyUser(b.uid)))return res.status(401).json({error:'auth mismatch'});
     if(process.env.SD_PLAY_BILLING_ENABLED!=='1'||process.env.GOOGLE_PLAY_PACKAGE!=='app.shubhdin.daily'||!process.env.GOOGLE_PLAY_SA_EMAIL||!process.env.GOOGLE_PLAY_SA_KEY)
       return res.status(503).json({error:'play billing not configured'});
+    let prepareStage='orders';
     try{
       const r=await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${b.report}&status=eq.paid&select=order_code`,{headers:H});
       if(!r.ok)throw new Error('order lookup failed');
       const rows=await r.json();if(!Array.isArray(rows))throw new Error('invalid orders');
       if(rows.length)return res.status(200).json({ok:true,already:true,order_code:rows[0].order_code});
+      prepareStage='receipts';
       await playReceipts.ready(supabaseUrl,H);
+      prepareStage='snapshot';
       await reportDrafts.save(supabaseUrl,H,b.uid,b.report,b.details);
       return res.status(200).json({ok:true,productId:playSku(b.report)});
-    }catch(e){return res.status(e.status||503).json({error:e.status===409?'report details already locked':'play preparation failed'});}
+    }catch(e){
+      // Fixed diagnostic labels only: no customer details, keys or database messages.
+      const codes={
+        'order lookup failed':'ORDER_LOOKUP','invalid orders':'ORDER_RESPONSE',
+        'play receipt storage unavailable':'RECEIPT_STORAGE',
+        'report storage unavailable':'SNAPSHOT_READ',
+        'report details could not be saved':'SNAPSHOT_WRITE',
+        'report details could not be verified':'SNAPSHOT_VERIFY',
+        'report snapshot unreadable':'SNAPSHOT_DECRYPT',
+        'report encryption unavailable':'SNAPSHOT_ENCRYPT',
+        'report details already locked':'DETAILS_LOCKED',
+        'report details required':'DETAILS_INVALID','report language required':'DETAILS_INVALID',
+        'invalid report details':'DETAILS_INVALID','incomplete report details':'DETAILS_INVALID'
+      };
+      const diagnostic={stage:prepareStage,code:codes[e.message]||'PREPARE_UNKNOWN'};
+      const d=e.checkoutDiagnostic||{};
+      if(['snapshot_read','snapshot_write','snapshot_verify','snapshot_decrypt','snapshot_encrypt'].includes(d.stage))diagnostic.stage=d.stage;
+      if(Number.isInteger(d.storage_status)&&d.storage_status>=100&&d.storage_status<=599)diagnostic.storage_status=d.storage_status;
+      if(/^(?:[0-9A-Z]{5}|PGRST[0-9]{3})$/.test(d.storage_code||''))diagnostic.storage_code=d.storage_code;
+      console.error('[SD_PLAY_PREPARE]',JSON.stringify(diagnostic));
+      return res.status(e.status||503).json({error:e.status===409?'report details already locked':'play preparation failed',diagnostic});
+    }
   }
 
   // ══ GOOGLE PLAY · verify and acknowledge a purchase ═══════════════════
