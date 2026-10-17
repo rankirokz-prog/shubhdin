@@ -34,7 +34,14 @@
    var code=error&&['NETWORK','INVALID_RESPONSE','BRIDGE_MISSING'].indexOf(error.code)>-1?error.code:null;
    var tag=error?(code||reasons[error.reason]||reasons[error.message]||'UNKNOWN_ERROR'):'OK';
    var status=error&&Number.isInteger(error.status)?' HTTP '+error.status:'';
-   var msg='Play D1 '+stage+' '+(s&&sku[s.report]?s.report:'unknown')+' '+tag+status;
+   var extra='',d=error&&error.diagnostic;
+   if(d){
+    if(['orders','receipts','snapshot','snapshot_read','snapshot_write','snapshot_verify','snapshot_decrypt','snapshot_encrypt'].indexOf(d.stage)>-1)extra+=' step='+d.stage;
+    if(['ORDER_LOOKUP','ORDER_RESPONSE','RECEIPT_STORAGE','SNAPSHOT_READ','SNAPSHOT_WRITE','SNAPSHOT_VERIFY','SNAPSHOT_DECRYPT','SNAPSHOT_ENCRYPT','DETAILS_LOCKED','DETAILS_INVALID','PREPARE_UNKNOWN'].indexOf(d.code)>-1)extra+=' cause='+d.code;
+    if(Number.isInteger(d.storage_status)&&d.storage_status>=100&&d.storage_status<=599)extra+=' storageHTTP='+d.storage_status;
+    if(/^(?:[0-9A-Z]{5}|PGRST[0-9]{3})$/.test(d.storage_code||''))extra+=' storageCode='+d.storage_code;
+   }
+   var msg='Play D2 '+stage+' '+(s&&sku[s.report]?s.report:'unknown')+' '+tag+status+extra;
    if(typeof w.bdlog==='function')w.bdlog(msg);
   }catch(e){}
  }
@@ -56,7 +63,7 @@
   guard(s);var j;
   try{j=await r.json();}catch(error){var p=new Error('invalid server response');p.code='INVALID_RESPONSE';p.status=r.status;trace(s,mode,p);throw p;}
   guard(s);
-  if(!r.ok||!j||!j.ok){var e=new Error('play request failed');e.reason=j&&j.error;e.status=r.status;trace(s,mode,e);throw e;}
+  if(!r.ok||!j||!j.ok){var e=new Error('play request failed');e.reason=j&&j.error;e.diagnostic=j&&j.diagnostic;e.status=r.status;trace(s,mode,e);throw e;}
   trace(s,mode);
   return j;
  }
