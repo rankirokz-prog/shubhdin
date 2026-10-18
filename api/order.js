@@ -78,12 +78,38 @@ async function googleAccessToken(email, privateKey) {
   };
   const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
   const unsigned = b64(header) + '.' + b64(claim);
-  const sig = crypto.createSign('RSA-SHA256').update(unsigned).sign(privateKey, 'base64url');
-  const r = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + unsigned + '.' + sig
-  }).then(x => x.json());
-  return r && r.access_token;
+  let sig;
+  try { sig = crypto.createSign('RSA-SHA256').update(unsigned).sign(privateKey, 'base64url'); }
+  catch (e) { throw playFailure(503, 'play verification failed', {stage:'google_signing',code:'GOOGLE_SIGNING_KEY'}); }
+  let response;
+  try {
+    response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + unsigned + '.' + sig
+    });
+  } catch (e) { throw playFailure(503,'play verification failed',{stage:'google_auth',code:'GOOGLE_AUTH_NETWORK'}); }
+  let r;
+  try { r=await response.json(); }
+  catch (e) { throw playFailure(502,'google auth failed',{stage:'google_auth',code:'GOOGLE_AUTH_RESPONSE',google_status:response.status}); }
+  if(!response.ok||!r||typeof r.access_token!=='string'||!r.access_token)
+    throw playFailure(502,'google auth failed',googleDiagnostic('google_auth','GOOGLE_AUTH_REJECTED',response.status,r));
+  return r.access_token;
+}
+
+// Fixed diagnostic labels only. Never include a key, token, email or raw error body.
+const PLAY_GOOGLE_REASONS=['invalid_grant','invalid_client','unauthorized_client','invalid_request','unsupported_grant_type','access_denied','temporarily_unavailable','server_error','invalid_scope','PERMISSION_DENIED','UNAUTHENTICATED','INVALID_ARGUMENT','NOT_FOUND','RESOURCE_EXHAUSTED','INTERNAL','UNAVAILABLE','FAILED_PRECONDITION','UNKNOWN','permissionDenied','accessNotConfigured','insufficientPermissions','authError','notFound','purchaseTokenNoLongerValid','invalidValue','productNotOwnedByUser','rateLimitExceeded','userRateLimitExceeded','backendError'];
+function playFailure(status,message,diagnostic){return Object.assign(new Error(message),{status,checkoutDiagnostic:diagnostic});}
+function googleDiagnostic(stage,code,status,body){
+  const d={stage,code,google_status:status};
+  const error=body&&body.error;
+  const reason=typeof error==='string'?error:error&&(error.status||(error.errors&&error.errors[0]&&error.errors[0].reason));
+  if(PLAY_GOOGLE_REASONS.includes(reason))d.google_reason=reason;
+  return d;
+}
+async function playStorageFailure(message,stage,code,response){
+  const d={stage,code,storage_status:response.status};
+  try{const body=await response.json();if(body&&/^(?:[0-9A-Z]{5}|PGRST[0-9]{3})$/.test(body.code||''))d.storage_code=body.code;}catch(e){}
+  return playFailure(503,message,d);
 }
 
 function code(uid, report) {
@@ -280,6 +306,7 @@ module.exports = async function handler(req, res) {
     try{const r=await fetch(supabaseUrl+'/storage/v1/bucket/shubhdin-reports',{headers:H});const b=await r.json();checks.paid_bucket_private=!!(r.ok&&b.id==='shubhdin-reports'&&b.public===false);}catch(e){checks.paid_bucket_private=false;}
     checks.play_checkout_enabled=process.env.SD_PLAY_BILLING_ENABLED==='1';
     checks.play_package_matches=process.env.GOOGLE_PLAY_PACKAGE==='app.shubhdin.daily';
+    try{checks.play_signing_key_valid=crypto.createPrivateKey((process.env.GOOGLE_PLAY_SA_KEY||'').replace(/\\n/g,'\n')).asymmetricKeyType==='rsa';}catch(e){checks.play_signing_key_valid=false;}
     try{await playReceipts.ready(supabaseUrl,H);checks.play_receipt_table_readable=true;}catch(e){checks.play_receipt_table_readable=false;}
     return res.status(200).json({checks,scope:'Read-only configuration checks, not a live purchase or PDF-render test.'});
   }
@@ -500,19 +527,32 @@ module.exports = async function handler(req, res) {
     if (b.productId && b.productId !== sku)
       return res.status(400).json({ error: 'sku does not match report', expected: sku });
 
+    let verifyStage='google_auth';
+    function verificationFailure(status,error,diagnostic,extra){
+      const d={stage:verifyStage,code:'VERIFY_UNKNOWN'};
+      const x=diagnostic||{};
+      if(['google_signing','google_auth','google_purchase','replay_read','orders','snapshot','snapshot_read','snapshot_decrypt','receipt_write','receipt_read','receipt_verify','receipt_conflict','google_ack','order_write'].includes(x.stage))d.stage=x.stage;
+      if(['GOOGLE_SIGNING_KEY','GOOGLE_AUTH_NETWORK','GOOGLE_AUTH_RESPONSE','GOOGLE_AUTH_REJECTED','GOOGLE_PURCHASE_REJECTED','PURCHASE_CANCELLED','PURCHASE_PENDING','PURCHASE_INVALID','PRODUCT_MISMATCH','REPLAY_READ','REPLAY_RESPONSE','RECEIPT_WRITE','RECEIPT_READ','RECEIPT_VERIFY','RECEIPT_CONFLICT','ORDER_LOOKUP','ORDER_RESPONSE','SNAPSHOT_READ','SNAPSHOT_DECRYPT','SNAPSHOT_MISSING','GOOGLE_ACK_REJECTED','ORDER_WRITE','VERIFY_UNKNOWN'].includes(x.code))d.code=x.code;
+      for(const key of ['storage_status','google_status'])if(Number.isInteger(x[key])&&x[key]>=100&&x[key]<=599)d[key]=x[key];
+      if(/^(?:[0-9A-Z]{5}|PGRST[0-9]{3})$/.test(x.storage_code||''))d.storage_code=x.storage_code;
+      if(PLAY_GOOGLE_REASONS.includes(x.google_reason))d.google_reason=x.google_reason;
+      console.error('[SD_PLAY_VERIFY]',JSON.stringify(d));
+      return res.status(status).json(Object.assign({error,diagnostic:d},extra||{}));
+    }
     try {
       const token = await googleAccessToken(saEmail, saKey);
-      if (!token) return res.status(502).json({ error: 'google auth failed' });
+      if (!token) return verificationFailure(502,'google auth failed',{code:'GOOGLE_AUTH_RESPONSE'});
 
+      verifyStage='google_purchase';
       const base = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${pkg}/purchases/products/${encodeURIComponent(sku)}/tokens/${encodeURIComponent(b.purchaseToken)}`;
-      const pur = await fetch(base, { headers: { Authorization: 'Bearer ' + token } })
-                        .then(r => r.json());
+      const purchaseResponse=await fetch(base, { headers: { Authorization: 'Bearer ' + token } });
+      const pur=await purchaseResponse.json();
+      if(!purchaseResponse.ok||(pur&&pur.error))return verificationFailure(502,'purchase verification unavailable',googleDiagnostic(verifyStage,'GOOGLE_PURCHASE_REJECTED',purchaseResponse.status,pur),{retry:true});
 
       // purchaseState: 0 purchased · 1 cancelled · 2 pending
       if (!pur || pur.error || pur.purchaseState !== 0)
-        return res.status(402).json({ error: 'purchase not valid',
-          state: pur && pur.purchaseState, detail: pur && pur.error && pur.error.message });
-      if(pur.productId&&pur.productId!==sku)return res.status(409).json({error:'verified product does not match report'});
+        return verificationFailure(402,'purchase not valid',{code:pur&&pur.purchaseState===1?'PURCHASE_CANCELLED':pur&&pur.purchaseState===2?'PURCHASE_PENDING':'PURCHASE_INVALID'},{state:pur&&pur.purchaseState});
+      if(pur.productId&&pur.productId!==sku)return verificationFailure(409,'verified product does not match report',{code:'PRODUCT_MISMATCH'});
 
       /* F2 · same rule as the webhook: a failed order write must not answer
          paid:true — the app would consume the Play purchase and no order row
@@ -524,50 +564,62 @@ module.exports = async function handler(req, res) {
         .update(String(b.purchaseToken)).digest('hex');
       const legacyPaymentId = 'play:' + String(b.purchaseToken).slice(0, 24);
       let used = [];
+      verifyStage='replay_read';
       try {
         const lookups = await Promise.all([playPaymentId, legacyPaymentId].map(id =>
           fetch(`${supabaseUrl}/rest/v1/orders?payment_id=eq.${encodeURIComponent(id)}&select=uid,report`,
             { headers: H }).then(async r => {
-              if (!r.ok) throw new Error('purchase-token lookup failed');
-              return r.json();
+              if (!r.ok) throw await playStorageFailure('purchase replay check failed','replay_read','REPLAY_READ',r);
+              const rows=await r.json();
+              if(!Array.isArray(rows))throw playFailure(503,'purchase replay check failed',{stage:'replay_read',code:'REPLAY_RESPONSE'});
+              return rows;
             })));
         used = lookups.reduce((a, x) => a.concat(Array.isArray(x) ? x : []), []);
       } catch (e) {
-        return res.status(503).json({ error: 'purchase replay check failed', retry: true });
+        return verificationFailure(503,'purchase replay check failed',e.checkoutDiagnostic,{retry:true});
       }
       if (used.some(x => x.uid !== b.uid || x.report !== b.report))
-        return res.status(409).json({ error: 'purchase already used by another account or report' });
+        return verificationFailure(409,'purchase already used by another account or report',{code:'RECEIPT_CONFLICT'});
 
       // PK insert is atomic across concurrent requests and remains after an order changes.
       // Old paid orders can be restored without forcing new birth details.
+      verifyStage='orders';
       const own=await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${b.report}&status=eq.paid&select=order_code,lang`,{headers:H});
-      if(!own.ok)return res.status(503).json({error:'order lookup failed'});
-      const owned=await own.json();if(!Array.isArray(owned))return res.status(503).json({error:'order lookup failed'});
+      if(!own.ok)throw await playStorageFailure('order lookup failed','orders','ORDER_LOOKUP',own);
+      const owned=await own.json();if(!Array.isArray(owned))throw playFailure(503,'order lookup failed',{stage:'orders',code:'ORDER_RESPONSE'});
       let saved=null;
       if(!owned.length){
+        verifyStage='snapshot';
         saved=await reportDrafts.load(supabaseUrl,H,b.uid,b.report);
-        if(!saved)return res.status(409).json({error:'saved report details required'});
+        if(!saved)return verificationFailure(409,'saved report details required',{code:'SNAPSHOT_MISSING'});
       }
+      verifyStage='receipt_write';
       await playReceipts.claim(supabaseUrl,H,b.uid,b.report,b.purchaseToken);
       // acknowledgementState: 0 not yet · 1 done. Acknowledge once, now.
       if (pur.acknowledgementState === 0) {
+        verifyStage='google_ack';
         const ack = await fetch(base + ':acknowledge', { method: 'POST',
           headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ developerPayload: b.uid + ':' + b.report }) });
         if (!ack.ok)
           // Do NOT record the sale we could not acknowledge — Google would
           // refund it in three days and the books would disagree.
-          return res.status(502).json({ error: 'could not acknowledge purchase' });
+          return verificationFailure(502,'could not acknowledge purchase',googleDiagnostic('google_ack','GOOGLE_ACK_REJECTED',ack.status,await ack.json().catch(()=>null)),{retry:true});
       }
 
       if(!owned.length){
+        verifyStage='order_write';
         const upP = await upsertPaid(b.uid,b.report,PRICES[b.report],playPaymentId,{phone:saved.phone,lang:saved.lang});
-        if(!upP||!upP.ok)return res.status(503).json({ok:false,error:'order write failed',retry:true,source:'google_play'});
+        if(!upP)return verificationFailure(503,'order write failed',{code:'ORDER_WRITE'},{ok:false,retry:true,source:'google_play'});
+        if(!upP.ok)throw await playStorageFailure('order write failed','order_write','ORDER_WRITE',upP);
       }
       return res.status(200).json({ ok: true, paid: true, order_code: code(b.uid, b.report),
                                     source: 'google_play', details:saved, lang:saved?saved.lang:(owned[0]&&owned[0].lang) });
     } catch (e) {
-      return res.status(e.status||503).json({ error: e.status===409?e.message:'play verification failed',retry:e.status!==409 });
+      const codes={'report storage unavailable':'SNAPSHOT_READ','report snapshot unreadable':'SNAPSHOT_DECRYPT'};
+      const diagnostic=Object.assign({code:codes[e.message]||'VERIFY_UNKNOWN'},e.checkoutDiagnostic||{});
+      const allowed=['google auth failed','purchase replay check failed','order lookup failed','play receipt storage unavailable','order write failed','purchase already used by another account or report'];
+      return verificationFailure(e.status||503,allowed.includes(e.message)?e.message:'play verification failed',diagnostic,{retry:e.status!==409});
     }
   }
 
