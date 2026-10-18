@@ -84,7 +84,7 @@ if(typeof window.A!=='function'){
 </div>
 <div class="wrap" id="root"></div>
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;cursor:pointer;z-index:98;"
-     onclick="showDiag()">reports R2 · tap for state</div>
+     onclick="showDiag()">reports R3 · tap for state</div>
 <div id="diagWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.94);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">report state · tap anywhere to close</div>
@@ -240,7 +240,6 @@ function render(){
          invisible. A buyer (and Ram, over WhatsApp) can now read the state
          instead of guessing why one report opens and another does not. */
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
-       +'<span style="font-size:9.5px;padding:3px 9px;border-radius:20px;background:rgba(212,168,67,0.12);color:rgba(232,190,90,0.95);">📄 '+reportPages(r)+'</span>'
        +chip(!!o.pdf_url, A('report.pdf_ready'), A('report.pdf_not_made_yet'))
        +chip(canView,     A('report.details_on_this_phone'),
                           A('report.details_not_on_this_phone'))
