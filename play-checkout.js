@@ -15,6 +15,17 @@
  var reasons={
   'play billing not configured':'PLAY_CONFIG',
   'play preparation failed':'PREPARATION_FAILED',
+  'play verification failed':'VERIFICATION_FAILED',
+  'google auth failed':'GOOGLE_AUTH_FAILED',
+  'purchase verification unavailable':'GOOGLE_PURCHASE_UNAVAILABLE',
+  'purchase not valid':'PURCHASE_INVALID',
+  'purchase replay check failed':'REPLAY_CHECK_FAILED',
+  'order lookup failed':'ORDER_LOOKUP',
+  'order write failed':'ORDER_WRITE',
+  'could not acknowledge purchase':'ACKNOWLEDGEMENT_FAILED',
+  'purchase already used by another account or report':'RECEIPT_CONFLICT',
+  'saved report details required':'SNAPSHOT_MISSING',
+  'verified product does not match report':'PRODUCT_MISMATCH',
   'report details already locked':'DETAILS_LOCKED',
   'auth mismatch':'AUTH_MISMATCH',
   'not for sale':'REPORT_UNAVAILABLE',
@@ -36,12 +47,14 @@
    var status=error&&Number.isInteger(error.status)?' HTTP '+error.status:'';
    var extra='',d=error&&error.diagnostic;
    if(d){
-    if(['orders','receipts','snapshot','snapshot_read','snapshot_write','snapshot_verify','snapshot_decrypt','snapshot_encrypt'].indexOf(d.stage)>-1)extra+=' step='+d.stage;
-    if(['ORDER_LOOKUP','ORDER_RESPONSE','RECEIPT_STORAGE','SNAPSHOT_READ','SNAPSHOT_WRITE','SNAPSHOT_VERIFY','SNAPSHOT_DECRYPT','SNAPSHOT_ENCRYPT','DETAILS_LOCKED','DETAILS_INVALID','PREPARE_UNKNOWN'].indexOf(d.code)>-1)extra+=' cause='+d.code;
+    if(['orders','receipts','snapshot','snapshot_read','snapshot_write','snapshot_verify','snapshot_decrypt','snapshot_encrypt','google_signing','google_auth','google_purchase','replay_read','receipt_write','receipt_read','receipt_verify','receipt_conflict','google_ack','order_write'].indexOf(d.stage)>-1)extra+=' step='+d.stage;
+    if(['ORDER_LOOKUP','ORDER_RESPONSE','RECEIPT_STORAGE','SNAPSHOT_READ','SNAPSHOT_WRITE','SNAPSHOT_VERIFY','SNAPSHOT_DECRYPT','SNAPSHOT_ENCRYPT','DETAILS_LOCKED','DETAILS_INVALID','PREPARE_UNKNOWN','GOOGLE_SIGNING_KEY','GOOGLE_AUTH_NETWORK','GOOGLE_AUTH_RESPONSE','GOOGLE_AUTH_REJECTED','GOOGLE_PURCHASE_REJECTED','PURCHASE_CANCELLED','PURCHASE_PENDING','PURCHASE_INVALID','PRODUCT_MISMATCH','REPLAY_READ','REPLAY_RESPONSE','RECEIPT_WRITE','RECEIPT_READ','RECEIPT_VERIFY','RECEIPT_CONFLICT','SNAPSHOT_MISSING','GOOGLE_ACK_REJECTED','ORDER_WRITE','VERIFY_UNKNOWN'].indexOf(d.code)>-1)extra+=' cause='+d.code;
     if(Number.isInteger(d.storage_status)&&d.storage_status>=100&&d.storage_status<=599)extra+=' storageHTTP='+d.storage_status;
     if(/^(?:[0-9A-Z]{5}|PGRST[0-9]{3})$/.test(d.storage_code||''))extra+=' storageCode='+d.storage_code;
+    if(Number.isInteger(d.google_status)&&d.google_status>=100&&d.google_status<=599)extra+=' googleHTTP='+d.google_status;
+    if(['invalid_grant','invalid_client','unauthorized_client','invalid_request','unsupported_grant_type','access_denied','temporarily_unavailable','server_error','invalid_scope','PERMISSION_DENIED','UNAUTHENTICATED','INVALID_ARGUMENT','NOT_FOUND','RESOURCE_EXHAUSTED','INTERNAL','UNAVAILABLE','FAILED_PRECONDITION','UNKNOWN','permissionDenied','accessNotConfigured','insufficientPermissions','authError','notFound','purchaseTokenNoLongerValid','invalidValue','productNotOwnedByUser','rateLimitExceeded','userRateLimitExceeded','backendError'].indexOf(d.google_reason)>-1)extra+=' googleReason='+d.google_reason;
    }
-   var msg='Play D2 '+stage+' '+(s&&sku[s.report]?s.report:'unknown')+' '+tag+status+extra;
+   var msg='Play D3 '+stage+' '+(s&&sku[s.report]?s.report:'unknown')+' '+tag+status+extra;
    if(typeof w.bdlog==='function')w.bdlog(msg);
   }catch(e){}
  }
