@@ -947,8 +947,10 @@ module.exports = async function handler(req, res) {
       // delivered by default. The path is language-scoped since v134, with a
       // legacy fallback for pre-v134 renders.
       await Promise.all(reports.map(async (r2) => {
-        if (r2.dispatch_status !== 'sent') return;
         const pdf = await pdfCheck(q.uid, r2.report, r2.lang);
+        r2.pdf_ready = !!(pdf && pdf.exact);
+        r2.generation_status = r2.pdf_ready ? 'ready' : 'pending';
+        if (r2.dispatch_status !== 'sent') return;
         if (!pdf) return;
         // EXACT language or nothing. A near-miss (legacy file, or another
         // language) is withheld and flagged: the buyer's Download button then
