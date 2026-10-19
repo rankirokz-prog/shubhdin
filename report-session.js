@@ -27,7 +27,7 @@
       /* An old order code cannot establish who last wrote sd_buy_<report>.
          Preserve those legacy keys, but never adopt their unscoped details. */
       return {report:o.report,order_code:o.order_code,date:(o.paid_at||o.date||'').slice(0,10),lang:o.lang,
-        dispatch_status:o.dispatch_status,generation_status:o.generation_status,
+        dispatch_status:o.dispatch_status,generation_status:o.generation_status,pdf_ready:o.pdf_ready===true,
         pdf_url:o.pdf_url||null,pdf_expires_at:o.pdf_expires_at||null};
     });
     return write(s,id);

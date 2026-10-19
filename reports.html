@@ -2,11 +2,11 @@
 <html lang="hi">
 <head>
 <script src="app-runtime.js?v=240"></script>
-<script src="report-session.js"></script>
+<script src="report-session.js?v=241-approval-r4"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
-<title>मेरी रिपोर्ट्स — शुभ दिन</title>
+<title>ShubhDin</title>
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -79,12 +79,12 @@ if(typeof window.A!=='function'){
 <body data-sd-page="reports">
 <div class="hdr">
   <button class="back" onclick="goBack()">←</button>
-  <div><div class="h-t dev" id="hTitle">मेरी रिपोर्ट्स</div>
-       <div class="h-s" id="hSub">आपकी खरीदी हुई रिपोर्ट्स</div></div>
+  <div><div class="h-t dev" id="hTitle"></div>
+       <div class="h-s" id="hSub"></div></div>
 </div>
 <div class="wrap" id="root"></div>
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;cursor:pointer;z-index:98;"
-     onclick="showDiag()">reports R3 · tap for state</div>
+     onclick="showDiag()">reports R4 · tap for state</div>
 <div id="diagWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.94);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">report state · tap anywhere to close</div>
@@ -93,6 +93,7 @@ if(typeof window.A!=='function'){
 
 <script src="/vendor/supabase-2.114.0.js"></script>
 <script src="report-catalog.js?v=238"></script>
+<script src="report-delivery.js?v=241-approval-r4"></script>
 <script>
 'use strict';
 /* ══════════════════════════════════════════════════════════════════
@@ -135,7 +136,7 @@ function sdLocale(){
            bn:'bn-IN', mr:'mr-IN', gu:'gu-IN', as:'as-IN' }[l] || 'hi-IN';
 }
 
-var SESSION=null;
+var SESSION=null, VERIFIED_ACCOUNT=null, OPEN_BUSY=false;
 function $(id){return document.getElementById(id);}
 /* A label glued to a value cannot be translated: the label precedes the value
    in English and may follow it elsewhere. One template, one token. */
@@ -216,6 +217,8 @@ function fmtDate(d){
   }catch(e){ return d; }
 }
 
+function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
 /* ── render ── */
 function render(){
   var owned=sdOwnedRead().filter(function(o){return reportById(o.report);});
@@ -225,51 +228,22 @@ function render(){
 
   if(!owned.length){ root.innerHTML=emptyHTML(); return; }
 
+  var verified=!!(SESSION&&VERIFIED_ACCOUNT===SESSION.user.id&&sdReportAccount()===SESSION.user.id);
   root.innerHTML=owned.map(function(o){
-    var r=reportById(o.report);
-    var canView=!!buyDetails(o.report);   // on-screen reopen needs the local inputs
+    var r=reportById(o.report), state=sdDeliveryState(o,verified);
     return '<div class="card" id="row-'+r.id+'">'
       +'<div class="c-top"><div class="c-ic">'+r.ico+'</div>'
-      +'<div><div class="c-t1 dev">'+(H?r.hi:r.en)+'</div>'
-      +'<div class="c-t2">'+(H?r.en:r.hi)+'</div></div></div>'
+      +'<div><div class="c-t1 dev">'+esc(reportTitle(r))+'</div></div></div>'
       +'<div class="c-meta">'
-        +(o.date?sdFmt(A('report.purchased_date'), {date:fmtDate(o.date)}):'')
-        +(o.order_code?' · '+o.order_code:'')
-      +'</div>'
-      /* Two independent things decide what this row can do, and they were
-         invisible. A buyer (and Ram, over WhatsApp) can now read the state
-         instead of guessing why one report opens and another does not. */
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
-       +chip(!!o.pdf_url, A('report.pdf_ready'), A('report.pdf_not_made_yet'))
-       +chip(canView,     A('report.details_on_this_phone'),
-                          A('report.details_not_on_this_phone'))
-      +'</div>'
-      +'<button class="btn" id="open-'+r.id+'" onclick="openReport(\''+r.id+'\')">'
-      +'📄 '+A('report.open_your_report')+'</button>'
-      /* Bonus only. On a cleared or different phone the stored inputs are gone
-         and this would land on an empty form, so it is hidden there. */
-      +(canView
-        ? '<button class="btn sec" onclick="viewOnScreen(\''+r.id+'\')">👁️ '
-          +A('report.view_on_screen')+'</button>'
-        /* Hidden until account-scoped details are available on this device. */
-        : '<div style="font-size:10px;color:rgba(255,244,222,0.38);margin-top:9px;line-height:1.55;">'
-          +A('report.on_screen_view_is_available_on_the_2')
-          +'</div>')
+      +(o.date?esc(sdFmt(A('report.purchased_date'),{date:fmtDate(o.date)})):'')
+      +(o.order_code?' · '+esc(o.order_code):'')+'</div>'
+      +'<div class="delivery-status" style="margin-top:14px;font-size:15px;font-weight:600;color:#E8BE5A;">'+esc(state.title)+'</div>'
+      +'<div style="margin-top:7px;font-size:13px;line-height:1.7;color:rgba(255,244,222,.82);">'+esc(state.description)+'</div>'
+      +(state.canOpen?'<button class="btn" id="open-'+r.id+'" onclick="openReport(\''+r.id+'\')">📄 '+esc(sdDeliveryText(13))+'</button>':'')
+      +'<button class="btn sec" id="again-'+r.id+'" onclick="checkAgain(\''+r.id+'\')">↻ '+esc(sdDeliveryText(12))+'</button>'
       +'<div id="manual-'+r.id+'" style="display:none;"></div>'
-      +'<div class="err" id="err-'+r.id+'" style="display:none;"></div>'
-      /* Shown only after the above fires. Safe: it re-reads the server list,
-         which is where a pdf_url will appear once one exists. No buy flow. */
-      +'<button class="btn sec retry" id="again-'+r.id+'" style="display:none;" onclick="checkAgain(\''+r.id+'\')">'
-      +'🔄 '+A('report.check_again')+'</button>'
-      /* NO "re-enter details to rebuild" button here, deliberately.
-         It would let one purchase produce unlimited reports: type a different
-         name and birth date, get another chart, repeat. The report is sold for
-         ONE chart, and a prominent button inviting fresh details turns that
-         into a feature. A buyer who has genuinely lost their details is a rare
-         support case; unlimited free reports would not be rare at all. */
-      +'</div>';
-  }).join('')
-  + '<div class="note">'+A('report.your_reports_stay_linked_to_your_a')+'</div>';
+      +'<div class="err" id="err-'+r.id+'" style="display:none;"></div></div>';
+  }).join('')+'<div class="note">'+A('report.your_reports_stay_linked_to_your_a')+'</div>';
 
   if(location.hash){
     var el=document.getElementById('row-'+location.hash.slice(1));
@@ -300,82 +274,20 @@ function emptyHTML(){
 
 /* ── open: PDF first, exactly as the contract decides ── */
 async function openReport(id){
-  var account=sdReportAccount();
-  var btn=$('open-'+id), err=$('err-'+id);
-  if(err){err.style.display='none';}
-  var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
-  if(!rec) return;
-
-  // A PDF may be pre-generated for Ram's review, but payment alone must not
-  // bypass the approved→sent delivery gate.
-  if(rec.dispatch_status!=='sent' && SESSION){
-    await restoreFromServer();
-    if(account!==sdReportAccount())return;
-    rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
-  }
-  if(!rec){render();return;}
-  if(rec.dispatch_status && rec.dispatch_status!=='sent'){
-    showErr(err,A('report.no_pdf_is_ready_yet_open_it_once_o'));
-    return;
-  }
-
-  /* 1 · This device knows a URL — but knowing one is not the same as it still
-     working. Supabase signed URLs expire, so a link stored weeks ago can 404.
-     Navigating blind meant the buyer tapped and nothing happened, with no
-     message and no way forward: the "some reports don't download" case.
-     Verify first; if it is dead, drop it and fall through to the paths that
-     can produce a fresh one. */
-  if(rec.pdf_url && rec.pdf_expires_at && Date.parse(rec.pdf_expires_at)>Date.now()){
-    openPdf(id,rec.pdf_url); return;
-  }
-  if(rec.pdf_url) dropPdfUrl(id);
-
-  /* 2 · No local URL. Order matters here: a missing sd_buy_<report> is the
-     more specific blocker, because being signed in does not help render a
-     report whose birth details this device no longer has — only an existing
-     server-side PDF does, and "Check again" is what fetches that. Testing the
-     session first hid this behind a less useful "please sign in". */
-  /* If we just dropped a stale URL and the buyer is signed in, ask the server
-     for a fresh one before telling them anything is wrong — the PDF almost
-     certainly still exists, only the signed link expired. */
-  if(!rec.pdf_url && SESSION){
-    btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+A('report.checking');
-    await restoreFromServer();
-    if(account!==sdReportAccount())return;
-    btn.disabled=false; btn.innerHTML='📄 '+A('report.open_your_report');
-    var fresh=sdOwnedRead().filter(function(o){return o.report===id;})[0];
-    if(fresh&&fresh.pdf_url){ openPdf(id,fresh.pdf_url); return; }
-  }
-  var d=buyDetails(id); // null on a new device; the server restores the locked snapshot
-  if(!SESSION){
-    showErr(err,A('report.please_sign_in_to_prepare_this_rep'));
-    return;
-  }
-  var label=btn.textContent;
-  btn.disabled=true;
-  btn.innerHTML='<span class="spin">⏳</span> '+A('report.preparing_your_report');
+  if(OPEN_BUSY)return;
+  if(!SESSION){showErr($('err-'+id),sdDeliveryText(14));return;}
+  var account=SESSION.user.id;OPEN_BUSY=true;
+  var btn=$('open-'+id);if(btn){btn.disabled=true;btn.textContent=sdDeliveryText(0);}
   try{
-    var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({report:id,uid:SESSION.user.id,access_token:SESSION.access_token,
-                           details:d||null,lang:reportLang(id)})});   /* was H?'hi':'en' — the v134
-                             clamp, which silently re-rendered a Telugu report in English */
-    var j=await apiJson(r);
-    if(account!==sdReportAccount())return;
-    if(j&&j.ready&&j.url){
-      ownedWrite(id,rec.order_code,j.url,rec.date,reportLang(id),j.expires_at);   // backfill for next time
-      btn.disabled=false; btn.textContent=label;
-      render();                                        // chips must reflect the new state
-      openPdf(id,j.url);
-      return;
-    }else{
-      btn.disabled=false; btn.textContent=A('report.try_again');
-      showErr(err,A('report.could_not_prepare_the_report'));
-    }
-  }catch(e){
-    btn.disabled=false; btn.textContent=A('report.try_again');
-    showErr(err,A('report.could_not_prepare_the_report'));
-  }
+    var fresh=await restoreFromServer();
+    if(!fresh||!SESSION||SESSION.user.id!==account||sdReportAccount()!==account)return;
+    var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
+    if(!rec||rec.dispatch_status!=='sent'||rec.pdf_ready!==true||!rec.pdf_url)return;
+    if(!rec.pdf_expires_at||Date.parse(rec.pdf_expires_at)<=Date.now())return;
+    openPdf(id,rec.pdf_url);
+  }finally{OPEN_BUSY=false;}
 }
+
 /* ══════════════════════════════════════════════════════════════════
    OPENING A PDF FROM AN INSTALLED PWA
 
@@ -421,24 +333,12 @@ function showManualLink(id,url){
         +A('kundli.downloads_sometimes_do_not_run_fro')+'</div>' : '');
   box.style.display='block';
 }
-function viewOnScreen(id){ location.href=id+'-report.html?autoview=1&lang='+encodeURIComponent(reportLang(id)); }
-/* Re-asks the server. Once the buy side returns pdf_url in the list=1 payload,
-   this is all a new phone ever needs — the PDF was cached at first render. */
+// Compatibility for any old caller: same fresh server gate as PDF opening.
+function viewOnScreen(id){return openReport(id);}
 async function checkAgain(id){
-  var err=$('err-'+id), btn=$('again-'+id);
-  if(!SESSION){
-    // Nothing to ask the server without a session. Offer the step that helps
-    // rather than an instruction the buyer then has to act on themselves.
-    showErr(err,A('report.sign_in_to_restore_your_report'));
-    if(sb) signIn();
-    return;
-  }
-  btn.disabled=true; btn.innerHTML='<span class="spin">⏳</span> '+A('report.checking');
+  if(!SESSION){showErr($('err-'+id),sdDeliveryText(14));return;}
+  var btn=$('again-'+id);if(btn){btn.disabled=true;btn.textContent=sdDeliveryText(0);}
   await restoreFromServer();
-  var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
-  if(rec&&rec.pdf_url){ openPdf(id,rec.pdf_url); return; }
-  btn.disabled=false; btn.innerHTML='🔄 '+A('report.check_again');
-  showErr(err,A('report.no_pdf_is_ready_yet_open_it_once_o'));
 }
 function showErr(el,msg){ if(!el)return; el.textContent=msg; el.style.display='block'; }
 
@@ -471,7 +371,8 @@ function absorbHash(){
 /* Reconcile this account's authoritative list, including an empty list.
    Failed requests leave only this same account's offline cache intact. */
 async function restoreFromServer(){
-  if(!SESSION) return;
+  VERIFIED_ACCOUNT=null;
+  if(!SESSION){render();return false;}
   var session=SESSION;
   try{
     var r=await sdFetch('/api/order?list=1&uid='+session.user.id,
@@ -479,6 +380,7 @@ async function restoreFromServer(){
     var j=await apiJson(r);
     if(!SESSION||SESSION.user.id!==session.user.id||sdReportAccount()!==session.user.id)return;
     if(j && Array.isArray(j.reports)){
+      VERIFIED_ACCOUNT=session.user.id;
       sdReportReconcile(j.reports,session.user.id);
       j.reports.forEach(function(o){
         /* pdf_url now comes from list=1: the server HEAD-checks the deterministic
@@ -493,17 +395,18 @@ async function restoreFromServer(){
         if(!o.pdf_url) dropPdfUrl(o.report);
       });
       render();
-      if(await sdReportRestoreDetails(session)){
-        if(SESSION&&SESSION.user.id===session.user.id&&sdReportAccount()===session.user.id)render();
-      }
+      return true;
     }
+    render();return false;
   }catch(e){
+    VERIFIED_ACCOUNT=null;render();
     /* A devotee on a village connection should not be shown a raw exception
        string like "Failed to fetch" or "network down". Say what it means and
        what still works: their reports are safe, this device just could not
        reach the account this minute. */
     var m=$('syncMsg');
     if(m) m.textContent=A('report.could_not_reach_your_account_just_');
+    return false;
   }
 }
 /* Exactly what this device holds, per report. Turns "it isn't downloading"
@@ -554,19 +457,21 @@ absorbHash().then(function(){
   if(SESSION){
     /* Strip the WHOLE auth fragment, not just access_token. Removing one
        parameter left refresh_token sitting in the address bar and in history. */
-    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+    if(/(?:^#|&)(?:access_token|refresh_token|error)=/.test(location.hash)){
+      try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+    }
     restoreFromServer();
   }
 }).catch(function(){
   /* Even if auth fails outright, the person must not be left looking at a
-     stale paint — localStorage reports still open without a session. */
+     stale paint. Cached records never grant access without a verified session. */
   render();
 });
 </script>
 <script src="nav-history.js?v=238"></script>
 <script>
 if(sb)sb.auth.onAuthStateChange(function(event,session){
-  SESSION=session;sdReportSetSession(session);render();
+  SESSION=session;VERIFIED_ACCOUNT=null;sdReportSetSession(session);render();
   if(session)setTimeout(restoreFromServer,0);
 });
 window.addEventListener('sd-account-changed',function(){location.reload();});

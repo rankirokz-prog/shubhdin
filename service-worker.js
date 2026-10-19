@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v240';
+const CACHE_NAME = 'shubhdin-v241-approval-r4';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -11,6 +11,8 @@ const CORE_FILES = [
   '/app-runtime.js?v=240',
   '/play-checkout.js?v=240',
   '/report-session.js',
+  '/report-session.js?v=241-approval-r4',
+  '/report-delivery.js?v=241-approval-r4',
   '/astrology.html',
   '/kundli.html',
   '/premium.html',
@@ -114,6 +116,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = event.request.url;
   const req = event.request;
+
+  // Paid generator pages are retired. Never serve a pre-fix cached copy.
+  if (/\/(?:annual|career|love|marriage|forecast|child|muhurta)-report\.html$/.test(new URL(url).pathname)) {
+    event.respondWith(fetch(req).catch(() => Response.redirect(new URL('/reports.html', self.location.origin).href, 302)));
+    return;
+  }
 
   // Never cache API or audio requests
   if (url.includes('/api/') || url.includes('supabase.co') || url.includes('fonts.googleapis.com')) {
