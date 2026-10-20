@@ -426,9 +426,14 @@ module.exports = async function handler(req, res) {
       if(to==='sent')patch.sent_at = new Date().toISOString();
     }
     try {
-      const r = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${encodeURIComponent(b.report)}&status=eq.paid`,
-        { method: 'PATCH', headers: H, body: JSON.stringify(patch) });
-      return res.status(r.ok ? 200 : 500).json(r.ok ? { ok: true, dispatch_status: to, from: from } : { error: 'update failed' });
+      const r = await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(b.uid)}&report=eq.${encodeURIComponent(b.report)}&status=eq.paid&select=uid,report,dispatch_status,sent_at`,
+        { method: 'PATCH', headers: {...H, Prefer:'return=representation'}, body: JSON.stringify(patch) });
+      if(!r.ok)return res.status(500).json({error:'update failed'});
+      const saved=await r.json();
+      if(!Array.isArray(saved)||saved.length!==1||saved[0].uid!==b.uid||saved[0].report!==b.report||saved[0].dispatch_status!==to){
+        return res.status(409).json({error:'delivery status not confirmed',why:'Refresh Dispatch to read the saved state before trying again.'});
+      }
+      return res.status(200).json({ok:true,dispatch_status:saved[0].dispatch_status,sent_at:saved[0].sent_at||null,from:from});
     } catch (e) { return res.status(500).json({ error: 'update failed' }); }
   }
 
