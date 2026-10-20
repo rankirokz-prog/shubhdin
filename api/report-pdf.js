@@ -65,14 +65,14 @@ module.exports = async function handler(req, res) {
     if(admin)details=null; // Admin recovery uses only the saved customer snapshot.
   } catch (e) { return res.status(401).json({ error: 'auth check failed' }); }
 
-  // A dev purchase also has a paid row. Payment alone never releases a PDF.
+  // Payment alone never releases a PDF. Admin approval releases it in-app; sent tracks WhatsApp.
   let delivered=false;
   try {
     const r=await fetch(`${supabaseUrl}/rest/v1/orders?uid=eq.${encodeURIComponent(uid)}&report=eq.${report}&status=eq.paid&select=dispatch_status,lang`,{headers:{apikey:serviceKey,Authorization:'Bearer '+serviceKey}});
     if(!r.ok)throw new Error('order lookup');
     const rows=await r.json();
     if(!Array.isArray(rows)||!rows.length)return res.status(402).json({error:'not purchased'});
-    delivered=rows[0].dispatch_status==='sent';
+    delivered=['approved','sent'].includes(rows[0].dispatch_status);
     lang=pickLang(rows[0].lang,lang);
   }catch(e){return res.status(503).json({error:'order check unavailable'});}
 

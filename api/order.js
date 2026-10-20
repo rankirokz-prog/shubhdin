@@ -383,7 +383,7 @@ module.exports = async function handler(req, res) {
     /* A3 · The state machine lives HERE, not in the board's disabled button.
          pending → approved → sent, with 'problem' as a side flag from either
          of the first two. 'sent' is terminal: ?list=1 hands out the download
-         only at exactly 'sent', so any move away from it takes a delivered
+         at 'approved' or 'sent', so any move away from it takes a delivered
          report off a paying customer. That needs an explicit unsend + reason,
          and it is recorded. pending → sent directly is refused: it skips the
          hand-check that pdfCheck exists for. */
@@ -946,16 +946,14 @@ module.exports = async function handler(req, res) {
           lang: SD_LANGS.includes(r.lang) ? r.lang : 'hi',
           dispatch_status: r.dispatch_status || 'pending' });
       }
-      // pdf_url is the delivery. It appears ONLY once Ram has moved the order
-      // to 'sent' on the dispatch page — the whole point of the gate is that a
-      // blank or wrong PDF can never reach a buyer because nothing is
-      // delivered by default. The path is language-scoped since v134, with a
-      // legacy fallback for pre-v134 renders.
+      // Approval releases the reviewed PDF in the app. 'sent' records the
+      // later WhatsApp delivery; it is not an additional in-app access gate.
+      // Pending/problem and wrong-language PDFs stay unavailable.
       await Promise.all(reports.map(async (r2) => {
         const pdf = await pdfCheck(q.uid, r2.report, r2.lang);
         r2.pdf_ready = !!(pdf && pdf.exact);
         r2.generation_status = r2.pdf_ready ? 'ready' : 'pending';
-        if (r2.dispatch_status !== 'sent') return;
+        if (!['approved','sent'].includes(r2.dispatch_status)) return;
         if (!pdf) return;
         // EXACT language or nothing. A near-miss (legacy file, or another
         // language) is withheld and flagged: the buyer's Download button then
