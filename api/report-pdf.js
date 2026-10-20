@@ -65,6 +65,8 @@ module.exports = async function handler(req, res) {
     if(admin)details=null; // Admin recovery uses only the saved customer snapshot.
   } catch (e) { return res.status(401).json({ error: 'auth check failed' }); }
 
+  if(req.body.regenerate===true&&!admin)return res.status(403).json({error:'admin required to rebuild PDF'});
+
   // Payment alone never releases a PDF. Admin approval releases it in-app; sent tracks WhatsApp.
   let delivered=false;
   try {
@@ -100,7 +102,7 @@ module.exports = async function handler(req, res) {
   try {
     const head = await fetch(objectUrl, { method: 'HEAD', headers: {
       apikey: serviceKey, Authorization: 'Bearer ' + serviceKey } });
-    if (head.ok) return res.status(200).json(await ready({cached:true}));
+    if (head.ok && !(admin && req.body.regenerate===true)) return res.status(200).json(await ready({cached:true}));
   } catch (e) {}
 
   // A different device sends no details. Recover the immutable encrypted
@@ -159,6 +161,17 @@ module.exports = async function handler(req, res) {
       const r = document.getElementById('report');
       return r && r.innerHTML && r.innerHTML.length > 8000;
     }, { timeout: 120000 });
+    // Presentation only: the Indic PDF fonts lack the right-arrow used between dates.
+    // Use a normal range dash; do not change dates, chart calculations or stored details.
+    await page.evaluate(() => {
+      const report=document.getElementById('report');
+      const walker=document.createTreeWalker(report,NodeFilter.SHOW_TEXT);
+      let node;
+      while((node=walker.nextNode())){
+        if(!/^(SCRIPT|STYLE)$/.test(node.parentElement.tagName))
+          node.nodeValue=node.nodeValue.replace(/\u2192/g,'\u2013');
+      }
+    });
     try { await page.evaluate(() => document.fonts && document.fonts.ready); } catch (e) {}
 
     const pdf = await page.pdf({
