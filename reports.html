@@ -84,7 +84,7 @@ if(typeof window.A!=='function'){
 </div>
 <div class="wrap" id="root"></div>
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;cursor:pointer;z-index:98;"
-     onclick="showDiag()">reports R4 · tap for state</div>
+     onclick="showDiag()">reports R5 · tap for state</div>
 <div id="diagWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.94);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">report state · tap anywhere to close</div>
@@ -370,15 +370,20 @@ function absorbHash(){
 }
 /* Reconcile this account's authoritative list, including an empty list.
    Failed requests leave only this same account's offline cache intact. */
-async function restoreFromServer(){
+var STATUS_REQUEST=0, STATUS_IN_FLIGHT=0;
+function restoreFromServer(){
+  var seq=++STATUS_REQUEST;STATUS_IN_FLIGHT++;
+  return restoreStatus(seq).finally(function(){STATUS_IN_FLIGHT--;});
+}
+async function restoreStatus(seq){
   VERIFIED_ACCOUNT=null;
   if(!SESSION){render();return false;}
   var session=SESSION;
   try{
     var r=await sdFetch('/api/order?list=1&uid='+session.user.id,
-                      {headers:{Authorization:'Bearer '+session.access_token}});
+                      {headers:{Authorization:'Bearer '+session.access_token},cache:'no-store'});
     var j=await apiJson(r);
-    if(!SESSION||SESSION.user.id!==session.user.id||sdReportAccount()!==session.user.id)return;
+    if(seq!==STATUS_REQUEST||!SESSION||SESSION.user.id!==session.user.id||sdReportAccount()!==session.user.id)return false;
     if(j && Array.isArray(j.reports)){
       VERIFIED_ACCOUNT=session.user.id;
       sdReportReconcile(j.reports,session.user.id);
@@ -399,6 +404,7 @@ async function restoreFromServer(){
     }
     render();return false;
   }catch(e){
+    if(seq!==STATUS_REQUEST)return false;
     VERIFIED_ACCOUNT=null;render();
     /* A devotee on a village connection should not be shown a raw exception
        string like "Failed to fetch" or "network down". Say what it means and
@@ -475,6 +481,13 @@ if(sb)sb.auth.onAuthStateChange(function(event,session){
   if(session)setTimeout(restoreFromServer,0);
 });
 window.addEventListener('sd-account-changed',function(){location.reload();});
+function refreshVisibleReports(){
+  if(!document.hidden&&SESSION&&!OPEN_BUSY&&!STATUS_IN_FLIGHT)restoreFromServer();
+}
+setInterval(refreshVisibleReports,15000);
+window.addEventListener('focus',refreshVisibleReports);
+window.addEventListener('pageshow',refreshVisibleReports);
+document.addEventListener('visibilitychange',refreshVisibleReports);
 </script>
 </body>
 </html>

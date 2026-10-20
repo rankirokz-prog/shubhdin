@@ -3,7 +3,8 @@
 <head>
 <script src="app-runtime.js?v=240"></script>
 <script src="play-checkout.js?v=20261018-d3"></script>
-<script src="report-session.js"></script>
+<script src="report-session.js?v=241-approval-r4"></script>
+<script src="report-delivery.js?v=241-approval-r4"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
@@ -103,7 +104,7 @@ input:focus{outline:none;border-color:var(--gold);}
 <!-- build tag: the only reliable way to confirm which build a phone is running
      once a service worker is caching pages. Tap it to read the boot log. -->
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;cursor:pointer;"
-     onclick="var w=document.getElementById('bdbgWrap');var l='';try{l=(JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]')).join('\n');}catch(e){}document.getElementById('bdbgTxt').textContent=l||'(empty)';w.style.display='block';">build C11 · tap for debug</div>
+     onclick="var w=document.getElementById('bdbgWrap');var l='';try{l=(JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]')).join('\n');}catch(e){}document.getElementById('bdbgTxt').textContent=l||'(empty)';w.style.display='block';">build C12 · tap for debug</div>
 <div id="bdbgWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">buy debug · tap anywhere to close</div>
@@ -873,32 +874,44 @@ function postMeta(){
    moment ?list=1 says 'sent', the buttons appear. The background pre-render
    below still fires immediately — it is what CREATES the PDF that the
    dispatch checks then inspect. */
-function deliveryState(){
-  ['btDl','btWa','btView'].forEach(function(i){var e=$(i);if(e)e.style.display='none';});
-  $('prepPanel').style.display='block';
-  $('prepTxt').textContent=SDX('prep48');
-  $('prepOc').textContent=ORDER_CODE?(A('buy.order_code_2')+ORDER_CODE):'';
-  if(WA_NUMBER){var w=$('prepWa');w.style.display='inline-block';
-    w.href='https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent((ORDER_CODE||'')+' ');
-    w.textContent='💬 '+SDX('support');}
-  sessionFetch('/api/order?list=1&uid='+SESSION.user.id)
-   .then(apiJson).then(function(j){
-     var o=(j&&j.reports||[]).filter(function(x){return x.report===R;})[0];
-     if(!o){bdlog('deliveryState: order row not visible yet');return;}
-     bdlog('deliveryState: '+o.dispatch_status);
-     if(o.dispatch_status==='sent'){
-       $('prepPanel').style.display='none';
-       $('doneT').textContent=SDX('ready');
-       $('doneS').textContent=SDX('ready_sub');
-       $('btDl').style.display='block';$('btView').style.display='block';
-       if(WA_NUMBER)$('btWa').style.display='block';
-       if(o.pdf_url){PDF_URL=o.pdf_url;sdOwnedWrite(R,ORDER_CODE,o.pdf_url,o.lang);}
-       /* a PDF exists but in the wrong language — do NOT hand it over. Leaving
-          PDF_URL null makes Download re-render in the language bought. */
-       else if(o.pdf_lang_mismatch){PDF_URL=null;bdlog('pdf withheld: on disk as '+o.pdf_lang_mismatch+', bought as '+o.lang);}
-     }
-   }).catch(function(){});
+var DELIVERY_BUSY=false;
+async function deliveryState(){
+  if(DELIVERY_BUSY||!SESSION||!SESSION.user)return false;
+  var account=SESSION.user.id;DELIVERY_BUSY=true;
+  try{
+    var response=await sessionFetch('/api/order?list=1&uid='+encodeURIComponent(account),{cache:'no-store'});
+    var j=await apiJson(response);
+    if(!response.ok||!j||!Array.isArray(j.reports))throw new Error('Status unavailable');
+    if(!SESSION||SESSION.user.id!==account||sdReportAccount()!==account)return false;
+    sdReportReconcile(j.reports,account);
+    var o=j.reports.filter(function(x){return x.report===R;})[0];
+    var state=sdDeliveryState(o||{},!!o);
+    var ready=!!(o&&state.canOpen&&o.pdf_url&&Date.parse(o.pdf_expires_at)>Date.now());
+    PDF_URL=ready?o.pdf_url:null;
+    $('doneT').textContent=state.title;$('doneS').textContent=state.description;
+    $('prepPanel').style.display=ready?'none':'block';
+    $('prepTxt').textContent=state.description;
+    $('prepOc').textContent=ORDER_CODE?(A('buy.order_code_2')+ORDER_CODE):'';
+    if(WA_NUMBER){var w=$('prepWa');w.style.display='inline-block';w.href='https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent((ORDER_CODE||'')+' ');w.textContent='💬 '+SDX('support');}
+    $('btDl').style.display=ready?'block':'none';
+    $('btView').style.display=ready?'block':'none';
+    $('btWa').style.display=ready&&WA_NUMBER?'block':'none';
+    bdlog('deliveryState: '+(o?o.dispatch_status:'not found'));
+    return ready;
+  }catch(e){
+    PDF_URL=null;['btDl','btWa','btView'].forEach(function(id){$(id).style.display='none';});
+    $('doneT').textContent=sdDeliveryText(0);$('doneS').textContent=sdDeliveryText(1);
+    return false;
+  }finally{DELIVERY_BUSY=false;}
 }
+function refreshVisibleDelivery(){
+  if(!document.hidden&&$('stDone').classList.contains('on'))deliveryState();
+}
+setInterval(refreshVisibleDelivery,15000);
+window.addEventListener('focus',refreshVisibleDelivery);
+window.addEventListener('pageshow',refreshVisibleDelivery);
+document.addEventListener('visibilitychange',refreshVisibleDelivery);
+
 function showDone(){
   /* Fired once per report, not per re-entry: showDone() runs again every time
      a buyer reopens the page, and counting those as sales would quietly
@@ -912,6 +925,8 @@ function showDone(){
     }
   }catch(e){}
   show('stDone');
+  ['btDl','btWa','btView'].forEach(function(id){$(id).style.display='none';});
+  $('doneT').textContent=sdDeliveryText(0);$('doneS').textContent=sdDeliveryText(1);
   postMeta();
   deliveryState();
   /* Pre-render the PDF now, in the background, so a cached copy exists even if
@@ -948,20 +963,13 @@ function checkoutBack(){
   sdBack('premium.html');
 }
 var PDF_URL=null;
-function doDownload(){
-  var downloadAccount=sdReportAccount();
-  if(PDF_URL){location.href=PDF_URL;return;}
-  var d=details(); if(!d){show('stDetails');return;}
-  $('btDl').textContent=A('buy.preparing_your_report_30_40s');
-  fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({report:R,uid:SESSION.user.id,access_token:SESSION.access_token,details:d,lang:(d.lang||window.SD_LANG||'hi')})})
-  .then(apiJson).then(function(j){
-    if(sdReportAccount()!==downloadAccount)return;
-    if(j&&j.ready&&j.url){PDF_URL=j.url;sdOwnedWrite(R,ORDER_CODE,j.url,(d.lang||viewLang()));$('btDl').textContent=A('buy.download_pdf');location.href=j.url;}
-    else{$('errX').textContent=(j&&(j.detail||j.error))||'failed';$('errX').style.display='block';
-      $('btDl').textContent=A('report.try_again');}
-  }).catch(function(e){$('errX').textContent=e.message;$('errX').style.display='block';});
+async function doDownload(){
+  // A cached URL is not proof of current delivery permission.
+  if(await deliveryState()){
+    if(PDF_URL)location.href=PDF_URL;
+  }
 }
+
 function doWhatsApp(){
   var msg=encodeURIComponent((ORDER_CODE||'SD-ORDER')+' '+(H?'मेरी '+C.hi+' भेजें':'send my '+C.en+' report'));
   location.href='https://wa.me/'+WA_NUMBER+'?text='+msg;
@@ -979,7 +987,7 @@ function viewLang(){
   if(o&&o.lang)return o.lang;
   return window.SD_LANG||'hi';
 }
-function doView(){location.href=R+'-report.html?autoview=1&lang='+encodeURIComponent(viewLang());}
+function doView(){location.href='reports.html#'+encodeURIComponent(R);}
 
 /* ── boot ── */
 absorbHash().then(function(){
