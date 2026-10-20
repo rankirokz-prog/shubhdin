@@ -1205,5 +1205,76 @@ function generate(){
   window.sdFitRefresh=apply;   /* generate() may call this; safe if it does not */
 })();
 </script>
+<!-- Report-only readability. No selectors apply to the app or the birth form. -->
+<style id="sd-kundli-readability">
+#report {
+  --ink:#391820; --soft:#583C35; --saffron:#9B4100;
+  --gold:#765600; --gold2:#94712A; --paper:#FFFFFF;
+  color:var(--ink);
+}
+#report .page {background-color:#FFFFFF;}
+#report[class] .sdseal-om {font-family:"Noto Serif Devanagari",serif !important;}
+#report table.sd-readable-wide {table-layout:fixed;width:100%;}
+#report table.sd-readable-wide th,#report table.sd-readable-wide td {padding:6px 3px;overflow-wrap:anywhere !important;}
+#report .prose,#report .yog,#report .dos,#report .idcard {color:#391820;}
+#report .sub,#report .foot,#report .idcard .t,#report .antar,
+#report .chartbox .cap {color:#583C35;}
+@media print {
+  #report .page {padding:24px 20px !important;height:auto !important;
+    min-height:0 !important;overflow:visible !important;break-inside:auto !important;}
+  #report h1,#report h2,#report h3,#report h4 {break-after:avoid !important;
+    page-break-after:avoid !important;break-inside:avoid !important;}
+  #report p,#report .prose {orphans:3;widows:3;}
+  #report table {break-inside:auto !important;page-break-inside:auto !important;}
+  #report thead {display:table-header-group;}
+  #report tr,#report svg,#report canvas,#report img {break-inside:avoid !important;
+    page-break-inside:avoid !important;}
+  #report svg,#report img {max-width:100%;}
+  #report td,#report th {overflow-wrap:break-word !important;}
+}
+</style>
+<script>
+(function(){
+  function readable(){
+    var report=document.getElementById('report');
+    if(!report||!report.children.length)return;
+    var textElements=Array.from(report.querySelectorAll('*')).filter(function(el){
+      return el.namespaceURI==='http://www.w3.org/1999/xhtml' &&
+        !/^(SCRIPT|STYLE)$/.test(el.tagName) &&
+        Array.from(el.childNodes).some(function(n){return n.nodeType===3&&n.textContent.trim();});
+    });
+    var sizes=textElements.map(function(el){
+      var minimum=el.closest('table,.foot,.sub,.idcard .t,.antar,.chartbox .cap')?15:17;
+      return {el:el,size:Math.max(parseFloat(getComputedStyle(el).fontSize)||minimum,minimum)};
+    });
+    sizes.forEach(function(item){
+      item.el.style.setProperty('font-size',item.size+'px','important');
+      if(!item.el.closest('table')&&!/^H[1-6]$/.test(item.el.tagName))
+        item.el.style.setProperty('line-height','1.75','important');
+    });
+    report.querySelectorAll('table').forEach(function(table){
+      var row=table.rows[0];
+      if(row && row.cells.length>8)table.classList.add("sd-readable-wide");
+      if(!table.tHead&&row&&row.querySelector('th'))table.createTHead().appendChild(row);
+    });
+    report.querySelectorAll('.yog,.dos,.dyk,.rem,.idcard,.chartbox,p,.prose,tr').forEach(function(el){
+      var avoid=el.getBoundingClientRect().height<950;
+      el.style.setProperty('break-inside',avoid?'avoid':'auto','important');
+      el.style.setProperty('page-break-inside',avoid?'avoid':'auto','important');
+    });
+    if(typeof window.sdFitRefresh==='function')window.sdFitRefresh();
+  }
+  window.sdKundliReadable=readable;
+  var original=window.generate;
+  if(typeof original==='function')window.generate=function(){
+    var result=original.apply(this,arguments);
+    readable();
+    if(document.fonts)document.fonts.ready.then(readable);
+    return result;
+  };
+  window.addEventListener('beforeprint',readable);
+})();
+</script>
+
 </body>
 </html>
