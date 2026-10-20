@@ -331,10 +331,11 @@ function renderOrders(){
     if(!o.pdf_url||!o.pdf_lang_scoped)b+='<button class="b grey" onclick="generatePdf(\''+key+'\')">⚙ Generate saved report</button>';
     if(o.pdf_url)b+='<a class="b grey" href="'+esc(o.pdf_url)+'" target="_blank">👁️ Open PDF</a>';
     if(st==='pending')
-      b+='<button class="b gold" '+(allGreen?'':'disabled title="fix the red ticks first"')+' onclick="approveSend(\''+key+'\')">✅ Approve &amp; WhatsApp</button>';
+      b+='<button class="b gold" '+(allGreen?'':'disabled title="fix the red ticks first"')+' onclick="approveSend(\''+key+'\')">✅ Approve &amp; release report</button>';
     if(st==='approved'){
-      b+='<a class="b gold" href="'+(o.phone?waLink(o.phone,msg):'#')+'" target="_blank">💬 WhatsApp again</a>';
-      b+='<button class="b green" onclick="setState(\''+key+'\',\'sent\')">📤 Release in app — Mark Sent</button>';}
+      b+='<span class="tick" style="align-self:center;">'+(o.pdf_url&&o.pdf_lang_scoped?'Available in app':'Approved — correct PDF unavailable')+'</span>';
+      b+='<a class="b gold" href="'+(o.phone?waLink(o.phone,msg):'#')+'" target="_blank">💬 Send on WhatsApp</a>';
+      b+='<button class="b green" onclick="setState(\''+key+'\',\'sent\')">📤 Mark WhatsApp sent</button>';}
     if(st!=='sent'&&st!=='problem')b+='<button class="b red" onclick="setProblem(\''+key+'\')">⚠️ Problem</button>';
     if(st==='problem')b+='<button class="b grey" onclick="setState(\''+key+'\',\'pending\')">↩︎ Back to pending</button>';
     if(st==='sent')b+='<span class="tick ok" style="font-size:11px;align-self:center;">Sent '+(o.sent_at?new Date(o.sent_at).toLocaleString('en-IN'):'')+'</span>';
@@ -361,9 +362,8 @@ async function generatePdf(key){
   }catch(e){$('dispatchNotice').textContent='Generation failed. The report has not been released.';alert('Report was not generated: '+e.message+'. For an older order without saved details, recover the original details through support.');}
   finally{o._busy=false;}
 }
-/* Approve = record 'approved', then open WhatsApp with the filled template.
-   Two explicit steps (Approve → Mark Sent) so "did it actually go?" always
-   has a truthful answer in the ledger. */
+/* Approval releases the report in-app and opens the existing WhatsApp draft.
+   Mark WhatsApp sent is separate delivery bookkeeping, never an access gate. */
 function approveSend(key){
   var o=findO(key); if(!o)return;
   if(o._busy||!orderChecks(o).every(function(t){return t.ok;}))return;
@@ -371,7 +371,7 @@ function approveSend(key){
   apiPost('dispatch_set=1',{uid:o.uid,report:o.report,dispatch_status:'approved'}).then(function(j){
     if(!j||!j.ok||j.dispatch_status!=='approved')return alert('Approval was not confirmed: '+((j&&j.error)||'Refresh Dispatch and check the saved status.'));
     o.dispatch_status=j.dispatch_status;FO='approved';renderOrders();
-    $('dispatchNotice').textContent='Review saved. After WhatsApp delivery, click Release in app — Mark Sent to make the report available in My Reports.';
+    $('dispatchNotice').textContent='Approved and released in the app. WhatsApp opens separately; Mark WhatsApp sent only records that delivery.';
     var name=(o.email||'').split('@')[0];
     var msg=fillTpl('report',o.lang,{name:name,report:(REPORT_NAME[o.report]&&(REPORT_NAME[o.report][o.lang]||REPORT_NAME[o.report].en))||o.report,code:o.order_code,link:o.pdf_url||''});
     if(o.phone)window.open(waLink(o.phone,msg),'_blank');
@@ -387,7 +387,7 @@ function setState(key,st){
     }
     o.dispatch_status=j.dispatch_status; if(st==='sent')o.sent_at=j.sent_at||o.sent_at;
     FO=st;renderOrders();
-    $('dispatchNotice').textContent=st==='sent'?'Saved as Sent. The buyer’s open report page will check again within 15 seconds, or immediately when they return to the app.':'Saved status: '+st;
+    $('dispatchNotice').textContent=st==='sent'?'WhatsApp delivery recorded. This report was already available in the app after approval.':'Saved status: '+st;
   }).catch(function(){alert('Could not save. Please refresh and retry.');}).finally(function(){o._busy=false;});
 }
 function setProblem(key){

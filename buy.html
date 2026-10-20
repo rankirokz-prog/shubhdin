@@ -4,7 +4,7 @@
 <script src="app-runtime.js?v=240"></script>
 <script src="play-checkout.js?v=20261018-d3"></script>
 <script src="report-session.js?v=241-approval-r4"></script>
-<script src="report-delivery.js?v=241-approval-r4"></script>
+<script src="report-delivery.js?v=243-approval-release"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark only">
@@ -104,7 +104,7 @@ input:focus{outline:none;border-color:var(--gold);}
 <!-- build tag: the only reliable way to confirm which build a phone is running
      once a service worker is caching pages. Tap it to read the boot log. -->
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;z-index:98;cursor:pointer;"
-     onclick="var w=document.getElementById('bdbgWrap');var l='';try{l=(JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]')).join('\n');}catch(e){}document.getElementById('bdbgTxt').textContent=l||'(empty)';w.style.display='block';">build C12 · tap for debug</div>
+     onclick="var w=document.getElementById('bdbgWrap');var l='';try{l=(JSON.parse(localStorage.getItem('shubhdin_buy_debug')||'[]')).join('\n');}catch(e){}document.getElementById('bdbgTxt').textContent=l||'(empty)';w.style.display='block';">build C13 · tap for debug</div>
 <div id="bdbgWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">buy debug · tap anywhere to close</div>
@@ -868,12 +868,8 @@ function postMeta(){
     .catch(function(){});
   }catch(e){}
 }
-/* The dispatch gate, buyer side. Paid ≠ delivered: the report reaches the
-   buyer only after Ram's checks on dispatch.html move the order to 'sent'.
-   Until then this screen promises 48 hours and shows the support line; the
-   moment ?list=1 says 'sent', the buttons appear. The background pre-render
-   below still fires immediately — it is what CREATES the PDF that the
-   dispatch checks then inspect. */
+/* Payment waits for admin approval. Approval makes the reviewed PDF available
+   in-app; WhatsApp delivery is tracked separately. Refresh while visible. */
 var DELIVERY_BUSY=false;
 async function deliveryState(){
   if(DELIVERY_BUSY||!SESSION||!SESSION.user)return false;

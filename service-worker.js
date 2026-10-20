@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v242-delivery-r5';
+const CACHE_NAME = 'shubhdin-v243-approval-release';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -12,7 +12,7 @@ const CORE_FILES = [
   '/play-checkout.js?v=240',
   '/report-session.js',
   '/report-session.js?v=241-approval-r4',
-  '/report-delivery.js?v=241-approval-r4',
+  '/report-delivery.js?v=243-approval-release',
   '/astrology.html',
   '/kundli.html',
   '/premium.html',

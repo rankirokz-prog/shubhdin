@@ -14,11 +14,10 @@
  };
  w.sdDeliveryText=function(n){return (words[w.SD_LANG]||words.en)[n];};
  w.sdDeliveryState=function(record,verified){
-  var n=0,open=false;
+  var n=0,open=false,released=['approved','sent'].indexOf(record.dispatch_status)!==-1;
   if(verified){
-   if(record.dispatch_status==='problem'||(record.dispatch_status==='sent'&&record.pdf_ready!==true))n=10;
-   else if(record.dispatch_status==='sent'&&record.pdf_ready===true){n=8;open=true;}
-   else if(record.dispatch_status==='approved')n=6;
+   if(record.dispatch_status==='problem'||(released&&record.pdf_ready!==true))n=10;
+   else if(released&&record.pdf_ready===true){n=8;open=true;}
    else if(record.pdf_ready===true)n=4;
    else n=2;
   }

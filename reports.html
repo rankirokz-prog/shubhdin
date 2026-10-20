@@ -84,7 +84,7 @@ if(typeof window.A!=='function'){
 </div>
 <div class="wrap" id="root"></div>
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;cursor:pointer;z-index:98;"
-     onclick="showDiag()">reports R5 · tap for state</div>
+     onclick="showDiag()">reports R6 · tap for state</div>
 <div id="diagWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.94);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">report state · tap anywhere to close</div>
@@ -93,7 +93,7 @@ if(typeof window.A!=='function'){
 
 <script src="/vendor/supabase-2.114.0.js"></script>
 <script src="report-catalog.js?v=238"></script>
-<script src="report-delivery.js?v=241-approval-r4"></script>
+<script src="report-delivery.js?v=243-approval-release"></script>
 <script>
 'use strict';
 /* ══════════════════════════════════════════════════════════════════
@@ -282,7 +282,7 @@ async function openReport(id){
     var fresh=await restoreFromServer();
     if(!fresh||!SESSION||SESSION.user.id!==account||sdReportAccount()!==account)return;
     var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
-    if(!rec||rec.dispatch_status!=='sent'||rec.pdf_ready!==true||!rec.pdf_url)return;
+    if(!rec||['approved','sent'].indexOf(rec.dispatch_status)===-1||rec.pdf_ready!==true||!rec.pdf_url)return;
     if(!rec.pdf_expires_at||Date.parse(rec.pdf_expires_at)<=Date.now())return;
     openPdf(id,rec.pdf_url);
   }finally{OPEN_BUSY=false;}
@@ -429,6 +429,7 @@ function showDiag(){
     lines.push('  '+o.report+(known?'':'  [UNKNOWN ID]'));
     lines.push('     date       : '+(o.date||'—'));
     lines.push('     order_code : '+(o.order_code||'—'));
+    lines.push('     saved status: '+(o.dispatch_status||'unknown')+' · PDF ready: '+(o.pdf_ready===true?'yes':'no'));
     lines.push('     pdf_url    : '+(o.pdf_url?o.pdf_url:'ABSENT  → Open must ask the server'));
     lines.push('     sd_buy_'+o.report+' : '+(buyDetails(o.report)?'present':'ABSENT  → cannot render here'));
   });
