@@ -190,7 +190,57 @@ module.exports = async function handler(req, res) {
       #report .season small, #report .yog small {color:#583C35;}
       #report .page, #report .sheet {background-color:#FFFFFF;}
     }`});
+    // Let long sections continue instead of compressing their typography.
+    await page.emulateMediaType('print');
+    await page.addStyleTag({content: `@media print {
+      #report .page {padding:24px 20px !important; height:auto !important;
+        min-height:0 !important; overflow:visible !important; break-inside:auto !important;}
+      #report h1, #report h2, #report h3, #report h4 {
+        break-after:avoid !important; page-break-after:avoid !important;
+        break-inside:avoid !important;}
+      #report p, #report .prose {orphans:3; widows:3;}
+      #report table {break-inside:auto !important; page-break-inside:auto !important;}
+      #report thead {display:table-header-group;}
+      #report tr, #report svg, #report canvas, #report img {
+        break-inside:avoid !important; page-break-inside:avoid !important;}
+      #report svg, #report img {max-width:100%;}
+      #report td, #report th {overflow-wrap:break-word;}
+    }`});
+    await page.evaluate(() => {
+      const report=document.getElementById('report');
+      // Capture all sizes first so inherited font sizes are not enlarged twice.
+      const textElements=Array.from(report.querySelectorAll('*')).filter(el =>
+        el.namespaceURI==='http://www.w3.org/1999/xhtml' &&
+        !/^(SCRIPT|STYLE)$/.test(el.tagName) &&
+        Array.from(el.childNodes).some(n=>n.nodeType===3 && n.textContent.trim()));
+      const sizes=textElements.map(el=>{
+        const style=getComputedStyle(el);
+        const minimum=el.closest('table,.foot,.note,.sub,.idcard .t')?15:17;
+        return {el,size:Math.max(parseFloat(style.fontSize)||minimum,minimum)};
+      });
+      sizes.forEach(({el,size})=>{
+        el.style.setProperty('font-size',size+'px','important');
+        if(!el.closest('table')&&!/^H[1-6]$/.test(el.tagName))
+          el.style.setProperty('line-height','1.75','important');
+      });
+      // Repeat real table headers on a continuation page.
+      report.querySelectorAll('table').forEach(table=>{
+        const row=table.rows[0];
+        if(!table.tHead&&row&&row.querySelector('th')){
+          table.createTHead().appendChild(row);
+        }
+      });
+    });
     try { await page.evaluate(() => document.fonts && document.fonts.ready); } catch (e) {}
+    await page.evaluate(() => {
+      // A block taller than the printable A4 area must be allowed to continue.
+      // Small cards stay intact; long cards flow naturally without tiny text.
+      document.querySelectorAll('#report .season,#report .yog,#report .mcard,#report .ycard,#report .idcard,#report p,#report .prose,#report tr').forEach(el=>{
+        const avoid=el.getBoundingClientRect().height<950;
+        el.style.setProperty('break-inside',avoid?'avoid':'auto','important');
+        el.style.setProperty('page-break-inside',avoid?'avoid':'auto','important');
+      });
+    });
 
     const pdf = await page.pdf({
       format: 'A4', printBackground: true,
