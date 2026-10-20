@@ -56,10 +56,11 @@ module.exports = async function handler(req, res) {
   }
 
   const BUCKET = 'shubhdin-reports';
+  // Keep the v5 pointer contract; layout revision in the hash refreshes old PDFs.
   // v5: invalidate PDFs generated before the birth-field prefill correction.
   // a different birth profile or language is a different cached file.
   const canonical={};Object.keys(details).sort().forEach(k=>canonical[k]=details[k]);
-  const fingerprint=crypto.createHash('sha256').update(JSON.stringify(canonical)).digest('hex');
+  const fingerprint=crypto.createHash('sha256').update('readability-v1\n'+JSON.stringify(canonical)).digest('hex');
   const path=`kundlis/v5/${uid}-${lang}-${fingerprint}.pdf`;
   const H={apikey:serviceKey,Authorization:'Bearer '+serviceKey};
   const objectUrl=`${supabaseUrl}/storage/v1/object/${BUCKET}/${path}`;
@@ -111,7 +112,12 @@ module.exports = async function handler(req, res) {
       const r = document.getElementById('report');
       return r && r.innerHTML && r.innerHTML.length > 10000;
     }, { timeout: 120000 });
+    await page.emulateMediaType('print');
     try { await page.evaluate(() => document.fonts && document.fonts.ready); } catch (e) {}
+    await page.evaluate(() => {
+      if(typeof window.sdKundliReadable!=='function')throw new Error('Kundli readability template not deployed');
+      window.sdKundliReadable();
+    });
 
     const pdf = await page.pdf({
       format: 'A4', printBackground: true,
