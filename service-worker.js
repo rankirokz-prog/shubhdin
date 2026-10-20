@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shubhdin-v243-approval-release';
+const CACHE_NAME = 'shubhdin-v244-report-reader';
 
 // Core app files to cache immediately on install
 const CORE_FILES = [
@@ -17,6 +17,9 @@ const CORE_FILES = [
   '/kundli.html',
   '/premium.html',
   '/reports.html',
+  '/report-reader.js?v=244',
+  '/vendor/pdfjs/pdf.min.mjs',
+  '/vendor/pdfjs/pdf.worker.min.mjs',
   /* ══ SD-OFFLINE-PAGES ══
      buy.html was NOT here. The fetch handler falls back to /index.html for
      anything uncached, so a buyer tapping Buy on a dead connection landed in

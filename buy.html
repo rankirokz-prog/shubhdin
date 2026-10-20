@@ -983,7 +983,7 @@ function viewLang(){
   if(o&&o.lang)return o.lang;
   return window.SD_LANG||'hi';
 }
-function doView(){location.href='reports.html#'+encodeURIComponent(R);}
+function doView(){location.href='reports.html?read='+encodeURIComponent(R)+'#'+encodeURIComponent(R);}
 
 /* ── boot ── */
 absorbHash().then(function(){

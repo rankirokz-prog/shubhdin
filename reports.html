@@ -84,7 +84,7 @@ if(typeof window.A!=='function'){
 </div>
 <div class="wrap" id="root"></div>
 <div style="position:fixed;left:8px;bottom:2px;font-size:8.5px;color:rgba(255,255,255,0.25);font-family:monospace;cursor:pointer;z-index:98;"
-     onclick="showDiag()">reports R6 · tap for state</div>
+     onclick="showDiag()">reports R7 · tap for state</div>
 <div id="diagWrap" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.94);padding:16px;overflow:auto;"
      onclick="this.style.display='none';">
   <div style="font-size:11px;color:#E8BE5A;font-family:monospace;margin-bottom:8px;">report state · tap anywhere to close</div>
@@ -239,7 +239,7 @@ function render(){
       +(o.order_code?' · '+esc(o.order_code):'')+'</div>'
       +'<div class="delivery-status" style="margin-top:14px;font-size:15px;font-weight:600;color:#E8BE5A;">'+esc(state.title)+'</div>'
       +'<div style="margin-top:7px;font-size:13px;line-height:1.7;color:rgba(255,244,222,.82);">'+esc(state.description)+'</div>'
-      +(state.canOpen?'<button class="btn" id="open-'+r.id+'" onclick="openReport(\''+r.id+'\')">📄 '+esc(sdDeliveryText(13))+'</button>':'')
+      +(state.canOpen?'<button class="btn" id="open-'+r.id+'" onclick="openReport(\''+r.id+'\')">'+esc(A('report.view_on_screen'))+'</button><button class="btn sec" onclick="openReport(\''+r.id+'\',true)">'+esc(A('buy.download_pdf'))+'</button>':'')
       +'<button class="btn sec" id="again-'+r.id+'" onclick="checkAgain(\''+r.id+'\')">↻ '+esc(sdDeliveryText(12))+'</button>'
       +'<div id="manual-'+r.id+'" style="display:none;"></div>'
       +'<div class="err" id="err-'+r.id+'" style="display:none;"></div></div>';
@@ -273,7 +273,8 @@ function emptyHTML(){
 }
 
 /* ── open: PDF first, exactly as the contract decides ── */
-async function openReport(id){
+var ACTIVE_READER=null;
+async function openReport(id,download){
   if(OPEN_BUSY)return;
   if(!SESSION){showErr($('err-'+id),sdDeliveryText(14));return;}
   var account=SESSION.user.id;OPEN_BUSY=true;
@@ -284,7 +285,16 @@ async function openReport(id){
     var rec=sdOwnedRead().filter(function(o){return o.report===id;})[0];
     if(!rec||['approved','sent'].indexOf(rec.dispatch_status)===-1||rec.pdf_ready!==true||!rec.pdf_url)return;
     if(!rec.pdf_expires_at||Date.parse(rec.pdf_expires_at)<=Date.now())return;
-    openPdf(id,rec.pdf_url);
+    if(download){openPdf(id,rec.pdf_url);return;}
+    try{
+      var reader=await import('./report-reader.js?v=244');
+      if(!SESSION||SESSION.user.id!==account||sdReportAccount()!==account)return;
+      ACTIVE_READER=reader;
+      await reader.open(rec.pdf_url,{lang:window.SD_LANG||U.lang||'en',
+        download:function(){return openReport(id,true);},
+        downloadLabel:A('buy.download_pdf'),backLabel:A('report.my_reports'),
+        authorized:function(){return !!SESSION&&SESSION.user.id===account&&sdReportAccount()===account;}});
+    }catch(e){showErr($('err-'+id),A('report.try_again'));}
   }finally{OPEN_BUSY=false;}
 }
 
@@ -310,7 +320,8 @@ function isStandalone(){
 function openPdf(id,url){
   try{
     var a=document.createElement('a');
-    a.href=url; a.target='_blank'; a.rel='noopener';
+    var freshUrl=new URL(url);freshUrl.searchParams.set('v',Date.now());
+    a.href=freshUrl.href; a.target='_blank'; a.rel='noopener';
     document.body.appendChild(a); a.click(); a.remove();
   }catch(e){
     try{ window.open(url,'_blank','noopener'); }catch(e2){ location.href=url; }
@@ -370,6 +381,7 @@ function absorbHash(){
 }
 /* Reconcile this account's authoritative list, including an empty list.
    Failed requests leave only this same account's offline cache intact. */
+var AUTO_READ=new URLSearchParams(location.search).get('read');
 var STATUS_REQUEST=0, STATUS_IN_FLIGHT=0;
 function restoreFromServer(){
   var seq=++STATUS_REQUEST;STATUS_IN_FLIGHT++;
@@ -400,6 +412,7 @@ async function restoreStatus(seq){
         if(!o.pdf_url) dropPdfUrl(o.report);
       });
       render();
+      if(AUTO_READ){var toRead=AUTO_READ;AUTO_READ=null;setTimeout(function(){openReport(toRead);},0);}
       return true;
     }
     render();return false;
@@ -478,6 +491,7 @@ absorbHash().then(function(){
 <script src="nav-history.js?v=238"></script>
 <script>
 if(sb)sb.auth.onAuthStateChange(function(event,session){
+  if(ACTIVE_READER&&(!session||!SESSION||session.user.id!==SESSION.user.id))ACTIVE_READER.close();
   SESSION=session;VERIFIED_ACCOUNT=null;sdReportSetSession(session);render();
   if(session)setTimeout(restoreFromServer,0);
 });

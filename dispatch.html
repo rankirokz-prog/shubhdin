@@ -329,7 +329,8 @@ function renderOrders(){
     var key=esc(o.uid)+'|'+esc(o.report);
     var b='';
     if(!o.pdf_url||!o.pdf_lang_scoped)b+='<button class="b grey" onclick="generatePdf(\''+key+'\')">⚙ Generate saved report</button>';
-    if(o.pdf_url)b+='<a class="b grey" href="'+esc(o.pdf_url)+'" target="_blank">👁️ Open PDF</a>';
+    if(o.pdf_url)b+='<a class="b grey" href="'+esc(o.pdf_url+(o.pdf_url.includes('?')?'&':'?')+'v='+Date.now())+'" target="_blank">👁️ Open PDF</a>';
+    if(o.pdf_url)b+='<button class="b grey" onclick="generatePdf(\''+key+'\',true)">Rebuild PDF layout</button>';
     if(st==='pending')
       b+='<button class="b gold" '+(allGreen?'':'disabled title="fix the red ticks first"')+' onclick="approveSend(\''+key+'\')">✅ Approve &amp; release report</button>';
     if(st==='approved'){
@@ -350,16 +351,16 @@ function renderOrders(){
   }).join('');
 }
 function findO(key){var a=key.split('|');return ORDERS.filter(function(o){return o.uid===a[0]&&o.report===a[1];})[0];}
-async function generatePdf(key){
+async function generatePdf(key,rebuild){
   var o=findO(key),session=SESSION;if(!o||o._busy||!session)return;o._busy=true;
   try{
     $('dispatchNotice').textContent='Generating the report from saved purchase details…';
-    var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report:o.report,uid:o.uid,access_token:session.access_token,lang:o.lang})});
+    var r=await fetch('/api/report-pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({report:o.report,uid:o.uid,access_token:session.access_token,lang:o.lang,regenerate:rebuild===true})});
     var j=await r.json();if(!SESSION||SESSION.user.id!==session.user.id)return;
     if(!r.ok||!j.ready)throw new Error(j.error||'Could not generate report');
-    $('dispatchNotice').textContent='Report generated. Open the PDF and review it before approval.';
+    $('dispatchNotice').textContent=rebuild?'PDF rebuilt from saved purchase details. Open PDF to check the layout. Existing approval is unchanged.':'Report generated. Open the PDF and review it before approval.';
     loadAll();
-  }catch(e){$('dispatchNotice').textContent='Generation failed. The report has not been released.';alert('Report was not generated: '+e.message+'. For an older order without saved details, recover the original details through support.');}
+  }catch(e){$('dispatchNotice').textContent='Generation failed. Existing PDF and approval are unchanged.';alert('Report was not generated: '+e.message+'. For an older order without saved details, recover the original details through support.');}
   finally{o._busy=false;}
 }
 /* Approval releases the report in-app and opens the existing WhatsApp draft.
