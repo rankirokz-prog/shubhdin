@@ -172,6 +172,24 @@ module.exports = async function handler(req, res) {
           node.nodeValue=node.nodeValue.replace(/\u2192/g,'\u2013');
       }
     });
+    // Contrast only the printed report. The calculation engine, facts and
+    // private generator templates remain unchanged. Keep status colors and
+    // decorated cards; strengthen the long-form text and subdued labels.
+    await page.addStyleTag({content: `@media print {
+      #report {
+        --ink:#391820; --soft:#583C35; --saffron:#9B4100;
+        --rose:#8D2747; --gold:#765600; --gold2:#94712A;
+        --paper:#FFFFFF; --blush:#BB7287;
+        color:var(--ink);
+      }
+      #report .prose, #report .season, #report .yog,
+      #report .ycard .line, #report .mcard,
+      #report .idcard, #report .domitem {color:#391820;}
+      #report .sub, #report .note, #report .foot,
+      #report .idcard .t, #report .ycard .age,
+      #report .season small, #report .yog small {color:#583C35;}
+      #report .page, #report .sheet {background-color:#FFFFFF;}
+    }`});
     try { await page.evaluate(() => document.fonts && document.fonts.ready); } catch (e) {}
 
     const pdf = await page.pdf({
